@@ -124,7 +124,7 @@ Most languages use the _prefix_ notation for functions: `func(args)` and the _in
 
 **[NYI]** You can also pass them around as any other function:
 
-    (sort < (range 1 4))    ;; `(4 3 2 1)
+    (sort < (range 1 4))    ;; (4 3 2 1)
 
 Not everything is a function. Some forms are _special forms_: `=` `quote` `unquote` `fn` `def` `mac` `if` `switch` `for` `over` `try` `get` `spread`, and a few others. These have their own resolution rules. Read on to find out.
 
