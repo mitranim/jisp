@@ -1,0 +1,45 @@
+(= fs (require "fs"))
+
+; Load compiler
+(console.log "-- trying to load compiler...")
+(= jisp     (require "./lib/jisp/jisp"))
+
+(def buildFile compiler ...filenames
+     (for filename filenames
+          (do (= srcPath   (+ "./src/" filename ".jisp")
+                 destpath  (+ "./unstable/jisp/" filename ".js")
+                 src       (fs.readFileSync srcPath "utf8"))
+              (console.log (+ "-- compiling " filename "..."))
+              (= js (compiler.compile src))
+              (fs.writeFileSync destpath js "utf8"))))
+
+(def build jisp
+     (do (console.log "-- building...")
+         (buildFile jisp
+                         "index"
+                         "toplevel"
+                         "util"
+                         "extend"
+                         "operators"
+                         "tokenise"
+                         "lex"
+                         "parse"
+                         "register"
+                         "repl"
+                         "optparse"
+                         "command"
+                         "jisp"
+                         )
+     (console.log "-- if you're reading this, compilation has succeeded!")))
+
+(build jisp)
+
+; Building with unstable
+
+(console.log "-- trying to load unstable compiler...")
+(= jisp_unstable (require "./unstable/jisp/jisp"))
+
+(console.log "-- trying to build with unstable compiler...")
+(build jisp_unstable)
+
+(console.log "-- to test the unstable version, disable the stable or use another compile script")

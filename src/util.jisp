@@ -1,0 +1,171 @@
+; Utils for other modules
+
+; Got bloated, todo refactor
+
+;; For compiler
+
+(= exports.symbolWhitelist (= symbolWhitelist `(
+; List of non-\w 'words' for lexer to consider valid atoms
+   ; arithmetic
+   "+" "-" "*" "/" "%" "++" "--"
+   ; logical
+   "?" "==" "===" "!=" "!==" "&&" "||" "!"
+   ; comparison
+   ">" "<" ">=" "<="
+   ; bitwise
+   "&" "|" "^" "<<" ">>" ">>>" "~"
+   ; assignment
+   "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "|=")))
+
+(= exports.keywords (= keywords `(
+  "return" "break" "continue"
+)))
+
+(= exports.kwtest (def kwtest str
+   (or (/^return/.test str)
+       (/^break/.test str)
+       (/^continue/.test str))))
+
+; Composite types
+
+(= exports.isAtom (def isAtom form
+   (or (is form undefined null)
+           (/^\/[^\s\/]+\/[\w]*$/.test form)
+           (is (typeof form) "number" "string" "boolean"))))
+
+(= exports.isAtomString (def isAtomString form
+   (or (isNum form)
+       (isRegex form)
+       (isIdentifier form)
+       (isString form)
+       (in form symbolWhitelist)
+       (/^#[\d]+$/.test form)  ; #n notation
+       (/^#$/.test form))))  ; # notation
+
+(= exports.isList (def isList form
+   (Array.isArray form)))
+
+(= exports.isHash (def isHash form
+   (and (not (isAtom form)) (not (isList form)))))
+
+(= exports.isBlankObject (def isBlankObject form
+   (try (is (get (Object.keys form) length) 0)
+        false)))
+
+(= exports.isKey (def isKey form
+   (and (isAtom form) (or (isString form) (isIdentifier form)))))
+
+; Simple types
+
+(= exports.isVarName (def isVarName form
+; matches pure variable names without property notation
+   (and (isAtom form) (/^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test form))))
+
+(= exports.isIdentifier (def isIdentifier form
+; matches any identifier, including with .dot and [bracket] and ["string bracket"] notation, unless it has an expression in brackets
+   (and (isAtom form) (/^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test form))))
+
+(= exports.isString (def isString form
+   (and (isAtom form) (/^".*"$|^'.*'$/.test form))))
+
+(= exports.isRegex (def isRegex form
+; passes regexes and regexes+stuff
+   (and (isAtom form) (/^\/[^\s]+\/[\w]*[^\s)]*/.test form))))
+
+(= exports.isNum (def isNum form
+   (and (isAtom form) (is (typeof (typify form)) "number"))))
+
+(= exports.isPrimitive (def isPrimitive form
+   (or (isRegex form)
+       (isNum form)
+       (is form undefined null yes no))))
+
+(= exports.isArgHash (def isArgHash form
+   (and (isAtom form) (/^#[\d]+$/.test form))))
+
+(= exports.isArgsHash (def isArgsHash form
+   (and (isAtom form) (/^#$/.test form))))
+
+(= exports.isArgHashNotation (def isArgHashNotation form
+   (or (isArgHash form)
+       (isArgsHash form))))
+
+; Property syntax — dot and bracket notation
+
+(= exports.isDotName (def isDotName form
+   (and (isAtom form) (/^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test form))))
+
+(= exports.isBracketName (def isBracketName form
+   (and (isAtom form) (/^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test form))))
+
+(= exports.isBracketString (def isBracketString form
+   (and (isAtom form) (/^\[".*"\]$|^\['.*'\]$/.test form))))
+
+(= exports.isPropSyntax (def isPropSyntax form
+   (and (isAtom form) (or (isDotName form)
+                          (isBracketName form)
+                          (isBracketString form)))))
+
+; Other
+
+(= exports.typify (def typify form
+   (if (not (isAtom form))
+       (throw (Error (+ "expecting atom, got " form)))
+       (elif (isBlankObject form) form)
+       (elif (is (typeof form) "undefined") undefined)
+       (elif (is form "null") null)
+       (elif (is form "true" "yes") true)
+       (elif (is form "false" "no") false)
+       (elif (not (isNaN (Number form))) (Number form))
+       (elif (isRegex form) form)
+       (elif (is (typeof form) "string") form)
+       (throw (Error (+ "syntax error: unrecognised type of " form))))))
+
+(= exports.assertForm (def assertForm form (min 0) (max Infinity) first
+   (if (not (isList form))
+      (throw (Error (+ "expecting list, got " form)))
+      (elif (not (and (>= form.length min) (<= form.length max)))
+            (throw (Error (+ "expecting between " min " and " max " arguments, got " form.length))))
+      (elif (and (? first) (isnt form[0] first))
+            (throw (Error (+ "expecting " first " as first element, got " form[0]))))
+      form)))
+
+
+;; For command line
+  ;; Mostly copied from CoffeeScript source
+
+; Merges objects, returning fresh copy with attributes from both sides
+(= exports.merge (fn options overrides
+   (extend (extend (:) options) overrides)))
+
+; Extend source object with properties of another object (shallow copy)
+(= exports.extend (def extend object properties
+   (do (over val key properties
+             (= object[key] val))
+       object)))
+
+; Return filename without extension
+(= exports.baseFileName (def baseFileName file (stripExt no) (useWinPathSep no)
+   (do (= pathSep (if useWinPathSep /\\|\// /\//)
+          parts   (file.split pathSep)
+          file    parts[(- parts.length 1)])
+       (if (not (and stripExt (>= (file.indexOf ".") 0)))
+           (return file))
+       (= parts (file.split "."))
+       (parts.pop)
+       (if (and (is (get parts (- parts.length 1)) "jisp")
+                (> parts.length 1))
+           (parts.pop))
+       (parts.join "."))))
+
+; Repeat string `n` times
+(= exports.repeat (def repeat str n
+  (do (= res "")
+      (while (> n 0)
+             (do (if (& n 1) (+= res str))
+                 (>>>= n 1)
+                 (+= str str)))
+      res)))
+
+(= exports.isJisp (def isJisp file
+  (/\.jisp$/.test file)))

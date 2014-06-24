@@ -1,0 +1,30 @@
+{
+  "name": "jisp",
+  "version": "0.0.1",
+  "description": "Putting Lisp in your JavaScript: a JS preprocessor language",
+  "keywords": [
+    "javascript",
+    "language",
+    "lisp",
+    "compiler"
+  ],
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "directories": {
+    "lib": "./lib/jisp"
+  },
+  "main": "./lib/jisp/jisp",
+  "bin": {
+    "jisp": "./bin/jisp"
+  },
+  "scripts": {
+    "test": "./bin/jisp ./build.jisp"
+  },
+  "author": "Mitranim",
+  "license": "MIT",
+  "dependencies": {
+    "mkdirp": "latest",
+    "js-beautify": "latest"
+  }
+}
