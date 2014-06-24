@@ -28,7 +28,7 @@
 
 # Description
 
-Jisp is a programming language that compiles to JavaScript. It's designed to be simpler yet more powerful. Jisp allows you to treat code as data, define syntactic abstractions, write macros that generate code [that generate [that generate ...]]
+Jisp is a programmable programming language that compiles to JavaScript. It's designed to be simpler yet more powerful. Jisp allows you to treat code as data, define syntactic abstractions, write macros that generate code [that generate [that generate ...]]
 
 Its extremely simple and regular syntax protects against common pitfalls of JS. Jisp makes everything an expression, facilitating and encouraging functional programming style.
 
