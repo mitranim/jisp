@@ -21,6 +21,10 @@
   "scripts": {
     "test": "./bin/jisp ./build.jisp"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Mitranim/jisp.git"
+  },
   "author": "Mitranim",
   "license": "MIT",
   "dependencies": {
