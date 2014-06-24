@@ -1,4 +1,4 @@
-# Table of Contents
+### Table of Contents
 
 * **Description**
 * **Installation and Usage**
@@ -26,17 +26,17 @@
 * **Acknowledgements**
 
 
-# Description
+## Description
 
-Jisp is a programmable programming language that compiles to JavaScript. It's designed to be simpler yet more powerful. Jisp allows you to treat code as data, define syntactic abstractions, write macros that generate code [that generate [that generate ...]]
+Jisp is a programmable programming language that compiles to JavaScript. It's both simpler and more powerful. Jisp allows you to treat code as data, define syntactic abstractions, write macros that generate code [that generates [that generates ...]]
 
-Its extremely simple and regular syntax protects against common pitfalls of JS. Jisp makes everything an expression, facilitating and encouraging functional programming style.
+Its extremely simple and regular syntax protects against common pitfalls of JS. Jisp makes everything an expression, facilitating and encouraging the functional programming style.
 
-The compiler is itself written in jisp.
+The compiler itself is written in jisp.
 
 This is an early release. See Known Bugs and NYI and expect change.
 
-# Installation and Usage
+## Installation and Usage
 
 Install from npm:
 
@@ -65,9 +65,9 @@ Super basic Sublime Text build system:
 * save to: `~/Library/Application Support/Sublime Text 3/Packages/User`
 
 
-# Docs
+## Docs
 
-## Data types
+### Data types
 
     ---------------- JS ---------------- | -------------- Jisp --------------
     name: x $_y0                         | name: x $_y0
@@ -82,7 +82,7 @@ Super basic Sublime Text build system:
 
 > Note to Lispers: jisp doesn't have an explicit symbol type. Names and string literals are used in place of symbols. See Quoting and Macros.
 
-## Code Structure
+### Code Structure
 
 Jisp code consists of _forms_. There are only three kinds of forms:
 
@@ -120,15 +120,15 @@ Most languages use the _prefix_ notation for functions: `func(args)` and the _in
     (+ 2 7 5 1 2)                          ;; 17
     (*)                                    ;; 1
     (/ 4)                                  ;; 0.25
-    (+ 'using jisp' ' you're ' 'awesome')  ;; + takes multiple strings
+    (+ 'using jisp' ' you’re ' 'awesome')  ;; + takes multiple strings
 
 **[NYI]** You can also pass them around as any other function:
 
-    (sort > `(1..4))    ;; `(4 3 2 1)      ;; todo fix example
+    (sort < `(range 1 4))    ;; `(4 3 2 1)      ;; todo fix example
 
 Not everything is a function. Some forms are _special forms_: `=` `quote` `unquote` `fn` `def` `mac` `if` `switch` `for` `over` `try` `get` `spread`, and a few others. These have their own resolution rules. Read on to find out.
 
-## Everything an Expression
+### Everything an Expression
 
 Each and every form in jisp is an expression: it returns a result. There are no 'statements'; every form resolves to something. Atoms resolve to themselves; hash tables resolve to themselves with resolved values; lists resolve by special rules.
 
@@ -140,7 +140,7 @@ Forms starting with `=`, `def`, `fn`, `mac`, `let` (NYI), and a few other keywor
     (def cowsay moo (+ 'Cow says ' moo))  ;; named function
     (fn x (/ x 10))                       ;; anonymous function (lambda)
 
-See Macros below.
+See the Macros section below.
 
 A list starting with a name or a function definition resolves as an _application_ expression. In other words, as a function call:
 
@@ -150,9 +150,9 @@ A list starting with a name or a function definition resolves as an _application
 
 Inside a nested form, forms are resolved left-to-right, inner-to-outer, just like you'd expect.
 
-## Quoting
+### Quoting
 
-Sometimes you don't want a list to resolve, or want only _some_ of its elements to resolve. That's what quoting is for. The `quote` function takes a single list as argument and return a `quote` of it. Prepending a list with `` ` `` is shorthand syntax:
+Sometimes you don't want a list to resolve, or want only _some_ of its elements to resolve. That's what quoting is for. The `quote` function takes a single argument and returns it without resolving it. Prepending with `` ` `` is shorthand syntax:
 
     (quote (list 'Darwin'))   ;; (list 'Darwin')
 
@@ -165,9 +165,9 @@ To let an element resolve, _unquote_ it with a comma `,`.
 
     `(+ ,(* 2 3) (^ 9 0))     ;; (+ 6 (^ 9 0))
 
-Mentally visualise `` ` `` `,` as an off/on switch. The primary meaning of quoting and unquoting is for macros. See the Macro section below.
+Mentally visualise `` ` `` `,` as an off/on switch. The primary meaning of quoting and unquoting is for macros. See the Macros section below.
 
-## Blocks
+### Blocks
 
 In imperative programming, you often want to run multiple consequtive actions in a single block, usually for side effects. Combine them into one expression with `do`:
 
@@ -205,7 +205,7 @@ Becomes:
 
 Use `let` as a shortcut for auto-executing anonymous functions.
 
-## Object Properties
+### Object Properties
 
 As you'd expect, object properties are referenced with dot or bracket notation:
 
@@ -233,7 +233,7 @@ But this would get messy when consequtively chaining methods. Instead, wrap them
 
 In a block, orphan `.dot` or `[bracket]` notation refers to the return value of the previous expression. In this example, `cartoonSnake` resolves to self, and each of its methods is assumed to return `this` or another object, allowing method chaining.
 
-## Functions
+### Functions
 
 Jisp mirrors JavaScript function facilities 1-1 and adds some more.
 
@@ -285,7 +285,7 @@ Each conditional branch gets an implicit collector variable assignment. The `swi
 
 A side effect of implicit returns is that when constructing a prototype (a 'class'), you need to add `this` as its last (return) value for the prototype to work.
 
-### Anonymous Functions
+#### Anonymous Functions
 
 Because functions are so cheap in JavaScript, jisp comes with a shorthand notation for lambdas (anonymous functions):
 
@@ -301,7 +301,7 @@ This goes hand in hand with the `#` notation and spreading:
 
 **[NYI]**: `#`.
 
-## Assignment
+### Assignment
 
 Like all other forms, assignment uses the prefix notation:
 
@@ -333,7 +333,7 @@ Jisp automatically declares variables within scope with `var` and hoists them to
 
 Will hoist a `var` declaration (if not already within scope), defaulting the variable to `undefined`.
 
-## Destructuring Assignment
+### Destructuring Assignment
 
 Use a list as a left-hand in an assignment to take apart the right-hand side and assign parts:
 
@@ -348,11 +348,11 @@ This assignment is positional: `[0]` `[1]` and so on. To collect all remaining p
 
 This works the same way as destructuring in function parameters (see below).
 
-## Spreading and Rest Parameter
+### Spreading and Rest Parameter
 
 Borrowed straight from the upcoming EcmaScript 6 specification.
 
-### Spread Into List
+#### Spread Into List
 
 In a list, prefix elements with `...` to pour their elements inside the list, flattening it:
 
@@ -360,13 +360,13 @@ In a list, prefix elements with `...` to pour their elements inside the list, fl
 
 `...x` is a shorthand for the `(spread x)` special form, which you can use directly.
 
-### Argument Spread
+#### Argument Spread
 
 Similarly to lists, you can spread arguments into a function call:
 
     (list 'cat' ...('dog' 'lizard'))  ;;  ('cat' 'dog' 'lizard')
 
-### Rest Parameter
+#### Rest Parameter
 
 Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collects the remaining arguments into a list:
 
@@ -380,7 +380,7 @@ Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collec
     ; from
     ; ('Kara' 'Mira' 'Nova')
 
-## Comprehensions
+### Comprehensions
 
 Other languages typically devise special syntax for list comprehensions (set builder notation). Jisp has that without any special notation.
 
@@ -395,7 +395,7 @@ Because `for` and `while` are list-building expressions, jisp doesn't need any s
     (for x (range 0 6) (* x x))
     ;; (0 1 4 9 16 25 36)
 
-## Conditionals
+### Conditionals
 
 Jisp gives you better conditionals. Some examples:
 
@@ -438,7 +438,7 @@ Check if something exists (is defined) with the `(?)`:
 
 See `operators.jisp` for more.
 
-### If, Switch
+#### If, Switch
 
 An `if` is a single expression that resolves to a value. Else-ifs are special clauses _inside_ that expression. If you're returning a single value, there's no need to assign it manually.
 
@@ -465,11 +465,11 @@ A `switch` form automatically inserts `break;` statements, protecting you from a
 
 [NYI] More awesome conditionals coming up, stay tuned.
 
-## Loops
+### Loops
 
 Jisp comes with three loops: `for`, `over`, and `while`.
 
-### Over
+#### Over
 
 The `(over ...)` loop iterates over properties and keys of any object, even arrays and strings. It's great when you want everything it has and don't care in what order it comes:
 
@@ -492,7 +492,7 @@ If you want neither values nor indices, omit both to iterate blindly:
 
 The `over` loop includes _custom and inherited properties_ and _does not preserve element order_.
 
-### For
+#### For
 
 When iterating over arrays and strings, you usually want to hit all elements in order and don't want extra properties tagging along. In those cases, use the `(for ...)` loop:
 
@@ -532,7 +532,7 @@ Just like the `over` loop, `for` returns an array of values from each iteration:
     (for 5 (+= warcry 'waagh! '))
     ;; waagh! waagh! waagh! waagh! waagh!
 
-### While
+#### While
 
 For finer-grained control, use the `while` loop. It works as you'd expect, but like everything in jisp, it's an expression. By default, it returns an array of values from each iteration.
 
@@ -549,7 +549,7 @@ You can also order a final return value:
            (++ beers)
            beers)          ;; 10
 
-## Macros
+### Macros
 
 Macros are compile-time functions that generate code. A macro takes code as input and returns code that's put in its place. After all macros are expanded, jisp is compiled to JS. Since they run at compile time, they allow arbitrary transformations of code. This allows to reuse code without runtime restrictions, and build syntactic abstractions all the way up to a domain-specific language.
 
@@ -628,7 +628,7 @@ To avoid confusing macros for functions, it's good style to start their names wi
 
 It's important to realise that macros are compile-time, not run-time. They don't have access to runtime values behind names. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
 
-## Built-ins
+### Built-ins
 
 JavaScript is a method-oriented language that avoids global functions in favour of object methods. At the risk of violating this paradigm, jisp introduces a few global convenience functions.
 
@@ -658,7 +658,7 @@ Which is the same as spreading them:
 See `toplevel.jisp`.
 
 
-## Style
+### Style
 
 Jisp is insensitive to whitespace, but humans don't read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions. Each vertical must only begin expressions which are parallel to each other; each level of nesting should be indented further to the right.
 
@@ -696,7 +696,7 @@ Jisp is insensitive to whitespace, but humans don't read code by counting parens
 
 If nesting isn't too deep, it's nice to line a vertical with the beginning of the second word on the previous level. If not, just stick with two spaces for each next level.
 
-# Known Bugs and NYI
+## Known Bugs and NYI
 
 Syntax (tokeniser and lexer limitations):
   * [NYI] `.dot` and `[bracket]` notation can't be used with primitive literals and lists, using `(get object property)` notation for now.
