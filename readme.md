@@ -354,7 +354,7 @@ Borrowed straight from the upcoming EcmaScript 6 specification.
 
 #### Spread Into List
 
-In a list, prefix elements with `...` to pour their elements inside the list, flattening it:
+In a list, prefix elements with `...` or `…` to pour their elements inside the list, flattening it:
 
     `(1 2 ...`(3 4) ...`(4 5))  |    (1 2 3 4 4 5)
 
@@ -382,12 +382,11 @@ Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collec
 
 ### Comprehensions
 
-Other languages typically devise special syntax for list comprehensions (set builder notation). Jisp has that without any special notation.
+Other languages typically devise special syntax for list comprehensions (set builder notation). Jisp includes this without any special notation.
 
 `range` is a trivial function that returns a list from N to M:
 
-    (= x 0)
-    (range x Infinity)
+    (range 0 Infinity)
     ;; (0 1 2 3 4 5 6 ... hangs your program
 
 Because `for` and `while` are list-building expressions, jisp doesn't need any set builder syntax:
@@ -432,7 +431,7 @@ Check if an element is in an array with `in`:
     (= bush 'woods')
     (in bush `('forest' 'woods' 'thicket'))  ;; true
 
-Check if something exists (is defined) with the `(?)`:
+Check if something exists (is defined) with `(?)`:
 
     (? undefinedVar)  ;; false
 
@@ -445,7 +444,7 @@ An `if` is a single expression that resolves to a value. Else-ifs are special cl
     (if <test>
         <body-then>
         (elif <test> <body>)
-        ; < ... >           ;; any number of these
+        ; < ... >            ;; any number of these
         (elif <test> <body>)
         <body-else>)         ;; defaults to `undefined` if omitted
 
@@ -459,7 +458,7 @@ A `switch` form automatically inserts `break;` statements, protecting you from a
 
     (switch predicate
       (case <val> <body>)
-      ; < ... >             ;; any number of these
+      ; < ... >              ;; any number of these
       (case <val> <body>)
       <body-default>)        ;; `undefined` if omitted
 
@@ -473,58 +472,48 @@ Jisp comes with three loops: `for`, `over`, and `while`.
 
 The `(over ...)` loop iterates over properties and keys of any object, even arrays and strings. It's great when you want everything it has and don't care in what order it comes:
 
-    ; (over <value> <key> <iterable> <body>)
+    ;; (over <value> <key> <iterable> <body>)
 
     (= animals (squirrel: 'Eevee' fox: Vulpix))
     (over val key animals (console.log key val))
-    ;; squirrel Eevee fox Vulpix
+    ;; squirrel Eevee
+    ;; fox Vulpix
 
 If you only want values, omit the key argument:
 
     (over char 'mew' (console.log char))
-    ;; m e w
+    ;; m
+    ;; e
+    ;; w
 
 If you want neither values nor indices, omit both to iterate blindly:
 
     (= cats `('persian' 'skitty'))
     (over cats (console.log 'meow'))
-    ;; meow meow
+    ;; meow
+    ;; meow
 
-The `over` loop includes _custom and inherited properties_ and _does not preserve element order_.
+The `over` loop includes _custom and inherited properties_ and _does not preserve element order_. It compiles into the JavaScript `for..in` loop.
 
 #### For
 
 When iterating over arrays and strings, you usually want to hit all elements in order and don't want extra properties tagging along. In those cases, use the `(for ...)` loop:
 
-    ; (for <value> <index> <iterable> <body>)
-    ; (for <value> <iterable> <body>)
-    ; (for <integer> <body>)
+    ;; (for <value> <index> <iterable> <body>)
+    ;; (for <value> <iterable> <body>)
+    ;; (for <integer> <body>)
 
-    (for char 'mystring' (console.log char))
-    ;; m y s t r i n g
+    (for char 'mystring' char)
+    ;; ('m' 'y' 's' 't' 'r' 'i' 'n' 'g')
 
-    ;; JavaScript equivalent (roughly):
-    var _i, char, _iter = 'mystring';
-    for (_i = 0; _i < _iter.length; ++_i) {
-      char = _iter[_i];
-      console.log(char);
-    }
+`for` compiles into the JavaScript `for (<initialisation>, <condition>, <final-expression>)` loop.
 
 Just like the `over` loop, `for` returns an array of values from each iteration:
 
     (= epochs `('pliocene' 'pleistocene' 'holocene'))
     (= ordered (for epoch num epochs
                     (+ num ': ' epoch)))
-    ;; ['0: pliocene', '1: pleistocene', '2: holocene']
-
-    ;; JavaScript equivalent (roughly):
-    var epochs, epoch, num, ordered, _res = [];
-    epochs = ['pliocene', 'pleistocene', 'holocene'];
-    for (num = 0; num < epochs.length; ++num) {
-      epoch = epochs[num];
-      _res.push(num + ': ' + epoch);
-    }
-    ordered = _res;
+    ;; ('0: pliocene' '1: pleistocene' '2: holocene')
 
 **[NYI]** If the iterable is an integer larger than 0, jisp will substitute it for an 1..N array, making for a `repeat`-like loop:
 
@@ -536,14 +525,14 @@ Just like the `over` loop, `for` returns an array of values from each iteration:
 
 For finer-grained control, use the `while` loop. It works as you'd expect, but like everything in jisp, it's an expression. By default, it returns an array of values from each iteration.
 
-    ; (while <test> <body>)
+    ;; (while <test> <body>)
 
     (while (bugsLeft)
            (squash bug))   ;; ('missing comma' 'missing semicolon')
 
 You can also order a final return value:
 
-    ; (while <test> <body> <final-value>)
+    ;; (while <test> <body> <final-value>)
 
     (while sober
            (++ beers)
