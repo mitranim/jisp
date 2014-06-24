@@ -42,7 +42,7 @@ Install from npm:
 
     $ npm install -g jisp
 
-Or download the source and use `./bin/jisp` and `./index.js` as entry points.
+Or download the source and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
 
 Require in Node:
 
@@ -752,7 +752,7 @@ The `.dot` and `[bracket]` notation (in any language) is effectively just syntax
 
 #### Powerful
 
-At its heart, jisp is just JavaScript. But it's also much more. It gives you power of syntactic abstractions unmatched by any non-Lisp language. Makes it possible to implement and import domain-specific languages as libraries.
+At its heart, jisp is just JavaScript. But it's also much more. It gives you power of syntactic abstractions unmatched by any non-Lisp language. Makes it possible to build programs bottom-up by reprogramming the language itself, and implement domain-specific languages as JS libraries.
 
 #### Safe
 
