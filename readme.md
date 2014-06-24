@@ -549,7 +549,7 @@ Macros are compile-time functions that generate code. A macro takes code as inpu
 
     --------------------------------------------------------------------------
 
-    (alert 'Pizza delivery here!')         ;; code put back
+    (console.log 'Pizza delivery here!')         ;; code put back
 
 Most of `jisp.js` is generated with macros.
 
@@ -615,7 +615,7 @@ After each macro expansion, the new code is checked for macro definitions and ca
 
 To avoid confusing macros for functions, it's good style to start their names with `mac`.
 
-It's important to realise that macros are compile-time, not run-time. They don't have access to runtime values behind names. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
+It's important to realise that macros are compile-time, not run-time. They don't have access to runtime values behind names. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike with runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
 
 ### Built-ins
 
@@ -741,11 +741,11 @@ The `.dot` and `[bracket]` notation (in any language) is effectively just syntax
 
 #### Powerful
 
-At its heart, jisp is just JavaScript. But it's also much more. It gives you power of syntactic abstractions unmatched by any non-Lisp language. Makes it possible to build programs bottom-up by reprogramming the language itself, and implement domain-specific languages as JS libraries.
+At its heart, jisp is just JavaScript. But it's also much more. It gives you the power of syntactic abstractions unmatched by any non-Lisp language. Makes it possible to build programs bottom-up by reprogramming the language itself, and implement domain-specific languages as JS libraries.
 
 #### Safe
 
-In a relative sense. Jisp's simple, extremely regular syntax protects against many common pitfalls of JS. But it also gives you lots of power with which to destroy yourself. Jisp makes you safer in the same sense taking a quad damage powerup makes you safer.
+In a relative sense. Jisp's simple, extremely regular syntax protects against many common pitfalls of JS. But it also gives you lots of power which can be useful or dangerous. Jisp makes you safer in the same sense taking a quad damage powerup makes you safer.
 
 ## ToDo Upcoming
 
