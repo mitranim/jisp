@@ -11,8 +11,9 @@
      (fn args
          (if (assertForm args min max)
              (if (is args.length 0)
-                 `(,zv)
-                 `(,(+ "(" (args.join (+ " " op " ")) ")"))))))
+                 `(,(pr zv))
+                 (do (for arg i args (= args[i] (pr arg)))
+                     `(,(+ "(" (args.join (+ " " op " ")) ")")))))))
 
 (def makesing op
      (fn args

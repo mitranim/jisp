@@ -28,11 +28,18 @@
     }
     _ref1;
     return (function(args) {
-      var _ref2, _ref3;
+      var i, arg, _ref2, _ref3, _res, _ref4;
       if (assertForm(args, min, max)) {
         if (((args.length === 0))) {
-          _ref3 = [zv];
+          _ref3 = [pr(zv)];
         } else {
+          _res = [];
+          _ref4 = args;
+          for (i = 0; i < _ref4.length; ++i) {
+            arg = _ref4[i];
+            _res.push((args[i] = pr(arg)));
+          }
+          _res;
           _ref3 = [("(" + args.join((" " + op + " ")) + ")")];
         }
         _ref2 = _ref3;
