@@ -1,4 +1,4 @@
-(= util (require "./util"))
+; Turns a string into a flat array of tokens, split by delimiters and whitespace
 
 (= module.exports tokenise)
 
@@ -54,4 +54,4 @@
                               (= str (str.replace rereg ""))))
                     (do (tokens.push …(grate str))
                         (= str ""))))
-         (tokens.filter (fn x (and (? x) (isnt x '' undefined null))))))
+         (tokens.filter (fn x (and (? x) (isnt x "" undefined null))))))

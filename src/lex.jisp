@@ -7,6 +7,7 @@
 ; Throws syntax errors
 
 (= util            (require "./util")
+   pr              util.pr
    isList          util.isList
    isAtom          util.isAtom
    isAtomString    util.isAtomString
@@ -35,7 +36,7 @@
                             (if (not ((maketest cond) (tokens.slice i)))
                                 (return false)))
                        true)))
-         (throw (Error (+ "can't test against " condition)))))
+         (throw (Error (+ "can't test against " (pr condition))))))
 
 (def demand tokens ...args
 ; lexes by the met condition and throws an error if none are met
@@ -48,7 +49,7 @@
                     (modes.push mode)
                     (= test (maketest condition))
                     (if (test tokens) (return (lex tokens mode)))))
-         (throw (Error (+ "unexpected " tokens[0] " in possible modes: " (modes.join " | ") "\nTested against: " (conditions.join "   ") "\nTokens: " (tokens.slice 0 10) " ...")))))
+         (throw (Error (+ "unexpected " (pr tokens[0]) " in possible modes: " (modes.join " | ") "\nTested against: " (conditions.join "   ") "\nTokens: " (pr (tokens.slice 0 10)) " ...")))))
 
 (def expect tokens ...args
 ; lexes by the met condition and returns undefined if none are met
@@ -63,7 +64,7 @@
 ; throws an error if one of the conditions is met
   (for condition args
        (if ((maketest condition) tokens)
-           (throw (Error (+ "unexpected " tokens[0]))))))
+           (throw (Error (+ "unexpected " (pr tokens[0])))))))
 
 (def addProperties tokens lexed
   (do (while (is tokens[0] "[")
@@ -151,9 +152,6 @@
             "`"              "quote"
             ","              "unquote"
             isAtomString     "atom"))))
-            ; "(" "list"
-            ; "`" "quote"
-            ; "," "unquote"))))
           (addProperties tokens lexed))
     (case "unquote"
       (do (demand tokens "," "drop")

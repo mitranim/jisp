@@ -1,5 +1,4 @@
 ; Mostly copied from CoffeeScript 1.7.1 source
-; wouldn't have been done without jashkenas and co
 
 (= child_process (require "child_process")
    path          (require "path")
@@ -16,7 +15,7 @@
          (= require.extensions[ext] loadFile)))
 
 ; If we're on Node, patch `child_process.fork` so our scripts can fork both jisp and JS files
-; Not sure if relevant for us yet
+; Not sure if this is relevant for jisp
 (if child_process
     (= fork   child_process.fork
        binary (require.resolve "../../bin/jisp")

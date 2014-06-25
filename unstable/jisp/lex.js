@@ -1,6 +1,7 @@
 (function() {
-  var util, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  var util, pr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
   (util = require("./util"));
+  (pr = util.pr);
   (isList = util.isList);
   (isAtom = util.isAtom);
   (isAtomString = util.isAtomString);
@@ -19,16 +20,16 @@
     var _ref;
     if ((((typeof condition) === "function"))) {
       _ref = (function(tokens) {
-        return condition(tokens[0])
-      })
+        return condition(tokens[0]);
+      });
     } else if (isRegex(condition)) {
       _ref = (function(tokens) {
-        return condition.test(tokens[0])
-      })
+        return condition.test(tokens[0]);
+      });
     } else if (isAtom(condition)) {
       _ref = (function(tokens) {
-        return ((tokens[0] === condition))
-      })
+        return ((tokens[0] === condition));
+      });
     } else if (isList(condition)) {
       _ref = (function(tokens) {
         var i, cond, _ref0, _res, _ref1, _ref2;
@@ -37,21 +38,21 @@
         for (i = 0; i < _ref1.length; ++i) {
           cond = _ref1[i];
           if ((!maketest(cond)(tokens.slice(i)))) {
-            return _ref2 = false
+            return _ref2 = false;
           } else {
-            _ref2 = undefined
+            _ref2 = undefined;
           }
           _res.push(_ref2);
         }
         if (_res) {
-          _ref0 = true
+          _ref0 = true;
         } else {
-          _ref0 = undefined
+          _ref0 = undefined;
         }
         return _ref0;
-      })
+      });
     } else {
-      throw Error(("can't test against " + condition));
+      throw Error(("can't test against " + pr(condition)));
       _ref = undefined;
     }
     return _ref;
@@ -71,14 +72,14 @@
       modes.push(mode);
       (test = maketest(condition));
       if (test(tokens)) {
-        return _ref = lex(tokens, mode)
+        return _ref = lex(tokens, mode);
       } else {
-        _ref = undefined
+        _ref = undefined;
       }
       _res.push(_ref);
     }
     _res;
-    throw Error(("unexpected " + tokens[0] + " in possible modes: " + modes.join(" | ") + "\nTested against: " + conditions.join("   ") + "\nTokens: " + tokens.slice(0, 10) + " ..."));
+    throw Error(("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\nTested against: " + conditions.join("   ") + "\nTokens: " + pr(tokens.slice(0, 10)) + " ..."));
     return undefined;
   }
   demand;
@@ -91,9 +92,9 @@
       (mode = args.shift());
       (test = maketest(condition));
       if (test(tokens)) {
-        return _ref = lex(tokens, mode)
+        return _ref = lex(tokens, mode);
       } else {
-        _ref = undefined
+        _ref = undefined;
       }
       _ref;
     }
@@ -109,10 +110,10 @@
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       condition = _ref[_i0];
       if (maketest(condition)(tokens)) {
-        throw Error(("unexpected " + tokens[0]));
+        throw Error(("unexpected " + pr(tokens[0])));
         _ref0 = undefined;
       } else {
-        _ref0 = undefined
+        _ref0 = undefined;
       }
       _res.push(_ref0);
     }
@@ -124,7 +125,7 @@
     var _res;
     _res = [];
     while (((tokens[0] === "["))) {
-      _res.push((lexed = ["get", lexed, lex(tokens, "property")]))
+      _res.push((lexed = ["get", lexed, lex(tokens, "property")]));
     }
     _res;
     return lexed;
@@ -134,16 +135,16 @@
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _ref0, _res, _ref1, _res0, _res1, _ref2;
     if ((!(typeof mode !== 'undefined' && mode !== null))) {
-      _ref = (mode = "default")
+      _ref = (mode = "default");
     } else {
-      _ref = undefined
+      _ref = undefined;
     }
     _ref;
     switch (mode) {
       case "default":
         _res = [];
         while ((tokens.length > 0)) {
-          _res.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop"))
+          _res.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop"));
         }
         _ref0 = _res;
         break;
@@ -151,14 +152,14 @@
         demand(tokens, "(", "drop");
         (lexed = []);
         if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) {
-          _ref1 = lexed.push(["get", prop])
+          _ref1 = lexed.push(["get", prop]);
         } else {
-          _ref1 = undefined
+          _ref1 = undefined;
         }
         _ref1;
         _res0 = [];
         while (((tokens[0] !== ")"))) {
-          _res0.push(lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom")))
+          _res0.push(lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom")));
         }
         _res0;
         demand(tokens, ")", "drop");
@@ -186,9 +187,9 @@
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref2 = demand(tokens, isDotName, "drop").slice(1)
+          _ref2 = demand(tokens, isDotName, "drop").slice(1);
         } else if ((isBracketName(tokens[0]) || isBracketString(tokens[0]))) {
-          _ref2 = demand(tokens, isBracketName, "drop", isBracketString, "drop")
+          _ref2 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
         } else {
           demand(tokens, "[", "drop");
           (prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom"));
@@ -228,4 +229,4 @@
     return _ref0;
   }
   return lex;
-}).call(this)
+}).call(this);

@@ -1,7 +1,7 @@
 {
   "name": "jisp",
-  "version": "0.0.3",
-  "description": "Putting Lisp in your JavaScript: a programmable JS preprocessor language",
+  "version": "0.0.4",
+  "description": "Putting Lisp in your JavaScript: a programmable language",
   "keywords": [
     "javascript",
     "language",

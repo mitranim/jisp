@@ -9,7 +9,7 @@
       _ref0 = form;
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
-        _res.push((form[i] = parse(val)))
+        _res.push((form[i] = parse(val)));
       }
       _res;
       _ref = form;
@@ -18,19 +18,19 @@
       _ref1 = form;
       for (key in _ref1) {
         val = _ref1[key];
-        _res0.push((form[key] = parse(val)))
+        _res0.push((form[key] = parse(val)));
       }
       _res0;
       _ref = form;
     } else {
       (form = util.typify(form)); if (/^#[\d]+$/.test(form)) {
-        _ref2 = ("arguments[" + form.slice(1) + "]")
+        _ref2 = ("arguments[" + form.slice(1) + "]");
       } else {
-        _ref2 = form
+        _ref2 = form;
       }
       _ref = _ref2;
     }
     return _ref;
   }
   return (module.exports = parse);
-}).call(this)
+}).call(this);

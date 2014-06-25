@@ -1,6 +1,5 @@
 (function() {
-  var util, tokens, recode, recomment, redstring, resstring, rereg;
-  (util = require("./util"));
+  var tokens, recode, recomment, redstring, resstring, rereg;
   (module.exports = tokenise);
   (tokens = []);
   (recode = /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/);
@@ -10,21 +9,21 @@
   (rereg = /^\/[^\s]+\/[\w]*[^\s)]*/);
 
   function grate(str) {
-    return str.replace(/;.*$/gm, "").replace(/\{/g, "(fn (").replace(/\}/g, "))").replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\[[\s]*\(/g, " [ ( ").replace(/\)[\s]*\]/g, " ) ] ").replace(/:/g, " : ").replace(/`/g, " ` ").replace(/,/g, " , ").replace(/\.\.\./g, " ... ").replace(/…/g, " … ").trim().split(/\s+/)
+    return str.replace(/;.*$/gm, "").replace(/\{/g, "(fn (").replace(/\}/g, "))").replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\[[\s]*\(/g, " [ ( ").replace(/\)[\s]*\]/g, " ) ] ").replace(/:/g, " : ").replace(/`/g, " ` ").replace(/,/g, " , ").replace(/\.\.\./g, " ... ").replace(/…/g, " … ").trim().split(/\s+/);
   }
   grate;
 
   function concatNewLines(str) {
-    return str.replace(/\n|\n\r/g, "\\n")
+    return str.replace(/\n|\n\r/g, "\\n");
   }
   concatNewLines;
 
   function match(str, re) {
     var mask, _ref;
     if (((mask = str.match(re)) && (mask[0].length > 0))) {
-      _ref = mask[0]
+      _ref = mask[0];
     } else {
-      _ref = null
+      _ref = null;
     }
     return _ref;
   }
@@ -39,7 +38,7 @@
         (_ref0 = tokens).push.apply(_ref0, [].concat(grate(mask)));
         _ref = (str = str.replace(recode, ""));
       } else if ((mask = match(str, recomment))) {
-        _ref = (str = str.replace(recomment, ""))
+        _ref = (str = str.replace(recomment, ""));
       } else if ((mask = match(str, redstring))) {
         tokens.push(concatNewLines(mask));
         _ref = (str = str.replace(redstring, ""));
@@ -57,8 +56,8 @@
     }
     _res;
     return tokens.filter((function(x) {
-      return ((typeof x !== 'undefined' && x !== null) && ((x !== '') && (x !== undefined) && (x !== null)))
+      return ((typeof x !== 'undefined' && x !== null) && ((x !== "") && (x !== undefined) && (x !== null)));
     }));
   }
   return tokenise;
-}).call(this)
+}).call(this);

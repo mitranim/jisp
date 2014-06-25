@@ -1,5 +1,6 @@
 ; Import
 (= util         (require "./util")
+   pr           util.pr
    isIdentifier util.isIdentifier
    assertForm   util.assertForm)
 
@@ -33,12 +34,12 @@
   "++": (fn args
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
-            (throw (Error "expecting identifier, got " args[0]))
+            (throw (Error "expecting identifier, got " (pr args[0])))
         `(,(+ "++" args[0])))))
   "--": (fn args
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
-            (throw (Error "expecting identifier, got " args[0]))
+            (throw (Error "expecting identifier, got " (pr args[0])))
             `(,(+ "--" args[0])))))
   ; logical
   "is": (fn args
@@ -61,6 +62,7 @@
                   ")")))))
   "or":  (makeop "||" false)    ; single arg returns itself
   "and": (makeop "&&" true)     ; single arg returns itself
+  ; Function version:
   ; "exists": (fn args            ; todo multiple args
   ;   (if (assertForm args 1 1)
   ;       `(,(+ "(function() { var _jref = ("

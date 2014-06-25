@@ -19,7 +19,6 @@
                          "index"
                          "toplevel"
                          "util"
-                         "extend"
                          "operators"
                          "tokenise"
                          "lex"

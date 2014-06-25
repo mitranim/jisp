@@ -110,7 +110,7 @@
 
 (= exports.typify (def typify form
    (if (not (isAtom form))
-       (throw (Error (+ "expecting atom, got " form)))
+       (throw (Error (+ "expecting atom, got " (pr form))))
        (elif (isBlankObject form) form)
        (elif (is (typeof form) "undefined") undefined)
        (elif (is form "null") null)
@@ -119,7 +119,7 @@
        (elif (not (isNaN (Number form))) (Number form))
        (elif (isRegex form) form)
        (elif (is (typeof form) "string") form)
-       (throw (Error (+ "syntax error: unrecognised type of " form))))))
+       (throw (Error (+ "syntax error: unrecognised type of " (pr form)))))))
 
 (= exports.assertForm (def assertForm form (min 0) (max Infinity) first
    (if (not (isList form))
@@ -127,15 +127,44 @@
       (elif (not (and (>= form.length min) (<= form.length max)))
             (throw (Error (+ "expecting between " min " and " max " arguments, got " form.length))))
       (elif (and (? first) (isnt form[0] first))
-            (throw (Error (+ "expecting " first " as first element, got " form[0]))))
+            (throw (Error (+ "expecting " (pr first) " as first element, got " (pr form[0])))))
       form)))
 
+; For rendering
+
+; Pretty-print
+; Turns data objects into pretty-looking strings, with proper [ ] and { } delimiters for arrays and hash tables
+(= exports.pr (def pr item
+     (if (isAtom item)
+         (+ "" item)
+         (elif (isHash item)
+           (do (= res "")
+               (over val key item
+                     (+= res (+ key ": " (pr val) ", ")))
+               (+ "{ " (res.slice 0 (- res.length 2)) " }")))
+         (elif (isList item)
+               (do (= res "")
+                   (for val item
+                        (+= res (+ (pr val) ", ")))
+                   (+ "[ " (res.slice 0 (- res.length 2)) " ]")))
+         ; (throw (Error (+ "unrecognised kind of data object: " item))))))
+         (item.toString))))
+
+; Turns an array into a string without [ ] delimiters: [1, 2, 3] -> 1, 2, 3
+; For printing-spreading
+(= exports.spr (def spr item
+     (if (isList item)
+         (do (= res "")
+             (for val item
+                  (+= res (+ (pr val) ", ")))
+             (res.slice 0 (- res.length 2)))
+         (throw (Error "can only print-spread lists")))))
 
 ;; For command line
   ;; Mostly copied from CoffeeScript source
 
 ; Merges objects, returning fresh copy with attributes from both sides
-(= exports.merge (fn options overrides
+(= exports.merge (def merge options overrides
    (extend (extend (:) options) overrides)))
 
 ; Extend source object with properties of another object (shallow copy)

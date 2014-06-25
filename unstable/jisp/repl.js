@@ -19,7 +19,7 @@
         (result = vm.runInThisContext(js, filename));
         _ref = cb(null, result);
       } catch (err) {
-        _ref = cb(err)
+        _ref = cb(err);
       }
       return _ref;
     })
@@ -31,14 +31,14 @@
     (inputStream = repl.inputStream);
     (outputStream = repl.outputStream);
     if ((typeof repl._prompt !== 'undefined' && repl._prompt !== null)) {
-      _ref = repl._prompt
+      _ref = repl._prompt;
     } else {
-      _ref = repl.prompt
+      _ref = repl.prompt;
     }(origPrompt = _ref);
     (multiline = {
       enabled: false,
       prompt: origPrompt.replace(/^[^>\s]*>?/, (function(x) {
-        return x.replace(/./g, ".")
+        return x.replace(/./g, ".");
       })),
       buffer: ""
     });
@@ -49,13 +49,13 @@
       if (multiline.enabled) {
         (multiline.buffer += (cmd + "\n"));
         if ((typeof(m = multiline.buffer.match(/\(/g)) !== 'undefined' && (m = multiline.buffer.match(/\(/g)) !== null)) {
-          _ref1 = m.length
+          _ref1 = m.length;
         } else {
-          _ref1 = 0
+          _ref1 = 0;
         }(opened = _ref1); if ((typeof(m = multiline.buffer.match(/\)/g)) !== 'undefined' && (m = multiline.buffer.match(/\)/g)) !== null)) {
-          _ref2 = m.length
+          _ref2 = m.length;
         } else {
-          _ref2 = 0
+          _ref2 = 0;
         }(closed = _ref2); if ((opened > closed)) {
           rli.setPrompt(multiline.prompt);
           _ref3 = rli.prompt(true);
@@ -70,20 +70,20 @@
         _ref0 = _ref3;
       } else {
         if ((typeof(m = cmd.match(/\(/g)) !== 'undefined' && (m = cmd.match(/\(/g)) !== null)) {
-          _ref4 = m.length
+          _ref4 = m.length;
         } else {
-          _ref4 = 0
+          _ref4 = 0;
         }(opened = _ref4); if ((typeof(m = cmd.match(/\)/g)) !== 'undefined' && (m = cmd.match(/\)/g)) !== null)) {
-          _ref5 = m.length
+          _ref5 = m.length;
         } else {
-          _ref5 = 0
+          _ref5 = 0;
         }(closed = _ref5); if ((opened > closed)) {
           (multiline.enabled = true);
           (multiline.buffer += (cmd + "\n"));
           rli.setPrompt(multiline.prompt);
           _ref6 = rli.prompt(true);
         } else {
-          _ref6 = lineListener(cmd)
+          _ref6 = lineListener(cmd);
         }
         _ref0 = _ref6;
       }
@@ -95,9 +95,9 @@
     var repl;
     (repl = nodeREPL.start(replDefaults));
     repl.on("exit", (function() {
-      return repl.outputStream.write("\n")
+      return repl.outputStream.write("\n");
     }));
     enableMultiline(repl);
     return repl;
   })));
-}).call(this)
+}).call(this);

@@ -297,7 +297,7 @@ This goes hand in hand with the `#` notation and spreading:
 
     {* #0 #1}                        ;;  same as (fn x y (* x y))
     ({+ …#} 3 4 5)                   ;;  12
-    (spices.filter {/pepper/.test})  ;;  ['chili pepper', 'black pepper']
+    (spices.filter {/pepper/.test})  ;;  ('chili pepper' 'black pepper')
 
 **[NYI]**: `#`.
 
@@ -513,12 +513,14 @@ Just like the `over` loop, `for` returns an array of values from each iteration:
     (= epochs `('pliocene' 'pleistocene' 'holocene'))
     (= ordered (for epoch num epochs
                     (+ num ': ' epoch)))
+    ordered
     ;; ('0: pliocene' '1: pleistocene' '2: holocene')
 
 **[NYI]** If the iterable is an integer larger than 0, jisp will substitute it for an 1..N array, making for a `repeat`-like loop:
 
     (= warcry '')
     (for 5 (+= warcry 'waagh! '))
+    warcry
     ;; waagh! waagh! waagh! waagh! waagh!
 
 #### While
@@ -595,7 +597,7 @@ Because macros are real functions, there's nothing stopping you from using condi
                `(if (isnt args.length 0)
                     (args.reduce {,operator #0 #1})))))  ;; will be included otherwise
 
-You can only let parts of a template through, depending on conditionals.
+You may only let parts of a template through, based on conditionals.
 
 Because arguments are passed to macros blindly, they can enable new syntax, even silly like this:
 
@@ -619,7 +621,7 @@ It's important to realise that macros are compile-time, not run-time. They don't
 
 ### Built-ins
 
-JavaScript is a method-oriented language that avoids global functions in favour of object methods. At the risk of violating this paradigm, jisp introduces a few global convenience functions.
+JavaScript is a method-oriented language that avoids global functions in favour of object methods. At the risk of violating this paradigm, jisp introduces a few global convenience functions. They're embedded into your program on compile.
 
 Examples:
 
@@ -628,7 +630,7 @@ Examples:
     (init 'headscratcher')   ;; 'headscratche'
     (last (range 4 7))       ;; 7
 
-`list` is a list (array) builder. It's roughly equivalent to (Array x), but with a different implementation.
+`list` is a list (array) builder. It's roughly equivalent to (Array x), but works a bit differently.
 
     (list 'cat' `('dog' 'lizard'))  ;;  ('cat' ('dog' 'lizard'))
 
@@ -718,6 +720,8 @@ The parser (?) appends an extra `undefined` to the end of the file if the last l
 
 When using conditionals (e.g. `and`) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.
 
+Built-in toplevel functions are leaked globals; todo scope to compiled jisp scripts.
+
 ## Why Use It
 
 Why?
@@ -745,13 +749,15 @@ At its heart, jisp is just JavaScript. But it's also much more. It gives you the
 
 #### Safe
 
-In a relative sense. Jisp's simple, extremely regular syntax protects against many common pitfalls of JS. But it also gives you lots of power which can be useful or dangerous. Jisp makes you safer in the same sense taking a quad damage powerup makes you safer.
+In a relative sense. Jisp protects against many common pitfalls of JS with its simple, extremely regular syntax, automatic var declarations, break statements, wrapping of compiled files into a lambda to prevent global leaks. But it also gives you lots of power which can be useful or dangerous. Jisp makes you safer in the same sense taking a quad damage powerup makes you safer.
 
 ## ToDo Upcoming
 
 Working on these.
 
+* Drop the extension of native objects.
 * Fix the known bugs and NYI.
+* Macro support for the REPL.
 * Built-in macros: new special forms and functions.
 * Embedding of operator-functions to allow passing them around by name (e.g. `(arr.sort >)`).
 * Compiler error messages for when special forms like `=` and `quote`, as well as JS keywords, are met outside their destined place (first element in list).
@@ -773,6 +779,7 @@ Bigger:
 
 Smaller:
 
+* Prettier JS output (fewer parens etc.).
 * Distinguish between `;` `;;` and `;;;` comments. `;;` should quote the next form in parentheses, ignoring end-of-line. `;;;` should be a multiline block comment.
 * Auto-reindent plugin for Sublime Text (there's a Lisp indent plugin, but it's no good for jisp).
 * Compilation into ternary for `if` when possible.
@@ -784,4 +791,4 @@ Smaller:
 
 ## Acknowledgements
 
-Jisp is massively inspired by [CoffeeScript](http://coffeescript.org) and uses bits of its source for CLI utils. Design inspiration from [Arc](http://paulgraham.com/arc.html) and the Lisp family of languages, bits from other sources.
+Jisp is massively inspired by [CoffeeScript](http://coffeescript.org) and uses bits of its source for CLI utils. Design inspiration from [Arc](http://paulgraham.com/arc.html) and the Lisp family of languages, bits from other sources. Also see [Arc-js](https://github.com/smihica/arc-js) for a more radical version of bringing Lisp to JavaScript.
