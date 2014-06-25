@@ -1,6 +1,8 @@
 ; Import
 (= util         (require "./util")
    pr           util.pr
+   spr          util.spr
+   render       util.render
    isIdentifier util.isIdentifier
    assertForm   util.assertForm)
 
@@ -15,7 +17,7 @@
 (def makesing op
      (fn args
          (if (assertForm args 1 1)
-             `(,(+ "(" op " " (args.spread) ")")))))
+             `(,(+ "(" op " " (spr args) ")")))))
 
 (def reserved word (throw (Error (+ "keyword " word " is reserved"))))
 
@@ -23,7 +25,7 @@
 ; For 'pure statement' keywords that give an error when trying to assign
      (fn args
          (if (assertForm args min max)
-             `(,(+ op " " (args.spread)) "undefined"))))
+             `(,(+ op " " (spr args)) "undefined"))))
 
 (= operators (
 ; Replacing jisp functions with JS operators and keywords
@@ -35,30 +37,30 @@
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
             (throw (Error "expecting identifier, got " (pr args[0])))
-        `(,(+ "++" args[0])))))
+        `(,(+ "++" (pr args[0]))))))
   "--": (fn args
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
             (throw (Error "expecting identifier, got " (pr args[0])))
-            `(,(+ "--" args[0])))))
+            `(,(+ "--" (pr args[0]))))))
   ; logical
   "is": (fn args
     (if (is args.length 0)
         `(true)
         (elif (is args.length 1)
-              `(,(+ "!!" args[0])))
+              `(,(+ "!!" (pr args[0]))))
         (do (= subj (args.shift))
             `(,(+ "("
-                  ((get (for arg args (+ "(" subj " === " arg ")")) join) " || ")
+                  ((get (for arg args (+ "(" (pr subj) " === " (pr arg) ")")) join) " || ")
                   ")")))))
   "isnt": (fn args
     (if (is args.length 0)
         `(false)
         (elif (is args.length 1)
-              `(,(+ "!" args[0])))
+              `(,(+ "!" (pr args[0]))))
         (do (= subj (args.shift))
             `(,(+ "("
-                  ((get (for arg args (+ "(" subj " !== " arg ")")) join) " && ")
+                  ((get (for arg args (+ "(" (pr subj) " !== " (pr arg) ")")) join) " && ")
                   ")")))))
   "or":  (makeop "||" false)    ; single arg returns itself
   "and": (makeop "&&" true)     ; single arg returns itself
@@ -70,16 +72,16 @@
   ;             "); return (typeof _jref !== 'undefined' && _jref !== null) })()"))))
   "exists": (fn args            ; todo multiple args
     (if (assertForm args 1 1)
-        `(,(+ "(typeof " args[0] " !== 'undefined' && " args[0] " !== null)"))))
+        `(,(+ "(typeof " (pr args[0]) " !== 'undefined' && " (pr args[0]) " !== null)"))))
   ; keywords
   "in": (fn args
     ; todo more than 2 args (concat / spread?)
     (if (assertForm args 2 2)
         `(,(+ "([].indexOf.call("
-              args[1] ", " args[0] ") >= 0)"))))
+              (pr args[1]) ", " (pr args[0]) ") >= 0)"))))
   "new": (fn args
     (if (assertForm args 1)
-        `(,(+ "new " (args.shift) "(" (args.spread) ")"))))
+        `(,(+ "new " (pr (args.shift)) "(" (spr args) ")"))))
   ; reserved
     ; "var" -- throws compile error without var, todo fix
     ; "class"

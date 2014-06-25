@@ -41,7 +41,7 @@
       var _ref2, _ref3;
       if (util.isJisp(path)) {
         if ((!Array.isArray(args))) {
-          (options = (args || {}));
+          (options = (args || [object Object]));
           _ref3 = (args = []);
         } else {
           _ref3 = undefined;

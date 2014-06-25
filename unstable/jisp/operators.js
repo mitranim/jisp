@@ -1,7 +1,9 @@
 (function() {
-  var util, pr, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _ref0, _i0, _res0, _ref1, _i1, _res1, _ref2;
+  var util, pr, spr, render, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _ref0, _i0, _res0, _ref1, _i1, _res1, _ref2;
   (util = require("./util"));
   (pr = util.pr);
+  (spr = util.spr);
+  (render = util.render);
   (isIdentifier = util.isIdentifier);
   (assertForm = util.assertForm);
 
@@ -46,7 +48,7 @@
     return (function(args) {
       var _ref;
       if (assertForm(args, 1, 1)) {
-        _ref = [("(" + op + " " + args.spread() + ")")];
+        _ref = [("(" + op + " " + spr(args) + ")")];
       } else {
         _ref = undefined;
       }
@@ -78,7 +80,7 @@
     return (function(args) {
       var _ref1;
       if (assertForm(args, min, max)) {
-        _ref1 = [(op + " " + args.spread()), "undefined"];
+        _ref1 = [(op + " " + spr(args)), "undefined"];
       } else {
         _ref1 = undefined;
       }
@@ -94,7 +96,7 @@
           throw Error("expecting identifier, got ", pr(args[0]));
           _ref0 = undefined;
         } else {
-          _ref0 = [("++" + args[0])];
+          _ref0 = [("++" + pr(args[0]))];
         }
         _ref = _ref0;
       } else {
@@ -109,7 +111,7 @@
           throw Error("expecting identifier, got ", pr(args[0]));
           _ref0 = undefined;
         } else {
-          _ref0 = [("--" + args[0])];
+          _ref0 = [("--" + pr(args[0]))];
         }
         _ref = _ref0;
       } else {
@@ -122,14 +124,14 @@
       if (((args.length === 0))) {
         _ref = [true];
       } else if (((args.length === 1))) {
-        _ref = [("!!" + args[0])];
+        _ref = [("!!" + pr(args[0]))];
       } else {
         (subj = args.shift());
         _res = [];
         _ref0 = args;
         for (_i = 0; _i < _ref0.length; ++_i) {
           arg = _ref0[_i];
-          _res.push(("(" + subj + " === " + arg + ")"));
+          _res.push(("(" + pr(subj) + " === " + pr(arg) + ")"));
         }
         _ref = [("(" + _res.join(" || ") + ")")];
       }
@@ -140,14 +142,14 @@
       if (((args.length === 0))) {
         _ref = [false];
       } else if (((args.length === 1))) {
-        _ref = [("!" + args[0])];
+        _ref = [("!" + pr(args[0]))];
       } else {
         (subj = args.shift());
         _res = [];
         _ref0 = args;
         for (_i = 0; _i < _ref0.length; ++_i) {
           arg = _ref0[_i];
-          _res.push(("(" + subj + " !== " + arg + ")"));
+          _res.push(("(" + pr(subj) + " !== " + pr(arg) + ")"));
         }
         _ref = [("(" + _res.join(" && ") + ")")];
       }
@@ -158,7 +160,7 @@
     "exists": (function(args) {
       var _ref;
       if (assertForm(args, 1, 1)) {
-        _ref = [("(typeof " + args[0] + " !== 'undefined' && " + args[0] + " !== null)")];
+        _ref = [("(typeof " + pr(args[0]) + " !== 'undefined' && " + pr(args[0]) + " !== null)")];
       } else {
         _ref = undefined;
       }
@@ -167,7 +169,7 @@
     "in": (function(args) {
       var _ref;
       if (assertForm(args, 2, 2)) {
-        _ref = [("([].indexOf.call(" + args[1] + ", " + args[0] + ") >= 0)")];
+        _ref = [("([].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0)")];
       } else {
         _ref = undefined;
       }
@@ -176,7 +178,7 @@
     "new": (function(args) {
       var _ref;
       if (assertForm(args, 1)) {
-        _ref = [("new " + args.shift() + "(" + args.spread() + ")")];
+        _ref = [("new " + pr(args.shift()) + "(" + spr(args) + ")")];
       } else {
         _ref = undefined;
       }

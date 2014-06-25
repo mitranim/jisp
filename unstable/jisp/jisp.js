@@ -20,7 +20,7 @@
   function cdr(iterable) {
     return iterable.slice(1);
   }
-  var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, isAtom, isHash, isList, isVarName, isIdentifier, specials, macros;
+  var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, specials, macros;
   (exports.version = "0.0.4");
   (vm = require("vm"));
   (fs = require("fs"));
@@ -36,6 +36,7 @@
   (parse = require("./parse"));
   (pr = util.pr);
   (spr = util.spr);
+  (render = util.render);
   (isAtom = util.isAtom);
   (isHash = util.isHash);
   (isList = util.isList);
@@ -52,29 +53,6 @@
     return _ref;
   }
   plusname;
-
-  function render(buffer) {
-    var i, exp, _res, _ref, _ref0, _ref1;
-    _res = [];
-    _ref = buffer;
-    for (i = 0; i < _ref.length; ++i) {
-      exp = _ref[i];
-      if (((isList(exp) && ((exp.length === 0))) || (((typeof exp) === "undefined")) || ((exp === "")))) {
-        _ref0 = (buffer[i] = undefined);
-      } else {
-        (buffer[i] = pr(exp)); if ((!/:$|\}$|;$/.test(buffer[i].slice(-1)))) {
-          _ref1 = (buffer[i] += ";");
-        } else {
-          _ref1 = undefined;
-        }
-        _ref0 = _ref1;
-      }
-      _res.push(_ref0);
-    }
-    _res;
-    return buffer.join(" ");
-  }
-  render;
 
   function declareVar(name, scope) {
     var _ref;

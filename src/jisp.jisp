@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.4")
+(= exports.version "0.0.5")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -20,6 +20,7 @@
 ; Util
 (= pr           util.pr  ; this must be applied to EVERY form we render or print to console
    spr          util.spr
+   render       util.render
    isAtom       util.isAtom
    isHash       util.isHash
    isList       util.isList
@@ -59,19 +60,6 @@
 ;                                (+= buffer[i] ";"))))))
 ;                          (= buffer[i] (pr exp))))))
 ;       (buffer.join " ")))
-
-; Turns array of strings into one rendered string
-(def render buffer
-  (do (for exp i buffer
-           ; `undefined`, "", and `() don't render at all
-           (if (or (and (isList exp) (is exp.length 0))
-                   (is (typeof exp) "undefined")
-                   (is exp ""))
-               (= buffer[i] undefined)  ; won't be displayed
-               (do (= buffer[i] (pr exp))
-                   (if (not (/:$|\}$|;$/.test (buffer[i].slice -1)))
-                       (+= buffer[i] ";")))))
-      (buffer.join " ")))
 
 ; Checks if user-defined name in scope, puts name in declaration if not, otherwise drops it
 (def declareVar name scope

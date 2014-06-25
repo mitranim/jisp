@@ -722,6 +722,10 @@ When using conditionals (e.g. `and`) with forms that compile to multiple lines, 
 
 Built-in toplevel functions are leaked globals; todo scope to compiled jisp scripts.
 
+Hoisting of multi-line statements above their place in code causes some actions to be executed out of order.
+
+[NYI] It's somewhat awkward to pass a 'nothing' to a macro (e.g. in a list of arguments); you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
+
 ## Why Use It
 
 Why?
@@ -755,7 +759,6 @@ In a relative sense. Jisp protects against many common pitfalls of JS with its s
 
 Working on these.
 
-* Drop the extension of native objects.
 * Fix the known bugs and NYI.
 * Macro support for the REPL.
 * Built-in macros: new special forms and functions.
@@ -776,12 +779,14 @@ Bigger:
 * Webpage.
 * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure this is necessary.
 * Compiler option to only macroexpand and print out expanded jisp code (will require a jisp beautifier).
+* gulp.js build plugin
 
 Smaller:
 
 * Prettier JS output (fewer parens etc.).
 * Distinguish between `;` `;;` and `;;;` comments. `;;` should quote the next form in parentheses, ignoring end-of-line. `;;;` should be a multiline block comment.
 * Auto-reindent plugin for Sublime Text (there's a Lisp indent plugin, but it's no good for jisp).
+* Output into a file option for CLI.
 * Compilation into ternary for `if` when possible.
 * Multiple expression support for `elif` tests when possible (comma-separated).
 * Case test grouping for `switch`.

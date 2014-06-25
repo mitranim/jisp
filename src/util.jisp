@@ -160,6 +160,19 @@
              (res.slice 0 (- res.length 2)))
          (throw (Error "can only print-spread lists")))))
 
+; Turns an array of strings into one rendered string
+(= exports.render (def render buffer
+  (do (for exp i buffer
+           ; `undefined`, "", and `() don't render at all
+           (if (or (and (isList exp) (is exp.length 0))
+                   (is (typeof exp) "undefined")
+                   (is exp ""))
+               (= buffer[i] undefined)  ; won't be displayed
+               (do (= buffer[i] (pr exp))
+                   (if (not (/:$|\}$|;$/.test (buffer[i].slice -1)))
+                       (+= buffer[i] ";")))))
+      (buffer.join " "))))
+
 ;; For command line
   ;; Mostly copied from CoffeeScript source
 
