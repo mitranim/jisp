@@ -1,6 +1,6 @@
 {
   "name": "jisp",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Putting Lisp in your JavaScript: a programmable language",
   "keywords": [
     "javascript",
@@ -19,7 +19,8 @@
     "jisp": "./bin/jisp"
   },
   "scripts": {
-    "test": "./bin/jisp ./build.jisp"
+    "test": "./bin/jisp ./test.jisp",
+    "prepublish": "./bin/jisp ./build.jisp"
   },
   "repository": {
     "type": "git",

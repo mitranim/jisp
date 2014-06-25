@@ -21,7 +21,7 @@
     return iterable.slice(1);
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, specials, macros;
-  (exports.version = "0.0.7");
+  (exports.version = "0.0.8");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -1985,8 +1985,7 @@
     }
     _res;
     return macros;
-  }
-  importMacros;
+  }(exports.importMacros = importMacros);
   importMacros(require("./macros"));
 
   function parseMacros(form) {

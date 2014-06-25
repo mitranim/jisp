@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.7")
+(= exports.version "0.0.8")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -712,10 +712,10 @@
 
 ; Imports macros from given store, overriding defaults
 ; The store must be a hash table where keys are macro names and values are macro functions
-(def importMacros store
+(= exports.importMacros (def importMacros store
   (do (over val key store
             (= macros[key] val))
-      macros))
+      macros)))
 
 ; Import and merge macros
 (importMacros (require "./macros"))
