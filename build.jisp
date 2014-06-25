@@ -27,6 +27,7 @@
                          "repl"
                          "optparse"
                          "command"
+                         "macros"
                          "jisp"
                          )
      (console.log "-- if you're reading this, compilation has succeeded!")))

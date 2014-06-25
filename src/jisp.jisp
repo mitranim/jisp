@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.6")
+(= exports.version "0.0.7")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -27,12 +27,6 @@
    isVarName    util.isVarName
    isIdentifier util.isIdentifier)
 
-
-; ToDo
-  ; Make macros usable in REPL
-    ; Special form for `mac`
-    ; Macro check on function execution
-
 ; This file has got insanely big and repetitive, todo rearchitect and deduplicate
 
 
@@ -43,23 +37,6 @@
      (if (isNaN (Number (last name)))
          (+ name 0)
          (+ (init name) (+ 1 (Number (last name))))))
-
-; Turns array of strings into one rendered string
-; Version before pr
-; (def render buffer
-;   (do (if (is buffer.length 0) ""
-;           (elif (> buffer.length 1)
-;                 (for exp i buffer
-;                      ; `undefined`, "", and `() don't render at all
-;                      (if (or (and (isList exp) (is exp.length 0))
-;                              (is (typeof exp) "undefined")
-;                              (is exp ""))
-;                          (= buffer[i] undefined)  ; won't be displayed
-;                          (elif (or (util.isPrimitive exp)
-;                                    (not (/:$|\}$|;$/.test (exp.slice -1))))
-;                                (+= buffer[i] ";"))))))
-;                          (= buffer[i] (pr exp))))))
-;       (buffer.join " ")))
 
 ; Checks if user-defined name in scope, puts name in declaration if not, otherwise drops it
 (def declareVar name scope
@@ -283,6 +260,8 @@
       (= form (form.slice))  ; duplicate object to avoid changing it for callers
       (if (in (car form) (Object.keys specials))  ; special forms have their own rules
         (= (buffer scope) (specials[(car form)] form scope opts))
+        (elif (in (car form) (Object.keys macros))
+              (= form (expandMacros form)))  ; if a known macro, expand it
         (do  ; not a special form? -> function call
           ; compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
@@ -489,10 +468,16 @@
 ; (fn <args> (<body>))
 ; (fn (<body>))
 ; (fn)
+
 (= specials.def (macFunctionDefinition def))
 ; (def <name> <args> (<body>))
 ; (def <name> (<body>))
 ; (def <name>)
+
+(= specials.mac (fn form
+; (mac <args> (<body>))
+; macro definition: makes a macro and returns `("")
+  (makeMacro form)))
 
 ; Mostly the same code for `if` and `switch`
 (mac macConditionalDefinition (type "if") (caseStr "'elif'")
@@ -617,7 +602,7 @@
       (macDeclareService ref "_ref")  ; iterable
       (buffer.push (+ collector " = []"))
       (macCompileGetLast iterable iterable)
-      (buffer.push (+ ref " = " iterable))
+      (buffer.push (+ ref " = " (pr iterable)))
       (macCompileResolve body body)
       (body.push (+ collector ".push(" (pr (body.pop)) ")"))
       ,(if (is type "for")
@@ -720,13 +705,21 @@
             (= form (+ "return " (pr form))))
         (buffer.push form)))))))
 
-; ToDo mac special form
-
-
 ; # Macros
 
 ; Macro store
 (= macros (:))
+
+; Imports macros from given store, overriding defaults
+; The store must be a hash table where keys are macro names and values are macro functions
+(def importMacros store
+  (do (over val key store
+            (= macros[key] val))
+      macros))
+
+; Import and merge macros
+(importMacros (require "./macros"))
+
 ; Default macros to add:
   ; (?! x)  ->  (not (? x))
   ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
@@ -755,9 +748,9 @@
 
 ; Parses form for known macros to expand, replacing macro calls with macro results
 (def expandMacros form (do
-  (if (util.isHash form)
+  (if (util.isHash form) (do
     (over val key form
-      (= form[key] (expandMacros val)))
+      (= form[key] (expandMacros val))))
     (elif (util.isList form)
       (if (is (car form) "mac")
         (= form (parseMacros form))
@@ -769,9 +762,7 @@
           (= form[i] (expandMacros val))))))
   form))
 
-
 (def macroexpand src (expandMacros (parseMacros src)))
-
 
 ; Export
 
@@ -781,6 +772,8 @@
    exports.lex            (fn src (lex (tokenise src)))
    exports.parse          (fn src (parse (lex (tokenise src))))
    exports.macroexpand    (fn src (macroexpand (parse (lex (tokenise src))))))
+
+(= exports.macros macros)  ; expose macro object for override by user
 
 (= exports.compile (fn src opts
   (compile (macroexpand (parse (lex (tokenise src)))) opts)))

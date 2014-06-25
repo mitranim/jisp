@@ -21,7 +21,7 @@
     return iterable.slice(1);
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, specials, macros;
-  (exports.version = "0.0.6");
+  (exports.version = "0.0.7");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -294,6 +294,8 @@
         (_ref6 = specials[car(form)](form, scope, opts));
         buffer = _ref6[0];
         _ref5 = scope = _ref6[1];
+      } else if (([].indexOf.call(Object.keys(macros), car(form)) >= 0)) {
+        _ref5 = (form = expandMacros(form));
       } else {
         (_ref7 = compileGetLast(form.shift(), buffer, scope, opts));
         first = _ref7[0];
@@ -1190,6 +1192,9 @@
     buffer.push(fname);
     return Array(buffer, scope);
   }));
+  (specials.mac = (function(form) {
+    return makeMacro(form);
+  }));
   (specials.if = (function(form, scope, opts) {
     var buffer, formName, predicate, prebranch, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _ref0, _i, _ref1, _ref2, _ref3, _i0, _ref4, _i1, _ref5, _ref6, _i2, _res, _ref7, _ref8, _i3, _ref9, _i4, _ref10, _ref11, _ref12, _i5, _ref13, _i6, _i7, _res0, _ref14, _ref15;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
@@ -1562,7 +1567,7 @@
     iterable = _ref16[0];
     buffer = _ref16[1];
     scope = _ref16[2];
-    buffer.push((ref + " = " + iterable));
+    buffer.push((ref + " = " + pr(iterable)));
     (_ref17 = compileResolve(body, buffer, scope, opts));
     body = _ref17[0];
     buffer = _ref17[1];
@@ -1659,7 +1664,7 @@
     iterable = _ref14[0];
     buffer = _ref14[1];
     scope = _ref14[2];
-    buffer.push((ref + " = " + iterable));
+    buffer.push((ref + " = " + pr(iterable)));
     (_ref15 = compileResolve(body, buffer, scope, opts));
     body = _ref15[0];
     buffer = _ref15[1];
@@ -1970,6 +1975,20 @@
   }));
   (macros = {});
 
+  function importMacros(store) {
+    var key, val, _res, _ref;
+    _res = [];
+    _ref = store;
+    for (key in _ref) {
+      val = _ref[key];
+      _res.push((macros[key] = val));
+    }
+    _res;
+    return macros;
+  }
+  importMacros;
+  importMacros(require("./macros"));
+
   function parseMacros(form) {
     var key, val, i, _ref, _res, _ref0, _ref1, _res0, _ref2;
     if (util.isHash(form)) {
@@ -2095,6 +2114,7 @@
   (exports.macroexpand = (function(src) {
     return macroexpand(parse(lex(tokenise(src))));
   }));
+  (exports.macros = macros);
   (exports.compile = (function(src, opts) {
     return compile(macroexpand(parse(lex(tokenise(src)))), opts);
   }));
