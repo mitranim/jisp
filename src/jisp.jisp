@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.12")
+(= exports.version "0.0.13")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -621,7 +621,8 @@
       (macCompileGetLast iterable iterable)
       (buffer.push (+ ref " = " (pr iterable)))
       (macCompileResolve body body)
-      (body.push (+ collector ".push(" (pr (body.pop)) ")"))
+      (if (not (util.kwtest (pr (last body))))
+          (body.push (+ collector ".push(" (pr (body.pop)) ")")))
       ,(if (is type "for")
         `(buffer.push (+ "for (" key " = 0; " key " < " ref ".length; ++" key ") { " value " = " ref "[" key "]; " (render body) " }"))
         (elif (is type "over")
@@ -650,7 +651,7 @@
         (= comp ""))  ; rvalue: no array mode
     (macCompileGetLast test test)
     (macCompileResolve body body)
-    (if (is form.length 2)
+    (if (and (is form.length 2) (not (util.kwtest (pr (last body)))))
       (body.push (+ collector ".push(" (pr (body.pop)) ")")))
     (buffer.push (+ "while (" (pr test) ") { " (render body) " }"))
     (if (is form.length 2)
@@ -665,10 +666,10 @@
 ; (try <try> <catch>)
 ; (try <try>)
   code: (do
-    (macDeclareService ref "_ref")
+    (macDeclareService collector "_ref")
     (= (tryForm catchForm finalForm) form)
     (macCompileResolve tryForm tryForm)
-    (tryForm.push (+ ref " = " (pr (tryForm.pop))))
+    (tryForm.push (+ collector " = " (pr (tryForm.pop))))
     (if (and (isList catchForm) (is (car catchForm) "catch"))
       (do
         (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
@@ -677,17 +678,19 @@
       (macDeclareService err "_err"))
     (if (not (? catchForm)) (= catchForm `()))
     (macCompileResolve catchForm catchForm)
-    (catchForm.push (+ ref " = " (pr (catchForm.pop))))
+    (if (not (util.kwtest (pr (last catchForm))))
+        (catchForm.push (+ collector " = " (pr (catchForm.pop)))))
     (if (? finalForm)
       (do
         (if (and (isList finalForm) (is (car finalForm) "finally"))
           (do (assertExp finalForm {is (get #0 length) 2})
               (= finalForm (last finalForm))))
         (macCompileResolve finalForm finalForm)
-        (finalForm.push (+ ref " = " (pr (finalForm.pop))))))
+        (if (not (util.kwtest (pr (last finalForm))))
+            (finalForm.push (+ collector " = " (pr (finalForm.pop)))))))
     (= res (+ "try { " (render tryForm) " } catch (" (pr err) ") { " (render catchForm) " }"))
     (if (? finalForm) (+= res (+ " finally { " (render finalForm) " }")))
-    (buffer.push res ref)))))
+    (buffer.push res collector)))))
 
 (= specials.get (macCompileSpecial (argsMin: 1 argsMax: 2
 ; (get <object> <property>)

@@ -45,7 +45,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.0.12");
+  (exports.version = "0.0.13");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -1506,7 +1506,7 @@
     return Array(buffer, scope);
   }));
   (specials.for = (function(form, scope, opts) {
-    var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _ref6, _ref7, _i0, _ref8, _ref9, _i1, _ref10, _ref11, _i2, _ref12, _ref13, _i3, _ref14, _ref15, _i4, _ref16, _i5, _ref17, _i6;
+    var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _ref6, _ref7, _i0, _ref8, _ref9, _i1, _ref10, _ref11, _i2, _ref12, _ref13, _i3, _ref14, _ref15, _i4, _ref16, _i5, _ref17, _i6, _ref18;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
       _ref = (opts = ({}));
     } else {
@@ -1606,13 +1606,18 @@
     body = _ref17[0];
     buffer = _ref17[1];
     scope = _ref17[2];
-    body.push((collector + ".push(" + pr(body.pop()) + ")"));
+    if ((!util.kwtest(pr(last(body))))) {
+      _ref18 = body.push((collector + ".push(" + pr(body.pop()) + ")"));
+    } else {
+      _ref18 = undefined;
+    }
+    _ref18;
     buffer.push(("for (" + key + " = 0; " + key + " < " + ref + ".length; ++" + key + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }"));
     buffer.push(collector);
     return Array(buffer, scope);
   }));
   (specials.over = (function(form, scope, opts) {
-    var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _i0, _ref6, _ref7, _i1, _ref8, _ref9, _i2, _ref10, _ref11, _i3, _ref12, _ref13, _i4, _ref14, _i5, _ref15, _i6;
+    var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _i0, _ref6, _ref7, _i1, _ref8, _ref9, _i2, _ref10, _ref11, _i3, _ref12, _ref13, _i4, _ref14, _i5, _ref15, _i6, _ref16;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
       _ref = (opts = ({}));
     } else {
@@ -1703,7 +1708,12 @@
     body = _ref15[0];
     buffer = _ref15[1];
     scope = _ref15[2];
-    body.push((collector + ".push(" + pr(body.pop()) + ")"));
+    if ((!util.kwtest(pr(last(body))))) {
+      _ref16 = body.push((collector + ".push(" + pr(body.pop()) + ")"));
+    } else {
+      _ref16 = undefined;
+    }
+    _ref16;
     buffer.push(("for (" + key + " in " + ref + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }"));
     buffer.push(collector);
     return Array(buffer, scope);
@@ -1758,7 +1768,7 @@
     body = _ref7[0];
     buffer = _ref7[1];
     scope = _ref7[2];
-    if (((form.length === 2))) {
+    if ((((form.length === 2)) && (!util.kwtest(pr(last(body)))))) {
       _ref8 = body.push((collector + ".push(" + pr(body.pop()) + ")"));
     } else {
       _ref8 = undefined;
@@ -1778,7 +1788,7 @@
     return Array(buffer, scope);
   }));
   (specials.try = (function(form, scope, opts) {
-    var buffer, formName, ref, tryForm, catchForm, finalForm, err, res, _ref, _ref0, _ref1, _ref2, _ref3, _i, _ref4, _i0, _ref5, _i1, _ref6, _ref7, _i2, _ref8, _ref9, _i3, _ref10, _ref11, _i4, _ref12, _ref13, _ref14, _i5, _ref15;
+    var buffer, formName, collector, tryForm, catchForm, finalForm, err, res, _ref, _ref0, _ref1, _ref2, _ref3, _i, _ref4, _i0, _ref5, _i1, _ref6, _ref7, _i2, _ref8, _ref9, _i3, _ref10, _ref11, _i4, _ref12, _ref13, _ref14, _ref15, _i5, _ref16, _ref17;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
       _ref = (opts = ({}));
     } else {
@@ -1807,7 +1817,7 @@
     } else {
       _ref2 = undefined;
     }(_ref3 = declareService("_ref", scope, _ref2));
-    ref = _ref3[0];
+    collector = _ref3[0];
     scope = _ref3[1];
     (_ref4 = form);
     tryForm = _ref4[0];
@@ -1817,7 +1827,7 @@
     tryForm = _ref5[0];
     buffer = _ref5[1];
     scope = _ref5[2];
-    tryForm.push((ref + " = " + pr(tryForm.pop())));
+    tryForm.push((collector + " = " + pr(tryForm.pop())));
     if ((isList(catchForm) && ((car(catchForm) === "catch")))) {
       assertExp(catchForm, (function() {
         return ((arguments[0].length === 2) || (arguments[0].length === 3));
@@ -1848,34 +1858,44 @@
     catchForm = _ref11[0];
     buffer = _ref11[1];
     scope = _ref11[2];
-    catchForm.push((ref + " = " + pr(catchForm.pop())));
+    if ((!util.kwtest(pr(last(catchForm))))) {
+      _ref12 = catchForm.push((collector + " = " + pr(catchForm.pop())));
+    } else {
+      _ref12 = undefined;
+    }
+    _ref12;
     if ((typeof finalForm !== 'undefined' && finalForm !== null)) {
       if ((isList(finalForm) && ((car(finalForm) === "finally")))) {
         assertExp(finalForm, (function() {
           return ((arguments[0].length === 2));
         }));
-        _ref13 = (finalForm = last(finalForm));
+        _ref14 = (finalForm = last(finalForm));
       } else {
-        _ref13 = undefined;
+        _ref14 = undefined;
       }
-      _ref13;
-      (_ref14 = compileResolve(finalForm, buffer, scope, opts));
-      finalForm = _ref14[0];
-      buffer = _ref14[1];
-      scope = _ref14[2];
-      _ref12 = finalForm.push((ref + " = " + pr(finalForm.pop())));
+      _ref14;
+      (_ref15 = compileResolve(finalForm, buffer, scope, opts));
+      finalForm = _ref15[0];
+      buffer = _ref15[1];
+      scope = _ref15[2];
+      if ((!util.kwtest(pr(last(finalForm))))) {
+        _ref16 = finalForm.push((collector + " = " + pr(finalForm.pop())));
+      } else {
+        _ref16 = undefined;
+      }
+      _ref13 = _ref16;
     } else {
-      _ref12 = undefined;
+      _ref13 = undefined;
     }
-    _ref12;
+    _ref13;
     (res = ("try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }"));
     if ((typeof finalForm !== 'undefined' && finalForm !== null)) {
-      _ref15 = (res += (" finally { " + render(finalForm) + " }"));
+      _ref17 = (res += (" finally { " + render(finalForm) + " }"));
     } else {
-      _ref15 = undefined;
+      _ref17 = undefined;
     }
-    _ref15;
-    buffer.push(res, ref);
+    _ref17;
+    buffer.push(res, collector);
     return Array(buffer, scope);
   }));
   (specials.get = (function(form, scope, opts) {

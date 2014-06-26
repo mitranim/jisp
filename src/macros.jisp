@@ -13,8 +13,8 @@
 
 ; `let`: self-executing lambda with auto-passed arguments
 (mac macLet ...args body (do
-  (if (not (is (% args.length 2) 0))
-      (throw (Error "expecting an even number of arguments")))
+  (util.assertExp args (fn x (is (% x.length 2) 0))
+                          "an even number of arguments")
   (if (not (? body)) (= body `()))
   (= names    `()
      callArgs `())
@@ -27,8 +27,13 @@
 
 ; `?!`: (not (? x))
 (mac macNotExist ...args (do
-  (if (not (is args.length 1))
-      (throw (Error "`?!` expects one argument")))
+  (util.assertExp args (fn x (is x.length 1)) "one argument")
   `(not (? ,(car args)))))
 
 (= (get exports "?!") macNotExist)
+
+; `isa`: (is (typeof x) y)
+(mac macIsA obj type (do
+  `(is (typeof ,obj) ,type)))
+
+(= exports.isa macIsA)

@@ -704,6 +704,7 @@ Syntax (tokeniser and lexer limitations):
   * [NYI] `.dot` and `[bracket]` notation can't be used with primitive literals and lists, using `(get object property)` notation for now.
   * `#n` notation can't be used with `` ` `` `...` `.dot` and `[bracket]` notation.
   * Regex literals are mangled when passed as an argument to a function.
+  * Whitespace in regexes bugs out the tokeniser regexes.
   * Tokeniser can't handle more than one backslash immediately preceding a quote.
   * Tokeniser fails to split `"}"}`.
   * Tokeniser fails to split things like `form[` in `form[,i]`.
@@ -727,13 +728,15 @@ The parser (?) appends an extra `undefined` to the end of the file if the last l
 
 When using conditionals (e.g. `and`) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.
 
-Built-in toplevel functions are leaked globals; todo scope to compiled jisp scripts.
+Built-in toplevel functions are leaked globals; todo scope to compiled jisp scripts. Reimplement as many as possible as macros.
 
 Hoisting of multi-line statements above their place in code causes some actions to be executed out of order.
 
 [NYI] It's somewhat awkward to pass a 'nothing' to a macro (e.g. in a list of arguments); you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
 
 [NYI] `command` doesn't automatically load the `register` module.
+
+Macro embedding-hoisting doesn't respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are going to be more and more core to the language.
 
 ## Why Use It
 
