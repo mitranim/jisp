@@ -16,15 +16,12 @@
 (mac macLet ...args body (do
   (if (not (is (% args.length 2) 0))
       (throw (Error "expecting an even number of arguments")))
-  (console.log "-- args:" args)
-  (console.log "-- body:" body)
   (if (not (? body)) (= body `()))
   (= names    `()
      callArgs `())
   (while (> args.length 0)
     (do (names.push (checkVar (args.shift)))
         (callArgs.push (args.shift))))
-  (console.log "-- body:" body)
   `((fn ,...names ,body) ,...callArgs)))
 
 (= exports.let macLet)
