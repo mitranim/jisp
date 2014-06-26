@@ -1,7 +1,6 @@
 ; Built-in macros
 
 ; Default macros to add:
-  ; (?! x)  ->  (not (? x))
   ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
   ; (any) -> a sliding switch (or (if (? x) x) (if (? y) y) ...)
   ; ...

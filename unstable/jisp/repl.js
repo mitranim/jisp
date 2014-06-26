@@ -3,7 +3,7 @@
   (vm = require("vm"));
   (nodeREPL = require("repl"));
   (jisp = require("./jisp"));
-  (replDefaults = {
+  (replDefaults = ({
     useGlobal: true,
     prompt: "jisp> ",
     eval: (function(input, context, filename, cb) {
@@ -11,9 +11,9 @@
       (input = input.replace(/\uFF00/g, "\n"));
       (input = input.replace(/^\(([^]*)\n\)$/g, "$1"));
       try {
-        (js = jisp.compile(input, {
+        (js = jisp.compile(input, ({
           wrap: false
-        }));
+        })));
         console.log("-- compiled:\n", js);
         console.log("-- executing:");
         (result = vm.runInThisContext(js, filename));
@@ -23,7 +23,7 @@
       }
       return _ref;
     })
-  });
+  }));
 
   function enableMultiline(repl) {
     var rli, inputStream, outputStream, origPrompt, multiline, lineListener, _ref;
@@ -35,13 +35,13 @@
     } else {
       _ref = repl.prompt;
     }(origPrompt = _ref);
-    (multiline = {
+    (multiline = ({
       enabled: false,
       prompt: origPrompt.replace(/^[^>\s]*>?/, (function(x) {
         return x.replace(/./g, ".");
       })),
       buffer: ""
-    });
+    }));
     (lineListener = rli.listeners("line")[0]);
     rli.removeListener("line", lineListener);
     return rli.on("line", (function(cmd) {

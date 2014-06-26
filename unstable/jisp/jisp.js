@@ -45,7 +45,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.0.11");
+  (exports.version = "0.0.12");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -220,7 +220,7 @@
   function compileForm(form, scope, opts) {
     var buffer, key, val, first, i, arg, argsSpread, name, method, collector, _ref, _ref0, _ref1, _res, _ref2, _ref3, _i, _ref4, _ref5, _ref6, _i0, _ref7, _i1, _ref8, _res0, _ref9, _ref10, _ref11, _i2, _ref12, _i3, _ref13, _ref14, _ref15, _ref16, _i4, _ref17, _ref18, _ref19, _i5, _ref110, _ref111, _i6;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -355,11 +355,11 @@
     return _ref0;
   }
   compileForm;
-  (specials = {});
+  (specials = ({}));
   (specials.do = (function(form, scope, opts) {
     var buffer, formName, isTopLevel, outerScope, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _ref1, _i, _res, _ref2, _ref3, _ref4, _ref5, _ref6, _i0, _ref7, _i1, _ref8, _ref9, _i2, _res0, _ref10, _ref11, _ref12, _i3, _res1, _ref13, _ref14, _res2, _ref15, _ref16, _ref17, _res3, _ref18, _ref19, _i4, _res4, _ref110, _ref111;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -376,10 +376,10 @@
     _ref0;
     if (isTopLevel) {
       (outerScope = scope);
-      _ref1 = (scope = {
+      _ref1 = (scope = ({
         hoist: outerScope.hoist.slice(),
         service: outerScope.service.slice()
-      });
+      }));
     } else {
       _ref1 = undefined;
     }
@@ -521,7 +521,7 @@
   (specials.quote = (function(form, scope, opts) {
     var buffer, formName, key, exp, arr, res, _ref, _ref0, _ref1, _ref2, _res, _ref3, _ref4, _ref5, _i, _ref6, _i0, _i1, _res0, _ref7, _ref8, _ref9, _i2, _ref10, _ref11, _ref12, _i3, _ref13, _ref14, _i4, _ref15, _ref16, _ref17, _ref18, _i5, _ref19, _i6, _ref110, _ref111, _ref112;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -666,7 +666,7 @@
   (specials.unquote = (function(form, scope, opts) {
     var buffer, formName, _ref, _ref0, _ref1, _ref2, _ref3, _i, _ref4, _i0;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -706,7 +706,7 @@
   (specials["="] = (function(form, scope, opts) {
     var buffer, formName, left, right, ref, ind, spreads, i, name, spreadname, spreadind, _ref, _ref0, _ref1, _ref2, _i, _res, _ref3, _i0, _ref4, _ref5, _i1, _ref6, _ref7, _i2, _ref8, _ref9, _i3, _res0, _ref10, _ref11, _ref12, _ref13, _i4, _ref14, _ref15, _ref16;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -826,7 +826,7 @@
   (specials.fn = (function(form, scope, opts) {
     var buffer, formName, outerScope, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _ref0, _i, _ref1, _ref2, _res, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _i0, _ref9, _i1, _ref10, _ref11, _ref12, _i2, _ref13, _ref14, _ref15, _i3, _res0, _ref16, _ref17, _ref18, _i4, _res1, _ref19, _ref110, _res2, _ref111, _ref112, _ref113, _res3, _ref114, _ref115, _i5, _res4, _ref116, _ref117;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -835,10 +835,10 @@
     (form = form.slice());
     (formName = form.shift());
     (outerScope = scope);
-    (scope = {
+    (scope = ({
       hoist: outerScope.hoist.slice(),
       service: outerScope.service.slice()
-    });
+    }));
     (_ref0 = form);
     var args = 2 <= _ref0.length ? [].slice.call(_ref0, 0, _i = _ref0.length - 1) : (_i = 0, []);
     body = _ref0[_i++];
@@ -1026,7 +1026,7 @@
   (specials.def = (function(form, scope, opts) {
     var buffer, formName, outerScope, fname, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _ref0, _i, _ref1, _ref2, _res, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _i0, _ref9, _i1, _ref10, _ref11, _ref12, _i2, _ref13, _ref14, _ref15, _i3, _res0, _ref16, _ref17, _ref18, _i4, _res1, _ref19, _ref110, _res2, _ref111, _ref112, _ref113, _res3, _ref114, _ref115, _i5, _res4, _ref116, _ref117;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1035,10 +1035,10 @@
     (form = form.slice());
     (formName = form.shift());
     (outerScope = scope);
-    (scope = {
+    (scope = ({
       hoist: outerScope.hoist.slice(),
       service: outerScope.service.slice()
-    });
+    }));
     (_ref0 = form);
     fname = _ref0[0];
     var args = 3 <= _ref0.length ? [].slice.call(_ref0, 1, _i = _ref0.length - 1) : (_i = 1, []);
@@ -1232,7 +1232,7 @@
   (specials.if = (function(form, scope, opts) {
     var buffer, formName, predicate, prebranch, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _ref0, _i, _ref1, _ref2, _ref3, _i0, _ref4, _i1, _ref5, _ref6, _i2, _res, _ref7, _ref8, _i3, _ref9, _i4, _ref10, _ref11, _ref12, _i5, _ref13, _i6, _i7, _res0, _ref14, _ref15;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1344,10 +1344,10 @@
       midbranch = _ref12[0];
       buffer = _ref12[1];
       scope = _ref12[2];
-      _res.push((midcases[i] = {
+      _res.push((midcases[i] = ({
         test: midtest,
         branch: collect(midbranch, collector)
-      }));
+      })));
     }
     _res;
     (_ref13 = compileResolve(postbranch, buffer, scope, opts));
@@ -1375,7 +1375,7 @@
   (specials.switch = (function(form, scope, opts) {
     var buffer, formName, predicate, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _ref0, _i, _ref1, _ref2, _ref3, _i0, _ref4, _i1, _ref5, _res, _ref6, _ref7, _i2, _ref8, _i3, _ref9, _ref10, _ref11, _i4, _ref12, _i5, _i6, _res0, _ref13;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1482,10 +1482,10 @@
       midbranch = _ref11[0];
       buffer = _ref11[1];
       scope = _ref11[2];
-      _res.push((midcases[i] = {
+      _res.push((midcases[i] = ({
         test: midtest,
         branch: collect(midbranch, collector)
-      }));
+      })));
     }
     _res;
     (_ref12 = compileResolve(postbranch, buffer, scope, opts));
@@ -1508,7 +1508,7 @@
   (specials.for = (function(form, scope, opts) {
     var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _ref6, _ref7, _i0, _ref8, _ref9, _i1, _ref10, _ref11, _i2, _ref12, _ref13, _i3, _ref14, _ref15, _i4, _ref16, _i5, _ref17, _i6;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1614,7 +1614,7 @@
   (specials.over = (function(form, scope, opts) {
     var buffer, formName, value, key, iterable, body, collector, ref, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _i0, _ref6, _ref7, _i1, _ref8, _ref9, _i2, _ref10, _ref11, _i3, _ref12, _ref13, _i4, _ref14, _i5, _ref15, _i6;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1711,7 +1711,7 @@
   (specials.while = (function(form, scope, opts) {
     var buffer, formName, test, body, rvalue, collector, comp, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _ref5, _i0, _ref6, _i1, _ref7, _i2, _ref8, _ref9, _ref10, _i3;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1780,7 +1780,7 @@
   (specials.try = (function(form, scope, opts) {
     var buffer, formName, ref, tryForm, catchForm, finalForm, err, res, _ref, _ref0, _ref1, _ref2, _ref3, _i, _ref4, _i0, _ref5, _i1, _ref6, _ref7, _i2, _ref8, _ref9, _i3, _ref10, _ref11, _i4, _ref12, _ref13, _ref14, _i5, _ref15;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1881,7 +1881,7 @@
   (specials.get = (function(form, scope, opts) {
     var buffer, formName, object, property, _ref, _ref0, _ref1, _ref2, _i, _ref3, _ref4, _i0, _ref5, _i1, _ref6;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1935,7 +1935,7 @@
   (specials.spread = (function(form, scope, opts) {
     var buffer, formName, _ref, _ref0, _ref1, _ref2, _ref3, _i;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -1974,7 +1974,7 @@
   (specials.return = (function(form, scope, opts) {
     var buffer, formName, _ref, _ref0, _ref1, _ref2, _i, _ref3;
     if ((!(typeof opts !== 'undefined' && opts !== null))) {
-      _ref = (opts = {});
+      _ref = (opts = ({}));
     } else {
       _ref = undefined;
     }
@@ -2007,7 +2007,7 @@
     _ref1;
     return Array(buffer, scope);
   }));
-  (macros = {});
+  (macros = ({}));
 
   function importMacros(store) {
     var key, val, _res, _ref;
@@ -2073,12 +2073,12 @@
     }
     _ref1;
     body.unshift("fn");
-    (_ref2 = compileForm(body, {
+    (_ref2 = compileForm(body, ({
       hoist: [],
       service: []
-    }, {
+    }), ({
       macro: true
-    }));
+    })));
     compiled = _ref2[0];
     scope = _ref2[1];
     (rendered = render(compiled));
@@ -2151,9 +2151,9 @@
 
   function compile(src, opts) {
     var defaults, parsed, expanded, compiled, scope, _ref, _ref0, _i;
-    (defaults = {
+    (defaults = ({
       wrap: true
-    });
+    }));
     (opts = util.merge(defaults, opts));
     (parsed = parse(lex(tokenise(src))));
     parsed.unshift("do");
@@ -2166,17 +2166,17 @@
     }
     _ref;
     (expanded = macroexpand(parsed));
-    (_ref0 = compileForm(expanded, {
+    (_ref0 = compileForm(expanded, ({
       hoist: [],
       service: []
-    }, {
+    }), ({
       toplevel: true
-    }));
+    })));
     compiled = _ref0[0];
     scope = _ref0[1];
-    return beautify(render(compiled), {
+    return beautify(render(compiled), ({
       indent_size: 2
-    });
+    }));
   }(exports.compile = compile);
 
   function compileFile(filename) {
@@ -2199,7 +2199,7 @@
   function run(code, options) {
     var mainModule, dir, _ref, _ref0, _ref1, _ref2, _ref3;
     if ((!(typeof options !== 'undefined' && options !== null))) {
-      _ref = (options = {});
+      _ref = (options = ({}));
     } else {
       _ref = undefined;
     }
@@ -2210,7 +2210,7 @@
     } else {
       _ref0 = ".";
     }(mainModule.filename = (process.argv[1] = _ref0)); if (mainModule.moduleCache) {
-      _ref1 = (mainModule.moduleCache = {});
+      _ref1 = (mainModule.moduleCache = ({}));
     } else {
       _ref1 = undefined;
     }

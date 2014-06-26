@@ -46,18 +46,18 @@
     ["-i", "--interactive", "run an interactive jisp REPL (this is the default with no options and arguments)"],
     ["-v", "--version", "display the version number"]
   ]);
-  (opts = {});
+  (opts = ({}));
   (sources = []);
   (sourceCode = []);
-  (notSources = {});
+  (notSources = ({}));
   (optionParser = null);
 
   function run() {
     var replCliOpts, literals, source, _ref, _ref0, _ref1, _ref2, _i, _res, _ref3;
     parseOptions();
-    (replCliOpts = {
+    (replCliOpts = ({
       useGlobal: true
-    });
+    }));
     if (opts.version) {
       return _ref = version();
     } else {
@@ -204,11 +204,11 @@
     (o = opts);
     (options = compileOptions(file, base));
     try {
-      (t = (task = {
+      (t = (task = ({
         file: file,
         input: input,
         options: options
-      }));
+      })));
       jisp.emit("compile", task);
       if (o.run) {
         jisp.register();
@@ -352,9 +352,9 @@
 
   function compileOptions(filename, base) {
     var answer, cwd, jsPath, jsDir, _ref, _ref0;
-    (answer = {
+    (answer = ({
       filename: filename
-    });
+    }));
     if ((!filename)) {
       _ref = answer;
     } else {
@@ -362,18 +362,18 @@
         (cwd = process.cwd());
         (jsPath = outputPath(filename, base));
         (jsDir = path.dirname(jsPath));
-        _ref0 = (answer = util.merge(answer, {
+        _ref0 = (answer = util.merge(answer, ({
           jsPath: jsPath,
           sourceRoot: path.relative(jsDir, cwd),
           sourceFiles: [path.relative(cwd, filename)],
           generatedFile: util.baseFileName(jsPath, false, useWinPathSep)
-        }));
+        })));
       } else {
-        _ref0 = (answer = util.merge(answer, {
+        _ref0 = (answer = util.merge(answer, ({
           sourceRoot: "",
           sourceFiles: [util.baseFileName(filename, false, useWinPathSep)],
           generatedFile: (util.baseFileName(filename, true, useWinPathSep) + ".js")
-        }));
+        })));
       }
       _ref = _ref0;
     }

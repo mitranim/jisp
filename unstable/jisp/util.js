@@ -34,7 +34,7 @@
   }(exports.isBlankObject = isBlankObject);
 
   function isKey(form) {
-    return (isAtom(form) && (isString(form) || isIdentifier(form)));
+    return (isAtom(form) && (isString(form) || isIdentifier(form) || isNum(form)));
   }(exports.isKey = isKey);
 
   function isVarName(form) {
@@ -176,7 +176,7 @@
         _res.push((res += (key + ": " + pr(val) + ", ")));
       }
       _res;
-      _ref = ("{ " + res.slice(0, (res.length - 2)) + " }");
+      _ref = ("({ " + res.slice(0, (res.length - 2)) + " })");
     } else if (isList(item)) {
       (res = "");
       _res0 = [];
@@ -235,7 +235,7 @@
   }(exports.render = render);
 
   function merge(options, overrides) {
-    return extend(extend({}, options), overrides);
+    return extend(extend(({}), options), overrides);
   }(exports.merge = merge);
 
   function extend(object, properties) {

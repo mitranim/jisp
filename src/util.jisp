@@ -55,7 +55,9 @@
         false)))
 
 (= exports.isKey (def isKey form
-   (and (isAtom form) (or (isString form) (isIdentifier form)))))
+   (and (isAtom form) (or (isString form)
+                          (isIdentifier form)
+                          (isNum form)))))
 
 ; Simple types
 
@@ -147,7 +149,7 @@
            (do (= res "")
                (over val key item
                      (+= res (+ key ": " (pr val) ", ")))
-               (+ "{ " (res.slice 0 (- res.length 2)) " }")))
+               (+ "({ " (res.slice 0 (- res.length 2)) " })")))
          (elif (isList item)
                (do (= res "")
                    (for val item
