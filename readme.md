@@ -134,7 +134,7 @@ Each and every form in jisp is an expression: it returns a result. There are no 
 
 An unquoted empty list `()` (not an empty array `` `() ``!) resolves to nothing at all. (Currently bugged: resolves to `[]` like ``()`.)
 
-Forms starting with `=`, `def`, `fn`, `mac`, `let` (NYI), and a few other keywords, resolve as _abstraction_ expressions. In other words, as name binding:
+Forms starting with `=`, `def`, `fn`, `mac`, `let`, and a few other keywords, resolve as _abstraction_ expressions. In other words, as name binding:
 
     (= x 10)                              ;; bound variable
     (def cowsay moo (+ 'Cow says ' moo))  ;; named function
@@ -186,20 +186,20 @@ In imperative programming, you often want to run multiple consequtive actions in
 
 `do` returns the result of evaluating the last form.
 
-**[NYI]** Use in combination with `let` to run series of actions in an isolated scope:
+Use in combination with `let` to run series of actions in an isolated scope:
 
     (= h (let health 100                       ;; scoped to `let`
               horse  (getRandomHorse)          ;; scoped to `let`
-              (do (console.log (horse.neigh))  ;; Ni-i-ighhh!
+              (do (console.log horse.neigh)    ;; Ni-i-ighhh!
                   (spur)
                   (if (dodgeTree)
                       (grin)
-                      (- health 30))
+                      (-= health 30))
                   (dismount)
                   health)))
     (console.log h)                            ;; 70
 
-**[NYI]** `let` is equivalent to (and implemented as) an anonymous function that is executed right away:
+`let` is equivalent to (and implemented as) an anonymous function that is executed right away:
 
     (let x 5 y 6
          (;; body))
