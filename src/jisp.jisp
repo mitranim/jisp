@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.8")
+(= exports.version "0.0.9")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -25,7 +25,8 @@
    isHash       util.isHash
    isList       util.isList
    isVarName    util.isVarName
-   isIdentifier util.isIdentifier)
+   isIdentifier util.isIdentifier
+   assertExp    util.assertExp)
 
 ; This file has got insanely big and repetitive, todo rearchitect and deduplicate
 
@@ -56,11 +57,6 @@
      `(name scope)))
 ; Usage when declaring service variable:
 ; (= (name scope) (declareService candidate scope))
-
-
-(def assertArg exp test (expect "valid expression")
-     (if (test exp) true
-         (throw (Error (+ "expecting " (pr expect) ", got " (pr exp))))))
 
 ; Checks list of args, returns true if any of them are "spread" forms
 (def hasSpread form
@@ -137,33 +133,32 @@
 
 ; Shorter version of declareVar
 (mac macDeclareVar name
-  `(do (assertArg ,name isVarName "valid identifier")
+  `(do (assertExp ,name isVarName "valid identifier")
        (= scope (declareVar ,name scope))))
 
 ; Shorter version of declareService
 (mac macDeclareService name candidate
   `(= (,name scope) (declareService ,candidate scope (if opts.function args))))
 
-
 (mac macForkScope
 ; If this form declares variables, fork scope
   `(= outerScope scope
-      scope      (hoist: (outerScope.hoist.slice) service: (outerScope.service.slice)))
-)
+      scope      (hoist: (outerScope.hoist.slice) service: (outerScope.service.slice))))
 
 (mac macDeclareOrHoist (dest "buffer") (do
 ; Declare vars and funcs or hoist funcs as appropriate
   `(do
-    (= vars  `()
-       funcs `()
+    (= vars  ``()
+       funcs ``()
        dec   "var ")
     ; Deal with new names: declare, drop, or bubble up if funcs
-    (if (not (? args)) (= args `()))
+    (if (not (? args)) (= args ``()))
     (for name scope.hoist
       (if (and (not (in name outerScope.hoist))
                (not (in name args)))
           (if (or (in name (Object.keys toplevel))
-                  (in name (Object.keys opFuncs)))
+                  (in name (Object.keys opFuncs))
+                  (in name (Object.keys macros)))
               (funcs.push name)
               (vars.push name))))
     (for name scope.service
@@ -186,9 +181,11 @@
             (throw (Error (+ "compiler error: duplicate func in declarations:" func))))  ; no pr, expecting string
         (if (in func (Object.keys toplevel))
             ((get ,dest unshift) (toplevel[func].toString))
+            (elif (in func (Object.keys macros))
+                  ((get ,dest unshift) (+ "var " func " = " macros[func] ";")))
             ; ToDo embedding of opFuncs with .toString and renaming of references in code when not first in list
             (elif (in func (Object.keys opFuncs))
-                  ((get ,dest unshift) (+ "var " opFuncs[func].name " = " opFuncs[func].func)))  ; no pr, expecting strings
+                  ((get ,dest unshift) (+ "var " opFuncs[func].name " = " opFuncs[func].func ";")))  ; no pr, expecting strings
             (throw (Error (+ "unrecognised func: " (pr func)))))))
         (do (for func funcs
                  (if (not (in func outerScope.hoist))
@@ -199,7 +196,7 @@
 
 (mac macCompileSpecial opts (do
   `(fn form scope (opts (:)) (do
-    (= buffer   `()
+    (= buffer   ``()
        form     (form.slice)  ; duplicate object to avoid changing it for callers
        formName (form.shift))
     ; Check args number if relevant
@@ -220,14 +217,15 @@
 ; # Main compiler parts
 
 ; Top-level compile wrapper
-(def compile form opts (do
-     (= defaults (wrap: yes)
-        opts (util.merge defaults opts))
-     (form.unshift "do")
-     (if opts.wrap
-       (= form `(("get" ("fn" form) "call") "this")))
-     (= (compiled scope) (compileForm form (hoist:`() service:`()) (toplevel: yes)))
-     (beautify (render compiled) (indent_size: 2))))
+; (def compile form opts (do
+;      (= defaults (wrap: yes)
+;         opts (util.merge defaults opts))
+;      (form.unshift "do")
+;      (if opts.wrap
+;        (= form `(("get" ("fn" form) "call") "this")))
+;      (= (compiled scope) (compileForm form (hoist:`() service:`()) (toplevel: yes)))
+;      ; (render compiled)))
+;      (beautify (render compiled) (indent_size: 2))))
 
 ; Compiles form, switching between types
 ; Takes: <form to compile> <scope> <options>
@@ -235,12 +233,13 @@
 (def compileForm form scope (opts (:)) (do
   ; Switch between form types and compile accordingly
   (if (and (isList form) (util.isBlankObject form))
-    `((form) scope)
+    `(("") scope)
     (elif (isAtom form) (do
       ; ToDo: check for reserved and forbidden words right here
       ; If name of toprange jisp func, hoist if not redefined earlier
       ; If name of operator, hoist appropriate func and replace atom with func name
-      (if (in form (Object.keys toplevel))
+      (if (or (in form (Object.keys toplevel))
+              (in form (Object.keys macros)))
         (macDeclareVar form)
         ; ToDo only do this when not first element in list
         (elif (in form (Object.keys opFuncs))
@@ -255,7 +254,7 @@
       (buffer.push form)
       `(buffer scope)))
     (do  ; assume list, either special form or function call
-      (if (not (isList form)) (throw (Error (+ "expecting list, got" (pr form)))))
+      (if (not (isList form)) (throw (Error (+ "expecting list, got: " (pr form)))))
       (= buffer `())
       (= form (form.slice))  ; duplicate object to avoid changing it for callers
       (if (in (car form) (Object.keys specials))  ; special forms have their own rules
@@ -295,7 +294,7 @@
                          (spr opFuncs[first]))
                     (do (macDeclareVar first)
                         (= first opFuncs[first].name))
-                    (throw (Error (+ `(pr first)` " can't spread arguments (yet)")))))
+                    (throw (Error (+ (pr first) " can't spread arguments (yet)")))))
               ; Split object name and method for applying
               (= (name method) (splitName first))
               ; Apply, passing self and list of spread args
@@ -335,13 +334,15 @@
 (= specials.quote (macCompileSpecial (argsMin: 1 argsMax: 1
   code: (do
     (= form (car form))
-    (if (and opts.macro (isAtom form) (not (util.isPrimitive form)))
-      (buffer.push (+ "'" form "'"))  ; identifiers and strings get additional quotes that soak up the additional rendering done when expanding a macro
+    (if (and (isAtom form) (not (util.isPrimitive form)))
+      (buffer.push (JSON.stringify form))  ; identifiers and strings get additional quotes that soak up the additional rendering done when expanding a macro
       (elif (isAtom form)
         (buffer.push form))
       (elif (isHash form)
         (do (over exp key form
-              (macCompileGetLast `("quote" exp) form[key]))
+              (if (and (isAtom exp) (not opts.macro))
+                  (macCompileGetLast exp form[key])
+                  (macCompileGetLast `("quote" exp) form[key])))
             (buffer.push form)))
       ; assume list
       (do
@@ -351,13 +352,24 @@
           (if (and (isList exp)    (is (car exp) "quote")
                    (isList exp[1]) (is exp[1].length 0))
             (arr.push `())  ; quoted empty list becomes empty array literal
+            (elif (and (isList exp) (is (car exp) "unquote")
+                       (isList exp[1]) (is exp[1][0] "spread"))
+              (do  ; explicit unquote
+                ; if someone puts more than a single element into a spread list, all but the first will be lost; todo assert number
+                (macCompileGetLast (car (cdr exp)) exp)
+                (if (? exp)
+                  (do
+                    (if (> arr.length 0)
+                        (do (+= res (+ ".concat(" (pr arr) ")"))
+                            (= arr `())))
+                    (+= res (+ ".concat(" (pr exp) ")"))))))
             (elif (and (isList exp)
                        (is (car exp) "quote" "unquote"))
               (do (macCompileGetLast exp exp)
                   (if (? exp) (arr.push exp))))
             (elif (and (isList exp) (is (car exp) "spread")
                        (not opts.macro))
-              (do  ; implicit unquote
+              (do  ; implicit unquote outside macro
                 (macCompileGetLast exp exp)
                 (if (? exp)
                   (do
@@ -365,7 +377,9 @@
                         (do (+= res (+ ".concat(" (pr arr) ")"))
                             (= arr `())))
                     (+= res (+ ".concat(" (pr exp) ")"))))))
-            (do (macCompileGetLast `("quote" exp) exp)
+            (do (if (and (isAtom exp) (not opts.macro))
+                  (macCompileGetLast exp exp)
+                  (macCompileGetLast `("quote" exp) exp))
                 (if (? exp) (arr.push exp))))))
         (if (> arr.length 0)
             (if (is res "[]") (= res (pr arr))
@@ -388,7 +402,7 @@
       (do (macDeclareVar (car form))
           (macCompileAdd (car form)))
       (do
-        (assertArg form {is (% (get #0 length) 2) 0} "even number of arguments")
+        (assertExp form {is (% (get #0 length) 2) 0} "an even number of arguments")
         (while (> form.length 0) (do
           (= left  (form.shift)
              right (form.shift))
@@ -416,7 +430,7 @@
                   (do (if (isVarName name) (macDeclareVar name))
                       (buffer.push (+ (pr name) " = " ref "[" ind "++]")))))))
             (do (if (isVarName left) (macDeclareVar left))
-                (assertArg left isIdentifier)
+                (assertExp left isIdentifier)
                 (buffer.push (+ "(" (pr left) " = " (pr right) ")"))))))))))))
 
 ; Mostly the same code for `fn` and `def`
@@ -429,7 +443,7 @@
         `(= (...args body) form)
         `(do
           (= (fname ...args body) form)
-          (assertArg fname isVarName "valid function name")))
+          (assertExp fname isVarName "valid function name")))
       (scope.hoist.push ...(getArgNames args))
       (if (not (? body)) (= body ``()))
       (= optionals ``()
@@ -437,17 +451,17 @@
       (for arg i args
         (if (isList arg)
           (do
-            (assertArg arg {is (get #0 length) 2} "optional or rest parameter")
+            (assertExp arg {is (get #0 length) 2} "optional or rest parameter")
             (if (is (car arg) "spread")
               (do
                 (if (> (++ spreads) 1) (throw (Error "cannot define more than one rest parameter")))
                 (macDeclareService ind "_i")
                 (macCompileGetLast arg name)
-                (assertArg name isVarName "valid identifier")
+                (assertExp name isVarName "valid identifier")
                 (= args[i] (= restname name))
                 (= rest (list (+ name " = " args.length " <= arguments.length ? [].slice.call(arguments, " i ", " ind " = arguments.length - " (- args.length i 1) ") : (" ind " = " ind ", [])"))))
               (do  ; assume optional parameter
-                (assertArg (= name (car arg)) isVarName "valid parameter name")
+                (assertExp (= name (car arg)) isVarName "valid parameter name")
                 (= args[i] name)
                 (optionals.push ``("if" ("not" ("?" name)) ("=" name arg[1]))))))
           (elif restname
@@ -480,7 +494,7 @@
   (makeMacro form)))
 
 ; Mostly the same code for `if` and `switch`
-(mac macConditionalDefinition (type "if") (caseStr "'elif'")
+(mac macConditionalDefinition (type "if") (caseStr `"elif")
 ; what arguments mean, example `if`:
   ; predicate prebranch   ...midcases postbranch
   ; test      then-branch ...elifs    else-branch
@@ -519,7 +533,7 @@
             (macCompileResolve prebranch prebranch)
             `(= prebranch (collect prebranch collector))))
       (for mid i midcases (do
-        (assertArg mid (fn x (is (x.shift) ,caseStr)) ,caseStr)
+        (assertExp mid (fn x (is (x.shift) ,caseStr)) ,caseStr)
         (= (midtest midbranch) mid)
         (macCompileResolve midtest midtest)
         (if (not (? midtest)) (= midtest "false"))  ; JS requires something in that field
@@ -557,7 +571,7 @@
 ; todo if last form in function and no returns inside, end each branch with return instead of collector variable
 
 ; Mostly the same code for `for` and `over`
-(mac macLoopDefinition (type "for") (ind "'_i'")
+(mac macLoopDefinition (type "for") (ind `"_i")
   `(macCompileSpecial (argsMin: 2 argsMax: 4
     code: (do
       (= (value key iterable body) form)
@@ -596,8 +610,8 @@
           (do
             (macDeclareVar key)
             (macDeclareVar value)))))
-      (assertArg key isVarName "valid identifier")
-      (assertArg value isVarName "valid identifier")
+      (assertExp key isVarName "valid identifier")
+      (assertExp value isVarName "valid identifier")
       (macDeclareService collector "_res")  ; array for iteration results
       (macDeclareService ref "_ref")  ; iterable
       (buffer.push (+ collector " = []"))
@@ -654,7 +668,7 @@
     (tryForm.push (+ ref " = " (pr (tryForm.pop))))
     (if (and (isList catchForm) (is (car catchForm) "catch"))
       (do
-        (assertArg catchForm {is (get #0 length) 2 3} "valid catch form")
+        (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
         (= (catchForm err catchForm) catchForm)
         (macDeclareVar err))
       (macDeclareService err "_err"))
@@ -664,7 +678,7 @@
     (if (? finalForm)
       (do
         (if (and (isList finalForm) (is (car finalForm) "finally"))
-          (do (assertArg finalForm {is (get #0 length) 2})
+          (do (assertExp finalForm {is (get #0 length) 2})
               (= finalForm (last finalForm))))
         (macCompileResolve finalForm finalForm)
         (finalForm.push (+ ref " = " (pr (finalForm.pop))))))
@@ -682,7 +696,7 @@
          object   ""))
     (macCompileGetLast object object)
     (macCompileGetLast property property)
-    (assertArg object {? #0} "valid object")
+    (assertExp object {? #0} "valid object")
     (if (isVarName property)
       (buffer.push (+ (pr object) "." property))
       (buffer.push (+ (pr object) "[" (pr property) "]")))))))
@@ -719,10 +733,6 @@
 
 ; Import and merge macros
 (importMacros (require "./macros"))
-
-; Default macros to add:
-  ; (?! x)  ->  (not (? x))
-  ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
 
 ; Parses form for macro definitions and makes macros, removing definitions from source
 (def parseMacros form
@@ -775,8 +785,17 @@
 
 (= exports.macros macros)  ; expose macro object for override by user
 
-(= exports.compile (fn src opts
-  (compile (macroexpand (parse (lex (tokenise src)))) opts)))
+(= exports.compile (def compile src opts (do
+   (= defaults (wrap: yes)
+      opts     (util.merge defaults opts))
+   (= parsed (parse (lex (tokenise src))))
+   (parsed.unshift "do")  ; always put code into an implicit `do`
+   (if opts.wrap
+       (= parsed `(("get" ("fn" parsed) "call") "this")))
+   (= expanded (macroexpand parsed))
+   (= (compiled scope) (compileForm expanded (hoist:`() service:`()) (toplevel: yes)))
+   (beautify (render compiled) (indent_size: 2)))))
+
 
 ; Copied (more or less) from CoffeeScript source
 

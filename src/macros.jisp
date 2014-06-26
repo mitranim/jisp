@@ -1,1 +1,26 @@
-(= module.exports (:))
+; Built-in macros
+
+; Default macros to add:
+  ; (?! x)  ->  (not (? x))
+  ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
+  ; (any) -> a sliding switch (or (if (? x) x) (if (? y) y) ...)
+  ; ...
+
+(= util (require "./util"))
+
+(def checkVar exp
+  (if (util.assertExp exp util.isVarName "valid identifier")
+       exp))
+
+(mac macLet ...args body (do
+  (if (not (is (% args.length 2) 0))
+      (throw (Error "expecting an even number of arguments")))
+  (if (not (? body)) (= body `()))
+  (= names    `()
+     callArgs `())
+  (while (> args.length 0)
+    (do (names.push (checkVar (args.shift)))
+        (callArgs.push (args.shift))))
+  `((fn ,...names ,body) ,...callArgs)))
+
+(= exports.let macLet)

@@ -46,7 +46,9 @@
    (Array.isArray form)))
 
 (= exports.isHash (def isHash form
-   (and (not (isAtom form)) (not (isList form)))))
+   (and (not (isAtom form))
+        (not (isList form))
+        (not (is (typeof form) "function")))))
 
 (= exports.isBlankObject (def isBlankObject form
    (try (is (get (Object.keys form) length) 0)
@@ -130,6 +132,10 @@
             (throw (Error (+ "expecting " (pr first) " as first element, got " (pr form[0])))))
       form)))
 
+(= exports.assertExp (def assertExp exp test (expect "valid expression")
+     (if (test exp) true
+         (throw (Error (+ "expecting " (pr expect) ", got " (pr exp)))))))
+
 ; For rendering
 
 ; Pretty-print
@@ -148,7 +154,7 @@
                         (+= res (+ (pr val) ", ")))
                    (+ "[ " (res.slice 0 (- res.length 2)) " ]")))
          ; (throw (Error (+ "unrecognised kind of data object: " item))))))
-         (item.toString))))
+         (+ "" item))))
 
 ; Turns an array into a string without [ ] delimiters: [1, 2, 3] -> 1, 2, 3
 ; For printing-spreading

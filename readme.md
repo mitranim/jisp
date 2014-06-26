@@ -156,16 +156,23 @@ Sometimes you don't want a list to resolve, or want only _some_ of its elements 
 
     (quote (list 'Darwin'))   ;; (list 'Darwin')
 
-Quoting prevents _all_ elements in a list from being resolved.
+Quoting prevents all elements in a list from being resolved as jisp forms:
 
     `(1 2 3)                      ;; (1 2 3)  ;; array literal
     `(+ (^ 2 1) (+ 'π' 'Ω'))      ;; (+ (^ 2 1) ('π' 'Ω'))
+
+Directly quoting a non-primitive atom (name or string) stringifies it:
+
+    `myvar       ;; 'myvar'
+    `"mystring"  ;; '"mystring"'
+
+This is convenient when defining and using macros. Atoms in macro call arguments are quoted implicitly.
 
 To let an element resolve, _unquote_ it with a comma `,`.
 
     `(+ ,(* 2 3) (^ 9 0))     ;; (+ 6 (^ 9 0))
 
-Mentally visualise `` ` `` `,` as an off/on switch. The primary meaning of quoting and unquoting is for macros. See the Macros section below.
+Mentally visualise `` ` `` `,` as an off/on switch. Quoting and unquoting is primarily used in macros. See the Macros section below.
 
 ### Blocks
 
@@ -617,7 +624,7 @@ After each macro expansion, the new code is checked for macro definitions and ca
 
 To avoid confusing macros for functions, it's good style to start their names with `mac`.
 
-It's important to realise that macros are compile-time, not run-time. They don't have access to runtime values behind names. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike with runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
+It's important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. You can't pass values by names to macros; the very idea doesn't make sense because at macroexpand, they don't _exist_. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike with runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
 
 ### Built-ins
 
@@ -709,12 +716,8 @@ Operator-functions like `+`:
 Macros quirks:
   * Macros break when they contain strings with quotes inside them (probably tokeniser).
   * Dot and bracket notation on regexes renders as `[native code]`, use  `(get regex property)` notation for now.
-  * Inconsistency: in macros, ``()` compiles to `[]`, but non-empty lists require two quotes to compile to arrays.
-  * [NYI] Implement spread support for macro calls.
-  * (Not sure if bug, todo review.) When passing a non-quoted list to a macro, it's spread out instead of being passed as a list.
-  * To a macro, names are passed as strings and strings as additonally quoted strings; not sure if this is best for all cases. This is convenient for embedding with unquoting, but could be unintuitive. ToDo put into documentation.
-
-An empty list `()` resolves to `[]` (should resolve to nothing).
+  * In quoted lists in macros, internal quoted lists have to be double-quoted. Todo comprehend and fix.
+  * (Not sure if bug, todo review.) When passing a non-quoted list to a macro, it's spread out instead of being passed as a list. (Got fixed? ToDo check.)
 
 The parser (?) appends an extra `undefined` to the end of the file if the last line is a comment (got fixed? need to check).
 
@@ -760,8 +763,7 @@ In a relative sense. Jisp protects against many common pitfalls of JS with its s
 Working on these.
 
 * Fix the known bugs and NYI.
-* Macro support for the REPL.
-* Built-in macros: new special forms and functions.
+* More built-in macros.
 * Embedding of operator-functions to allow passing them around by name (e.g. `(arr.sort >)`).
 * Compiler error messages for when special forms like `=` and `quote`, as well as JS keywords, are met outside their destined place (first element in list).
 * Lexer or parser error messages for common but hard to spot errors like infix `+`.
@@ -775,8 +777,8 @@ Bigger:
 * Browser compatibility layer, polyfill for older engines.
 * A test suite.
 * Source maps.
-* Syntax highlighting for HTML and Sublime Text.
-* Webpage.
+* Syntax highlighting for HTML and language module for Sublime Text.
+* A webpage.
 * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure this is necessary.
 * Compiler option to only macroexpand and print out expanded jisp code (will require a jisp beautifier).
 * gulp.js build plugin

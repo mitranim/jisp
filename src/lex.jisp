@@ -158,6 +158,8 @@
           `("unquote" ,(addProperties tokens (demand tokens
             "("          "list"
             "`"          "quote"
+            "..."        "spread"
+            "…"          "spread"
             isIdentifier "atom")))))
     (case "spread"
       (do (demand tokens

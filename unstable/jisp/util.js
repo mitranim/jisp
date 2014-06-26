@@ -20,7 +20,7 @@
   }(exports.isList = isList);
 
   function isHash(form) {
-    return ((!isAtom(form)) && (!isList(form)));
+    return ((!isAtom(form)) && (!isList(form)) && (!(((typeof form) === "function"))));
   }(exports.isHash = isHash);
 
   function isBlankObject(form) {
@@ -146,6 +146,23 @@
     return _ref1;
   }(exports.assertForm = assertForm);
 
+  function assertExp(exp, test, expect) {
+    var _ref, _ref0;
+    if ((!(typeof expect !== 'undefined' && expect !== null))) {
+      _ref = (expect = "valid expression");
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    if (test(exp)) {
+      _ref0 = true;
+    } else {
+      throw Error(("expecting " + pr(expect) + ", got " + pr(exp)));
+      _ref0 = undefined;
+    }
+    return _ref0;
+  }(exports.assertExp = assertExp);
+
   function pr(item) {
     var res, key, val, _ref, _res, _ref0, _i, _res0, _ref1;
     if (isAtom(item)) {
@@ -171,7 +188,7 @@
       _res0;
       _ref = ("[ " + res.slice(0, (res.length - 2)) + " ]");
     } else {
-      _ref = item.toString();
+      _ref = ("" + item);
     }
     return _ref;
   }(exports.pr = pr);
