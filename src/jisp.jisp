@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.9")
+(= exports.version "0.0.10")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -458,14 +458,17 @@
                 (macDeclareService ind "_i")
                 (macCompileGetLast arg name)
                 (assertExp name isVarName "valid identifier")
-                (= args[i] (= restname name))
-                (= rest (list (+ name " = " args.length " <= arguments.length ? [].slice.call(arguments, " i ", " ind " = arguments.length - " (- args.length i 1) ") : (" ind " = " ind ", [])"))))
+                (= restname name
+                   restind  i
+                   args[i]  restname)
+                (= rest (list (+ name " = " args.length " <= arguments.length ? [].slice.call(arguments, " i ", " ind " = arguments.length - " (- args.length i 1) ") : (" ind " = " restind ", [])"))))
               (do  ; assume optional parameter
                 (assertExp (= name (car arg)) isVarName "valid parameter name")
                 (= args[i] name)
                 (optionals.push ``("if" ("not" ("?" name)) ("=" name arg[1]))))))
           (elif restname
             (rest.push (+ (pr arg) " = arguments[" ind "++]")))))  ; when there's a restname, `ind` is defined
+      (if (? restind) (= args (args.slice 0 restind)))  ; drop restarg and all following args from arg list; prevents bug with empty rest
       (if (> optionals.length 0) (= body ``("do" ...optionals body)))
       (= body (returnify body))  ; prepend `return ` to each tail
       (macCompileResolve body body)
@@ -733,6 +736,8 @@
 
 ; Import and merge macros
 (importMacros (require "./macros"))
+
+; (console.log "-- macros:\n" (pr macros))
 
 ; Parses form for macro definitions and makes macros, removing definitions from source
 (def parseMacros form

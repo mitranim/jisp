@@ -1,7 +1,7 @@
 (function() {
-  function concat(lists) {
+  function concat() {
     var res, lst, _i, _i0, _res, _ref;
-    lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = _i, []);
+    lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     (res = []);
     _res = [];
     _ref = lists;

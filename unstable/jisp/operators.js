@@ -277,9 +277,9 @@
   (exports.operators = operators);
   (opFuncs = {});
 
-  function add(args) {
+  function add() {
     var _i2, _ref3;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = _i2, []);
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
     if (((args.length === 0))) {
       _ref3 = 0;
@@ -292,9 +292,9 @@
   }
   add;
 
-  function sub(args) {
+  function sub() {
     var _i2, _ref3;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = _i2, []);
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
     if (((args.length === 0))) {
       _ref3 = 0;
@@ -307,9 +307,9 @@
   }
   sub;
 
-  function mul(args) {
+  function mul() {
     var _i2, _ref3;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = _i2, []);
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
     if (((args.length === 0))) {
       _ref3 = 1;
@@ -322,9 +322,9 @@
   }
   mul;
 
-  function div(args) {
+  function div() {
     var _i2, _ref3;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = _i2, []);
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
     if (((args.length === 0))) {
       _ref3 = 1;

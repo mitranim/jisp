@@ -13,9 +13,9 @@
 (= exports.cdr (= glob.cdr (def cdr iterable (iterable.slice 1))))
 (= exports.tail (= glob.tail (def tail iterable (iterable.slice 1))))
 
-(= exports.init (= glob.init (def init iterable (iterable.slice 0 (- iterable.length 1)))))
+(= exports.init (= glob.init (def init iterable (iterable.slice 0 -1))))
 
-(= exports.last (= glob.last (def last iterable (get (iterable.slice (- iterable.length 1)) 0))))
+(= exports.last (= glob.last (def last iterable (get (iterable.slice -1) 0))))
 
 (= exports.concat (= glob.concat (def concat …lists
    (do (= res `())

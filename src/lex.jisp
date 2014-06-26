@@ -49,6 +49,7 @@
                     (modes.push mode)
                     (= test (maketest condition))
                     (if (test tokens) (return (lex tokens mode)))))
+         ; todo print prettier
          (throw (Error (+ "unexpected " (pr tokens[0]) " in possible modes: " (modes.join " | ") "\nTested against: " (conditions.join "   ") "\nTokens: " (pr (tokens.slice 0 10)) " ...")))))
 
 (def expect tokens ...args

@@ -442,7 +442,11 @@ Check if something exists (is defined) with `(?)`:
 
     (? undefinedVar)  ;; false
 
-See `operators.jisp` for more.
+Negated version: `(?!)`:
+
+    (?! undefined)    ;; true
+
+See `operators.jisp` and `macros.jisp` for more.
 
 #### If, Switch
 
@@ -728,6 +732,8 @@ Built-in toplevel functions are leaked globals; todo scope to compiled jisp scri
 Hoisting of multi-line statements above their place in code causes some actions to be executed out of order.
 
 [NYI] It's somewhat awkward to pass a 'nothing' to a macro (e.g. in a list of arguments); you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
+
+[NYI] `command` doesn't automatically load the `register` module.
 
 ## Why Use It
 
