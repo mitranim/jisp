@@ -790,7 +790,7 @@ Bigger:
 * A webpage.
 * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure this is necessary.
 * Compiler option to only macroexpand and print out expanded jisp code (will require a jisp beautifier).
-d
+
 Smaller:
 
 * Prettier JS output (fewer parens etc.).
