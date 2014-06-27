@@ -2,7 +2,7 @@
 
 ; Load compiler
 (console.log "-- trying to load new compiler...")
-(= jisp     (require "./unstable/jisp/jisp"))
+(= jisp      (require "./dev/jisp/jisp"))
 
 (def buildFile compiler ...filenames
      (for filename filenames

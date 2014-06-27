@@ -1,5 +1,5 @@
 (function() {
-  var util, pr, spr, render, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _ref0, _i0, _res0, _ref1, _i1, _res1, _ref2;
+  var util, pr, spr, render, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _i0, _res0, _ref0, _i1, _res1, _ref1;
   (util = require("./util"));
   (pr = util.pr);
   (spr = util.spr);
@@ -8,58 +8,36 @@
   (assertForm = util.assertForm);
 
   function makeop(op, zv, min, max) {
-    var _ref, _ref0, _ref1;
-    if ((!(typeof zv !== 'undefined' && zv !== null))) {
-      _ref = (zv = undefined);
-    } else {
-      _ref = undefined;
-    }
-    _ref;
-    if ((!(typeof min !== 'undefined' && min !== null))) {
-      _ref0 = (min = 0);
-    } else {
-      _ref0 = undefined;
-    }
-    _ref0;
-    if ((!(typeof max !== 'undefined' && max !== null))) {
-      _ref1 = (max = Infinity);
-    } else {
-      _ref1 = undefined;
-    }
-    _ref1;
+    (!(typeof zv !== 'undefined' && zv !== null)) ? (zv = undefined) : undefined;
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
     return (function(args) {
-      var i, arg, _ref2, _ref3, _res, _ref4;
+      var i, arg, _res, _ref, _ref0, _ref1;
       if (assertForm(args, min, max)) {
         if (((args.length === 0))) {
-          _ref3 = [pr(zv)];
+          _ref0 = [pr(zv)];
         } else {
           _res = [];
-          _ref4 = args;
-          for (i = 0; i < _ref4.length; ++i) {
-            arg = _ref4[i];
+          _ref = args;
+          for (i = 0; i < _ref.length; ++i) {
+            arg = _ref[i];
             _res.push((args[i] = pr(arg)));
           }
           _res;
-          _ref3 = [("(" + args.join((" " + op + " ")) + ")")];
+          _ref0 = [("(" + args.join((" " + op + " ")) + ")")];
         }
-        _ref2 = _ref3;
+        _ref1 = _ref0;
       } else {
-        _ref2 = undefined;
+        _ref1 = undefined;
       }
-      return _ref2;
+      return _ref1;
     });
   }
   makeop;
 
   function makesing(op) {
     return (function(args) {
-      var _ref;
-      if (assertForm(args, 1, 1)) {
-        _ref = [("(" + op + " " + spr(args) + ")")];
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
+      return assertForm(args, 1, 1) ? [("(" + op + " " + spr(args) + ")")] : undefined;
     });
   }
   makesing;
@@ -71,27 +49,10 @@
   reserved;
 
   function makestate(op, min, max) {
-    var _ref, _ref0;
-    if ((!(typeof min !== 'undefined' && min !== null))) {
-      _ref = (min = 0);
-    } else {
-      _ref = undefined;
-    }
-    _ref;
-    if ((!(typeof max !== 'undefined' && max !== null))) {
-      _ref0 = (max = Infinity);
-    } else {
-      _ref0 = undefined;
-    }
-    _ref0;
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
     return (function(args) {
-      var _ref1;
-      if (assertForm(args, min, max)) {
-        _ref1 = [(op + " " + spr(args)), "undefined"];
-      } else {
-        _ref1 = undefined;
-      }
-      return _ref1;
+      return assertForm(args, min, max) ? [(op + " " + spr(args)), "undefined"] : undefined;
     });
   }
   makestate;
@@ -101,95 +62,77 @@
       if (assertForm(args, 1, 1)) {
         if ((!isIdentifier(args[0]))) {
           throw Error("expecting identifier, got ", pr(args[0]));
-          _ref0 = undefined;
+          _ref = undefined;
         } else {
-          _ref0 = [("++" + pr(args[0]))];
+          _ref = [("++" + pr(args[0]))];
         }
-        _ref = _ref0;
+        _ref0 = _ref;
       } else {
-        _ref = undefined;
+        _ref0 = undefined;
       }
-      return _ref;
+      return _ref0;
     }),
     "--": (function(args) {
       var _ref, _ref0;
       if (assertForm(args, 1, 1)) {
         if ((!isIdentifier(args[0]))) {
           throw Error("expecting identifier, got ", pr(args[0]));
-          _ref0 = undefined;
+          _ref = undefined;
         } else {
-          _ref0 = [("--" + pr(args[0]))];
+          _ref = [("--" + pr(args[0]))];
         }
-        _ref = _ref0;
+        _ref0 = _ref;
       } else {
-        _ref = undefined;
+        _ref0 = undefined;
       }
-      return _ref;
+      return _ref0;
     }),
     "is": (function(args) {
-      var subj, arg, _ref, _i, _res, _ref0;
+      var subj, arg, _i, _res, _ref, _ref0;
       if (((args.length === 0))) {
-        _ref = [true];
+        _ref0 = [true];
       } else if (((args.length === 1))) {
-        _ref = [("!!" + pr(args[0]))];
+        _ref0 = [("!!" + pr(args[0]))];
       } else {
         (subj = args.shift());
         _res = [];
-        _ref0 = args;
-        for (_i = 0; _i < _ref0.length; ++_i) {
-          arg = _ref0[_i];
+        _ref = args;
+        for (_i = 0; _i < _ref.length; ++_i) {
+          arg = _ref[_i];
           _res.push(("(" + pr(subj) + " === " + pr(arg) + ")"));
         }
-        _ref = [("(" + _res.join(" || ") + ")")];
+        _ref0 = [("(" + _res.join(" || ") + ")")];
       }
-      return _ref;
+      return _ref0;
     }),
     "isnt": (function(args) {
-      var subj, arg, _ref, _i, _res, _ref0;
+      var subj, arg, _i, _res, _ref, _ref0;
       if (((args.length === 0))) {
-        _ref = [false];
+        _ref0 = [false];
       } else if (((args.length === 1))) {
-        _ref = [("!" + pr(args[0]))];
+        _ref0 = [("!" + pr(args[0]))];
       } else {
         (subj = args.shift());
         _res = [];
-        _ref0 = args;
-        for (_i = 0; _i < _ref0.length; ++_i) {
-          arg = _ref0[_i];
+        _ref = args;
+        for (_i = 0; _i < _ref.length; ++_i) {
+          arg = _ref[_i];
           _res.push(("(" + pr(subj) + " !== " + pr(arg) + ")"));
         }
-        _ref = [("(" + _res.join(" && ") + ")")];
+        _ref0 = [("(" + _res.join(" && ") + ")")];
       }
-      return _ref;
+      return _ref0;
     }),
     "or": makeop("||", false),
     "and": makeop("&&", true),
     "exists": (function(args) {
-      var _ref;
-      if (assertForm(args, 1, 1)) {
-        _ref = [("(typeof " + pr(args[0]) + " !== 'undefined' && " + pr(args[0]) + " !== null)")];
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
+      return assertForm(args, 1, 1) ? [("(typeof " + pr(args[0]) + " !== 'undefined' && " + pr(args[0]) + " !== null)")] : undefined;
     }),
     "in": (function(args) {
-      var _ref;
-      if (assertForm(args, 2, 2)) {
-        _ref = [("([].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0)")];
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
+      return assertForm(args, 2, 2) ? [("([].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0)")] : undefined;
     }),
     "new": (function(args) {
-      var _ref;
-      if (assertForm(args, 1)) {
-        _ref = [("new " + pr(args.shift()) + "(" + spr(args) + ")")];
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
+      return assertForm(args, 1) ? [("new " + pr(args.shift()) + "(" + spr(args) + ")")] : undefined;
     }),
     "function": (function() {
       return reserved("function");
@@ -240,12 +183,7 @@
   _ref = ops;
   for (_i = 0; _i < _ref.length; ++_i) {
     op = _ref[_i];
-    if ((((typeof op[1]) === "string"))) {
-      _ref0 = (operators[op[0]] = operators[op[1]]);
-    } else {
-      _ref0 = (operators[op[0]] = makeop.apply(makeop, [].concat(op)));
-    }
-    _res.push(_ref0);
+    _res.push((((typeof op[1]) === "string")) ? (operators[op[0]] = operators[op[1]]) : (operators[op[0]] = makeop.apply(makeop, [].concat(op))));
   }
   _res;
   (singops = [
@@ -255,9 +193,9 @@
     ["typeof", "typeof"]
   ]);
   _res0 = [];
-  _ref1 = singops;
-  for (_i0 = 0; _i0 < _ref1.length; ++_i0) {
-    op = _ref1[_i0];
+  _ref0 = singops;
+  for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
+    op = _ref0[_i0];
     _res0.push((operators[op[0]] = makesing(op[1])));
   }
   _res0;
@@ -268,9 +206,9 @@
     ["throw", 1, 1]
   ]);
   _res1 = [];
-  _ref2 = stateops;
-  for (_i1 = 0; _i1 < _ref2.length; ++_i1) {
-    op = _ref2[_i1];
+  _ref1 = stateops;
+  for (_i1 = 0; _i1 < _ref1.length; ++_i1) {
+    op = _ref1[_i1];
     _res1.push((operators[op[0]] = makestate(op[0])));
   }
   _res1;
@@ -278,62 +216,42 @@
   (opFuncs = ({}));
 
   function add() {
-    var _i2, _ref3;
+    var _i2;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
-    if (((args.length === 0))) {
-      _ref3 = 0;
-    } else {
-      _ref3 = args.reduce((function() {
-        return (arguments[0] + arguments[1]);
-      }));
-    }
-    return _ref3;
+    return ((args.length === 0)) ? 0 : args.reduce((function() {
+      return (arguments[0] + arguments[1]);
+    }));
   }
   add;
 
   function sub() {
-    var _i2, _ref3;
+    var _i2;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
-    if (((args.length === 0))) {
-      _ref3 = 0;
-    } else {
-      _ref3 = args.reduce((function() {
-        return (arguments[0] - arguments[1]);
-      }));
-    }
-    return _ref3;
+    return ((args.length === 0)) ? 0 : args.reduce((function() {
+      return (arguments[0] - arguments[1]);
+    }));
   }
   sub;
 
   function mul() {
-    var _i2, _ref3;
+    var _i2;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
-    if (((args.length === 0))) {
-      _ref3 = 1;
-    } else {
-      _ref3 = args.reduce((function() {
-        return (arguments[0] * arguments[1]);
-      }));
-    }
-    return _ref3;
+    return ((args.length === 0)) ? 1 : args.reduce((function() {
+      return (arguments[0] * arguments[1]);
+    }));
   }
   mul;
 
   function div() {
-    var _i2, _ref3;
+    var _i2;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
-    if (((args.length === 0))) {
-      _ref3 = 1;
-    } else {
-      _ref3 = args.reduce((function() {
-        return (arguments[0] / arguments[1]);
-      }));
-    }
-    return _ref3;
+    return ((args.length === 0)) ? 1 : args.reduce((function() {
+      return (arguments[0] / arguments[1]);
+    }));
   }
   div;
   return (exports.opFuncs = opFuncs);

@@ -53,7 +53,7 @@
   (optionParser = null);
 
   function run() {
-    var replCliOpts, literals, source, _ref, _ref0, _ref1, _ref2, _i, _res, _ref3;
+    var replCliOpts, literals, source, _ref, _ref0, _i, _res, _ref1;
     parseOptions();
     (replCliOpts = ({
       useGlobal: true
@@ -70,22 +70,14 @@
       _ref0 = undefined;
     }
     _ref0;
-    if (opts.run) {
-      _ref1 = opts.arguments.splice(1);
-    } else {
-      _ref1 = [];
-    }(literals = _ref1);
+    (literals = opts.run ? opts.arguments.splice(1) : []);
     (process.argv = process.argv.slice(0, 1).concat(literals));
-    (process.argv[0] = 'jisp'); if (opts.output) {
-      _ref2 = (opts.output = path.resolve(opts.output));
-    } else {
-      _ref2 = undefined;
-    }
-    _ref2;
+    (process.argv[0] = 'jisp');
+    opts.output ? (opts.output = path.resolve(opts.output)) : undefined;
     _res = [];
-    _ref3 = opts.arguments;
-    for (_i = 0; _i < _ref3.length; ++_i) {
-      source = _ref3[_i];
+    _ref1 = opts.arguments;
+    for (_i = 0; _i < _ref1.length; ++_i) {
+      source = _ref1[_i];
       (source = path.resolve(source));
       _res.push(compilePath(source, true, source));
     }
@@ -93,7 +85,7 @@
   }(exports.run = run);
 
   function compilePath(source, topLevel, base) {
-    var stats, err, files, file, code, _ref, _ref0, _ref1, _ref2, _ref3, _ref4, _ref5, _i, _res, _ref6, _ref7, _ref8;
+    var stats, err, files, file, code, _ref, _ref0, _ref1, _ref2, _ref3, _i, _res, _ref4, _ref5, _ref6, _ref7, _ref8;
     if ((([].indexOf.call(sources, source) >= 0) || ((!topLevel) && (notSources[source] || hidden(source))))) {} else {
       _ref = undefined;
     }
@@ -114,29 +106,29 @@
     _ref0;
     if (stats.isDirectory()) {
       if (((path.basename(source) === "node_modules"))) {
-        _ref3 = (notSources[source] = true);
+        _ref5 = (notSources[source] = true);
       } else if (opts.run) {
-        _ref3 = compilePath(findDirectoryIndex(source), topLevel, base);
+        _ref5 = compilePath(findDirectoryIndex(source), topLevel, base);
       } else {
         try {
-          _ref4 = (files = fs.readdirSync(source));
+          _ref2 = (files = fs.readdirSync(source));
         } catch (err) {
           if (((err.code === "ENOENT"))) {} else {
             throw err;
-            _ref5 = undefined;
+            _ref3 = undefined;
           }
-          _ref4 = _ref5;
+          _ref2 = _ref3;
         }
-        _ref4;
+        _ref2;
         _res = [];
-        _ref6 = files;
-        for (_i = 0; _i < _ref6.length; ++_i) {
-          file = _ref6[_i];
+        _ref4 = files;
+        for (_i = 0; _i < _ref4.length; ++_i) {
+          file = _ref4[_i];
           _res.push(compilePath(path.join(source, file), false, base));
         }
-        _ref3 = _res;
+        _ref5 = _res;
       }
-      _ref2 = _ref3;
+      _ref6 = _ref5;
     } else if ((topLevel || util.isJisp(source))) {
       sources.push(source);
       sourceCode.push(null);
@@ -154,36 +146,31 @@
         _ref7 = _ref8;
       }
       _ref7;
-      _ref2 = compileScript(source, code.toString(), base);
+      _ref6 = compileScript(source, code.toString(), base);
     } else {
-      _ref2 = (notSources[source] = true);
+      _ref6 = (notSources[source] = true);
     }
-    return _ref2;
+    return _ref6;
   }
   compilePath;
 
   function findDirectoryIndex(source) {
-    var ext, index, err, _i, _res, _ref, _ref0, _ref1, _ref2;
+    var ext, index, err, _i, _res, _ref, _ref0, _ref1;
     _res = [];
     _ref = jisp.fileExtensions;
     for (_i = 0; _i < _ref.length; ++_i) {
       ext = _ref[_i];
       (index = path.join(source, ("index" + ext)));
       try {
-        if (fs.statSync(index).isFile()) {
+        _ref0 = fs.statSync(index).isFile() ? undefined : undefined;
+      } catch (err) {
+        if ((!((err.code === "ENOENT")))) {
+          throw err;
           _ref1 = undefined;
         } else {
           _ref1 = undefined;
         }
         _ref0 = _ref1;
-      } catch (err) {
-        if ((!((err.code === "ENOENT")))) {
-          throw err;
-          _ref2 = undefined;
-        } else {
-          _ref2 = undefined;
-        }
-        _ref0 = _ref2;
       }
       _res.push(_ref0);
     }
@@ -194,13 +181,8 @@
   findDirectoryIndex;
 
   function compileScript(file, input, base) {
-    var o, options, task, t, compiled, err, message, _ref, _ref0, _ref1, _ref2, _ref3;
-    if ((!(typeof base !== 'undefined' && base !== null))) {
-      _ref = (base = null);
-    } else {
-      _ref = undefined;
-    }
-    _ref;
+    var o, options, task, t, compiled, err, message, _ref, _ref0, _ref1;
+    (!(typeof base !== 'undefined' && base !== null)) ? (base = null) : undefined;
     (o = opts);
     (options = compileOptions(file, base));
     try {
@@ -212,30 +194,25 @@
       jisp.emit("compile", task);
       if (o.run) {
         jisp.register();
-        _ref1 = jisp.run(t.input, t.options);
+        _ref0 = jisp.run(t.input, t.options);
       } else {
         (compiled = jisp.compile(t.input));
         (t.output = compiled);
         jisp.emit("success", task);
-        if (o.compile) {
-          _ref2 = writeJs(base, t.file, t.output, options.jsPath);
-        } else {
-          _ref2 = printLine(t.output.trim());
-        }
-        _ref1 = _ref2;
+        _ref0 = o.compile ? writeJs(base, t.file, t.output, options.jsPath) : printLine(t.output.trim());
       }
-      _ref0 = _ref1;
+      _ref = _ref0;
     } catch (err) {
       jisp.emit("failure", err, task);
       if (jisp.listeners("failure").length) {} else {
-        _ref3 = undefined;
+        _ref1 = undefined;
       }
-      _ref3;
+      _ref1;
       (message = (err.stack || err.toString()));
       printWarn(message);
-      _ref0 = process.exit(1);
+      _ref = process.exit(1);
     }
-    return _ref0;
+    return _ref;
   }
   compileScript;
 
@@ -244,13 +221,7 @@
     (code = "");
     (stdin = process.openStdin());
     stdin.on("data", (function(buffer) {
-      var _ref;
-      if (buffer) {
-        _ref = (code += buffer.toString());
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
+      return buffer ? (code += buffer.toString()) : undefined;
     }));
     return stdin.on("end", (function() {
       return compileScript(null, code);
@@ -274,22 +245,17 @@
   }));
 
   function outputPath(source, base, extension) {
-    var basename, srcDir, dir, _ref, _ref0;
-    if ((!(typeof extension !== 'undefined' && extension !== null))) {
-      _ref = (extension = ".js");
-    } else {
-      _ref = undefined;
-    }
-    _ref;
+    var basename, srcDir, dir, _ref;
+    (!(typeof extension !== 'undefined' && extension !== null)) ? (extension = ".js") : undefined;
     (basename = util.baseFileName(source, true, useWinPathSep));
     (srcDir = path.dirname(source));
     if ((!opts.output)) {
-      _ref0 = srcDir;
+      _ref = srcDir;
     } else if (((source === base))) {
-      _ref0 = opts.output;
+      _ref = opts.output;
     } else {
-      _ref0 = path.join(opts.output, path.relative(base, srcDir));
-    }(dir = _ref0);
+      _ref = path.join(opts.output, path.relative(base, srcDir));
+    }(dir = _ref);
     return path.join(dir, (basename + extension));
   }
   outputPath;
@@ -300,22 +266,11 @@
     (js = js);
 
     function compile() {
-      var _ref, _ref0;
+      var _ref;
       if (opts.compile) {
-        if ((js.length <= 0)) {
-          _ref0 = (js = " ");
-        } else {
-          _ref0 = undefined;
-        }
-        _ref0;
+        (js.length <= 0) ? (js = " ") : undefined;
         _ref = fs.writeFile(jsPath, js, (function(err) {
-          var _ref1;
-          if (err) {
-            _ref1 = printLine(err.message);
-          } else {
-            _ref1 = undefined;
-          }
-          return _ref1;
+          return err ? printLine(err.message) : undefined;
         }));
       } else {
         _ref = undefined;
@@ -324,13 +279,7 @@
     }
     compile;
     return fs.exists(jsDir, (function(itExists) {
-      var _ref;
-      if (itExists) {
-        _ref = compile();
-      } else {
-        _ref = mkdirp(jsDir, compile);
-      }
-      return _ref;
+      return itExists ? compile() : mkdirp(jsDir, compile);
     }));
   }
   writeJs;
@@ -356,28 +305,28 @@
       filename: filename
     }));
     if ((!filename)) {
-      _ref = answer;
+      _ref0 = answer;
     } else {
       if (base) {
         (cwd = process.cwd());
         (jsPath = outputPath(filename, base));
         (jsDir = path.dirname(jsPath));
-        _ref0 = (answer = util.merge(answer, ({
+        _ref = (answer = util.merge(answer, ({
           jsPath: jsPath,
           sourceRoot: path.relative(jsDir, cwd),
           sourceFiles: [path.relative(cwd, filename)],
           generatedFile: util.baseFileName(jsPath, false, useWinPathSep)
         })));
       } else {
-        _ref0 = (answer = util.merge(answer, ({
+        _ref = (answer = util.merge(answer, ({
           sourceRoot: "",
           sourceFiles: [util.baseFileName(filename, false, useWinPathSep)],
           generatedFile: (util.baseFileName(filename, true, useWinPathSep) + ".js")
         })));
       }
-      _ref = _ref0;
+      _ref0 = _ref;
     }
-    return _ref;
+    return _ref0;
   }
   compileOptions;
 

@@ -790,15 +790,13 @@ Bigger:
 * A webpage.
 * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure this is necessary.
 * Compiler option to only macroexpand and print out expanded jisp code (will require a jisp beautifier).
-* gulp.js build plugin
-
+d
 Smaller:
 
 * Prettier JS output (fewer parens etc.).
 * Distinguish between `;` `;;` and `;;;` comments. `;;` should quote the next form in parentheses, ignoring end-of-line. `;;;` should be a multiline block comment.
 * Auto-reindent plugin for Sublime Text (there's a Lisp indent plugin, but it's no good for jisp).
 * Output into a file option for CLI.
-* Compilation into ternary for `if` when possible.
 * Multiple expression support for `elif` tests when possible (comma-separated).
 * Case test grouping for `switch`.
 * Multiline regexes.

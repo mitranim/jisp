@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.13")
+(= exports.version "0.0.14")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -216,17 +216,6 @@
 
 ; # Main compiler parts
 
-; Top-level compile wrapper
-; (def compile form opts (do
-;      (= defaults (wrap: yes)
-;         opts (util.merge defaults opts))
-;      (form.unshift "do")
-;      (if opts.wrap
-;        (= form `(("get" ("fn" form) "call") "this")))
-;      (= (compiled scope) (compileForm form (hoist:`() service:`()) (toplevel: yes)))
-;      ; (render compiled)))
-;      (beautify (render compiled) (indent_size: 2))))
-
 ; Compiles form, switching between types
 ; Takes: <form to compile> <scope> <options>
 ; Returns: <array of compiled strings> <modified scope>
@@ -298,8 +287,8 @@
               ; Split object name and method for applying
               (= (name method) (splitName first))
               ; Apply, passing self and list of spread args
-              (if (is first name)
-                (buffer.push (+ name ".apply(" name ", " (pr form) ")"))
+              (if (isIdentifier name)
+                (buffer.push (+ name method ".apply(" name ", " (pr form) ")"))
                 (do (= (collector scope) (declareService "_ref" scope))
                     (buffer.push (+ "(" collector " = " name ")" method ".apply(" collector ", " (pr form) ")"))))))))
           ; Return compiled
@@ -346,6 +335,7 @@
             (buffer.push form)))
       ; assume list
       (do
+        ; todo no concat if single exp
         (= arr `()    ; collector array literal
            res "[]")  ; collector string for .concat
         (for exp form (do
@@ -496,82 +486,100 @@
 ; macro definition: makes a macro and returns `("")
   (makeMacro form)))
 
-; Mostly the same code for `if` and `switch`
-(mac macConditionalDefinition (type "if") (caseStr `"elif")
-; what arguments mean, example `if`:
+; Puts collector variable in end of given branch
+(def collect compiled collector (isCase no) (do
+  (if (and (isList compiled) (> compiled.length 0)) (do
+    ; when I wrote this, only God and I knew what this /\{$/ logic was for
+    ; now, God only knows
+    (if ((get /\{$/ test) (last compiled))
+      (= plug (compiled.pop)))
+    (= lastItem (compiled.pop))
+    (if ((get /^return\s/ test) lastItem)
+      (= lastItem (lastItem.replace /^return\s/ (+ "return " collector " = ")))
+      (elif (util.kwtest lastItem)
+        (= lastItem (+ collector " = undefined; " lastItem)))
+      (= lastItem (+ collector " = " (pr lastItem))))
+    (compiled.push lastItem)
+    (if isCase (compiled.push "break"))
+    (if (? plug) (compiled.push plug))))
+  compiled))
+
+(= specials.if (macCompileSpecial (code: (do
+; (if <test> <then-branch> (elif <test> <elif-branch>)... <else-branch>)
+; (if <test> <then-branch>)  ;; <else-branch> = undefined
+; todo if last form in function and no returns inside, end each branch with return instead of collector variable
+; what arguments mean:
   ; predicate prebranch   ...midcases postbranch
   ; test      then-branch ...elifs    else-branch
-  `(macCompileSpecial
-    (code: (do
-      ,(if (is type "if")
-        `(= (predicate prebranch ...midcases postbranch) form)
-        (elif (is type "switch")
-          `(= (predicate ...midcases postbranch) form)))
-      (if (and (? postbranch) (is (car postbranch) ,caseStr))
-          (do (midcases.push postbranch)
-              (= postbranch undefined)))
+  (= (predicate prebranch ...midcases postbranch) form)
+  (if (and (? postbranch) (is (car postbranch) "elif"))
+      (do (midcases.push postbranch)
+          (= postbranch undefined)))
+  ; prepare forms
+  (macCompileGetLast predicate predicate)
+  (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
+  (macCompileResolve prebranch prebranch)
+  (macCompileResolve postbranch postbranch)
+  ; choose between ternary and full form
+  (if (and (is prebranch.length 1) (not (util.kwtest (car prebranch)))
+           (is midcases.length 0)
+           (is postbranch.length 1) (not (util.kwtest (car postbranch))))
+    ; ternary
+    (buffer.push (+ predicate " ? " (car prebranch) " : " (car postbranch)))
+    (do  ; full form
       (macDeclareService collector "_ref")
-      ; Puts collector variable in end of given branch
-      (def collect compiled collector (isCase no) (do
-        (if (and (isList compiled) (> compiled.length 0)) (do
-          ; when I wrote this, only God and I knew what this /\{$/ logic was for
-          ; now, God only knows
-          (if ((get /\{$/ test) (last compiled))
-            (= plug (compiled.pop)))
-          (= lastItem (compiled.pop))
-          (if ((get /^return\s/ test) lastItem)
-            (= lastItem (lastItem.replace /^return\s/ (+ "return " collector " = ")))
-            (elif (util.kwtest lastItem)
-              (= lastItem (+ collector " = undefined; " lastItem)))
-            (= lastItem (+ collector " = " (pr lastItem))))
-          (compiled.push lastItem)
-          ,(if (is type "switch") `(compiled.push "break"))
-          (if (? plug) (compiled.push plug))))
-        compiled))
-      ; prepare forms
-      (macCompileGetLast predicate predicate)
-      (if (not (? predicate)) (= predicate "false"))  ; JS requires something in that field
-      ,(if (is type "if")
-         `(do
-            (macCompileResolve prebranch prebranch)
-            `(= prebranch (collect prebranch collector))))
+      (= prebranch (collect prebranch collector))
+      (= postbranch (collect postbranch collector))
       (for mid i midcases (do
-        (assertExp mid (fn x (is (x.shift) ,caseStr)) ,caseStr)
+        (assertExp mid (fn x (is (x.shift) "elif")) "elif")
         (= (midtest midbranch) mid)
         (macCompileResolve midtest midtest)
         (if (not (? midtest)) (= midtest "false"))  ; JS requires something in that field
         ; temporary ban on more-than-single-expression tests in midcases
         ; todo implement later (check if can use multiple exps with commas)
-        (if (> midtest.length 1) (throw (Error (+ (pr ,caseStr) " must compile to single expression (todo fix later); got:" (pr midtest)))))
+        (if (> midtest.length 1) (throw (Error (+ (pr "elif") " must compile to single expression (todo fix later); got:" (pr midtest)))))
         (macCompileResolve midbranch midbranch)
         (= midcases[i] (test: midtest branch: (collect midbranch collector)))))
-      (macCompileResolve postbranch postbranch)
-      (= postbranch (collect postbranch collector))
-      ; compile
-      ,(if (is type "if")
-        `(do
-          (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
-          (for mid midcases
-            (+= comp (+ " else if (" (spr mid.test) ") { " (render mid.branch) " }")))
-          (if (? postbranch) (+= comp (+ " else { " (render postbranch) " }"))))
-        (elif (is type "switch")
-         `(do
-           (= comp (+ "switch (" (pr predicate) ") { "))
-           (for mid midcases
-             (+= comp (+ " case " (spr mid.test) ": " (render mid.branch))))
-           (+= comp (+ " default: " (render postbranch) " }")))))
-      (buffer.push comp collector)))))
+      ; compile full form
+      (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
+      (for mid midcases
+        (+= comp (+ " else if (" (spr mid.test) ") { " (render mid.branch) " }")))
+      (if (? postbranch) (+= comp (+ " else { " (render postbranch) " }")))
+      (buffer.push comp collector)))))))
 
-(= specials.if (macConditionalDefinition))
-; (if <test> <then-branch> (elif <test> <elif-branch>)... <else-branch>)
-; (if <test> <then-branch>)  ;; <else-branch> = undefined
-; todo compilation into ternary
-; todo if last form in function and no returns inside, end each branch with return instead of collector variable
-
-(= specials.switch (macConditionalDefinition switch "case"))
+(= specials.switch (macCompileSpecial (code: (do
 ; (switch <exp> (case <test> ... <test> <case-branch>) ... <def-branch>)
 ; switch <exp> (case <test> <case-branch) ... )  ;;  <def-branch> = undefined
 ; todo if last form in function and no returns inside, end each branch with return instead of collector variable
+; what arguments mean
+  ; predicate ...midcases postbranch
+  ; test      cases       default
+  (= (predicate ...midcases postbranch) form)
+  (if (and (? postbranch) (is (car postbranch) "case"))
+      (do (midcases.push postbranch)
+          (= postbranch undefined)))
+  (macDeclareService collector "_ref")
+  ; prepare forms
+  (macCompileGetLast predicate predicate)
+  (if (not (? predicate)) (= predicate "false"))  ; JS requires something in that field
+  (for mid i midcases (do
+    (assertExp mid (fn x (is (x.shift) "case")) "case")
+    (= (midtest midbranch) mid)
+    (macCompileResolve midtest midtest)
+    (if (not (? midtest)) (= midtest "false"))  ; JS requires something in that field
+    ; temporary ban on more-than-single-expression tests in midcases
+    ; todo implement later (check if can use multiple exps with commas)
+    (if (> midtest.length 1) (throw (Error (+ (pr "case") " must compile to single expression (todo fix later); got:" (pr midtest)))))
+    (macCompileResolve midbranch midbranch)
+    (= midcases[i] (test: midtest branch: (collect midbranch collector yes)))))
+  (macCompileResolve postbranch postbranch)
+  (= postbranch (collect postbranch collector))
+  ; compile
+  (= comp (+ "switch (" (pr predicate) ") { "))
+  (for mid midcases
+    (+= comp (+ " case " (spr mid.test) ": " (render mid.branch))))
+  (+= comp (+ " default: " (render postbranch) " }"))
+  (buffer.push comp collector)))))
 
 ; Mostly the same code for `for` and `over`
 (mac macLoopDefinition (type "for") (ind `"_i")
@@ -739,8 +747,6 @@
 
 ; Import and merge macros
 (importMacros (require "./macros"))
-
-; (console.log "-- macros:\n" (pr macros))
 
 ; Parses form for macro definitions and makes macros, removing definitions from source
 (def parseMacros form

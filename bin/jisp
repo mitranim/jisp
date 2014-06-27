@@ -1,7 +1,4 @@
 #!/usr/bin/env node
 
 // lib
-// require('../lib/jisp/command').run();
-
-// unstable
-require('../unstable/jisp/command').run();
+require('../lib/jisp/command').run();

@@ -12,7 +12,7 @@
     _res;
     return res;
   }
-  var child_process, path, util, jisp, ext, fork, binary, _ref, _i, _res, _ref0, _ref1;
+  var child_process, path, util, jisp, ext, fork, binary, _i, _res, _ref, _ref0, _ref1;
   (child_process = require("child_process"));
   (path = require("path"));
   (util = require("./util"));
@@ -24,29 +24,29 @@
   loadFile;
   if (require.extensions) {
     _res = [];
-    _ref0 = jisp.fileExtensions;
-    for (_i = 0; _i < _ref0.length; ++_i) {
-      ext = _ref0[_i];
+    _ref = jisp.fileExtensions;
+    for (_i = 0; _i < _ref.length; ++_i) {
+      ext = _ref[_i];
       _res.push((require.extensions[ext] = loadFile));
     }
-    _ref = _res;
+    _ref0 = _res;
   } else {
-    _ref = undefined;
+    _ref0 = undefined;
   }
-  _ref;
+  _ref0;
   if (child_process) {
     (fork = child_process.fork);
     (binary = require.resolve("../../bin/jisp"));
     _ref1 = (child_process.fork = (function(path, args, options) {
-      var _ref2, _ref3;
+      var _ref1, _ref2;
       if (util.isJisp(path)) {
         if ((!Array.isArray(args))) {
           (options = (args || ({})));
-          _ref3 = (args = []);
+          _ref1 = (args = []);
         } else {
-          _ref3 = undefined;
+          _ref1 = undefined;
         }
-        _ref3;
+        _ref1;
         (args = [path].concat(args));
         _ref2 = (path = binary);
       } else {
