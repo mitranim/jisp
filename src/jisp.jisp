@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.14")
+(= exports.version "0.0.15")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -525,7 +525,7 @@
            (is midcases.length 0)
            (is postbranch.length 1) (not (util.kwtest (car postbranch))))
     ; ternary
-    (buffer.push (+ predicate " ? " (car prebranch) " : " (car postbranch)))
+    (buffer.push (+ (pr predicate) " ? " (pr (car prebranch)) " : " (pr (car postbranch))))
     (do  ; full form
       (macDeclareService collector "_ref")
       (= prebranch (collect prebranch collector))

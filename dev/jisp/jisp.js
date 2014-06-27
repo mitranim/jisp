@@ -45,7 +45,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.0.14");
+  (exports.version = "0.0.15");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -1079,7 +1079,7 @@
     buffer = _ref3[1];
     scope = _ref3[2];
     if ((((prebranch.length === 1)) && (!util.kwtest(car(prebranch))) && ((midcases.length === 0)) && ((postbranch.length === 1)) && (!util.kwtest(car(postbranch))))) {
-      _ref11 = buffer.push((predicate + " ? " + car(prebranch) + " : " + car(postbranch)));
+      _ref11 = buffer.push((pr(predicate) + " ? " + pr(car(prebranch)) + " : " + pr(car(postbranch))));
     } else {
       (_ref4 = declareService("_ref", scope, opts.function ? args : undefined));
       collector = _ref4[0];
