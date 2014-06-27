@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.15")
+(= exports.version "0.0.16")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -92,8 +92,8 @@
          `(lastItem buffer scope)))
 
 (def splitName name (do
-  ; matches everything in an identifier until the last method, dot and bracket properties included (except strings in brackets — todo fix)
-  (if (= obj    (name.match /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$|^(?:[$_.\[\]\w])+(?=\.|\[)+/))
+  ; matches everything in an identifier until the last method, dot and bracket properties included
+  (if (= obj    (name.match /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*([$_\w](?!\.))+$|^([$_.\[\]\w])+(?=\.|(\[.*(?=\[+).*\]))+|^(?:[$_.\[\]\w])+(?=\.|\[)+/))
       (do (= obj    obj[0]
              method (name.replace obj ""))
           `(,obj ,method))
@@ -152,7 +152,7 @@
        funcs ``()
        dec   "var ")
     ; Deal with new names: declare, drop, or bubble up if funcs
-    (if (not (? args)) (= args ``()))
+    (if (?! args) (= args ``()))
     (for name scope.hoist
       (if (and (not (in name outerScope.hoist))
                (not (in name args)))
@@ -249,7 +249,7 @@
       (if (in (car form) (Object.keys specials))  ; special forms have their own rules
         (= (buffer scope) (specials[(car form)] form scope opts))
         (elif (in (car form) (Object.keys macros))
-              (= form (expandMacros form)))  ; if a known macro, expand it
+              (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
         (do  ; not a special form? -> function call
           ; compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
@@ -267,7 +267,7 @@
                      (macCompileGetLast arg arg)
                      (= form[i] arg)))))
           ; compile: simple or with spread
-          (if (not (? argsSpread))
+          (if (?! argsSpread)
             (if (in first (Object.keys operators))
                 (buffer.push ...(operators[first] form))
                 (buffer.push (+ (pr first) "(" (spr form) ")")))
@@ -305,7 +305,7 @@
           (delete     opts.toplevel)))
     (if isTopLevel (macForkScope))
     (for exp form
-      (if (not (? exp))
+      (if (?! exp)
         (buffer.push exp)
         (if (or (and (isList (car exp))
                      (is (get (car exp) length) 2)
@@ -313,7 +313,7 @@
                 (util.isPropSyntax (car exp)))
           ; .dot or [bracket] notation: implicit reference to last object for method chaining
           (do (= ref (buffer.pop))
-            (if (not (? ref)) (= ref ""))
+            (if (?! ref) (= ref ""))
             (macCompileAdd exp)
             (buffer.push (+ ref (buffer.pop))))
           ; simple sequence element
@@ -353,10 +353,19 @@
                         (do (+= res (+ ".concat(" (pr arr) ")"))
                             (= arr `())))
                     (+= res (+ ".concat(" (pr exp) ")"))))))
-            (elif (and (isList exp)
-                       (is (car exp) "quote" "unquote"))
+            (elif (and (isList exp) (is (car exp) "quote"))
               (do (macCompileGetLast exp exp)
                   (if (? exp) (arr.push exp))))
+            (elif (and (isList exp) (is (car exp) "unquote"))
+              (do (macCompileGetLast exp exp)
+                  (if (? exp)
+                    (if (and opts.macro (isList exp))
+                      ; atoms need to be re-quoted after compilation
+                      (do (for item i exp
+                            (if (isAtom item)
+                              (macCompileGetLast `("quote" item) exp[i])))
+                          (arr.push exp))
+                      (arr.push exp)))))
             (elif (and (isList exp) (is (car exp) "spread")
                        (not opts.macro))
               (do  ; implicit unquote outside macro
@@ -414,7 +423,7 @@
                     (= spreadname name
                        spreadind  i)
                     (buffer.push (+ "var " spreadname " = " left.length " <= " ref ".length ? [].slice.call(" ref ", " spreadind ", " ind " = " ref ".length - " (- left.length spreadind 1) ") : (" ind " = " spreadind ", [])")))
-                  (elif (not (? spreadname))
+                  (elif (?! spreadname)
                     (do (if (isVarName name) (macDeclareVar name))
                         (buffer.push (+ (pr name) " = " ref "[" i "]"))))
                   (do (if (isVarName name) (macDeclareVar name))
@@ -435,7 +444,7 @@
           (= (fname ...args body) form)
           (assertExp fname isVarName "valid function name")))
       (scope.hoist.push ...(getArgNames args))
-      (if (not (? body)) (= body ``()))
+      (if (?! body) (= body ``()))
       (= optionals ``()
          spreads   0)
       (for arg i args
@@ -534,7 +543,7 @@
         (assertExp mid (fn x (is (x.shift) "elif")) "elif")
         (= (midtest midbranch) mid)
         (macCompileResolve midtest midtest)
-        (if (not (? midtest)) (= midtest "false"))  ; JS requires something in that field
+        (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
         ; temporary ban on more-than-single-expression tests in midcases
         ; todo implement later (check if can use multiple exps with commas)
         (if (> midtest.length 1) (throw (Error (+ (pr "elif") " must compile to single expression (todo fix later); got:" (pr midtest)))))
@@ -561,12 +570,12 @@
   (macDeclareService collector "_ref")
   ; prepare forms
   (macCompileGetLast predicate predicate)
-  (if (not (? predicate)) (= predicate "false"))  ; JS requires something in that field
+  (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
   (for mid i midcases (do
     (assertExp mid (fn x (is (x.shift) "case")) "case")
     (= (midtest midbranch) mid)
     (macCompileResolve midtest midtest)
-    (if (not (? midtest)) (= midtest "false"))  ; JS requires something in that field
+    (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
     ; temporary ban on more-than-single-expression tests in midcases
     ; todo implement later (check if can use multiple exps with commas)
     (if (> midtest.length 1) (throw (Error (+ (pr "case") " must compile to single expression (todo fix later); got:" (pr midtest)))))
@@ -587,8 +596,8 @@
     code: (do
       (= (value key iterable body) form)
       ,(if (is type "for")
-        `(if (not (? body))  ; assume <value> <iterable> <body>
-          (if (not (? iterable))  ; assume <integer> <body>
+        `(if (?! body)  ; assume <value> <iterable> <body>
+          (if (?! iterable)  ; assume <integer> <body>
             (do
               (if (or (isNaN (Number value))
                       (not (> (parseInt value) 0)))
@@ -606,13 +615,13 @@
             (macDeclareVar key)
             (macDeclareVar value)))
       (elif (is type "over")
-        `(if (not (? body))  ; assume <value> <iterable> <body>
+        `(if (?! body)  ; assume <value> <iterable> <body>
           (do
             (= body     iterable
                iterable key)
             (macDeclareService key ,ind)
             (macDeclareVar value))
-          (elif (not (? iterable))
+          (elif (?! iterable)
             (do
               (= body     key
                  iterable value)
@@ -684,7 +693,7 @@
         (= (catchForm err catchForm) catchForm)
         (macDeclareVar err))
       (macDeclareService err "_err"))
-    (if (not (? catchForm)) (= catchForm `()))
+    (if (?! catchForm) (= catchForm `()))
     (macCompileResolve catchForm catchForm)
     (if (not (util.kwtest (pr (last catchForm))))
         (catchForm.push (+ collector " = " (pr (catchForm.pop)))))
@@ -705,7 +714,7 @@
 ; (get <property>)
   code: (do
     (= (object property) form)
-    (if (not (? property))
+    (if (?! property)
       (= property object
          object   ""))
     (macCompileGetLast object object)
@@ -762,8 +771,8 @@
 
 (def makeMacro form (do
      (= (name ...body) form)
-     (if (not (? name)) (throw (Error "a macro requires a name")))
-     (if (not (? body)) (throw (Error "a macro requires a body")))
+     (if (?! name) (throw (Error "a macro requires a name")))
+     (if (?! body) (throw (Error "a macro requires a body")))
      (body.unshift "fn")
      (= (compiled scope) (compileForm body (hoist:`() service:`()) (macro: yes)))
      (= rendered         (render compiled))

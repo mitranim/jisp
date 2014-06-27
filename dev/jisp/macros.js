@@ -1,4 +1,30 @@
 (function() {
+  var macCar = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["get", x, 0];
+  };
+  var macCdr = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return [
+      ["get", x, "slice"], 1
+    ];
+  };
   var macLet = function() {
     var body, names, callArgs, _i, _res;
     args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
@@ -19,13 +45,17 @@
       [].concat(["fn"]).concat(names).concat([body])
     ]).concat(callArgs);
   };
-  var macNotExist = function() {
-    var _i;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
-    util.assertExp(args, (function(x) {
-      return ((x.length === 1));
-    }), "one argument");
-    return ["not", ["?", car(args)]];
+  var macNotExist = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["not", ["?", x]];
   };
   var macIsA = function(obj, type) {
     return ["is", ["typeof", obj], type];
@@ -37,6 +67,10 @@
     return util.assertExp(exp, util.isVarName, "valid identifier") ? exp : undefined;
   }
   checkVar;
+  (exports.car = macCar);
+  (exports.head = macCar);
+  (exports.cdr = macCdr);
+  (exports.tail = macCdr);
   (exports.let = macLet);
   (exports["?!"] = macNotExist);
   return (exports.isa = macIsA);

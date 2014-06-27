@@ -210,7 +210,7 @@ Becomes:
             (;; body))
         5 6)
 
-Use `let` as a shortcut for auto-executing anonymous functions.
+In future editions of EcmaScript, `let` will use the native `let` statement for block scoping, and won't be a function. Keep this in mind for future compatibility.
 
 ### Object Properties
 

@@ -7,12 +7,6 @@
 
 (= glob (or global window))
 
-(= exports.car (= glob.car (def car iterable iterable[0])))
-(= exports.head (= glob.head (def head iterable iterable[0])))
-
-(= exports.cdr (= glob.cdr (def cdr iterable (iterable.slice 1))))
-(= exports.tail (= glob.tail (def tail iterable (iterable.slice 1))))
-
 (= exports.init (= glob.init (def init iterable (iterable.slice 0 -1))))
 
 (= exports.last (= glob.last (def last iterable (get (iterable.slice -1) 0))))

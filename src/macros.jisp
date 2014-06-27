@@ -11,11 +11,34 @@
   (if (util.assertExp exp util.isVarName "valid identifier")
        exp))
 
+(mac macOneArg name rest
+  `(if (or (?! ,name) (> (get ,rest length) 0))
+       (throw (Error "expecting one argument"))))
+
+; `car`: x[0]
+; `head`: x[0]
+(mac macCar x ...other (do
+  (macOneArg x other)
+  `(get ,x 0)
+))
+
+(= exports.car macCar)
+(= exports.head macCar)
+
+; `cdr`: x.slice(1)
+(mac macCdr x ...other (do
+  (macOneArg x other)
+  `((get ,x slice) 1)
+))
+
+(= exports.cdr macCdr)
+(= exports.tail macCdr)
+
 ; `let`: self-executing lambda with auto-passed arguments
 (mac macLet ...args body (do
   (util.assertExp args (fn x (is (% x.length 2) 0))
                           "an even number of arguments")
-  (if (not (? body)) (= body `()))
+  (if (?! body) (= body `()))
   (= names    `()
      callArgs `())
   (while (> args.length 0)
@@ -26,9 +49,9 @@
 (= exports.let macLet)
 
 ; `?!`: (not (? x))
-(mac macNotExist ...args (do
-  (util.assertExp args (fn x (is x.length 1)) "one argument")
-  `(not (? ,(car args)))))
+(mac macNotExist x ...other (do
+  (macOneArg x other)
+  `(not (? ,x))))
 
 (= (get exports "?!") macNotExist)
 
