@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.16")
+(= exports.version "0.0.17")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -328,11 +328,16 @@
       (elif (isAtom form)
         (buffer.push form))
       (elif (isHash form)
-        (do (over exp key form
-              (if (and (isAtom exp) (not opts.macro))
-                  (macCompileGetLast exp form[key])
-                  (macCompileGetLast `("quote" exp) form[key])))
-            (buffer.push form)))
+        (if (not opts.macro)
+          (do (over exp key form
+                (macCompileGetLast exp form[key]))
+              (buffer.push form))
+          ; in macro: quote all elements in hash
+          (do (= newform (:))
+              (over exp key form (do
+                (= key (JSON.stringify key))
+                (macCompileGetLast `("quote" exp) newform[key])))
+              (buffer.push newform))))
       ; assume list
       (do
         ; todo no concat if single exp
@@ -358,14 +363,13 @@
                   (if (? exp) (arr.push exp))))
             (elif (and (isList exp) (is (car exp) "unquote"))
               (do (macCompileGetLast exp exp)
-                  (if (? exp)
-                    (if (and opts.macro (isList exp))
-                      ; atoms need to be re-quoted after compilation
-                      (do (for item i exp
-                            (if (isAtom item)
-                              (macCompileGetLast `("quote" item) exp[i])))
-                          (arr.push exp))
-                      (arr.push exp)))))
+                  (if (and (? exp) opts.macro)
+                    (if (isList exp)
+                      (for item i exp
+                        ; atoms need to be re-quoted after compilation
+                        (if (isAtom item)
+                          (macCompileGetLast `("quote" item) exp[i])))))
+                  (if (? exp) (arr.push exp))))
             (elif (and (isList exp) (is (car exp) "spread")
                        (not opts.macro))
               (do  ; implicit unquote outside macro

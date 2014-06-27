@@ -122,7 +122,7 @@ Most languages use the _prefix_ notation for functions: `func(args)` and the _in
     (/ 4)                                  ;; 0.25
     (+ 'using jisp' ' you’re ' 'awesome')  ;; + takes multiple strings
 
-**[NYI]** You can also pass them around as any other function:
+**[NYI]** You can also pass them around like any other function:
 
     (sort < (range 1 4))    ;; (4 3 2 1)
 
@@ -132,7 +132,7 @@ Not everything is a function. Some forms are _special forms_: `=` `quote` `unquo
 
 Each and every form in jisp is an expression: it returns a result. There are no 'statements'; every form resolves to something. Atoms resolve to themselves; hash tables resolve to themselves with resolved values; lists resolve by special rules.
 
-An unquoted empty list `()` (not an empty array `` `() ``!) resolves to nothing at all. (Currently bugged: resolves to `[]` like ``()`.)
+An unquoted empty list `()` (not an empty array `` `() ``!) resolves to nothing.
 
 Forms starting with `=`, `def`, `fn`, `mac`, `let`, and a few other keywords, resolve as _abstraction_ expressions. In other words, as name binding:
 
@@ -389,14 +389,14 @@ Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collec
 
 ### Comprehensions
 
-Other languages typically devise special syntax for list comprehensions (set builder notation). Jisp includes this without any special notation.
+Other languages typically devise special syntax for list comprehensions (set builder notation). Jisp has a limited version of it without any special notation.
 
 `range` is a trivial function that returns a list from N to M:
 
     (range 0 Infinity)
     ;; (0 1 2 3 4 5 6 ... hangs your program
 
-Because `for` and `while` are list-building expressions, jisp doesn't need any set builder syntax:
+Because `for` and `while` are list-building expressions, jisp doesn't need special set builder syntax:
 
     (for x (range 0 6) (* x x))
     ;; (0 1 4 9 16 25 36)
@@ -560,7 +560,6 @@ Macros are compile-time functions that generate code. A macro takes code as inpu
 
     (myFirstMacro 'Pizza delivery here!')  ;; yanked from code at macroexpand step
 
-    --------------------------------------------------------------------------
 
     (console.log 'Pizza delivery here!')         ;; code put back
 

@@ -37,7 +37,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.0.16");
+  (exports.version = "0.0.17");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -457,7 +457,7 @@
     return Array(buffer, scope);
   }));
   (specials.quote = (function(form, scope, opts) {
-    var buffer, formName, arr, res, exp, i, item, key, _ref, _ref0, _i, _res, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _ref7, _ref8, _ref9, _i3, _ref10, _i4, _res0, _ref11, _ref12, _i5, _ref13, _ref14, _ref15, _ref16, _i6, _ref17, _ref18, _ref19, _res1, _ref110, _ref111, _i7, _ref112, _i8, _ref113;
+    var buffer, formName, arr, res, exp, i, item, key, newform, _ref, _ref0, _i, _res, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _ref7, _ref8, _ref9, _i3, _ref10, _i4, _res0, _ref11, _ref12, _i5, _ref13, _ref14, _ref15, _ref16, _i6, _ref17, _ref18, _ref19, _res1, _ref110, _ref111, _i7, _res2, _ref112, _ref113, _i8, _ref114;
     (!(typeof opts !== 'undefined' && opts !== null)) ? (opts = ({})) : undefined;
     (buffer = []);
     (form = form.slice());
@@ -482,25 +482,34 @@
     } else if (isAtom(form)) {
       _ref19 = buffer.push(form);
     } else if (isHash(form)) {
-      _res1 = [];
-      _ref110 = form;
-      for (key in _ref110) {
-        exp = _ref110[key];
-        if ((isAtom(exp) && (!opts.macro))) {
+      if ((!opts.macro)) {
+        _res1 = [];
+        _ref110 = form;
+        for (key in _ref110) {
+          exp = _ref110[key];
           (_ref111 = compileGetLast(exp, buffer, scope, opts));
           form[key] = _ref111[0];
           buffer = _ref111[1];
-          _ref113 = scope = _ref111[2];
-        } else {
-          (_ref112 = compileGetLast(["quote", exp], buffer, scope, opts));
-          form[key] = _ref112[0];
-          buffer = _ref112[1];
-          _ref113 = scope = _ref112[2];
+          _res1.push(scope = _ref111[2]);
         }
-        _res1.push(_ref113);
+        _res1;
+        _ref114 = buffer.push(form);
+      } else {
+        (newform = ({}));
+        _res2 = [];
+        _ref112 = form;
+        for (key in _ref112) {
+          exp = _ref112[key];
+          (key = JSON.stringify(key));
+          (_ref113 = compileGetLast(["quote", exp], buffer, scope, opts));
+          newform[key] = _ref113[0];
+          buffer = _ref113[1];
+          _res2.push(scope = _ref113[2]);
+        }
+        _res2;
+        _ref114 = buffer.push(newform);
       }
-      _res1;
-      _ref19 = buffer.push(form);
+      _ref19 = _ref114;
     } else {
       (arr = []);
       (res = "[]");
@@ -539,8 +548,8 @@
           exp = _ref10[0];
           buffer = _ref10[1];
           scope = _ref10[2];
-          if ((typeof exp !== 'undefined' && exp !== null)) {
-            if ((opts.macro && isList(exp))) {
+          if (((typeof exp !== 'undefined' && exp !== null) && opts.macro)) {
+            if (isList(exp)) {
               _res0 = [];
               _ref11 = exp;
               for (i = 0; i < _ref11.length; ++i) {
@@ -555,16 +564,16 @@
                 }
                 _res0.push(_ref13);
               }
-              _res0;
-              _ref14 = arr.push(exp);
+              _ref14 = _res0;
             } else {
-              _ref14 = arr.push(exp);
+              _ref14 = undefined;
             }
             _ref15 = _ref14;
           } else {
             _ref15 = undefined;
           }
-          _ref5 = _ref15;
+          _ref15;
+          _ref5 = (typeof exp !== 'undefined' && exp !== null) ? arr.push(exp) : undefined;
         } else if ((isList(exp) && ((exp[0] === "spread")) && (!opts.macro))) {
           (_ref16 = compileGetLast(exp, buffer, scope, opts));
           exp = _ref16[0];
