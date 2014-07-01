@@ -19,20 +19,33 @@
 ; `head`: x[0]
 (mac macCar x ...other (do
   (macOneArg x other)
-  `(get ,x 0)
-))
+  `(get ,x 0)))
 
 (= exports.car macCar)
 (= exports.head macCar)
 
 ; `cdr`: x.slice(1)
+; `tail`: x.slice(1)
 (mac macCdr x ...other (do
   (macOneArg x other)
-  `((get ,x slice) 1)
-))
+  `((get ,x slice) 1)))
 
 (= exports.cdr macCdr)
 (= exports.tail macCdr)
+
+; `init`: x.slice(0, -1)
+(mac macInit x ...other (do
+  (macOneArg x other)
+  `((get ,x slice) 0 -1)))
+
+(= exports.init macInit)
+
+; `last`: x.slice(-1)[0]
+(mac macLast x ...other (do
+  (macOneArg x other)
+  `(get ((get ,x slice) -1) 0)))
+
+(= exports.last macLast)
 
 ; `let`: self-executing lambda with auto-passed arguments
 (mac macLet ...args body (do

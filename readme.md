@@ -59,6 +59,8 @@ Compile a file:
 
     $ jisp -c <file>
 
+Stream-compile for the browser with [gulp-jisp](https://github.com/Mitranim/gulp-jisp) (uses at least one function unavailable in old IE versions, todo polyfill).
+
 Super basic Sublime Text build system:
 * _Tools_ > _Build System_ > _New Build System_
 * put line: `"cmd": ["jisp", "$file"]`
@@ -575,7 +577,9 @@ But you can also do this:
 
 It seems to be a trend among modern languages to introduce limited macro support, usually as templates. Jisp brings macros to JavaScript, but it's **not** limited to templating. Macros are complete, real, custom functions using the full power of the language to run arbitrary logic and transform code in arbitrary ways.
 
-The most basic use is templating:
+#### Templating
+
+Templating is the most basic use of macros:
 
     (mac makeOp name operator
          (do (console.log (+ 'defining ' name))  ;; run during macro expansion
@@ -607,9 +611,13 @@ Because macros are real functions, there's nothing stopping you from using condi
                `(if (isnt args.length 0)
                     (args.reduce {,operator #0 #1})))))  ;; will be included otherwise
 
-You may only let parts of a template through, based on conditionals.
+You can choose which parts of a template to let through, based on conditionals.
 
-Because arguments are passed to macros blindly, they can enable new syntax, even silly like this:
+#### Code Construction
+
+Because jisp code is a series of nested arrays, macros can deconstruct and construct it on the fly. This is the reason for all those parentheses.
+
+For instance, you could enable a silly reverse syntax by reversing the code passed to a macro:
 
     (mac reverse form
       (get ((for exp i form
@@ -622,6 +630,60 @@ Because arguments are passed to macros blindly, they can enable new syntax, even
 
     ; 'hello world'                       ;; runtime result
 
+Suppose you're writing a gulp config file full of repetitive blocks like these:
+
+    gulp.task('js', (function() {
+      return handle(gulp.src(jsSrcList))
+      .pipe(handle(concat('deps.js')))
+      .pipe(handle(uglify(({
+        mangle: false
+      }))))
+      .pipe(handle(gulp.dest('public/js/tmp/')));
+    }));
+
+There's no way to deduplicate these repeating parts using JS alone, and you're forced to write them by hand. But you can abstract them away with a macro.
+
+    (mac task name ...args (do
+      (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
+      (while (> args.length 0) (do
+        (= left  (args.shift)
+           right (args.shift))
+        (if (is right null) (= right ""))
+        (pipeline.push `(.pipe (handle (,left ,right))))))
+      `(gulp.task ,name (fn ,pipeline))))
+
+Call it like this:
+
+    (task       "js"
+      gulp.src  jsSrcList
+      concat    "deps.js"
+      uglify    (mangle: no)
+      gulp.dest "public/js/tmp/")
+
+And it produces the very same output we saw earlier. What happened? The macro takes the arguments as an array, takes it apart in pairs, and dynamically constructs a new array representing the resulting code, filling in the repetitive blocks we've abstracted away. The constructed code is:
+
+    (gulp.task "js" (fn (do
+      (handle (gulp.src jsSrcList))
+      (.pipe (handle (concat "deps.js")))
+      (.pipe (handle (uglify (mangle: no))))
+      (.pipe (handle (gulp.dest "public/js/tmp/"))))))
+
+Which compiles into the above JS output. Now you can use this much shorter and cleaner `task` syntax for the rest of your configuration file.
+
+#### Macro Import and Export
+
+Macros can be imported in two ways: compiling or `require`ing a macro-containing file before others, or with the `importMacros` method of the `jisp` object.
+
+Macros are kept in the `macro` object that exists during the compiler runtime. It's exported by the compiler and can be accessed and modified directly. The compiler also exports the `importMacros` function that takes one or more macro stores and merges them into the `macro` object, overriding the existing macros. Each store is a hash table where keys are macro names and values are macro functions.
+
+    (= myStore (testMacro: (fn `nameToReturn)))
+    (= jisp (require "jisp"))
+    (jisp.importMacros myStore)
+    (testMacro)  ;; nameToReturn
+
+The `macro` object persists between compiler calls. If you're using a build script that calls compile for multiple files on the same jisp object, you can simply put macros in a file and compile it before others. This also works when running jisp scripts directly by `require`ing them.
+
+#### Notes
 
 After each macro expansion, the new code is checked for macro definitions and calls. This allows macros to be nested, and even contain new macro definitions. See `jisp.jisp` for an example; most of it is written with nested macros.
 
@@ -631,7 +693,7 @@ It's important to realise that macros are compile-time, not run-time. They live 
 
 ### Built-ins
 
-JavaScript is a method-oriented language that avoids global functions in favour of object methods. At the risk of violating this paradigm, jisp introduces a few global convenience functions. They're embedded into your program on compile.
+Jisp comes with some built-in convenience macros and functions. The functions, if you use them, are embedded into your program on compile. No globals are leaked.
 
 Examples:
 
@@ -656,12 +718,12 @@ Which is the same as spreading them:
 
     (js "console.log('hello');")  ;;  console.log('hello');
 
-See `toplevel.jisp`.
+See `toplevel.jisp` and `macros.jisp`.
 
 
 ### Style
 
-Jisp is insensitive to whitespace, but humans don't read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions. Each vertical must only begin expressions which are parallel to each other; each level of nesting should be indented further to the right.
+Jisp is insensitive to whitespace, but humans don't read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions; in other words, the branches of execution. Each indent should only start the branches that are on the same level of nesting.
 
     ;; BAD, bad, misleading
     (def maketest condition
@@ -695,7 +757,7 @@ Jisp is insensitive to whitespace, but humans don't read code by counting parens
                            true)))
              (throw (Error (+ "can't test against " condition)))))
 
-If nesting isn't too deep, it's nice to line a vertical with the beginning of the second word on the previous level. If not, just stick with two spaces for each next level.
+If nesting isn't too deep, it's nice to line up the indent with the second word on the previous line. If not, just stick with two spaces for each level.
 
 ## Known Bugs and NYI
 
@@ -727,8 +789,6 @@ The parser (?) appends an extra `undefined` to the end of the file if the last l
 
 When using conditionals (e.g. `and`) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.
 
-Built-in toplevel functions are leaked globals; todo scope to compiled jisp scripts. Reimplement as many as possible as macros.
-
 Hoisting of multi-line statements above their place in code causes some actions to be executed out of order.
 
 [NYI] It's somewhat awkward to pass a 'nothing' to a macro (e.g. in a list of arguments); you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
@@ -736,6 +796,8 @@ Hoisting of multi-line statements above their place in code causes some actions 
 [NYI] `command` doesn't automatically load the `register` module.
 
 Macro embedding-hoisting doesn't respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are going to be more and more core to the language.
+
+Toplevel functions are embedded even if the variable is reassigned early and they're never called.
 
 ## Why Use It
 

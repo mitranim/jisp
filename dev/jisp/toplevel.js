@@ -1,15 +1,4 @@
 (function() {
-  var glob;
-  (glob = (global || window));
-
-  function init(iterable) {
-    return iterable.slice(0, -1);
-  }(exports.init = (glob.init = init));
-
-  function last(iterable) {
-    return iterable.slice(-1)[0];
-  }(exports.last = (glob.last = last));
-
   function concat() {
     var res, lst, _i, _i0, _res, _ref;
     lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
@@ -22,13 +11,13 @@
     }
     _res;
     return res;
-  }(exports.concat = (glob.concat = concat));
+  }(exports.concat = concat);
 
   function list() {
     var _i;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     return [].concat(args);
-  }(exports.list = (glob.list = list));
+  }(exports.list = list);
 
   function range(start, end) {
     var a, _ref, _res, _ref0;
@@ -53,5 +42,5 @@
     }
     return _res;
   }
-  return (exports.range = (glob.range = range));
+  return (exports.range = range);
 }).call(this);

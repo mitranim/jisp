@@ -1,7 +1,7 @@
 {
   "name": "jisp",
-  "version": "0.0.17",
-  "description": "Putting Lisp in your JavaScript: a programmable language",
+  "version": "0.0.18",
+  "description": "The modern JavaScript: a programmable language",
   "keywords": [
     "javascript",
     "language",

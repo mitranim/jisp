@@ -25,6 +25,34 @@
       ["get", x, "slice"], 1
     ];
   };
+  var macInit = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return [
+      ["get", x, "slice"], 0, -1
+    ];
+  };
+  var macLast = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["get", [
+      ["get", x, "slice"], -1
+    ], 0];
+  };
   var macLet = function() {
     var body, names, callArgs, _i, _res;
     args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
@@ -71,6 +99,8 @@
   (exports.head = macCar);
   (exports.cdr = macCdr);
   (exports.tail = macCdr);
+  (exports.init = macInit);
+  (exports.last = macLast);
   (exports.let = macLet);
   (exports["?!"] = macNotExist);
   return (exports.isa = macIsA);

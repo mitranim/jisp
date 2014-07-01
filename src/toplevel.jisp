@@ -1,26 +1,18 @@
 ; Built-in top-level jisp functions
+; The compiler embeds them into the compiled program
 
-;; work inside compiler runtime
-;; todo teach compiler to put these into JS code
-  ;; implicit declaration on top of scope, get text by calling .toString on func
-;; car / head should be defined in operators to compile into straight property reference x[0]
-
-(= glob (or global window))
-
-(= exports.init (= glob.init (def init iterable (iterable.slice 0 -1))))
-
-(= exports.last (= glob.last (def last iterable (get (iterable.slice -1) 0))))
-
-(= exports.concat (= glob.concat (def concat …lists
+(= exports.concat (def concat …lists
    (do (= res `())
        (for lst lists
             (= res (res.concat lst)))
-       res))))
+       res)))
 
-(= exports.list (= glob.list (def list …args `(…args))))
+(= exports.list (def list …args `(…args)))
 
 ; (range <start> <end>)
 ; (range <end>)  ; start is 0
-(= exports.range (= glob.range (def range start end
+(= exports.range (def range start end
    (do (if (not (? end)) (= end start start 0))
-       (while true (if (<= start end) (do (= a start) (++ start) a) (break)))))))
+       (while true (if (<= start end)
+                       (do (= a start) (++ start) a)
+                       (break))))))
