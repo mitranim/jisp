@@ -59,7 +59,7 @@ Compile a file:
 
     $ jisp -c <file>
 
-Stream-compile for the browser with [gulp-jisp](https://github.com/Mitranim/gulp-jisp) (uses at least one function unavailable in old IE versions, todo polyfill).
+Stream-compile for the browser with [gulp-jisp](https://github.com/Mitranim/gulp-jisp) (not friendly to old engines, todo polyfill).
 
 Super basic Sublime Text build system:
 * _Tools_ > _Build System_ > _New Build System_
@@ -687,7 +687,7 @@ After each macro expansion, the new code is checked for macro definitions and ca
 
 To avoid confusing macros for functions, it's good style to start their names with `mac`.
 
-It's important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. You can't pass values by names to macros; the very idea doesn't make sense because at macroexpand, they don't _exist_. The upside is that a macro doesn't give a flying duck about scope or variable bindings. Unlike with runtime function generators, you aren't constrained by scoping, and don't have to pass around objects you want to access within a generated function. You just put the code you want, where you want it, at compile time.
+It's important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. You can't pass values by names to macros; you pass _names_ instead. A macro doesn't give a flying duck about scope or variable bindings. You aren't constrained by scope or object reference issues, and don't have to pass around objects you want to access within a generated function. You just construct the code you want, where you want it, at compile time.
 
 ### Built-ins
 
@@ -716,8 +716,11 @@ Which is the same as spreading them:
 
     (js "console.log('hello');")  ;;  console.log('hello');
 
-See `toplevel.jisp` and `macros.jisp`.
+`isa` is a shorter version of `(is typeof ...)`:
 
+    (isa Math.PI 'number')  ;; true
+
+See `toplevel.jisp` and `macros.jisp`.
 
 ### Style
 
@@ -835,6 +838,8 @@ Working on these.
 * Embedding of operator-functions to allow passing them around by name (e.g. `(arr.sort >)`).
 * Compiler error messages for when special forms like `=` and `quote`, as well as JS keywords, are met outside their destined place (first element in list).
 * Lexer or parser error messages for common but hard to spot errors like infix `+`.
+* Polyfill for the browser compatibility layer.
+* A webpage.
 
 ## ToDo Wishlist
 
@@ -842,11 +847,9 @@ These will take me a while. Get hacking and contribute!
 
 Bigger:
 
-* Browser compatibility layer, polyfill for older engines.
 * A test suite.
-* Source maps.
+* Source map support.
 * Syntax highlighting for HTML and language module for Sublime Text.
-* A webpage.
 * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure this is necessary.
 * Compiler option to only macroexpand and print out expanded jisp code (will require a jisp beautifier).
 

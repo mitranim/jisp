@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.0.18")
+(= exports.version "0.1.0")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -822,8 +822,9 @@
        (= parsed `(("get" ("fn" parsed) "call") "this")))
    (= expanded (macroexpand parsed))
    (= (compiled scope) (compileForm expanded (hoist:`() service:`()) (toplevel: yes)))
-   (beautify (render compiled) (indent_size: 2)))))
-
+   (if (? beautify)
+       (beautify (render compiled) (indent_size: 2))
+       (render compiled)))))
 
 ; Copied (more or less) from CoffeeScript source
 

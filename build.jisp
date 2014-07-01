@@ -1,35 +1,71 @@
 (= fs (require "fs"))
 
+(= files `("index"
+           "toplevel"
+           "util"
+           "operators"
+           "tokenise"
+           "lex"
+           "parse"
+           "register"
+           "repl"
+           "optparse"
+           "command"
+           "macros"
+           "jisp"
+           "browser"))
+
+(= filesBrowser `("util"
+                  "toplevel"
+                  "util"
+                  "operators"
+                  "tokenise"
+                  "lex"
+                  "parse"
+                  "macros"
+                  "jisp"
+                  "browser"))
+
 ; Load compiler
 (console.log "-- trying to load new compiler...")
 (= jisp      (require "./dev/jisp/jisp"))
 
-(def buildFile compiler ...filenames
-     (for filename filenames
-          (do (= srcPath   (+ "./src/" filename ".jisp")
-                 destpath  (+ "./lib/jisp/" filename ".js")
-                 src       (fs.readFileSync srcPath "utf8"))
-              (console.log (+ "-- compiling " filename "..."))
-              (= js (compiler.compile src))
-              (fs.writeFileSync destpath js "utf8"))))
+(def buildFile compiler filename (do
+     (= srcPath   (+ "./src/" filename ".jisp")
+        destpath  (+ "./lib/jisp/" filename ".js")
+        src       (fs.readFileSync srcPath "utf8"))
+     (console.log (+ "-- compiling " filename "..."))
+     (= js (compiler.compile src))
+     (fs.writeFileSync destpath js "utf8")))
 
-(def build jisp
-     (do (console.log "-- building...")
-         (buildFile jisp
-                         "index"
-                         "toplevel"
-                         "util"
-                         "operators"
-                         "tokenise"
-                         "lex"
-                         "parse"
-                         "register"
-                         "repl"
-                         "optparse"
-                         "command"
-                         "macros"
-                         "jisp"
-                         )
+(def build jisp (do
+     (console.log "-- building...")
+     (for filename files (buildFile jisp filename))
      (console.log "-- if you're reading this, compilation has succeeded!")))
 
 (build jisp)
+
+; Build the concatenated version for the browser
+; Copied from the CoffeeScript cakefile
+
+(= code "")
+
+(for name filesBrowser
+  (+= code (+
+    "require['./" name "'] = (function() {
+      var exports = {}, module = {exports: exports};
+      " (fs.readFileSync (+ "./lib/jisp/" name ".js")) "
+      return module.exports;
+    })();")))
+
+(= code (+
+  "(function() {
+    var jisp = function() {
+      function require(path) { return require[path]; }
+      " code "
+      return require['./jisp'];
+    }();
+  }());"))
+
+(fs.writeFileSync "./browser/jisp.js" code)
+(console.log "-- if you're reading this, concat build has succeeded!")

@@ -80,6 +80,7 @@
     (if (assertForm args 2 2)
         `(,(+ "([].indexOf.call("
               (pr args[1]) ", " (pr args[0]) ") >= 0)"))))
+  "of": (makeop "in" undefined 2 2)
   "new": (fn args
     (if (assertForm args 1)
         `(,(+ "new " (pr (args.shift)) "(" (spr args) ")"))))

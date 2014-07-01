@@ -1,4 +1,1291 @@
 (function() {
+    var jisp = function() {
+      function require(path) { return require[path]; }
+      require['./util'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var symbolWhitelist, keywords;
+  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
+  (exports.keywords = (keywords = ["return", "break", "continue"]));
+
+  function kwtest(str) {
+    return (/^return/.test(str) || /^break/.test(str) || /^continue/.test(str));
+  }(exports.kwtest = kwtest);
+
+  function isAtom(form) {
+    return (((form === undefined) || (form === null)) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (((typeof form) === "number") || ((typeof form) === "string") || ((typeof form) === "boolean")));
+  }(exports.isAtom = isAtom);
+
+  function isAtomString(form) {
+    return (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+  }(exports.isAtomString = isAtomString);
+
+  function isList(form) {
+    return Array.isArray(form);
+  }(exports.isList = isList);
+
+  function isHash(form) {
+    return ((!isAtom(form)) && (!isList(form)) && (!(((typeof form) === "function"))));
+  }(exports.isHash = isHash);
+
+  function isBlankObject(form) {
+    var _ref, _err;
+    try {
+      _ref = ((Object.keys(form).length === 0));
+    } catch (_err) {
+      _ref = false;
+    }
+    return _ref;
+  }(exports.isBlankObject = isBlankObject);
+
+  function isKey(form) {
+    return (isAtom(form) && (isString(form) || isIdentifier(form) || isNum(form)));
+  }(exports.isKey = isKey);
+
+  function isVarName(form) {
+    return (isAtom(form) && /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
+  }(exports.isVarName = isVarName);
+
+  function isIdentifier(form) {
+    return (isAtom(form) && /^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
+  }(exports.isIdentifier = isIdentifier);
+
+  function isString(form) {
+    return (isAtom(form) && /^".*"$|^'.*'$/.test(form));
+  }(exports.isString = isString);
+
+  function isRegex(form) {
+    return (isAtom(form) && /^\/[^\s]+\/[\w]*[^\s)]*/.test(form));
+  }(exports.isRegex = isRegex);
+
+  function isNum(form) {
+    return (isAtom(form) && (((typeof typify(form)) === "number")));
+  }(exports.isNum = isNum);
+
+  function isPrimitive(form) {
+    return (isRegex(form) || isNum(form) || ((form === undefined) || (form === null) || (form === true) || (form === false)));
+  }(exports.isPrimitive = isPrimitive);
+
+  function isArgHash(form) {
+    return (isAtom(form) && /^#[\d]+$/.test(form));
+  }(exports.isArgHash = isArgHash);
+
+  function isArgsHash(form) {
+    return (isAtom(form) && /^#$/.test(form));
+  }(exports.isArgsHash = isArgsHash);
+
+  function isArgHashNotation(form) {
+    return (isArgHash(form) || isArgsHash(form));
+  }(exports.isArgHashNotation = isArgHashNotation);
+
+  function isDotName(form) {
+    return (isAtom(form) && /^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
+  }(exports.isDotName = isDotName);
+
+  function isBracketName(form) {
+    return (isAtom(form) && /^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
+  }(exports.isBracketName = isBracketName);
+
+  function isBracketString(form) {
+    return (isAtom(form) && /^\[".*"\]$|^\['.*'\]$/.test(form));
+  }(exports.isBracketString = isBracketString);
+
+  function isPropSyntax(form) {
+    return (isAtom(form) && (isDotName(form) || isBracketName(form) || isBracketString(form)));
+  }(exports.isPropSyntax = isPropSyntax);
+
+  function typify(form) {
+    var _ref;
+    if ((!isAtom(form))) {
+      throw Error(("expecting atom, got " + pr(form)));
+      _ref = undefined;
+    } else if (isBlankObject(form)) {
+      _ref = form;
+    } else if ((((typeof form) === "undefined"))) {
+      _ref = undefined;
+    } else if (((form === "null"))) {
+      _ref = null;
+    } else if (((form === "true") || (form === "yes"))) {
+      _ref = true;
+    } else if (((form === "false") || (form === "no"))) {
+      _ref = false;
+    } else if ((!isNaN(Number(form)))) {
+      _ref = Number(form);
+    } else if (isRegex(form)) {
+      _ref = form;
+    } else if ((((typeof form) === "string"))) {
+      _ref = form;
+    } else {
+      throw Error(("syntax error: unrecognised type of " + pr(form)));
+      _ref = undefined;
+    }
+    return _ref;
+  }(exports.typify = typify);
+
+  function assertForm(form, min, max, first) {
+    var _ref;
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
+    if ((!isList(form))) {
+      throw Error(("expecting list, got " + form));
+      _ref = undefined;
+    } else if ((!((form.length >= min) && (form.length <= max)))) {
+      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length));
+      _ref = undefined;
+    } else if (((typeof first !== 'undefined' && first !== null) && ((form[0] !== first)))) {
+      throw Error(("expecting " + pr(first) + " as first element, got " + pr(form[0])));
+      _ref = undefined;
+    } else {
+      _ref = form;
+    }
+    return _ref;
+  }(exports.assertForm = assertForm);
+
+  function assertExp(exp, test, expect) {
+    var _ref;
+    (!(typeof expect !== 'undefined' && expect !== null)) ? (expect = "valid expression") : undefined;
+    if (test(exp)) {
+      _ref = true;
+    } else {
+      throw Error(("expecting " + pr(expect) + ", got " + pr(exp)));
+      _ref = undefined;
+    }
+    return _ref;
+  }(exports.assertExp = assertExp);
+
+  function pr(item) {
+    var res, key, val, _ref, _res, _ref0, _i, _res0, _ref1;
+    if (isAtom(item)) {
+      _ref = ("" + item);
+    } else if (isHash(item)) {
+      (res = "");
+      _res = [];
+      _ref0 = item;
+      for (key in _ref0) {
+        val = _ref0[key];
+        _res.push((res += (key + ": " + pr(val) + ", ")));
+      }
+      _res;
+      _ref = ("({ " + res.slice(0, -2) + " })");
+    } else if (isList(item)) {
+      (res = "");
+      _res0 = [];
+      _ref1 = item;
+      for (_i = 0; _i < _ref1.length; ++_i) {
+        val = _ref1[_i];
+        _res0.push((res += (pr(val) + ", ")));
+      }
+      _res0;
+      _ref = ("[ " + res.slice(0, -2) + " ]");
+    } else {
+      _ref = ("" + item);
+    }
+    return _ref;
+  }(exports.pr = pr);
+
+  function spr(item) {
+    var res, val, _i, _res, _ref, _ref0;
+    if (isList(item)) {
+      (res = "");
+      _res = [];
+      _ref = item;
+      for (_i = 0; _i < _ref.length; ++_i) {
+        val = _ref[_i];
+        _res.push((res += (pr(val) + ", ")));
+      }
+      _res;
+      _ref0 = res.slice(0, (res.length - 2));
+    } else {
+      throw Error("can only print-spread lists");
+      _ref0 = undefined;
+    }
+    return _ref0;
+  }(exports.spr = spr);
+
+  function render(buffer) {
+    var i, exp, _res, _ref, _ref0;
+    _res = [];
+    _ref = buffer;
+    for (i = 0; i < _ref.length; ++i) {
+      exp = _ref[i];
+      if (((isList(exp) && ((exp.length === 0))) || (((typeof exp) === "undefined")) || ((exp === "")))) {
+        _ref0 = (buffer[i] = undefined);
+      } else {
+        (buffer[i] = pr(exp));
+        _ref0 = (!/:$|\}$|;$/.test(buffer[i].slice(-1))) ? (buffer[i] += ";") : undefined;
+      }
+      _res.push(_ref0);
+    }
+    _res;
+    return buffer.join(" ");
+  }(exports.render = render);
+
+  function merge(options, overrides) {
+    return extend(extend(({}), options), overrides);
+  }(exports.merge = merge);
+
+  function extend(object, properties) {
+    var key, val, _res, _ref;
+    _res = [];
+    _ref = properties;
+    for (key in _ref) {
+      val = _ref[key];
+      _res.push((object[key] = val));
+    }
+    _res;
+    return object;
+  }(exports.extend = extend);
+
+  function baseFileName(file, stripExt, useWinPathSep) {
+    var pathSep, parts, _ref;
+    (!(typeof stripExt !== 'undefined' && stripExt !== null)) ? (stripExt = false) : undefined;
+    (!(typeof useWinPathSep !== 'undefined' && useWinPathSep !== null)) ? (useWinPathSep = false) : undefined;
+    (pathSep = useWinPathSep ? /\\|\// : /\//);
+    (parts = file.split(pathSep));
+    (file = parts.slice(-1)[0]);
+    if ((!(stripExt && (file.indexOf(".") >= 0)))) {
+      return _ref = file;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    (parts = file.split("."));
+    parts.pop();
+    (((parts.slice(-1)[0] === "jisp")) && (parts.length > 1)) ? parts.pop() : undefined;
+    return parts.join(".");
+  }(exports.baseFileName = baseFileName);
+
+  function repeat(str, n) {
+    var res, _res;
+    (res = "");
+    _res = [];
+    while ((n > 0)) {
+      (n & 1) ? (res += str) : undefined;
+      (n >>>= 1);
+      _res.push((str += str));
+    }
+    _res;
+    return res;
+  }(exports.repeat = repeat);
+
+  function isJisp(file) {
+    return /\.jisp$/.test(file);
+  }
+  return (exports.isJisp = isJisp);
+}).call(this);
+      return module.exports;
+    })();require['./toplevel'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  function concat() {
+    var res, lst, _i, _i0, _res, _ref;
+    lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    (res = []);
+    _res = [];
+    _ref = lists;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      lst = _ref[_i0];
+      _res.push((res = res.concat(lst)));
+    }
+    _res;
+    return res;
+  }(exports.concat = concat);
+
+  function list() {
+    var _i;
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    return [].concat(args);
+  }(exports.list = list);
+
+  function range(start, end) {
+    var a, _ref, _res, _ref0;
+    if ((!(typeof end !== 'undefined' && end !== null))) {
+      (end = start);
+      _ref = (start = 0);
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    _res = [];
+    while (true) {
+      if ((start <= end)) {
+        (a = start);
+        ++start;
+        _ref0 = a;
+      } else {
+        break;
+        _ref0 = undefined;
+      }
+      _res.push(_ref0);
+    }
+    return _res;
+  }
+  return (exports.range = range);
+}).call(this);
+      return module.exports;
+    })();require['./util'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var symbolWhitelist, keywords;
+  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
+  (exports.keywords = (keywords = ["return", "break", "continue"]));
+
+  function kwtest(str) {
+    return (/^return/.test(str) || /^break/.test(str) || /^continue/.test(str));
+  }(exports.kwtest = kwtest);
+
+  function isAtom(form) {
+    return (((form === undefined) || (form === null)) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (((typeof form) === "number") || ((typeof form) === "string") || ((typeof form) === "boolean")));
+  }(exports.isAtom = isAtom);
+
+  function isAtomString(form) {
+    return (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+  }(exports.isAtomString = isAtomString);
+
+  function isList(form) {
+    return Array.isArray(form);
+  }(exports.isList = isList);
+
+  function isHash(form) {
+    return ((!isAtom(form)) && (!isList(form)) && (!(((typeof form) === "function"))));
+  }(exports.isHash = isHash);
+
+  function isBlankObject(form) {
+    var _ref, _err;
+    try {
+      _ref = ((Object.keys(form).length === 0));
+    } catch (_err) {
+      _ref = false;
+    }
+    return _ref;
+  }(exports.isBlankObject = isBlankObject);
+
+  function isKey(form) {
+    return (isAtom(form) && (isString(form) || isIdentifier(form) || isNum(form)));
+  }(exports.isKey = isKey);
+
+  function isVarName(form) {
+    return (isAtom(form) && /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
+  }(exports.isVarName = isVarName);
+
+  function isIdentifier(form) {
+    return (isAtom(form) && /^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
+  }(exports.isIdentifier = isIdentifier);
+
+  function isString(form) {
+    return (isAtom(form) && /^".*"$|^'.*'$/.test(form));
+  }(exports.isString = isString);
+
+  function isRegex(form) {
+    return (isAtom(form) && /^\/[^\s]+\/[\w]*[^\s)]*/.test(form));
+  }(exports.isRegex = isRegex);
+
+  function isNum(form) {
+    return (isAtom(form) && (((typeof typify(form)) === "number")));
+  }(exports.isNum = isNum);
+
+  function isPrimitive(form) {
+    return (isRegex(form) || isNum(form) || ((form === undefined) || (form === null) || (form === true) || (form === false)));
+  }(exports.isPrimitive = isPrimitive);
+
+  function isArgHash(form) {
+    return (isAtom(form) && /^#[\d]+$/.test(form));
+  }(exports.isArgHash = isArgHash);
+
+  function isArgsHash(form) {
+    return (isAtom(form) && /^#$/.test(form));
+  }(exports.isArgsHash = isArgsHash);
+
+  function isArgHashNotation(form) {
+    return (isArgHash(form) || isArgsHash(form));
+  }(exports.isArgHashNotation = isArgHashNotation);
+
+  function isDotName(form) {
+    return (isAtom(form) && /^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
+  }(exports.isDotName = isDotName);
+
+  function isBracketName(form) {
+    return (isAtom(form) && /^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
+  }(exports.isBracketName = isBracketName);
+
+  function isBracketString(form) {
+    return (isAtom(form) && /^\[".*"\]$|^\['.*'\]$/.test(form));
+  }(exports.isBracketString = isBracketString);
+
+  function isPropSyntax(form) {
+    return (isAtom(form) && (isDotName(form) || isBracketName(form) || isBracketString(form)));
+  }(exports.isPropSyntax = isPropSyntax);
+
+  function typify(form) {
+    var _ref;
+    if ((!isAtom(form))) {
+      throw Error(("expecting atom, got " + pr(form)));
+      _ref = undefined;
+    } else if (isBlankObject(form)) {
+      _ref = form;
+    } else if ((((typeof form) === "undefined"))) {
+      _ref = undefined;
+    } else if (((form === "null"))) {
+      _ref = null;
+    } else if (((form === "true") || (form === "yes"))) {
+      _ref = true;
+    } else if (((form === "false") || (form === "no"))) {
+      _ref = false;
+    } else if ((!isNaN(Number(form)))) {
+      _ref = Number(form);
+    } else if (isRegex(form)) {
+      _ref = form;
+    } else if ((((typeof form) === "string"))) {
+      _ref = form;
+    } else {
+      throw Error(("syntax error: unrecognised type of " + pr(form)));
+      _ref = undefined;
+    }
+    return _ref;
+  }(exports.typify = typify);
+
+  function assertForm(form, min, max, first) {
+    var _ref;
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
+    if ((!isList(form))) {
+      throw Error(("expecting list, got " + form));
+      _ref = undefined;
+    } else if ((!((form.length >= min) && (form.length <= max)))) {
+      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length));
+      _ref = undefined;
+    } else if (((typeof first !== 'undefined' && first !== null) && ((form[0] !== first)))) {
+      throw Error(("expecting " + pr(first) + " as first element, got " + pr(form[0])));
+      _ref = undefined;
+    } else {
+      _ref = form;
+    }
+    return _ref;
+  }(exports.assertForm = assertForm);
+
+  function assertExp(exp, test, expect) {
+    var _ref;
+    (!(typeof expect !== 'undefined' && expect !== null)) ? (expect = "valid expression") : undefined;
+    if (test(exp)) {
+      _ref = true;
+    } else {
+      throw Error(("expecting " + pr(expect) + ", got " + pr(exp)));
+      _ref = undefined;
+    }
+    return _ref;
+  }(exports.assertExp = assertExp);
+
+  function pr(item) {
+    var res, key, val, _ref, _res, _ref0, _i, _res0, _ref1;
+    if (isAtom(item)) {
+      _ref = ("" + item);
+    } else if (isHash(item)) {
+      (res = "");
+      _res = [];
+      _ref0 = item;
+      for (key in _ref0) {
+        val = _ref0[key];
+        _res.push((res += (key + ": " + pr(val) + ", ")));
+      }
+      _res;
+      _ref = ("({ " + res.slice(0, -2) + " })");
+    } else if (isList(item)) {
+      (res = "");
+      _res0 = [];
+      _ref1 = item;
+      for (_i = 0; _i < _ref1.length; ++_i) {
+        val = _ref1[_i];
+        _res0.push((res += (pr(val) + ", ")));
+      }
+      _res0;
+      _ref = ("[ " + res.slice(0, -2) + " ]");
+    } else {
+      _ref = ("" + item);
+    }
+    return _ref;
+  }(exports.pr = pr);
+
+  function spr(item) {
+    var res, val, _i, _res, _ref, _ref0;
+    if (isList(item)) {
+      (res = "");
+      _res = [];
+      _ref = item;
+      for (_i = 0; _i < _ref.length; ++_i) {
+        val = _ref[_i];
+        _res.push((res += (pr(val) + ", ")));
+      }
+      _res;
+      _ref0 = res.slice(0, (res.length - 2));
+    } else {
+      throw Error("can only print-spread lists");
+      _ref0 = undefined;
+    }
+    return _ref0;
+  }(exports.spr = spr);
+
+  function render(buffer) {
+    var i, exp, _res, _ref, _ref0;
+    _res = [];
+    _ref = buffer;
+    for (i = 0; i < _ref.length; ++i) {
+      exp = _ref[i];
+      if (((isList(exp) && ((exp.length === 0))) || (((typeof exp) === "undefined")) || ((exp === "")))) {
+        _ref0 = (buffer[i] = undefined);
+      } else {
+        (buffer[i] = pr(exp));
+        _ref0 = (!/:$|\}$|;$/.test(buffer[i].slice(-1))) ? (buffer[i] += ";") : undefined;
+      }
+      _res.push(_ref0);
+    }
+    _res;
+    return buffer.join(" ");
+  }(exports.render = render);
+
+  function merge(options, overrides) {
+    return extend(extend(({}), options), overrides);
+  }(exports.merge = merge);
+
+  function extend(object, properties) {
+    var key, val, _res, _ref;
+    _res = [];
+    _ref = properties;
+    for (key in _ref) {
+      val = _ref[key];
+      _res.push((object[key] = val));
+    }
+    _res;
+    return object;
+  }(exports.extend = extend);
+
+  function baseFileName(file, stripExt, useWinPathSep) {
+    var pathSep, parts, _ref;
+    (!(typeof stripExt !== 'undefined' && stripExt !== null)) ? (stripExt = false) : undefined;
+    (!(typeof useWinPathSep !== 'undefined' && useWinPathSep !== null)) ? (useWinPathSep = false) : undefined;
+    (pathSep = useWinPathSep ? /\\|\// : /\//);
+    (parts = file.split(pathSep));
+    (file = parts.slice(-1)[0]);
+    if ((!(stripExt && (file.indexOf(".") >= 0)))) {
+      return _ref = file;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    (parts = file.split("."));
+    parts.pop();
+    (((parts.slice(-1)[0] === "jisp")) && (parts.length > 1)) ? parts.pop() : undefined;
+    return parts.join(".");
+  }(exports.baseFileName = baseFileName);
+
+  function repeat(str, n) {
+    var res, _res;
+    (res = "");
+    _res = [];
+    while ((n > 0)) {
+      (n & 1) ? (res += str) : undefined;
+      (n >>>= 1);
+      _res.push((str += str));
+    }
+    _res;
+    return res;
+  }(exports.repeat = repeat);
+
+  function isJisp(file) {
+    return /\.jisp$/.test(file);
+  }
+  return (exports.isJisp = isJisp);
+}).call(this);
+      return module.exports;
+    })();require['./operators'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var util, pr, spr, render, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _i0, _res0, _ref0, _i1, _res1, _ref1;
+  (util = require("./util"));
+  (pr = util.pr);
+  (spr = util.spr);
+  (render = util.render);
+  (isIdentifier = util.isIdentifier);
+  (assertForm = util.assertForm);
+
+  function makeop(op, zv, min, max) {
+    (!(typeof zv !== 'undefined' && zv !== null)) ? (zv = undefined) : undefined;
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
+    return (function(args) {
+      var i, arg, _res, _ref, _ref0, _ref1;
+      if (assertForm(args, min, max)) {
+        if (((args.length === 0))) {
+          _ref0 = [pr(zv)];
+        } else {
+          _res = [];
+          _ref = args;
+          for (i = 0; i < _ref.length; ++i) {
+            arg = _ref[i];
+            _res.push((args[i] = pr(arg)));
+          }
+          _res;
+          _ref0 = [("(" + args.join((" " + op + " ")) + ")")];
+        }
+        _ref1 = _ref0;
+      } else {
+        _ref1 = undefined;
+      }
+      return _ref1;
+    });
+  }
+  makeop;
+
+  function makesing(op) {
+    return (function(args) {
+      return assertForm(args, 1, 1) ? [("(" + op + " " + spr(args) + ")")] : undefined;
+    });
+  }
+  makesing;
+
+  function reserved(word) {
+    throw Error(("keyword " + word + " is reserved"));
+    return undefined;
+  }
+  reserved;
+
+  function makestate(op, min, max) {
+    (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
+    (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
+    return (function(args) {
+      return assertForm(args, min, max) ? [(op + " " + spr(args)), "undefined"] : undefined;
+    });
+  }
+  makestate;
+  (operators = ({
+    "++": (function(args) {
+      var _ref, _ref0;
+      if (assertForm(args, 1, 1)) {
+        if ((!isIdentifier(args[0]))) {
+          throw Error("expecting identifier, got ", pr(args[0]));
+          _ref = undefined;
+        } else {
+          _ref = [("++" + pr(args[0]))];
+        }
+        _ref0 = _ref;
+      } else {
+        _ref0 = undefined;
+      }
+      return _ref0;
+    }),
+    "--": (function(args) {
+      var _ref, _ref0;
+      if (assertForm(args, 1, 1)) {
+        if ((!isIdentifier(args[0]))) {
+          throw Error("expecting identifier, got ", pr(args[0]));
+          _ref = undefined;
+        } else {
+          _ref = [("--" + pr(args[0]))];
+        }
+        _ref0 = _ref;
+      } else {
+        _ref0 = undefined;
+      }
+      return _ref0;
+    }),
+    "is": (function(args) {
+      var subj, arg, _i, _res, _ref, _ref0;
+      if (((args.length === 0))) {
+        _ref0 = [true];
+      } else if (((args.length === 1))) {
+        _ref0 = [("!!" + pr(args[0]))];
+      } else {
+        (subj = args.shift());
+        _res = [];
+        _ref = args;
+        for (_i = 0; _i < _ref.length; ++_i) {
+          arg = _ref[_i];
+          _res.push(("(" + pr(subj) + " === " + pr(arg) + ")"));
+        }
+        _ref0 = [("(" + _res.join(" || ") + ")")];
+      }
+      return _ref0;
+    }),
+    "isnt": (function(args) {
+      var subj, arg, _i, _res, _ref, _ref0;
+      if (((args.length === 0))) {
+        _ref0 = [false];
+      } else if (((args.length === 1))) {
+        _ref0 = [("!" + pr(args[0]))];
+      } else {
+        (subj = args.shift());
+        _res = [];
+        _ref = args;
+        for (_i = 0; _i < _ref.length; ++_i) {
+          arg = _ref[_i];
+          _res.push(("(" + pr(subj) + " !== " + pr(arg) + ")"));
+        }
+        _ref0 = [("(" + _res.join(" && ") + ")")];
+      }
+      return _ref0;
+    }),
+    "or": makeop("||", false),
+    "and": makeop("&&", true),
+    "exists": (function(args) {
+      return assertForm(args, 1, 1) ? [("(typeof " + pr(args[0]) + " !== 'undefined' && " + pr(args[0]) + " !== null)")] : undefined;
+    }),
+    "in": (function(args) {
+      return assertForm(args, 2, 2) ? [("([].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0)")] : undefined;
+    }),
+    "of": makeop("in", undefined, 2, 2),
+    "new": (function(args) {
+      return assertForm(args, 1) ? [("new " + pr(args.shift()) + "(" + spr(args) + ")")] : undefined;
+    }),
+    "function": (function() {
+      return reserved("function");
+    }),
+    "with": (function() {
+      return reserved("with");
+    })
+  }));
+  (ops = [
+    ["+", 0],
+    ["-", undefined, 1],
+    ["*", 1],
+    ["/", undefined, 1],
+    ["%", undefined, 1],
+    ["?", "exists"],
+    ["==", "is"],
+    ["===", "is"],
+    ["!=", "isnt"],
+    ["!==", "isnt"],
+    ["&&", "and"],
+    ["||", "or"],
+    ["!", "not"],
+    [">", undefined, 2],
+    ["<", undefined, 2],
+    [">=", undefined, 2],
+    ["<=", undefined, 2],
+    ["&", undefined, 2],
+    ["|", undefined, 2],
+    ["^", undefined, 2],
+    ["<<", undefined, 2],
+    [">>", undefined, 2],
+    [">>>", undefined, 2],
+    ["+=", undefined, 2],
+    ["-=", undefined, 2],
+    ["*=", undefined, 2],
+    ["/=", undefined, 2],
+    ["%=", undefined, 2],
+    ["<<=", undefined, 2],
+    [">>=", undefined, 2],
+    [">>>=", undefined, 2],
+    ["&=", undefined, 2],
+    ["^=", undefined, 2],
+    ["|=", undefined, 2],
+    ["instanceof", undefined, 2, 2],
+    [",", undefined, 2, 2]
+  ]);
+  _res = [];
+  _ref = ops;
+  for (_i = 0; _i < _ref.length; ++_i) {
+    op = _ref[_i];
+    _res.push((((typeof op[1]) === "string")) ? (operators[op[0]] = operators[op[1]]) : (operators[op[0]] = makeop.apply(makeop, [].concat(op))));
+  }
+  _res;
+  (singops = [
+    ["not", "!"],
+    ["~", "~"],
+    ["delete", "delete"],
+    ["typeof", "typeof"]
+  ]);
+  _res0 = [];
+  _ref0 = singops;
+  for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
+    op = _ref0[_i0];
+    _res0.push((operators[op[0]] = makesing(op[1])));
+  }
+  _res0;
+  (stateops = [
+    ["return", 0, 1],
+    ["break", 0, 1],
+    ["continue", 0, 0],
+    ["throw", 1, 1]
+  ]);
+  _res1 = [];
+  _ref1 = stateops;
+  for (_i1 = 0; _i1 < _ref1.length; ++_i1) {
+    op = _ref1[_i1];
+    _res1.push((operators[op[0]] = makestate(op[0])));
+  }
+  _res1;
+  (exports.operators = operators);
+  (opFuncs = ({}));
+
+  function add() {
+    var _i2;
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
+    args.unshift(0);
+    return ((args.length === 0)) ? 0 : args.reduce((function() {
+      return (arguments[0] + arguments[1]);
+    }));
+  }
+  add;
+
+  function sub() {
+    var _i2;
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
+    args.unshift(0);
+    return ((args.length === 0)) ? 0 : args.reduce((function() {
+      return (arguments[0] - arguments[1]);
+    }));
+  }
+  sub;
+
+  function mul() {
+    var _i2;
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
+    args.unshift(1);
+    return ((args.length === 0)) ? 1 : args.reduce((function() {
+      return (arguments[0] * arguments[1]);
+    }));
+  }
+  mul;
+
+  function div() {
+    var _i2;
+    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
+    args.unshift(1);
+    return ((args.length === 0)) ? 1 : args.reduce((function() {
+      return (arguments[0] / arguments[1]);
+    }));
+  }
+  div;
+  return (exports.opFuncs = opFuncs);
+}).call(this);
+      return module.exports;
+    })();require['./tokenise'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var tokens, recode, recomment, redstring, resstring, rereg;
+  (module.exports = tokenise);
+  (tokens = []);
+  (recode = /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/);
+  (recomment = /^;.*[\n\r]?/);
+  (redstring = /^""|^"[^]*?(?:[^\\]")[^\s):]*/);
+  (resstring = /^''|^'[^]*?(?:[^\\]')[^\s):]*/);
+  (rereg = /^\/[^\s]+\/[\w]*[^\s)]*/);
+
+  function grate(str) {
+    return str.replace(/;.*$/gm, "").replace(/\{/g, "(fn (").replace(/\}/g, "))").replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\[[\s]*\(/g, " [ ( ").replace(/\)[\s]*\]/g, " ) ] ").replace(/:/g, " : ").replace(/`/g, " ` ").replace(/,/g, " , ").replace(/\.\.\./g, " ... ").replace(/…/g, " … ").trim().split(/\s+/);
+  }
+  grate;
+
+  function concatNewLines(str) {
+    return str.replace(/\n|\n\r/g, "\\n");
+  }
+  concatNewLines;
+
+  function match(str, re) {
+    var mask;
+    return ((mask = str.match(re)) && (mask[0].length > 0)) ? mask[0] : null;
+  }
+  match;
+
+  function tokenise(str) {
+    var mask, _res, _ref;
+    (tokens = []);
+    _res = [];
+    while (((str = str.trim()).length > 0)) {
+      if ((mask = match(str, recode))) {
+        tokens.push.apply(tokens, [].concat(grate(mask)));
+        _ref = (str = str.replace(recode, ""));
+      } else if ((mask = match(str, recomment))) {
+        _ref = (str = str.replace(recomment, ""));
+      } else if ((mask = match(str, redstring))) {
+        tokens.push(concatNewLines(mask));
+        _ref = (str = str.replace(redstring, ""));
+      } else if ((mask = match(str, resstring))) {
+        tokens.push(concatNewLines(mask));
+        _ref = (str = str.replace(resstring, ""));
+      } else if ((mask = match(str, rereg))) {
+        tokens.push(mask);
+        _ref = (str = str.replace(rereg, ""));
+      } else {
+        tokens.push.apply(tokens, [].concat(grate(str)));
+        _ref = (str = "");
+      }
+      _res.push(_ref);
+    }
+    _res;
+    return tokens.filter((function(x) {
+      return ((typeof x !== 'undefined' && x !== null) && ((x !== "") && (x !== undefined) && (x !== null)));
+    }));
+  }
+  return tokenise;
+}).call(this);
+      return module.exports;
+    })();require['./lex'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var util, pr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  (util = require("./util"));
+  (pr = util.pr);
+  (isList = util.isList);
+  (isAtom = util.isAtom);
+  (isAtomString = util.isAtomString);
+  (isNum = util.isNum);
+  (isRegex = util.isRegex);
+  (isIdentifier = util.isIdentifier);
+  (isString = util.isString);
+  (isKey = util.isKey);
+  (isDotName = util.isDotName);
+  (isBracketName = util.isBracketName);
+  (isBracketString = util.isBracketString);
+  (isPropSyntax = util.isPropSyntax);
+  (module.exports = lex);
+
+  function maketest(condition) {
+    var _ref;
+    if ((((typeof condition) === "function"))) {
+      _ref = (function(tokens) {
+        return condition(tokens[0]);
+      });
+    } else if (isRegex(condition)) {
+      _ref = (function(tokens) {
+        return condition.test(tokens[0]);
+      });
+    } else if (isAtom(condition)) {
+      _ref = (function(tokens) {
+        return ((tokens[0] === condition));
+      });
+    } else if (isList(condition)) {
+      _ref = (function(tokens) {
+        var i, cond, _res, _ref0, _ref1;
+        _res = [];
+        _ref0 = condition;
+        for (i = 0; i < _ref0.length; ++i) {
+          cond = _ref0[i];
+          if ((!maketest(cond)(tokens.slice(i)))) {
+            return _ref1 = false;
+          } else {
+            _ref1 = undefined;
+          }
+          _res.push(_ref1);
+        }
+        return _res ? true : undefined;
+      });
+    } else {
+      throw Error(("can't test against " + pr(condition)));
+      _ref = undefined;
+    }
+    return _ref;
+  }
+  maketest;
+
+  function demand(tokens) {
+    var conditions, modes, condition, mode, test, _i, _res, _ref;
+    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    (conditions = []);
+    (modes = []);
+    _res = [];
+    while ((args.length > 0)) {
+      (condition = args.shift());
+      (mode = args.shift());
+      conditions.push(condition);
+      modes.push(mode);
+      (test = maketest(condition));
+      if (test(tokens)) {
+        return _ref = lex(tokens, mode);
+      } else {
+        _ref = undefined;
+      }
+      _res.push(_ref);
+    }
+    _res;
+    throw Error(("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\nTested against: " + conditions.join("   ") + "\nTokens: " + pr(tokens.slice(0, 10)) + " ..."));
+    return undefined;
+  }
+  demand;
+
+  function expect(tokens) {
+    var condition, mode, test, _i, _ref;
+    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    while ((args.length > 0)) {
+      (condition = args.shift());
+      (mode = args.shift());
+      (test = maketest(condition));
+      if (test(tokens)) {
+        return _ref = lex(tokens, mode);
+      } else {
+        _ref = undefined;
+      }
+      _ref;
+    }
+    return undefined;
+  }
+  expect;
+
+  function forbid(tokens) {
+    var condition, _i, _i0, _res, _ref, _ref0;
+    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    _res = [];
+    _ref = args;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      condition = _ref[_i0];
+      if (maketest(condition)(tokens)) {
+        throw Error(("unexpected " + pr(tokens[0])));
+        _ref0 = undefined;
+      } else {
+        _ref0 = undefined;
+      }
+      _res.push(_ref0);
+    }
+    return _res;
+  }
+  forbid;
+
+  function addProperties(tokens, lexed) {
+    var _res;
+    _res = [];
+    while (((tokens[0] === "["))) {
+      _res.push((lexed = ["get", lexed, lex(tokens, "property")]));
+    }
+    _res;
+    return lexed;
+  }
+  addProperties;
+
+  function lex(tokens, mode) {
+    var lexed, prop, key, _ref, _res, _res0, _res1, _ref0;
+    (!(typeof mode !== 'undefined' && mode !== null)) ? (mode = "default") : undefined;
+    switch (mode) {
+      case "default":
+        _res = [];
+        while ((tokens.length > 0)) {
+          _res.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop"));
+        }
+        _ref = _res;
+        break;
+      case "list":
+        demand(tokens, "(", "drop");
+        (lexed = []);
+        (prop = expect(tokens, "[", "property", isPropSyntax, "property")) ? lexed.push(["get", prop]) : undefined;
+        _res0 = [];
+        while (((tokens[0] !== ")"))) {
+          _res0.push(lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom")));
+        }
+        _res0;
+        demand(tokens, ")", "drop");
+        _ref = addProperties(tokens, lexed);
+        break;
+      case "emptyhash":
+        demand(tokens, "(", "drop");
+        demand(tokens, ":", "drop");
+        demand(tokens, ")", "drop");
+        _ref = addProperties(tokens, ({}));
+        break;
+      case "hash":
+        (lexed = ({}));
+        demand(tokens, "(", "drop");
+        _res1 = [];
+        while (((tokens[0] !== ")"))) {
+          (key = demand(tokens, isKey, "key"));
+          demand(tokens, ":", "drop");
+          (prop = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isAtomString, "atom"));
+          _res1.push((lexed[key] = prop));
+        }
+        _res1;
+        demand(tokens, ")", "drop");
+        _ref = addProperties(tokens, lexed);
+        break;
+      case "property":
+        if (isDotName(tokens[0])) {
+          _ref0 = demand(tokens, isDotName, "drop").slice(1);
+        } else if ((isBracketName(tokens[0]) || isBracketString(tokens[0]))) {
+          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
+        } else {
+          demand(tokens, "[", "drop");
+          (prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom"));
+          demand(tokens, "]", "drop");
+          _ref0 = prop;
+        }
+        _ref = _ref0;
+        break;
+      case "quote":
+        demand(tokens, "`", "drop");
+        _ref = (lexed = ["quote", demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isAtomString, "atom")]);
+        break;
+      case "unquote":
+        demand(tokens, ",", "drop");
+        _ref = ["unquote", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
+        break;
+      case "spread":
+        demand(tokens, "...", "drop", "…", "drop");
+        _ref = ["spread", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
+        break;
+      case "key":
+        (key = demand(tokens, isKey, "drop"));
+        forbid("[", isPropSyntax);
+        _ref = key;
+        break;
+      case "atom":
+        _ref = addProperties(tokens, demand(tokens, isAtomString, "drop"));
+        break;
+      case "drop":
+        _ref = tokens.shift();
+        break;
+      default:
+        throw Error(("unspecified lex mode: " + mode));
+        _ref = undefined;
+    }
+    return _ref;
+  }
+  return lex;
+}).call(this);
+      return module.exports;
+    })();require['./parse'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var util;
+  (util = require("./util"));
+
+  function parse(form) {
+    var i, val, key, _res, _ref, _ref0, _res0, _ref1;
+    if (util.isList(form)) {
+      _res = [];
+      _ref = form;
+      for (i = 0; i < _ref.length; ++i) {
+        val = _ref[i];
+        _res.push((form[i] = parse(val)));
+      }
+      _res;
+      _ref0 = form;
+    } else if (util.isHash(form)) {
+      _res0 = [];
+      _ref1 = form;
+      for (key in _ref1) {
+        val = _ref1[key];
+        _res0.push((form[key] = parse(val)));
+      }
+      _res0;
+      _ref0 = form;
+    } else {
+      (form = util.typify(form));
+      _ref0 = /^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form;
+    }
+    return _ref0;
+  }
+  return (module.exports = parse);
+}).call(this);
+      return module.exports;
+    })();require['./macros'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var macCar = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["get", x, 0];
+  };
+  var macCdr = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return [
+      ["get", x, "slice"], 1
+    ];
+  };
+  var macInit = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return [
+      ["get", x, "slice"], 0, -1
+    ];
+  };
+  var macLast = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["get", [
+      ["get", x, "slice"], -1
+    ], 0];
+  };
+  var macLet = function() {
+    var body, names, callArgs, _i, _res;
+    args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
+    body = arguments[_i++];
+    util.assertExp(args, (function(x) {
+      return (((x.length % 2) === 0));
+    }), "an even number of arguments");
+    (!(typeof body !== 'undefined' && body !== null)) ? (body = []) : undefined;
+    (names = []);
+    (callArgs = []);
+    _res = [];
+    while ((args.length > 0)) {
+      names.push(checkVar(args.shift()));
+      _res.push(callArgs.push(args.shift()));
+    }
+    _res;
+    return [].concat([
+      [].concat(["fn"]).concat(names).concat([body])
+    ]).concat(callArgs);
+  };
+  var macNotExist = function(x) {
+    var _i, _ref;
+    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
+      throw Error("expecting one argument");
+      _ref = undefined;
+    } else {
+      _ref = undefined;
+    }
+    _ref;
+    return ["not", ["?", x]];
+  };
+  var macIsA = function(obj, type) {
+    return ["is", ["typeof", obj], type];
+  };
+  var util;
+  (util = require("./util"));
+
+  function checkVar(exp) {
+    return util.assertExp(exp, util.isVarName, "valid identifier") ? exp : undefined;
+  }
+  checkVar;
+  (exports.car = macCar);
+  (exports.head = macCar);
+  (exports.cdr = macCdr);
+  (exports.tail = macCdr);
+  (exports.init = macInit);
+  (exports.last = macLast);
+  (exports.let = macLet);
+  (exports["?!"] = macNotExist);
+  return (exports.isa = macIsA);
+}).call(this);
+      return module.exports;
+    })();require['./jisp'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
   function list() {
     var _i;
     args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
@@ -1818,3 +3105,108 @@
   }
   return (exports.run = run);
 }).call(this);
+      return module.exports;
+    })();require['./browser'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var jisp, compile, _ref;
+  (jisp = require("./jisp"));
+  (jisp.require = require);
+  (compile = jisp.compile);
+  (jisp.eval = (function(code, options) {
+    (!(typeof options !== 'undefined' && options !== null)) ? (options = ({})) : undefined;
+    (options.wrap = false);
+    return eval(compile(code, options));
+  }));
+  (jisp.run = (function(code, options) {
+    (!(typeof options !== 'undefined' && options !== null)) ? (options = ({})) : undefined;
+    (options.wrap = false);
+    return Function(compile(code, options))();
+  }));
+  if ((!(typeof window !== 'undefined' && window !== null))) {} else {
+    _ref = undefined;
+  }
+  _ref;
+  (jisp.load = (function(url, callback, options, hold) {
+    var xhr;
+    (!(typeof options !== 'undefined' && options !== null)) ? (options = ({})) : undefined;
+    (!(typeof hold !== 'undefined' && hold !== null)) ? (hold = false) : undefined;
+    (options.sourceFiles = [url]);
+    (xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest());
+    xhr.open("GET", url, true);
+    ("overrideMimeType" in xhr) ? xhr.overrideMimeType("text/plain") : undefined;
+    (xhr.onreadystatechange = (function() {
+      var param, _ref0, _ref1;
+      if (((xhr.readyState === 4))) {
+        if (((xhr.status === 0) || (xhr.status === 200))) {
+          (param = [xhr.responseText, options]);
+          _ref0 = (!hold) ? jisp.run.apply(jisp, [].concat(param)) : undefined;
+        } else {
+          throw new Error(("Could not load " + url));
+          _ref0 = undefined;
+        }
+        _ref1 = _ref0;
+      } else {
+        _ref1 = undefined;
+      }
+      _ref1;
+      return callback ? callback(param) : undefined;
+    }));
+    return xhr.send(null);
+  }));
+
+  function runScripts() {
+    var scripts, jisps, index, s, i, script, _i, _res, _ref0, _res0, _ref1;
+    (scripts = window.document.getElementsByTagName("script"));
+    (jisps = []);
+    (index = 0);
+    _res = [];
+    _ref0 = scripts;
+    for (_i = 0; _i < _ref0.length; ++_i) {
+      s = _ref0[_i];
+      _res.push(((s.type === "text/jisp")) ? jisps.push(s) : undefined);
+    }
+    _res;
+
+    function execute() {
+      var param, _ref1;
+      (param = jisps[index]);
+      if ((param instanceof Array)) {
+        jisp.run.apply(jisp, [].concat(param));
+        ++index;
+        _ref1 = execute();
+      } else {
+        _ref1 = undefined;
+      }
+      return _ref1;
+    }
+    execute;
+    _res0 = [];
+    _ref1 = jisps;
+    for (i = 0; i < _ref1.length; ++i) {
+      script = _ref1[i];
+      _res0.push((function(script, i) {
+        var _ref2;
+        if (script.src) {
+          _ref2 = jisp.load(script.src, (function(param) {
+            (jisps[i] = param);
+            return execute();
+          }), true);
+        } else {
+          (options.sourceFiles = ["embedded"]);
+          _ref2 = (jisps[i] = [script.innerHTML, options]);
+        }
+        return _ref2;
+      })(script, i));
+    }
+    _res0;
+    return execute();
+  }
+  runScripts;
+  return window.addEventListener ? window.addEventListener("DOMContentLoaded", runScripts, false) : window.attachEvent("onload", runScripts);
+}).call(this);
+      return module.exports;
+    })();
+      return require['./jisp'];
+    }();
+  }());
