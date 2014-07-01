@@ -632,14 +632,12 @@ For instance, you could enable a silly reverse syntax by reversing the code pass
 
 Suppose you're writing a gulp config file full of repetitive blocks like these:
 
-    gulp.task('js', (function() {
+    gulp.task('js', function() {
       return handle(gulp.src(jsSrcList))
       .pipe(handle(concat('deps.js')))
-      .pipe(handle(uglify(({
-        mangle: false
-      }))))
+      .pipe(handle(uglify({mangle: false})))
       .pipe(handle(gulp.dest('public/js/tmp/')));
-    }));
+    });
 
 There's no way to deduplicate these repeating parts using JS alone, and you're forced to write them by hand. But you can abstract them away with a macro.
 
