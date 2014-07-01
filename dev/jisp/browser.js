@@ -9,8 +9,10 @@
     return eval(compile(code, options));
   }));
   (jisp.run = (function(code, options) {
+    var compiled;
     (!(typeof options !== 'undefined' && options !== null)) ? (options = ({})) : undefined;
     (options.wrap = false);
+    (compiled = compile(code, options));
     return Function(compile(code, options))();
   }));
   if ((!(typeof window !== 'undefined' && window !== null))) {} else {
@@ -76,12 +78,13 @@
     for (i = 0; i < _ref1.length; ++i) {
       script = _ref1[i];
       _res0.push((function(script, i) {
-        var _ref2;
+        var options, _ref2;
+        (options = ({}));
         if (script.src) {
           _ref2 = jisp.load(script.src, (function(param) {
             (jisps[i] = param);
             return execute();
-          }), true);
+          }), options, true);
         } else {
           (options.sourceFiles = ["embedded"]);
           _ref2 = (jisps[i] = [script.innerHTML, options]);

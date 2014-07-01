@@ -14,6 +14,7 @@
 
 (= jisp.run (fn code (options (:)) (do
   (= options.wrap no)
+  (= compiled (compile code options))
   ((Function (compile code options))))))
 
 ; If we're not in a browser environment, end the script
@@ -44,21 +45,24 @@
      index   0)
   (for s scripts
     (if (is s.type "text/jisp") (jisps.push s)))
+
   (def execute (do
     (= param jisps[index])
     (if (instanceof param Array)
       (do (jisp.run ...param)
           (++ index)
           (execute)))))
-  (for script i jisps (let script script i i
+
+  (for script i jisps (let script script i i (do
+    (= options (:))
     (if script.src
       (jisp.load script.src (fn param
         (do (= jisps[i] param)
             (execute)))
-        ; options
+        options
         true)
       (do (= options.sourceFiles `("embedded"))
-          (= jisps[i] `(script.innerHTML options))))))
+          (= jisps[i] `(script.innerHTML options)))))))
 
   (execute)))
 
