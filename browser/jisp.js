@@ -1,4 +1,4 @@
-(function() {
+(function(root) {
     var jisp = function() {
       function require(path) { return require[path]; }
       require['./util'] = (function() {
@@ -1336,7 +1336,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.1.1");
+  (exports.version = "0.1.3");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -3232,4 +3232,5 @@
     })();
       return require['./jisp'];
     }();
-  }());
+    root.jisp = jisp;
+  }(this));

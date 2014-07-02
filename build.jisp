@@ -59,13 +59,14 @@
     })();")))
 
 (= code (+
-  "(function() {
+  "(function(root) {
     var jisp = function() {
       function require(path) { return require[path]; }
       " code "
       return require['./jisp'];
     }();
-  }());"))
+    root.jisp = jisp;
+  }(this));"))
 
 (fs.writeFileSync "./browser/jisp.js" code)
 (console.log "-- if you're reading this, concat build has succeeded!")
