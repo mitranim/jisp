@@ -2,10 +2,10 @@
 ; The compiler embeds them into the compiled program
 
 (= exports.concat (def concat …lists
-   (do (= res `())
+   (do (= _res `())
        (for lst lists
-            (= res (res.concat lst)))
-       res)))
+            (= _res (_res.concat lst)))
+       _res)))
 
 (= exports.list (def list …args `(…args)))
 

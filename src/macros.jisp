@@ -69,7 +69,7 @@
 (= (get exports "?!") macNotExist)
 
 ; `isa`: (is (typeof x) y)
-(mac macIsA obj type (do
-  `(is (typeof ,obj) ,type)))
+(mac macIsA obj ...types
+  `(is (typeof ,obj) ,...types))
 
 (= exports.isa macIsA)

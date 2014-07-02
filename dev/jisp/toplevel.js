@@ -1,16 +1,16 @@
 (function() {
   function concat() {
-    var res, lst, _i, _i0, _res, _ref;
+    var _res, lst, _i, _i0, _res0, _ref;
     lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
-    (res = []);
-    _res = [];
+    (_res = []);
+    _res0 = [];
     _ref = lists;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       lst = _ref[_i0];
-      _res.push((res = res.concat(lst)));
+      _res0.push((_res = _res.concat(lst)));
     }
-    _res;
-    return res;
+    _res0;
+    return _res;
   }(exports.concat = concat);
 
   function list() {

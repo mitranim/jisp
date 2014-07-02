@@ -26,21 +26,36 @@
        (/^break/.test str)
        (/^continue/.test str))))
 
+(= exports.specialValues (= specialValues `(
+  "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN"
+)))
+
+(= exports.isSpecialValueStr (def isSpecialValue str
+  (in str specialValues)))
+
+(= exports.isSpecialValue (def isSpecialValue form
+  (or (isa form "undefined")
+      (is form null)
+      (and (isa form "number") (isNaN form))
+      (is form Infinity)
+      (isa form "boolean"))))
+
 ; Composite types
 
 (= exports.isAtom (def isAtom form
    (or (is form undefined null)
            (/^\/[^\s\/]+\/[\w]*$/.test form)
-           (is (typeof form) "number" "string" "boolean"))))
+           (isa form "number" "string" "boolean"))))
 
 (= exports.isAtomString (def isAtomString form
-   (or (isNum form)
-       (isRegex form)
-       (isIdentifier form)
-       (isString form)
-       (in form symbolWhitelist)
-       (/^#[\d]+$/.test form)  ; #n notation
-       (/^#$/.test form))))  ; # notation
+   (and (not (isSpecialValue form))
+        (or (isNum form)
+            (isRegex form)
+            (isIdentifier form)
+            (isString form)
+            (in form symbolWhitelist)
+            (/^#[\d]+$/.test form)  ; #n notation
+            (/^#$/.test form)))))   ; # notation
 
 (= exports.isList (def isList form
    (Array.isArray form)))
@@ -48,7 +63,7 @@
 (= exports.isHash (def isHash form
    (and (not (isAtom form))
         (not (isList form))
-        (not (is (typeof form) "function")))))
+        (not (isa form "function")))))
 
 (= exports.isBlankObject (def isBlankObject form
    (try (is (get (Object.keys form) length) 0)
@@ -67,7 +82,8 @@
 
 (= exports.isIdentifier (def isIdentifier form
 ; matches any identifier, including with .dot and [bracket] and ["string bracket"] notation, unless it has an expression in brackets
-   (and (isAtom form) (/^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test form))))
+   (and (isAtom form)
+        (/^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test form))))
 
 (= exports.isString (def isString form
    (and (isAtom form) (/^".*"$|^'.*'$/.test form))))
@@ -77,7 +93,7 @@
    (and (isAtom form) (/^\/[^\s]+\/[\w]*[^\s)]*/.test form))))
 
 (= exports.isNum (def isNum form
-   (and (isAtom form) (is (typeof (typify form)) "number"))))
+   (and (isAtom form) (isa (typify form) "number"))))
 
 (= exports.isPrimitive (def isPrimitive form
    (or (isRegex form)
@@ -116,13 +132,13 @@
    (if (not (isAtom form))
        (throw (Error (+ "expecting atom, got " (pr form))))
        (elif (isBlankObject form) form)
-       (elif (is (typeof form) "undefined") undefined)
+       (elif (isa form "undefined") undefined)
        (elif (is form "null") null)
        (elif (is form "true" "yes") true)
        (elif (is form "false" "no") false)
        (elif (not (isNaN (Number form))) (Number form))
        (elif (isRegex form) form)
-       (elif (is (typeof form) "string") form)
+       (elif (isa form "string") form)
        (throw (Error (+ "syntax error: unrecognised type of " (pr form)))))))
 
 (= exports.assertForm (def assertForm form (min 0) (max Infinity) first
@@ -173,7 +189,7 @@
   (do (for exp i buffer
            ; `undefined`, "", and `() don't render at all
            (if (or (and (isList exp) (is exp.length 0))
-                   (is (typeof exp) "undefined")
+                   (isa exp "undefined")
                    (is exp ""))
                (= buffer[i] undefined)  ; won't be displayed
                (do (= buffer[i] (pr exp))

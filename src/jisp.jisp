@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.1.1")
+(= exports.version "0.1.2")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -191,8 +191,8 @@
                  (if (not (in func outerScope.hoist))
                      (outerScope.hoist.push func)))))
       ; Will return outer scope: nothing gets out except for funcs
-    (= scope outerScope))
-))
+    (= scope outerScope))  ; / macro output
+))  ; /macro
 
 (mac macCompileSpecial opts (do
   `(fn form scope (opts (:)) (do

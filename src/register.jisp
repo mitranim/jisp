@@ -16,15 +16,16 @@
 
 ; If we're on Node, patch `child_process.fork` so our scripts can fork both jisp and JS files
 ; Not sure if this is relevant for jisp
-(if child_process
-    (= fork   child_process.fork
-       binary (require.resolve "../../bin/jisp")
-       child_process.fork
-         (fn path args options
-             (do (if (util.isJisp path)
-                     (do (if (not (Array.isArray args))
-                             (= options (or args (:))
-                                args    `()))
-                         (= args ((get `(path) concat) args)
-                            path binary)))
-                 (fork path args options)))))
+; ToDo account for different jisp `bin`s and paths
+; (if child_process
+;     (= fork   child_process.fork
+;        binary (require.resolve "../../bin/jisp")
+;        child_process.fork
+;          (fn path args options
+;              (do (if (util.isJisp path)
+;                      (do (if (not (Array.isArray args))
+;                              (= options (or args (:))
+;                                 args    `()))
+;                          (= args ((get `(path) concat) args)
+;                             path binary)))
+;                  (fork path args options)))))

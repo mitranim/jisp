@@ -4,20 +4,29 @@
       require['./util'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var symbolWhitelist, keywords;
+  var symbolWhitelist, keywords, specialValues;
   (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
   (exports.keywords = (keywords = ["return", "break", "continue"]));
 
   function kwtest(str) {
     return (/^return/.test(str) || /^break/.test(str) || /^continue/.test(str));
   }(exports.kwtest = kwtest);
+  (exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]));
+
+  function isSpecialValue(str) {
+    return ([].indexOf.call(specialValues, str) >= 0);
+  }(exports.isSpecialValueStr = isSpecialValue);
+
+  function isSpecialValue(form) {
+    return ((((typeof form) === "undefined")) || ((form === null)) || ((((typeof form) === "number")) && isNaN(form)) || ((form === Infinity)) || (((typeof form) === "boolean")));
+  }(exports.isSpecialValue = isSpecialValue);
 
   function isAtom(form) {
     return (((form === undefined) || (form === null)) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (((typeof form) === "number") || ((typeof form) === "string") || ((typeof form) === "boolean")));
   }(exports.isAtom = isAtom);
 
   function isAtomString(form) {
-    return (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+    return ((!isSpecialValue(form)) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form)));
   }(exports.isAtomString = isAtomString);
 
   function isList(form) {
@@ -278,17 +287,17 @@
       var exports = {}, module = {exports: exports};
       (function() {
   function concat() {
-    var res, lst, _i, _i0, _res, _ref;
+    var _res, lst, _i, _i0, _res0, _ref;
     lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
-    (res = []);
-    _res = [];
+    (_res = []);
+    _res0 = [];
     _ref = lists;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       lst = _ref[_i0];
-      _res.push((res = res.concat(lst)));
+      _res0.push((_res = _res.concat(lst)));
     }
-    _res;
-    return res;
+    _res0;
+    return _res;
   }(exports.concat = concat);
 
   function list() {
@@ -326,20 +335,29 @@
     })();require['./util'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var symbolWhitelist, keywords;
+  var symbolWhitelist, keywords, specialValues;
   (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
   (exports.keywords = (keywords = ["return", "break", "continue"]));
 
   function kwtest(str) {
     return (/^return/.test(str) || /^break/.test(str) || /^continue/.test(str));
   }(exports.kwtest = kwtest);
+  (exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]));
+
+  function isSpecialValue(str) {
+    return ([].indexOf.call(specialValues, str) >= 0);
+  }(exports.isSpecialValueStr = isSpecialValue);
+
+  function isSpecialValue(form) {
+    return ((((typeof form) === "undefined")) || ((form === null)) || ((((typeof form) === "number")) && isNaN(form)) || ((form === Infinity)) || (((typeof form) === "boolean")));
+  }(exports.isSpecialValue = isSpecialValue);
 
   function isAtom(form) {
     return (((form === undefined) || (form === null)) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (((typeof form) === "number") || ((typeof form) === "string") || ((typeof form) === "boolean")));
   }(exports.isAtom = isAtom);
 
   function isAtomString(form) {
-    return (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+    return ((!isSpecialValue(form)) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form)));
   }(exports.isAtomString = isAtomString);
 
   function isList(form) {
@@ -1262,8 +1280,10 @@
     _ref;
     return ["not", ["?", x]];
   };
-  var macIsA = function(obj, type) {
-    return ["is", ["typeof", obj], type];
+  var macIsA = function(obj) {
+    var _i;
+    types = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    return [].concat(["is", ["typeof", obj]]).concat(types);
   };
   var util;
   (util = require("./util"));

@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+// src
+require('../register');
+require('../src/command').run();
