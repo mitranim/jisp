@@ -6,14 +6,18 @@
    isIdentifier util.isIdentifier
    assertForm   util.assertForm)
 
-(def makeop op (zv undefined) (min 0) (max Infinity)
+(def makeop op (zv undefined) (min 0) (max Infinity) (drop no)
 ; <operator> <zero value> <min args> <max args>
      (fn args
          (if (assertForm args min max)
              (if (is args.length 0)
                  `(,(pr zv))
-                 (elif (and (? zv) (is args.length 1))
-                       `(,(+ "(" zv op (car args) ")")))
+                 (elif (and (is args.length 1) (? zv))
+                       `(,(+ "(" zv op (spr args) ")")))
+                 (elif (and (is args.length 1) drop)
+                       `(,(spr args)))
+                 (elif (is args.length 1)
+                       `(,(+ op (spr args))))
                  (do (for arg i args (= args[i] (pr arg)))
                      `(,(+ "(" (args.join (+ " " op " ")) ")")))))))
 
@@ -98,7 +102,7 @@
 ; in JS, 3 < 2 < 1 produces true (facepalm)
 ; todo ops like += should take multiple ars and compile into one += and multiple +
   ; arithmetic
-  ("+" 0) ("-" 0) ("*" 1) ("/" 1) ("%" undefined 1)
+  ("+" undefined 1 Infinity yes) ("-" undefined 1) ("*" 1) ("/" 1) ("%" undefined 1)
   ; logical
   ("?"   "exists") ("==" "is")  ("===" "is") ("!=" "isnt")
   ("!==" "isnt")   ("&&" "and") ("||"  "or") ("!"  "not")

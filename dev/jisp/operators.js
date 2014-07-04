@@ -7,17 +7,22 @@
   (isIdentifier = util.isIdentifier);
   (assertForm = util.assertForm);
 
-  function makeop(op, zv, min, max) {
+  function makeop(op, zv, min, max, drop) {
     (!(typeof zv !== 'undefined' && zv !== null)) ? (zv = undefined) : undefined;
     (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
     (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
+    (!(typeof drop !== 'undefined' && drop !== null)) ? (drop = false) : undefined;
     return (function(args) {
       var i, arg, _res, _ref, _ref0, _ref1;
       if (assertForm(args, min, max)) {
         if (((args.length === 0))) {
           _ref0 = [pr(zv)];
-        } else if (((typeof zv !== 'undefined' && zv !== null) && ((args.length === 1)))) {
-          _ref0 = [("(" + zv + op + args[0] + ")")];
+        } else if ((((args.length === 1)) && (typeof zv !== 'undefined' && zv !== null))) {
+          _ref0 = [("(" + zv + op + spr(args) + ")")];
+        } else if ((((args.length === 1)) && drop)) {
+          _ref0 = [spr(args)];
+        } else if (((args.length === 1))) {
+          _ref0 = [(op + spr(args))];
         } else {
           _res = [];
           _ref = args;
@@ -145,8 +150,8 @@
     })
   }));
   (ops = [
-    ["+", 0],
-    ["-", 0],
+    ["+", undefined, 1, Infinity, true],
+    ["-", undefined, 1],
     ["*", 1],
     ["/", 1],
     ["%", undefined, 1],
