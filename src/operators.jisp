@@ -12,6 +12,8 @@
          (if (assertForm args min max)
              (if (is args.length 0)
                  `(,(pr zv))
+                 (elif (and (? zv) (is args.length 1))
+                       `(,(+ "(" zv op (car args) ")")))
                  (do (for arg i args (= args[i] (pr arg)))
                      `(,(+ "(" (args.join (+ " " op " ")) ")")))))))
 
@@ -96,8 +98,7 @@
 ; in JS, 3 < 2 < 1 produces true (facepalm)
 ; todo ops like += should take multiple ars and compile into one += and multiple +
   ; arithmetic
-  ("+" 0)           ("-" undefined 1) ("*" 1)
-  ("/" undefined 1) ("%" undefined 1)
+  ("+" 0) ("-" 0) ("*" 1) ("/" 1) ("%" undefined 1)
   ; logical
   ("?"   "exists") ("==" "is")  ("===" "is") ("!=" "isnt")
   ("!==" "isnt")   ("&&" "and") ("||"  "or") ("!"  "not")

@@ -43,7 +43,7 @@
      (for filename files (buildFile jisp filename))
      (console.log "-- if you're reading this, compilation has succeeded!")))
 
-; (build jisp)
+(build jisp)
 
 ; Building with unstable
 

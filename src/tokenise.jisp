@@ -5,25 +5,30 @@
 (= tokens    `()  ;#`
    recode    /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/
              ;# ^ matches until first comment, '-string, "-string, or regex
-   recomment /^;.*[\n\r]?/                     ;# first comment
-   redstring /^""|^"[^]*?(?:[^\\]")[^\s):]*/   ;# first " string + data until delimiter
-   resstring /^''|^'[^]*?(?:[^\\]')[^\s):]*/   ;# first ' string + data until delimiter
-   rereg     /^\/[^\s]+\/[\w]*[^\s)]*/)        ;# first regex + data until delimiter
+   recomment /^;.*[\n\r]?/                     ; first comment
+   redstring /^""|^"[^]*?(?:[^\\]")[^\s):\]\}]*/   ; first " string + data until delimiter
+   resstring /^''|^'[^]*?(?:[^\\]')[^\s):\]\}]*/   ; first ' string + data until delimiter
+   rereg     /^\/[^\s]+\/[\w]*[^\s)]*/)        ; first regex + data until delimiter
 
 (def grate str
      (do str
-         (.replace /;.*$/gm  "")             ;# drop comments if any
-         (.replace /\{/g     "(fn (")        ;# desugar lambdas
-         (.replace /\}/g     "))")           ;# desugar lambdas
-         (.replace /\(/g     " ( ")
-         (.replace /\)/g     " ) ")
-         (.replace /\[[\s]*\(/g   " [ ( ")
-         (.replace /\)[\s]*\]/g   " ) ] ")
-         (.replace /:/g      " : ")
-         (.replace /`/g      " ` ")
-         (.replace /,/g      " , ")
-         (.replace /\.\.\./g " ... ")
-         (.replace /…/g      " … ")
+         (.replace /;.*$/gm     "")             ; drop comments if any
+         (.replace /\{/g        "(fn (")        ; desugar lambdas
+         (.replace /\}/g        "))")           ; desugar lambdas
+         (.replace /\(/g        " ( ")
+         (.replace /\)/g        " ) ")
+         (.replace /\[$/g       " [ ")
+         (.replace /\['/g       " [ '")
+         (.replace /\["/g       ' [ "')
+         (.replace /'\]/g       "' ] ")
+         (.replace /"\]/g       '" ] ')
+         (.replace /\[[\s]*\(/g " [ ( ")
+         (.replace /\)[\s]*\]/g " ) ] ")
+         (.replace /:/g         " : ")
+         (.replace /`/g         " ` ")
+         (.replace /,/g         " , ")
+         (.replace /\.\.\./g    " ... ")
+         (.replace /…/g         " … ")
          (.trim)
          (.split /\s+/)))
 

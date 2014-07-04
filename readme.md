@@ -800,6 +800,8 @@ Macro embedding-hoisting doesn't respect global scope, overwrites previously def
 
 Toplevel functions are embedded even if the variable is reassigned early and they're never called.
 
+More 'operators' need to support multiple arguments.
+
 ## Why Use It
 
 Why?

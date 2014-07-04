@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.1.4")
+(= exports.version "0.1.5")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -325,7 +325,7 @@
 (= specials.quote (macCompileSpecial (argsMin: 1 argsMax: 1
   code: (do
     (= form (car form))
-    (if (and (isAtom form) (not (util.isPrimitive form)))
+    (if (and (isAtom form) (not (util.isPrimitive form)) (not (util.isSpecialValue form)))
       (buffer.push (JSON.stringify form))  ; identifiers and strings get additional quotes that soak up the additional rendering done when expanding a macro
       (elif (isAtom form)
         (buffer.push form))
@@ -565,6 +565,7 @@
 (= specials.switch (macCompileSpecial (code: (do
 ; (switch <exp> (case <test> ... <test> <case-branch>) ... <def-branch>)
 ; switch <exp> (case <test> <case-branch) ... )  ;;  <def-branch> = undefined
+; todo multiple tests per case
 ; todo if last form in function and no returns inside, end each branch with return instead of collector variable
 ; what arguments mean
   ; predicate ...midcases postbranch
@@ -698,8 +699,8 @@
         (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
         (= (catchForm err catchForm) catchForm)
         (macDeclareVar err))
-      (macDeclareService err "_err"))
-    (if (?! catchForm) (= catchForm `()))
+      (macDeclareService err "_err"))  ; shouldn't be declared, it's like an argument, todo fix
+    (if (?! catchForm) (= catchForm undefined))
     (macCompileResolve catchForm catchForm)
     (if (not (util.kwtest (pr (last catchForm))))
         (catchForm.push (+ collector " = " (pr (catchForm.pop)))))

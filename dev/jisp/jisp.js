@@ -29,7 +29,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.1.4");
+  (exports.version = "0.1.5");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -469,7 +469,7 @@
     }
     _ref0;
     (form = form[0]);
-    if ((isAtom(form) && (!util.isPrimitive(form)))) {
+    if ((isAtom(form) && (!util.isPrimitive(form)) && (!util.isSpecialValue(form)))) {
       _ref19 = buffer.push(JSON.stringify(form));
     } else if (isAtom(form)) {
       _ref19 = buffer.push(form);
@@ -1489,7 +1489,7 @@
       _ref6 = scope = _ref5[1];
     }
     _ref6;
-    (!(typeof catchForm !== 'undefined' && catchForm !== null)) ? (catchForm = []) : undefined;
+    (!(typeof catchForm !== 'undefined' && catchForm !== null)) ? (catchForm = undefined) : undefined;
     (_ref7 = compileResolve(catchForm, buffer, scope, opts));
     catchForm = _ref7[0];
     buffer = _ref7[1];
