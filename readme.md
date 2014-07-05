@@ -791,7 +791,7 @@ When using conditionals (e.g. `and`) with forms that compile to multiple lines, 
 
 Hoisting of multi-line statements above their place in code causes some actions to be executed out of order.
 
-[NYI] It's somewhat awkward to pass a 'nothing' to a macro (e.g. in a list of arguments); you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
+[NYI] It's somewhat awkward to pass a 'nothing' to a macro, i.e. something that will print as "" when unquoted; you have to test it in a macro and change value to "". Considering a special clause for `undefined` or `null`, or perhaps a special `nil` virtual value.
 
 [NYI] `command` doesn't automatically load the `register` module.
 

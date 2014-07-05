@@ -2,7 +2,7 @@
 
 ; Got bloated, todo refactor
 
-;; For compiler
+; # For compiler
 
 (= exports.symbolWhitelist (= symbolWhitelist `(
 ; List of non-\w 'words' for lexer to consider valid atoms
@@ -18,13 +18,17 @@
    "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "|=")))
 
 (= exports.keywords (= keywords `(
-  "return" "break" "continue"
+  "return" "break" "continue" "throw" "delete"
 )))
 
-(= exports.kwtest (def kwtest str
-   (or (/^return/.test str)
-       (/^break/.test str)
-       (/^continue/.test str))))
+(= exports.kwtest (def kwtest str (do
+   (= re (RegExp (do (for kw keywords
+                          (+ "^" kw))
+                     (.join "|"))))
+   (re.test str))))
+   ; (or (/^return/.test str)
+   ;     (/^break/.test str)
+   ;     (/^continue/.test str))))
 
 (= exports.specialValues (= specialValues `(
   "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN"
@@ -154,7 +158,7 @@
      (if (test exp) true
          (throw (Error (+ "expecting " (pr expect) ", got " (pr exp)))))))
 
-; For rendering
+; # For rendering
 
 ; Pretty-print
 ; Turns data objects into pretty-looking strings, with proper [ ] and { } delimiters for arrays and hash tables
@@ -165,7 +169,7 @@
            (do (= res "")
                (over val key item
                      (+= res (+ key ": " (pr val) ", ")))
-               (+ "({ " (res.slice 0 -2) " })")))
+               (+ "{ " (res.slice 0 -2) " }")))
          (elif (isList item)
                (do (= res "")
                    (for val item
@@ -191,14 +195,44 @@
            (if (or (and (isList exp) (is exp.length 0))
                    (isa exp "undefined")
                    (is exp ""))
-               (= buffer[i] undefined)  ; won't be displayed
-               (do (= buffer[i] (pr exp))
-                   (if (not (/:$|\}$|;$/.test (buffer[i].slice -1)))
-                       (+= buffer[i] ";")))))
+               (= buffer[i] undefined)  ; won't be displayed after `join`ing
+               (do (= res (pr exp))
+                   ; hash tables and lambdas need extra parens when on their own line
+                   (if (or (isHash exp)
+                           (/^function\s*\(/.test res))
+                       (= res (+ "(" res ")")))
+                   ; add semicolons to forms that need them
+                   (if (not (/:$|\}$|;$/.test (res.slice -1)))
+                       (+= res ";"))
+                   (= buffer[i] res))))
       (buffer.join " "))))
 
-;; For command line
-  ;; Mostly copied from CoffeeScript source
+; Removes all pairs of parentheses around a string
+; MUST NOT be applied to strings compiled from multiple expressions, only a SINGLE expression
+(= exports.deParenthesise (def deParenthesise str
+  (if (isa str "string")
+      (while (and (str.match /^\({1}/)
+                  (str.match /\){1}$/))
+        (= str (do str
+                   (.replace /^\({1}/ "")
+                   (.replace /\){1}$/ "")))
+        str)
+      str)))
+
+; Removes extra pairs of parentheses around a string
+; MUST NOT be applied to strings compiled from multiple expressions, only a SINGLE expression
+(= exports.dePairParenthesise (def dePairParenthesise str
+  (if (isa str "string")
+      (while (and (str.match /^\({2}/)
+                  (str.match /\){2}$/))
+        (= str (do str
+                   (.replace /^\({2}/ "(")
+                   (.replace /\){2}$/ ")")))
+        str)
+      str)))
+
+; # For command line
+; Mostly copied from CoffeeScript source
 
 ; Merges objects, returning fresh copy with attributes from both sides
 (= exports.merge (def merge options overrides

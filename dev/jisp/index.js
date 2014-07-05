@@ -1,10 +1,9 @@
 (function() {
-  var key, val, _res, _ref;
-  _res = [];
+  var key, val, _ref;
   _ref = require("./jisp");
-  for (key in _ref) {
-    val = _ref[key];
-    _res.push((exports[key] = val));
-  }
-  return _res;
+  return
+    for (key in _ref) {
+      val = _ref[key];
+      (exports[key] = val);
+    }
 }).call(this);

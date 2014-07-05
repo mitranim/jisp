@@ -8,31 +8,39 @@
 
 (def makeop op zv (min 0) (max Infinity) (drop no)
 ; <operator> <zero value> <min args> <max args>
-     (fn args
+     (fn args isOuter
          (if (assertForm args min max)
              (if (is args.length 0)
-                 `(,(pr zv))
+                 (pr zv)
                  (elif (and (is args.length 1) (? zv))
-                       `(,(+ "(" zv op (spr args) ")")))
+                       (do (= res (+ zv op (spr args)))
+                           ; extra parens for precedence if more operators await
+                           (if (not isOuter)
+                               (= res (+ "(" res ")")))
+                           res))
                  (elif (and (is args.length 1) drop)
-                       `(,(spr args)))
+                       (spr args))
                  (elif (is args.length 1)
-                       `(,(+ op (spr args))))
+                       (+ op (spr args)))
                  (do (for arg i args (= args[i] (pr arg)))
-                     `(,(+ "(" (args.join (+ " " op " ")) ")")))))))
+                     (= res (args.join (+ " " op " ")))
+                     ; extra parens for precedence if more operators await
+                     (if (not isOuter)
+                         (= res (+ "(" res ")")))
+                     res)))))
 
 (def makesing op
-     (fn args
+     (fn args isOuter
          (if (assertForm args 1 1)
-             `(,(+ "(" op " " (spr args) ")")))))
+             (+ op " " (spr args)))))
 
 (def reserved word (throw (Error (+ "keyword " word " is reserved"))))
 
 (def makestate op (min 0) (max Infinity)
 ; For 'pure statement' keywords that give an error when trying to assign
-     (fn args
+     (fn args isOuter
          (if (assertForm args min max)
-             `(,(+ op " " (spr args)) "undefined"))))
+             (+ op " " (spr args)) "undefined")))
 
 (= operators (
 ; Replacing jisp functions with JS operators and keywords
@@ -40,56 +48,59 @@
   ; (not a b c)  ->  (and (not a) (not b) (not c))
 
   ; arithmetic
-  "++": (fn args
+  "++": (fn args isOuter
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
-            (throw (Error "expecting identifier, got " (pr args[0])))
-        `(,(+ "++" (pr args[0]))))))
-  "--": (fn args
+            (throw (Error "expecting identifier, got " (spr args)))
+        (+ "++" (spr args)))))
+  "--": (fn args isOuter
     (if (assertForm args 1 1)
         (if (not (isIdentifier args[0]))
-            (throw (Error "expecting identifier, got " (pr args[0])))
-            `(,(+ "--" (pr args[0]))))))
+            (throw (Error "expecting identifier, got " (spr args)))
+            (+ "--" (spr args)))))
   ; logical
-  "is": (fn args
+  "is": (fn args isOuter
     (if (is args.length 0)
-        `(true)
+        true
         (elif (is args.length 1)
-              `(,(+ "!!" (pr args[0]))))
+              (+ "!!" (spr args)))
         (do (= subj (args.shift))
-            `(,(+ "("
-                  ((get (for arg args (+ "(" (pr subj) " === " (pr arg) ")")) join) " || ")
-                  ")")))))
-  "isnt": (fn args
+            (= res (do (for arg args (+ (pr subj) " === " (pr arg)))
+                       (.join " || ")))
+            (if (not isOuter)
+              (= res (+ "(" res ")")))
+            res)))
+  "isnt": (fn args isOuter
     (if (is args.length 0)
-        `(false)
+        false
         (elif (is args.length 1)
-              `(,(+ "!" (pr args[0]))))
+              (+ "!" (spr args)))
         (do (= subj (args.shift))
-            `(,(+ "("
-                  ((get (for arg args (+ "(" (pr subj) " !== " (pr arg) ")")) join) " && ")
-                  ")")))))
+            (= res (do (for arg args (+ (pr subj) " !== " (pr arg)))
+                       (.join " && ")))
+            (if (not isOuter)
+              (= res (+ "(" res ")")))
+            res)))
   "or":  (makeop "||" false)    ; single arg returns itself
   "and": (makeop "&&" true)     ; single arg returns itself
-  ; Function version:
-  ; "exists": (fn args            ; todo multiple args
-  ;   (if (assertForm args 1 1)
-  ;       `(,(+ "(function() { var _jref = ("
-  ;             args[0]
-  ;             "); return (typeof _jref !== 'undefined' && _jref !== null) })()"))))
-  "exists": (fn args            ; todo multiple args
+  "exists": (fn args isOuter    ; todo multiple args
     (if (assertForm args 1 1)
-        `(,(+ "(typeof " (pr args[0]) " !== 'undefined' && " (pr args[0]) " !== null)"))))
+        (do (= res (+ "typeof " (spr args) " !== 'undefined' && " (spr args) " !== null"))
+            (if (not isOuter)
+                (= res (+ "(" res ")")))
+            res)))
   ; keywords
-  "in": (fn args
+  "in": (fn args isOuter
     ; todo more than 2 args (concat / spread?)
     (if (assertForm args 2 2)
-        `(,(+ "([].indexOf.call("
-              (pr args[1]) ", " (pr args[0]) ") >= 0)"))))
+        (do (= res (+ "[].indexOf.call(" (pr args[1]) ", " (spr args) ") >= 0"))
+            (if (not isOuter)
+                (= res (+ "(" res ")")))
+            res)))
   "of": (makeop "in" undefined 2 2)
-  "new": (fn args
+  "new": (fn args isOuter
     (if (assertForm args 1)
-        `(,(+ "new " (pr (args.shift)) "(" (spr args) ")"))))
+        (+ "new " (pr (args.shift)) "(" (spr args) ")")))
   ; reserved
     ; "var" -- throws compile error without var, todo fix
     ; "class"
