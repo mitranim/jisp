@@ -1,6 +1,6 @@
 (function() {
   var symbolWhitelist, keywords, specialValues;
-  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
+  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", "!!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
   (exports.keywords = (keywords = ["return", "break", "continue"]));
 
   function kwtest(str) {
@@ -134,7 +134,7 @@
       throw Error(("expecting list, got " + form));
       _ref = undefined;
     } else if ((!((form.length >= min) && (form.length <= max)))) {
-      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length));
+      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form)));
       _ref = undefined;
     } else if (((typeof first !== 'undefined' && first !== null) && ((form[0] !== first)))) {
       throw Error(("expecting " + pr(first) + " as first element, got " + pr(form[0])));

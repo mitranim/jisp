@@ -8,7 +8,6 @@
   (assertForm = util.assertForm);
 
   function makeop(op, zv, min, max, drop) {
-    (!(typeof zv !== 'undefined' && zv !== null)) ? (zv = undefined) : undefined;
     (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
     (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
     (!(typeof drop !== 'undefined' && drop !== null)) ? (drop = false) : undefined;
@@ -153,7 +152,8 @@
     ["not", "!"],
     ["~", "~"],
     ["delete", "delete"],
-    ["typeof", "typeof"]
+    ["typeof", "typeof"],
+    ["!!", "!!"]
   ]);
   _res = [];
   _ref = singops;

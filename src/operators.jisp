@@ -6,7 +6,7 @@
    isIdentifier util.isIdentifier
    assertForm   util.assertForm)
 
-(def makeop op (zv undefined) (min 0) (max Infinity) (drop no)
+(def makeop op zv (min 0) (max Infinity) (drop no)
 ; <operator> <zero value> <min args> <max args>
      (fn args
          (if (assertForm args min max)
@@ -98,7 +98,7 @@
 ))
 
 (= singops `(
-  ("not" "!") ("~" "~") ("delete" "delete") ("typeof" "typeof")
+  ("not" "!") ("~" "~") ("delete" "delete") ("typeof" "typeof") ("!!" "!!")
 ))
 
 (for op singops (= operators[op[0]] (makesing op[1])))
@@ -153,16 +153,16 @@
 
 ; Unfinished. ToDo implement
 
-(mac macMakeOp name op zv
+(mac macMakeOp name operator zeroValue
 ; <func-name> <operator> <zero-value>
-     `(def ,name …args
-           ,(if (? zv)
-                `(do (args.unshift ,zv)
-                     (if (is args.length 0)
-                         ,zv
-                         (args.reduce {,op #0 #1})))
-                `(if (isnt args.length 0)
-                     (args.reduce {,op #0 #1})))))
+  `(def ,name ...args (do
+    ; included if zeroValue was passed
+    ,(if (? zeroValue)
+      `(args.unshift ,zeroValue))
+    ; included always
+    (if (is args.length 0)
+      ,zeroValue  ; defaults to undefined
+      (args.reduce {,operator #0 #1})))))
 
 (= opFuncs (:))
 

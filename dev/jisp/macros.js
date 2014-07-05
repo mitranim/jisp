@@ -3,7 +3,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -15,7 +15,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -29,7 +29,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -43,7 +43,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -77,7 +77,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -101,8 +101,10 @@
     }
     return [].concat(["or"]).concat(_res);
   };
-  var util;
+  var util, pr, spr;
   (util = require("./util"));
+  (pr = util.pr);
+  (spr = util.spr);
 
   function checkVar(exp) {
     return util.assertExp(exp, util.isVarName, "valid identifier") ? exp : undefined;

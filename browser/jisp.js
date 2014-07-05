@@ -5,7 +5,7 @@
       var exports = {}, module = {exports: exports};
       (function() {
   var symbolWhitelist, keywords, specialValues;
-  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
+  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", "!!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
   (exports.keywords = (keywords = ["return", "break", "continue"]));
 
   function kwtest(str) {
@@ -139,7 +139,7 @@
       throw Error(("expecting list, got " + form));
       _ref = undefined;
     } else if ((!((form.length >= min) && (form.length <= max)))) {
-      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length));
+      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form)));
       _ref = undefined;
     } else if (((typeof first !== 'undefined' && first !== null) && ((form[0] !== first)))) {
       throw Error(("expecting " + pr(first) + " as first element, got " + pr(form[0])));
@@ -336,7 +336,7 @@
       var exports = {}, module = {exports: exports};
       (function() {
   var symbolWhitelist, keywords, specialValues;
-  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
+  (exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", "!!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]));
   (exports.keywords = (keywords = ["return", "break", "continue"]));
 
   function kwtest(str) {
@@ -470,7 +470,7 @@
       throw Error(("expecting list, got " + form));
       _ref = undefined;
     } else if ((!((form.length >= min) && (form.length <= max)))) {
-      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length));
+      throw Error(("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form)));
       _ref = undefined;
     } else if (((typeof first !== 'undefined' && first !== null) && ((form[0] !== first)))) {
       throw Error(("expecting " + pr(first) + " as first element, got " + pr(form[0])));
@@ -626,7 +626,6 @@
   (assertForm = util.assertForm);
 
   function makeop(op, zv, min, max, drop) {
-    (!(typeof zv !== 'undefined' && zv !== null)) ? (zv = undefined) : undefined;
     (!(typeof min !== 'undefined' && min !== null)) ? (min = 0) : undefined;
     (!(typeof max !== 'undefined' && max !== null)) ? (max = Infinity) : undefined;
     (!(typeof drop !== 'undefined' && drop !== null)) ? (drop = false) : undefined;
@@ -771,7 +770,8 @@
     ["not", "!"],
     ["~", "~"],
     ["delete", "delete"],
-    ["typeof", "typeof"]
+    ["typeof", "typeof"],
+    ["!!", "!!"]
   ]);
   _res = [];
   _ref = singops;
@@ -1205,7 +1205,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -1217,7 +1217,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -1231,7 +1231,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -1245,7 +1245,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -1279,7 +1279,7 @@
     var _i, _ref;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((!(typeof x !== 'undefined' && x !== null)) || (other.length > 0))) {
-      throw Error("expecting one argument");
+      throw Error(("expecting one argument, got: " + pr(x) + ", " + spr(other)));
       _ref = undefined;
     } else {
       _ref = undefined;
@@ -1303,8 +1303,10 @@
     }
     return [].concat(["or"]).concat(_res);
   };
-  var util;
+  var util, pr, spr;
   (util = require("./util"));
+  (pr = util.pr);
+  (spr = util.spr);
 
   function checkVar(exp) {
     return util.assertExp(exp, util.isVarName, "valid identifier") ? exp : undefined;
@@ -1355,7 +1357,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  (exports.version = "0.1.8");
+  (exports.version = "0.1.9");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));

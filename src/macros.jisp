@@ -5,7 +5,9 @@
   ; (any) -> a sliding switch (or (if (? x) x) (if (? y) y) ...)
   ; ...
 
-(= util (require "./util"))
+(= util (require "./util")
+   pr   util.pr
+   spr  util.spr)
 
 (def checkVar exp
   (if (util.assertExp exp util.isVarName "valid identifier")
@@ -13,7 +15,7 @@
 
 (mac macOneArg name rest
   `(if (or (?! ,name) (> (get ,rest length) 0))
-       (throw (Error "expecting one argument"))))
+       (throw (Error (+ "expecting one argument, got: " (pr ,name) ", " (spr ,rest))))))
 
 ; `car`: x[0]
 ; `head`: x[0]
