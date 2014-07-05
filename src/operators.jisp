@@ -97,6 +97,12 @@
   "with":     (fn (reserved "with"))
 ))
 
+(= singops `(
+  ("not" "!") ("~" "~") ("delete" "delete") ("typeof" "typeof")
+))
+
+(for op singops (= operators[op[0]] (makesing op[1])))
+
 (= ops `(
 ; todo un-retardify chained comparisons
 ; in JS, 3 < 2 < 1 produces true (facepalm)
@@ -127,12 +133,6 @@
      (if (is (typeof op[1]) "string")
          (= operators[op[0]] operators[op[1]])
          (= operators[op[0]] (makeop ...op))))
-
-(= singops `(
-  ("not" "!") ("~" "~") ("delete" "delete") ("typeof" "typeof")
-))
-
-(for op singops (= operators[op[0]] (makesing op[1])))
 
 (= stateops `(
   ("return" 0 1) ("break" 0 1) ("continue" 0 0) ("throw" 1 1)

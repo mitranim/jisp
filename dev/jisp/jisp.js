@@ -29,7 +29,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  (exports.version = "0.1.7");
+  (exports.version = "0.1.8");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));

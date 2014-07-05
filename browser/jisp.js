@@ -617,7 +617,7 @@
     })();require['./operators'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var util, pr, spr, render, isIdentifier, assertForm, operators, ops, op, singops, stateops, opFuncs, _i, _res, _ref, _i0, _res0, _ref0, _i1, _res1, _ref1;
+  var util, pr, spr, render, isIdentifier, assertForm, operators, singops, op, ops, stateops, opFuncs, _i, _res, _ref, _i0, _res0, _ref0, _i1, _res1, _ref1;
   (util = require("./util"));
   (pr = util.pr);
   (spr = util.spr);
@@ -767,6 +767,19 @@
       return reserved("with");
     })
   }));
+  (singops = [
+    ["not", "!"],
+    ["~", "~"],
+    ["delete", "delete"],
+    ["typeof", "typeof"]
+  ]);
+  _res = [];
+  _ref = singops;
+  for (_i = 0; _i < _ref.length; ++_i) {
+    op = _ref[_i];
+    _res.push((operators[op[0]] = makesing(op[1])));
+  }
+  _res;
   (ops = [
     ["+", undefined, 1, Infinity, true],
     ["-", undefined, 1],
@@ -805,24 +818,11 @@
     ["instanceof", undefined, 2, 2],
     [",", undefined, 2, 2]
   ]);
-  _res = [];
-  _ref = ops;
-  for (_i = 0; _i < _ref.length; ++_i) {
-    op = _ref[_i];
-    _res.push((((typeof op[1]) === "string")) ? (operators[op[0]] = operators[op[1]]) : (operators[op[0]] = makeop.apply(makeop, [].concat(op))));
-  }
-  _res;
-  (singops = [
-    ["not", "!"],
-    ["~", "~"],
-    ["delete", "delete"],
-    ["typeof", "typeof"]
-  ]);
   _res0 = [];
-  _ref0 = singops;
+  _ref0 = ops;
   for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
     op = _ref0[_i0];
-    _res0.push((operators[op[0]] = makesing(op[1])));
+    _res0.push((((typeof op[1]) === "string")) ? (operators[op[0]] = operators[op[1]]) : (operators[op[0]] = makeop.apply(makeop, [].concat(op))));
   }
   _res0;
   (stateops = [
@@ -1355,7 +1355,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  (exports.version = "0.1.7");
+  (exports.version = "0.1.8");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
