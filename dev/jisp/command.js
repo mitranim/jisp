@@ -85,7 +85,7 @@
   }(exports.run = run);
 
   function compilePath(source, topLevel, base) {
-    var stats, err, files, file, code, _ref, _ref0, _ref1, _ref2, _ref3, _i, _res, _ref4, _ref5, _ref6, _ref7, _ref8;
+    var stats, files, file, code, _ref, _ref0, _ref1, _ref2, _ref3, _i, _res, _ref4, _ref5, _ref6, _ref7, _ref8;
     if ((([].indexOf.call(sources, source) >= 0) || ((!topLevel) && (notSources[source] || hidden(source))))) {} else {
       _ref = undefined;
     }
@@ -155,7 +155,7 @@
   compilePath;
 
   function findDirectoryIndex(source) {
-    var ext, index, err, _i, _res, _ref, _ref0, _ref1;
+    var ext, index, _i, _res, _ref, _ref0, _ref1;
     _res = [];
     _ref = jisp.fileExtensions;
     for (_i = 0; _i < _ref.length; ++_i) {
@@ -181,7 +181,7 @@
   findDirectoryIndex;
 
   function compileScript(file, input, base) {
-    var o, options, task, t, compiled, err, message, _ref, _ref0, _ref1;
+    var o, options, task, t, compiled, message, _ref, _ref0, _ref1;
     (!(typeof base !== 'undefined' && base !== null)) ? (base = null) : undefined;
     (o = opts);
     (options = compileOptions(file, base));

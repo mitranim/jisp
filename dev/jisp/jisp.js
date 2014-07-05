@@ -28,8 +28,8 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, specials, macros;
-  (exports.version = "0.1.6");
+  var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
+  (exports.version = "0.1.7");
   (vm = require("vm"));
   (fs = require("fs"));
   (path = require("path"));
@@ -51,6 +51,8 @@
   (isVarName = util.isVarName);
   (isIdentifier = util.isIdentifier);
   (assertExp = util.assertExp);
+  (toplevelRedeclare = []);
+  (toplevelRedefine = []);
 
   function plusname(name) {
     return isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0])));
@@ -190,6 +192,11 @@
   }
   getArgNames;
 
+  function notRedefined(name) {
+    return ((!([].indexOf.call(toplevelRedeclare, name) >= 0)) && (!([].indexOf.call(toplevelRedefine, name) >= 0)));
+  }
+  notRedefined;
+
   function compileForm(form, scope, opts) {
     var buffer, first, i, arg, argsSpread, name, method, collector, key, val, _ref, _ref0, _i, _ref1, _i0, _ref2, _res, _ref3, _ref4, _i1, _ref5, _i2, _ref6, _ref7, _i3, _ref8, _ref9, _ref10, _i4, _ref11, _i5, _ref12, _ref13, _ref14, _ref15, _i6, _ref16, _ref17, _res0, _ref18, _ref19, _i7;
     (!(typeof opts !== 'undefined' && opts !== null)) ? (opts = ({})) : undefined;
@@ -198,7 +205,7 @@
         [""], scope
       ];
     } else if (isAtom(form)) {
-      if ((([].indexOf.call(Object.keys(toplevel), form) >= 0) || ([].indexOf.call(Object.keys(macros), form) >= 0))) {
+      if (((([].indexOf.call(Object.keys(toplevel), form) >= 0) && notRedefined(form)) || ([].indexOf.call(Object.keys(macros), form) >= 0))) {
         assertExp(form, isVarName, "valid identifier");
         _ref17 = (scope = declareVar(form, scope));
       } else if (([].indexOf.call(Object.keys(opFuncs), form) >= 0)) {
@@ -249,7 +256,7 @@
         first = _ref1[0];
         buffer = _ref1[1];
         scope = _ref1[2];
-        if (([].indexOf.call(Object.keys(toplevel), first) >= 0)) {
+        if ((([].indexOf.call(Object.keys(toplevel), first) >= 0) && notRedefined(first))) {
           assertExp(first, isVarName, "valid identifier");
           _ref2 = (scope = declareVar(first, scope));
         } else {
@@ -322,14 +329,14 @@
   compileForm;
   (specials = ({}));
   (specials.do = (function(form, scope, opts) {
-    var buffer, formName, isTopLevel, outerScope, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _i, _res, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _i2, _res0, _ref6, _i3, _res1, _ref7, _res2, _ref8, _ref9, _res3, _ref10, _ref11, _i4, _res4, _ref12, _ref13, _ref14;
+    var buffer, formName, isTopLevel, outerScope, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _i, _res, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _i2, _res0, _ref6, _ref7, _ref8, _i3, _res1, _ref9, _res2, _ref10, _ref11, _res3, _ref12, _ref13, _i4, _res4, _ref14, _ref15, _ref16;
     (!(typeof opts !== 'undefined' && opts !== null)) ? (opts = ({})) : undefined;
     (buffer = []);
     (form = form.slice());
     (formName = form.shift());
-    if (opts.toplevel) {
+    if (opts.isTopLevel) {
       (isTopLevel = true);
-      _ref = (delete opts.toplevel);
+      _ref = (delete opts.isTopLevel);
     } else {
       _ref = undefined;
     }
@@ -377,13 +384,25 @@
       _ref6 = scope.hoist;
       for (_i2 = 0; _i2 < _ref6.length; ++_i2) {
         name = _ref6[_i2];
-        _res0.push(((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0))) ? (([].indexOf.call(Object.keys(toplevel), name) >= 0) || ([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) ? funcs.push(name) : vars.push(name) : undefined);
+        if (((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0)))) {
+          if (([].indexOf.call(Object.keys(toplevel), name) >= 0)) {
+            _ref7 = (opts.topScope && ([].indexOf.call(toplevelRedeclare, name) >= 0)) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+          } else if ((([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0))) {
+            _ref7 = funcs.push(name);
+          } else {
+            _ref7 = vars.push(name);
+          }
+          _ref8 = _ref7;
+        } else {
+          _ref8 = undefined;
+        }
+        _res0.push(_ref8);
       }
       _res0;
       _res1 = [];
-      _ref7 = scope.service;
-      for (_i3 = 0; _i3 < _ref7.length; ++_i3) {
-        name = _ref7[_i3];
+      _ref9 = scope.service;
+      for (_i3 = 0; _i3 < _ref9.length; ++_i3) {
+        name = _ref9[_i3];
         _res1.push((!([].indexOf.call(outerScope.service, name) >= 0)) ? vars.push(name) : undefined);
       }
       _res1;
@@ -392,60 +411,60 @@
         (name = vars.shift());
         if (([].indexOf.call(vars, name) >= 0)) {
           throw Error(("compiler error: duplicate var in declarations:" + name));
-          _ref8 = undefined;
+          _ref10 = undefined;
         } else {
-          _ref8 = undefined;
+          _ref10 = undefined;
         }
-        _ref8;
+        _ref10;
         _res2.push((dec += (name + ", ")));
       }
       _res2;
       if ((dec.length > 4)) {
         (dec = dec.slice(0, (dec.length - 2)));
-        _ref9 = buffer.unshift(dec);
+        _ref11 = buffer.unshift(dec);
       } else {
-        _ref9 = undefined;
+        _ref11 = undefined;
       }
-      _ref9;
+      _ref11;
       if (((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel)) {
         _res3 = [];
         while ((funcs.length > 0)) {
           (func = funcs.pop());
           if (([].indexOf.call(funcs, func) >= 0)) {
             throw Error(("compiler error: duplicate func in declarations:" + func));
-            _ref10 = undefined;
+            _ref12 = undefined;
           } else {
-            _ref10 = undefined;
+            _ref12 = undefined;
           }
-          _ref10;
+          _ref12;
           if (([].indexOf.call(Object.keys(toplevel), func) >= 0)) {
-            _ref11 = buffer.unshift(toplevel[func].toString());
+            _ref13 = notRedefined(func) ? buffer.unshift(toplevel[func].toString()) : undefined;
           } else if (([].indexOf.call(Object.keys(macros), func) >= 0)) {
-            _ref11 = buffer.unshift(("var " + func + " = " + macros[func] + ";"));
+            _ref13 = buffer.unshift(("var " + func + " = " + macros[func] + ";"));
           } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0)) {
-            _ref11 = buffer.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
+            _ref13 = buffer.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
           } else {
             throw Error(("unrecognised func: " + pr(func)));
-            _ref11 = undefined;
+            _ref13 = undefined;
           }
-          _res3.push(_ref11);
+          _res3.push(_ref13);
         }
-        _ref13 = _res3;
+        _ref15 = _res3;
       } else {
         _res4 = [];
-        _ref12 = funcs;
-        for (_i4 = 0; _i4 < _ref12.length; ++_i4) {
-          func = _ref12[_i4];
+        _ref14 = funcs;
+        for (_i4 = 0; _i4 < _ref14.length; ++_i4) {
+          func = _ref14[_i4];
           _res4.push((!([].indexOf.call(outerScope.hoist, func) >= 0)) ? outerScope.hoist.push(func) : undefined);
         }
-        _ref13 = _res4;
+        _ref15 = _res4;
       }
-      _ref13;
-      _ref14 = (scope = outerScope);
+      _ref15;
+      _ref16 = (scope = outerScope);
     } else {
-      _ref14 = undefined;
+      _ref16 = undefined;
     }
-    _ref14;
+    _ref16;
     return Array(buffer, scope);
   }));
   (specials.quote = (function(form, scope, opts) {
@@ -658,6 +677,7 @@
     _ref;
     if (((form.length === 1))) {
       assertExp(form[0], isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), form[0]) >= 0) && (!([].indexOf.call(scope.hoist, form[0]) >= 0)) && notRedefined(form[0])) ? toplevelRedeclare.push(form[0]) : undefined;
       (scope = declareVar(form[0], scope));
       (_ref0 = compileAdd(form[0], buffer, scope, opts));
       buffer = _ref0[0];
@@ -706,6 +726,7 @@
               buffer = _ref9[1];
               scope = _ref9[2];
               assertExp(name, isVarName, "valid identifier");
+              (opts.topScope && ([].indexOf.call(Object.keys(toplevel), name) >= 0) && (!([].indexOf.call(scope.hoist, name) >= 0)) && notRedefined(name)) ? toplevelRedeclare.push(name) : undefined;
               (scope = declareVar(name, scope));
               (spreadname = name);
               (spreadind = i);
@@ -713,6 +734,7 @@
             } else if ((!(typeof spreadname !== 'undefined' && spreadname !== null))) {
               if (isVarName(name)) {
                 assertExp(name, isVarName, "valid identifier");
+                (opts.topScope && ([].indexOf.call(Object.keys(toplevel), name) >= 0) && (!([].indexOf.call(scope.hoist, name) >= 0)) && notRedefined(name)) ? toplevelRedeclare.push(name) : undefined;
                 _ref12 = (scope = declareVar(name, scope));
               } else {
                 _ref12 = undefined;
@@ -722,6 +744,7 @@
             } else {
               if (isVarName(name)) {
                 assertExp(name, isVarName, "valid identifier");
+                (opts.topScope && ([].indexOf.call(Object.keys(toplevel), name) >= 0) && (!([].indexOf.call(scope.hoist, name) >= 0)) && notRedefined(name)) ? toplevelRedeclare.push(name) : undefined;
                 _ref10 = (scope = declareVar(name, scope));
               } else {
                 _ref10 = undefined;
@@ -735,6 +758,7 @@
         } else {
           if (isVarName(left)) {
             assertExp(left, isVarName, "valid identifier");
+            (opts.topScope && ([].indexOf.call(Object.keys(toplevel), left) >= 0) && (!([].indexOf.call(scope.hoist, left) >= 0)) && notRedefined(left)) ? toplevelRedeclare.push(left) : undefined;
             _ref3 = (scope = declareVar(left, scope));
           } else {
             _ref3 = undefined;
@@ -751,7 +775,7 @@
     return Array(buffer, scope);
   }));
   (specials.fn = (function(form, scope, opts) {
-    var buffer, formName, outerScope, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _res, _ref0, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _i3, _res0, _ref7, _i4, _res1, _ref8, _res2, _ref9, _ref10, _res3, _ref11, _ref12, _i5, _res4, _ref13, _ref14;
+    var buffer, formName, outerScope, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _res, _ref0, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _i3, _res0, _ref7, _ref8, _ref9, _i4, _res1, _ref10, _res2, _ref11, _ref12, _res3, _ref13, _ref14, _i5, _res4, _ref15, _ref16;
     (!(typeof opts !== 'undefined' && opts !== null)) ? (opts = ({})) : undefined;
     (buffer = []);
     (form = form.slice());
@@ -828,13 +852,25 @@
     _ref7 = scope.hoist;
     for (_i3 = 0; _i3 < _ref7.length; ++_i3) {
       name = _ref7[_i3];
-      _res0.push(((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0))) ? (([].indexOf.call(Object.keys(toplevel), name) >= 0) || ([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) ? funcs.push(name) : vars.push(name) : undefined);
+      if (((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0)))) {
+        if (([].indexOf.call(Object.keys(toplevel), name) >= 0)) {
+          _ref8 = (opts.topScope && ([].indexOf.call(toplevelRedeclare, name) >= 0)) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+        } else if ((([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0))) {
+          _ref8 = funcs.push(name);
+        } else {
+          _ref8 = vars.push(name);
+        }
+        _ref9 = _ref8;
+      } else {
+        _ref9 = undefined;
+      }
+      _res0.push(_ref9);
     }
     _res0;
     _res1 = [];
-    _ref8 = scope.service;
-    for (_i4 = 0; _i4 < _ref8.length; ++_i4) {
-      name = _ref8[_i4];
+    _ref10 = scope.service;
+    for (_i4 = 0; _i4 < _ref10.length; ++_i4) {
+      name = _ref10[_i4];
       _res1.push((!([].indexOf.call(outerScope.service, name) >= 0)) ? vars.push(name) : undefined);
     }
     _res1;
@@ -843,61 +879,61 @@
       (name = vars.shift());
       if (([].indexOf.call(vars, name) >= 0)) {
         throw Error(("compiler error: duplicate var in declarations:" + name));
-        _ref9 = undefined;
+        _ref11 = undefined;
       } else {
-        _ref9 = undefined;
+        _ref11 = undefined;
       }
-      _ref9;
+      _ref11;
       _res2.push((dec += (name + ", ")));
     }
     _res2;
     if ((dec.length > 4)) {
       (dec = dec.slice(0, (dec.length - 2)));
-      _ref10 = body.unshift(dec);
+      _ref12 = body.unshift(dec);
     } else {
-      _ref10 = undefined;
+      _ref12 = undefined;
     }
-    _ref10;
+    _ref12;
     if (((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel)) {
       _res3 = [];
       while ((funcs.length > 0)) {
         (func = funcs.pop());
         if (([].indexOf.call(funcs, func) >= 0)) {
           throw Error(("compiler error: duplicate func in declarations:" + func));
-          _ref11 = undefined;
+          _ref13 = undefined;
         } else {
-          _ref11 = undefined;
+          _ref13 = undefined;
         }
-        _ref11;
+        _ref13;
         if (([].indexOf.call(Object.keys(toplevel), func) >= 0)) {
-          _ref12 = body.unshift(toplevel[func].toString());
+          _ref14 = notRedefined(func) ? body.unshift(toplevel[func].toString()) : undefined;
         } else if (([].indexOf.call(Object.keys(macros), func) >= 0)) {
-          _ref12 = body.unshift(("var " + func + " = " + macros[func] + ";"));
+          _ref14 = body.unshift(("var " + func + " = " + macros[func] + ";"));
         } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0)) {
-          _ref12 = body.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
+          _ref14 = body.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
         } else {
           throw Error(("unrecognised func: " + pr(func)));
-          _ref12 = undefined;
+          _ref14 = undefined;
         }
-        _res3.push(_ref12);
+        _res3.push(_ref14);
       }
-      _ref14 = _res3;
+      _ref16 = _res3;
     } else {
       _res4 = [];
-      _ref13 = funcs;
-      for (_i5 = 0; _i5 < _ref13.length; ++_i5) {
-        func = _ref13[_i5];
+      _ref15 = funcs;
+      for (_i5 = 0; _i5 < _ref15.length; ++_i5) {
+        func = _ref15[_i5];
         _res4.push((!([].indexOf.call(outerScope.hoist, func) >= 0)) ? outerScope.hoist.push(func) : undefined);
       }
-      _ref14 = _res4;
+      _ref16 = _res4;
     }
-    _ref14;
+    _ref16;
     (scope = outerScope);
     buffer.push(("(function(" + spr(args) + ") {" + render(body) + " })"));
     return Array(buffer, scope);
   }));
   (specials.def = (function(form, scope, opts) {
-    var buffer, formName, outerScope, fname, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _res, _ref0, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _i3, _res0, _ref7, _i4, _res1, _ref8, _res2, _ref9, _ref10, _res3, _ref11, _ref12, _i5, _res4, _ref13, _ref14;
+    var buffer, formName, outerScope, fname, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _res, _ref0, _ref1, _ref2, _i0, _ref3, _i1, _ref4, _ref5, _ref6, _i2, _i3, _res0, _ref7, _ref8, _ref9, _i4, _res1, _ref10, _res2, _ref11, _ref12, _res3, _ref13, _ref14, _i5, _res4, _ref15, _ref16;
     (!(typeof opts !== 'undefined' && opts !== null)) ? (opts = ({})) : undefined;
     (buffer = []);
     (form = form.slice());
@@ -911,7 +947,8 @@
     fname = _ref[0];
     var args = 3 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []);
     body = _ref[_i++];
-    assertExp(fname, isVarName, "valid function name");
+    assertExp(fname, isVarName, "valid identifier");
+    (opts.topScope && ([].indexOf.call(Object.keys(toplevel), fname) >= 0) && (!([].indexOf.call(scope.hoist, fname) >= 0)) && notRedefined(fname)) ? toplevelRedefine.push(fname) : undefined;
     scope.hoist.push.apply(scope.hoist, [].concat(getArgNames(args)));
     (!(typeof body !== 'undefined' && body !== null)) ? (body = []) : undefined;
     (optionals = []);
@@ -976,13 +1013,25 @@
     _ref7 = scope.hoist;
     for (_i3 = 0; _i3 < _ref7.length; ++_i3) {
       name = _ref7[_i3];
-      _res0.push(((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0))) ? (([].indexOf.call(Object.keys(toplevel), name) >= 0) || ([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) ? funcs.push(name) : vars.push(name) : undefined);
+      if (((!([].indexOf.call(outerScope.hoist, name) >= 0)) && (!([].indexOf.call(args, name) >= 0)))) {
+        if (([].indexOf.call(Object.keys(toplevel), name) >= 0)) {
+          _ref8 = (opts.topScope && ([].indexOf.call(toplevelRedeclare, name) >= 0)) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+        } else if ((([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0))) {
+          _ref8 = funcs.push(name);
+        } else {
+          _ref8 = vars.push(name);
+        }
+        _ref9 = _ref8;
+      } else {
+        _ref9 = undefined;
+      }
+      _res0.push(_ref9);
     }
     _res0;
     _res1 = [];
-    _ref8 = scope.service;
-    for (_i4 = 0; _i4 < _ref8.length; ++_i4) {
-      name = _ref8[_i4];
+    _ref10 = scope.service;
+    for (_i4 = 0; _i4 < _ref10.length; ++_i4) {
+      name = _ref10[_i4];
       _res1.push((!([].indexOf.call(outerScope.service, name) >= 0)) ? vars.push(name) : undefined);
     }
     _res1;
@@ -991,55 +1040,55 @@
       (name = vars.shift());
       if (([].indexOf.call(vars, name) >= 0)) {
         throw Error(("compiler error: duplicate var in declarations:" + name));
-        _ref9 = undefined;
+        _ref11 = undefined;
       } else {
-        _ref9 = undefined;
+        _ref11 = undefined;
       }
-      _ref9;
+      _ref11;
       _res2.push((dec += (name + ", ")));
     }
     _res2;
     if ((dec.length > 4)) {
       (dec = dec.slice(0, (dec.length - 2)));
-      _ref10 = body.unshift(dec);
+      _ref12 = body.unshift(dec);
     } else {
-      _ref10 = undefined;
+      _ref12 = undefined;
     }
-    _ref10;
+    _ref12;
     if (((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel)) {
       _res3 = [];
       while ((funcs.length > 0)) {
         (func = funcs.pop());
         if (([].indexOf.call(funcs, func) >= 0)) {
           throw Error(("compiler error: duplicate func in declarations:" + func));
-          _ref11 = undefined;
+          _ref13 = undefined;
         } else {
-          _ref11 = undefined;
+          _ref13 = undefined;
         }
-        _ref11;
+        _ref13;
         if (([].indexOf.call(Object.keys(toplevel), func) >= 0)) {
-          _ref12 = body.unshift(toplevel[func].toString());
+          _ref14 = notRedefined(func) ? body.unshift(toplevel[func].toString()) : undefined;
         } else if (([].indexOf.call(Object.keys(macros), func) >= 0)) {
-          _ref12 = body.unshift(("var " + func + " = " + macros[func] + ";"));
+          _ref14 = body.unshift(("var " + func + " = " + macros[func] + ";"));
         } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0)) {
-          _ref12 = body.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
+          _ref14 = body.unshift(("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";"));
         } else {
           throw Error(("unrecognised func: " + pr(func)));
-          _ref12 = undefined;
+          _ref14 = undefined;
         }
-        _res3.push(_ref12);
+        _res3.push(_ref14);
       }
-      _ref14 = _res3;
+      _ref16 = _res3;
     } else {
       _res4 = [];
-      _ref13 = funcs;
-      for (_i5 = 0; _i5 < _ref13.length; ++_i5) {
-        func = _ref13[_i5];
+      _ref15 = funcs;
+      for (_i5 = 0; _i5 < _ref15.length; ++_i5) {
+        func = _ref15[_i5];
         _res4.push((!([].indexOf.call(outerScope.hoist, func) >= 0)) ? outerScope.hoist.push(func) : undefined);
       }
-      _ref14 = _res4;
+      _ref16 = _res4;
     }
-    _ref14;
+    _ref16;
     (scope = outerScope);
     buffer.push(("function " + fname + "(" + spr(args) + ") {" + render(body) + " }"));
     buffer.push(fname);
@@ -1281,13 +1330,16 @@
         key = _ref5[0];
         scope = _ref5[1];
         assertExp(value, isVarName, "valid identifier");
+        (opts.topScope && ([].indexOf.call(Object.keys(toplevel), value) >= 0) && (!([].indexOf.call(scope.hoist, value) >= 0)) && notRedefined(value)) ? toplevelRedeclare.push(value) : undefined;
         _ref6 = (scope = declareVar(value, scope));
       }
       _ref7 = _ref6;
     } else {
       assertExp(key, isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), key) >= 0) && (!([].indexOf.call(scope.hoist, key) >= 0)) && notRedefined(key)) ? toplevelRedeclare.push(key) : undefined;
       (scope = declareVar(key, scope));
       assertExp(value, isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), value) >= 0) && (!([].indexOf.call(scope.hoist, value) >= 0)) && notRedefined(value)) ? toplevelRedeclare.push(value) : undefined;
       _ref7 = (scope = declareVar(value, scope));
     }
     _ref7;
@@ -1346,6 +1398,7 @@
       key = _ref2[0];
       scope = _ref2[1];
       assertExp(value, isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), value) >= 0) && (!([].indexOf.call(scope.hoist, value) >= 0)) && notRedefined(value)) ? toplevelRedeclare.push(value) : undefined;
       _ref3 = (scope = declareVar(value, scope));
     } else if ((!(typeof iterable !== 'undefined' && iterable !== null))) {
       (body = key);
@@ -1358,8 +1411,10 @@
       _ref3 = scope = _ref5[1];
     } else {
       assertExp(key, isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), key) >= 0) && (!([].indexOf.call(scope.hoist, key) >= 0)) && notRedefined(key)) ? toplevelRedeclare.push(key) : undefined;
       (scope = declareVar(key, scope));
       assertExp(value, isVarName, "valid identifier");
+      (opts.topScope && ([].indexOf.call(Object.keys(toplevel), value) >= 0) && (!([].indexOf.call(scope.hoist, value) >= 0)) && notRedefined(value)) ? toplevelRedeclare.push(value) : undefined;
       _ref3 = (scope = declareVar(value, scope));
     }
     _ref3;
@@ -1481,8 +1536,7 @@
       catchForm = _ref4[0];
       err = _ref4[1];
       catchForm = _ref4[2];
-      assertExp(err, isVarName, "valid identifier");
-      _ref6 = (scope = declareVar(err, scope));
+      _ref6 = assertExp(err, isVarName, "valid identifier");
     } else {
       (_ref5 = declareService("_err", scope, opts.function ? args : undefined));
       err = _ref5[0];
@@ -1768,9 +1822,11 @@
   (exports.macros = macros);
 
   function compile(src, opts) {
-    var defaults, parsed, expanded, compiled, scope, _ref, _i;
+    var defaults, parsed, expanded, compiled, scope, _ref, _ref0, _i;
     (defaults = ({
-      wrap: true
+      wrap: true,
+      topScope: true,
+      isTopLevel: true
     }));
     (opts = util.merge(defaults, opts));
     (parsed = parse(lex(tokenise(src))));
@@ -1778,15 +1834,20 @@
     opts.wrap ? (parsed = [
       ["get", ["fn", parsed], "call"], "this"
     ]) : undefined;
+    if ((!opts.repl)) {
+      (toplevelRedeclare = []);
+      _ref = (toplevelRedefine = []);
+    } else {
+      _ref = undefined;
+    }
+    _ref;
     (expanded = macroexpand(parsed));
-    (_ref = compileForm(expanded, ({
+    (_ref0 = compileForm(expanded, ({
       hoist: [],
       service: []
-    }), ({
-      toplevel: true
-    })));
-    compiled = _ref[0];
-    scope = _ref[1];
+    }), opts));
+    compiled = _ref0[0];
+    scope = _ref0[1];
     return (typeof beautify !== 'undefined' && beautify !== null) ? beautify(render(compiled), ({
       indent_size: 2
     })) : render(compiled);
@@ -1797,7 +1858,7 @@
   }(exports.eval = jispEval);
 
   function compileFile(filename) {
-    var raw, stripped, err, _ref;
+    var raw, stripped, _ref;
     (raw = fs.readFileSync(filename, "utf8"));
     (stripped = ((raw.charCodeAt(0) === 65279)) ? raw.substring(1) : raw);
     try {

@@ -12,7 +12,7 @@
          (= input (input.replace /\uFF00/g "\n")
             ; Node input arrives wrapped in ( \n), unwrap
             input (input.replace /^\(([^]*)\n\)$/g "$1"))
-         (try (do (= js (jisp.compile input (wrap: no)))
+         (try (do (= js (jisp.compile input (wrap: no repl: yes)))
                   (console.log "-- compiled:\n" js)
                   (console.log "-- executing:")
                   (= result (vm.runInThisContext js filename))

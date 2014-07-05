@@ -66,10 +66,17 @@
   (macOneArg x other)
   `(not (? ,x))))
 
-(= (get exports "?!") macNotExist)
+(= exports["?!"] macNotExist)
 
 ; `isa`: (is (typeof x) y)
 (mac macIsA obj ...types
   `(is (typeof ,obj) ,...types))
 
 (= exports.isa macIsA)
+
+; `any`: picks first existing value
+(mac macAny ...values
+  `(or ,...(for value values
+    `(and (? ,value) ,value))))
+
+(= exports.any macAny)

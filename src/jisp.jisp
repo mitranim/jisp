@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.1.6")
+(= exports.version "0.1.7")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -18,8 +18,8 @@
    parse       (require "./parse"))
 
 ; Util
-(= pr           util.pr  ; this must be applied to EVERY form we render or print to console
-   spr          util.spr
+(= pr           util.pr   ; this must be applied to EVERY form we render or print to console
+   spr          util.spr  ; or this, depending on task
    render       util.render
    isAtom       util.isAtom
    isHash       util.isHash
@@ -32,6 +32,11 @@
 
 ; ToDo move exports to a `jisp` object and export just that object
 
+; # Globals
+
+; Lists of built-in toplevels whose names have been overridden by an early `=` or `def`
+(= toplevelRedeclare `()
+   toplevelRedefine  `())
 
 ; # Helper functions
 
@@ -119,6 +124,11 @@
                    (arr.push (car arg)))))
       arr))
 
+; Checks if a toplevel built-in name has been redefined
+(def notRedefined name
+  (and (not (in name toplevelRedeclare))
+       (not (in name toplevelRedefine))))
+
 ; # Helper macros
 
 ; Shorter version of compileAdd
@@ -133,10 +143,19 @@
 (mac macCompileResolve form container
   `(= (,container buffer scope) (compileResolve ,form buffer scope opts)))
 
-; Shorter version of declareVar
-(mac macDeclareVar name
+; Wrapper for declareVar with checks to override toplevel built-ins where relevant
+(mac macDeclareVar name (override yes) (declare yes)
   `(do (assertExp ,name isVarName "valid identifier")
-       (= scope (declareVar ,name scope))))
+    ,(if override
+      `(if (and opts.topScope
+             (in ,name (Object.keys toplevel))
+             (not (in ,name scope.hoist))
+             (notRedefined ,name))
+        ,(if declare
+          `(toplevelRedeclare.push ,name)
+          `(toplevelRedefine.push  ,name))))
+    ,(if declare
+      `(= scope (declareVar ,name scope)))))
 
 ; Shorter version of declareService
 (mac macDeclareService name candidate
@@ -158,11 +177,15 @@
     (for name scope.hoist
       (if (and (not (in name outerScope.hoist))
                (not (in name args)))
-          (if (or (in name (Object.keys toplevel))
-                  (in name (Object.keys opFuncs))
-                  (in name (Object.keys macros)))
-              (funcs.push name)
-              (vars.push name))))
+        (if (in name (Object.keys toplevel))
+          (if (and opts.topScope (in name toplevelRedeclare))
+              (vars.push name)
+            (if (notRedefined name)
+              (funcs.push name)))
+          (elif (or (in name (Object.keys opFuncs))
+                    (in name (Object.keys macros)))
+            (funcs.push name))
+          (vars.push name))))
     (for name scope.service
       (if (not (in name outerScope.service))
         (vars.push name)))
@@ -180,18 +203,20 @@
       (while (> funcs.length 0) (do
         (= func (funcs.pop))
         (if (in func funcs)
-            (throw (Error (+ "compiler error: duplicate func in declarations:" func))))  ; no pr, expecting string
+          (throw (Error (+ "compiler error: duplicate func in declarations:" func))))  ; no pr, expecting string
         (if (in func (Object.keys toplevel))
-            ((get ,dest unshift) (toplevel[func].toString))
-            (elif (in func (Object.keys macros))
-                  ((get ,dest unshift) (+ "var " func " = " macros[func] ";")))
+          ; embed only if not redeclared or redefined
+          (if (notRedefined func)
+              ((get ,dest unshift) (toplevel[func].toString)))
+          (elif (in func (Object.keys macros))
+            ((get ,dest unshift) (+ "var " func " = " macros[func] ";")))
             ; ToDo embedding of opFuncs with .toString and renaming of references in code when not first in list
-            (elif (in func (Object.keys opFuncs))
-                  ((get ,dest unshift) (+ "var " opFuncs[func].name " = " opFuncs[func].func ";")))  ; no pr, expecting strings
-            (throw (Error (+ "unrecognised func: " (pr func)))))))
-        (do (for func funcs
-                 (if (not (in func outerScope.hoist))
-                     (outerScope.hoist.push func)))))
+          (elif (in func (Object.keys opFuncs))
+            ((get ,dest unshift) (+ "var " opFuncs[func].name " = " opFuncs[func].func ";")))  ; no pr, expecting strings
+          (throw (Error (+ "unrecognised func: " (pr func)))))))
+        (for func funcs
+          (if (not (in func outerScope.hoist))
+            (outerScope.hoist.push func))))
       ; Will return outer scope: nothing gets out except for funcs
     (= scope outerScope))  ; / macro output
 ))  ; /macro
@@ -229,13 +254,14 @@
       ; ToDo: check for reserved and forbidden words right here
       ; If name of toprange jisp func, hoist if not redefined earlier
       ; If name of operator, hoist appropriate func and replace atom with func name
-      (if (or (in form (Object.keys toplevel))
+      (if (or (and (in form (Object.keys toplevel))
+                   (notRedefined form))
               (in form (Object.keys macros)))
-        (macDeclareVar form)
+        (macDeclareVar form no)
         ; ToDo only do this when not first element in list
         (elif (in form (Object.keys opFuncs))
           (do
-            (macDeclareVar form)
+            (macDeclareVar form no)
             (= form opFuncs[form].name))))
       `((form) scope)))
     (elif (isHash form) (do
@@ -256,8 +282,9 @@
           ; compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
           ; if jisp-top-level func, hoist it
-          (if (in first (Object.keys toplevel))
-            (macDeclareVar first))
+          (if (and (in first (Object.keys toplevel))
+                   (notRedefined first))
+            (macDeclareVar first no))
           ; compile each element and test for spread
           (for arg i form (do
                (if (hasSpread arg)
@@ -283,7 +310,7 @@
                 ; ToDo implement embedding as .toString and renaming of references which are not first element in list
                 (if (and (in first (Object.keys opFuncs))
                          (spr opFuncs[first]))
-                    (do (macDeclareVar first)
+                    (do (macDeclareVar first no)
                         (= first opFuncs[first].name))
                     (throw (Error (+ (pr first) " can't spread arguments (yet)")))))
               ; Split object name and method for applying
@@ -302,9 +329,9 @@
 
 (= specials.do (macCompileSpecial
   (code: (do
-    (if opts.toplevel
+    (if opts.isTopLevel
       (do (= isTopLevel true)
-          (delete     opts.toplevel)))
+          (delete opts.isTopLevel)))
     (if isTopLevel (macForkScope))
     (for exp form
       (if (?! exp)
@@ -399,9 +426,9 @@
         (macCompileGetLast form form))
     (macCompileAdd form)))))
 
-(= (get specials "=") (macCompileSpecial (argsMin: 1
-; (= <name> <form>)    ;; name
-; (= <name>)           ;; name
+(= specials["="] (macCompileSpecial (argsMin: 1
+; (= <name> <form> <name> <form> ...)
+; (= <name>)
   code: (do
     (if (is form.length 1)
       (do (macDeclareVar (car form))
@@ -434,7 +461,7 @@
                         (buffer.push (+ (pr name) " = " ref "[" i "]"))))
                   (do (if (isVarName name) (macDeclareVar name))
                       (buffer.push (+ (pr name) " = " ref "[" ind "++]")))))))
-            (do (if (isVarName left) (macDeclareVar left))
+            (do (if (isVarName left) (macDeclareVar left))  ; normal assignment
                 (assertExp left isIdentifier)
                 (buffer.push (+ "(" (pr left) " = " (pr right) ")"))))))))))))
 
@@ -448,7 +475,7 @@
         `(= (...args body) form)
         `(do
           (= (fname ...args body) form)
-          (assertExp fname isVarName "valid function name")))
+          (macDeclareVar fname yes no)))
       (scope.hoist.push ...(getArgNames args))
       (if (?! body) (= body ``()))
       (= optionals ``()
@@ -698,7 +725,7 @@
       (do
         (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
         (= (catchForm err catchForm) catchForm)
-        (macDeclareVar err))
+        (assertExp err isVarName "valid identifier"))
       (macDeclareService err "_err"))  ; shouldn't be declared, it's like an argument, todo fix
     (if (?! catchForm) (= catchForm undefined))
     (macCompileResolve catchForm catchForm)
@@ -817,14 +844,19 @@
 (= exports.macros macros)  ; expose macro object for override by user
 
 (= exports.compile (def compile src opts (do
-   (= defaults (wrap: yes)
+   (= defaults (wrap:       yes
+                topScope:   yes   ; for built-in-func overrides
+                isTopLevel: yes)  ; for toplevel wrapping `do`
       opts     (util.merge defaults opts))
    (= parsed (parse (lex (tokenise src))))
    (parsed.unshift "do")  ; always put code into an implicit `do`
    (if opts.wrap
        (= parsed `(("get" ("fn" parsed) "call") "this")))
+   (if (not opts.repl)
+       (= toplevelRedeclare `()
+          toplevelRedefine  `()))  ; reset toplevel override stores when compiling each new file
    (= expanded (macroexpand parsed))
-   (= (compiled scope) (compileForm expanded (hoist:`() service:`()) (toplevel: yes)))
+   (= (compiled scope) (compileForm expanded (hoist:`() service:`()) opts))
    (if (? beautify)
        (beautify (render compiled) (indent_size: 2))
        (render compiled)))))

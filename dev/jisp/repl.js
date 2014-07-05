@@ -7,12 +7,13 @@
     useGlobal: true,
     prompt: "jisp> ",
     eval: (function(input, context, filename, cb) {
-      var js, result, err, _ref;
+      var js, result, _ref;
       (input = input.replace(/\uFF00/g, "\n"));
       (input = input.replace(/^\(([^]*)\n\)$/g, "$1"));
       try {
         (js = jisp.compile(input, ({
-          wrap: false
+          wrap: false,
+          repl: true
         })));
         console.log("-- compiled:\n", js);
         console.log("-- executing:");

@@ -774,7 +774,6 @@ Syntax (tokeniser and lexer limitations):
 
 REPL:
   * Multiline counts parens inside strings and all.
-  * Hangs on multiline input with unclosed `{`.
 
 Operator-functions like `+`:
   * [NYI] spread not implemented.
@@ -797,8 +796,6 @@ Hoisting of multi-line statements above their place in code causes some actions 
 [NYI] `command` doesn't automatically load the `register` module.
 
 Macro embedding-hoisting doesn't respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are going to be more and more core to the language.
-
-Toplevel functions are embedded even if the variable is reassigned early and they're never called.
 
 More 'operators' need to support multiple arguments.
 

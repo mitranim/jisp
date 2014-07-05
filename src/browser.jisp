@@ -45,14 +45,12 @@
      index   0)
   (for s scripts
     (if (is s.type "text/jisp") (jisps.push s)))
-
   (def execute (do
     (= param jisps[index])
     (if (instanceof param Array)
       (do (jisp.run ...param)
           (++ index)
           (execute)))))
-
   (for script i jisps (let script script i i (do
     (= options (:))
     (if script.src
@@ -63,7 +61,6 @@
         true)
       (do (= options.sourceFiles `("embedded"))
           (= jisps[i] `(script.innerHTML options)))))))
-
   (execute)))
 
 ; Listen for window load: decent browsers / IE
