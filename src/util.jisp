@@ -197,8 +197,9 @@
                    (isa exp "undefined")
                    (is exp ""))
                (= buffer[i] undefined)  ; won't be displayed after `join`ing
-               (do (if (isa exp "string") (= exp (exp.trim)))
-                   (= res (pr exp))
+               (do (= res (if (isa exp "string")
+                              (exp.trim)
+                              (pr exp)))
                    ; hash tables and lambdas need extra parens when on their own line
                    (if (or (isHash exp)
                            (/^function\s*\(/.test res))

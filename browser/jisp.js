@@ -248,8 +248,7 @@
       if ((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === "")) {
         buffer[i] = undefined;
       } else {
-        typeof exp === "string" ? exp = exp.trim() : undefined;
-        res = pr(exp);
+        res = typeof exp === "string" ? exp.trim() : pr(exp);
         isHash(exp) || /^function\s*\(/.test(res) ? res = "(" + res + ")" : undefined;
         !/:$|\}$|;$/.test(res.slice(-1)) ? res += ";" : undefined;
         buffer[i] = res;
@@ -631,8 +630,7 @@
       if ((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === "")) {
         buffer[i] = undefined;
       } else {
-        typeof exp === "string" ? exp = exp.trim() : undefined;
-        res = pr(exp);
+        res = typeof exp === "string" ? exp.trim() : pr(exp);
         isHash(exp) || /^function\s*\(/.test(res) ? res = "(" + res + ")" : undefined;
         !/:$|\}$|;$/.test(res.slice(-1)) ? res += ";" : undefined;
         buffer[i] = res;
@@ -893,7 +891,7 @@
     "with": (function() {
       return reserved("with");
     })
-  }
+  };
   singops = [
     ["not", "!"],
     ["~", "~"],
@@ -961,7 +959,7 @@
     operators[op[0]] = makestate(op[0]);
   }
   exports.operators = operators;
-  opFuncs = {}
+  opFuncs = {};
 
   function add() {
     var _i110;
@@ -1213,7 +1211,7 @@
         _ref = addProperties(tokens, {});
         break;
       case "hash":
-        lexed = {}
+        lexed = {};
         demand(tokens, "(", "drop");
         while (tokens[0] !== ")") {
           key = demand(tokens, isKey, "key");
@@ -1310,7 +1308,7 @@
       throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
     }
     return ["get", x, 0];
-  }
+  };
   var macCdr = function(x) {
     var _i;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -1320,7 +1318,7 @@
     return [
       ["get", x, "slice"], 1
     ];
-  }
+  };
   var macInit = function(x) {
     var _i;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -1330,7 +1328,7 @@
     return [
       ["get", x, "slice"], 0, -1
     ];
-  }
+  };
   var macLast = function(x) {
     var _i;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -1340,7 +1338,7 @@
     return ["get", [
       ["get", x, "slice"], -1
     ], 0];
-  }
+  };
   var macLet = function() {
     var body, names, callArgs, _i;
     args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
@@ -1358,7 +1356,7 @@
     return [].concat([
       [].concat(["fn"]).concat(names).concat([body])
     ]).concat(callArgs);
-  }
+  };
   var macNotExist = function(x) {
     var _i;
     other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -1366,12 +1364,12 @@
       throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
     }
     return ["not", ["?", x]];
-  }
+  };
   var macIsA = function(obj) {
     var _i;
     types = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     return [].concat(["is", ["typeof", obj]]).concat(types);
-  }
+  };
   var macAny = function() {
     var value, _i, _i0, _res, _ref;
     values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
@@ -1382,7 +1380,7 @@
       _res.push(["and", ["?", value], value]);
     }
     return [].concat(["or"]).concat(_res);
-  }
+  };
   var util, pr, spr;
   util = require("./util");
   pr = util.pr;
@@ -1434,7 +1432,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  exports.version = "0.2.2";
+  exports.version = "0.2.3";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1713,7 +1711,7 @@
     return _ref111111110;
   }
   compileForm;
-  specials = {}
+  specials = {};
   specials.do = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, isTopLevel, outerScope, i, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _i, _ref10, _i0, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110;
     !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
@@ -1734,7 +1732,7 @@
       scope = {
         hoist: outerScope.hoist.slice(),
         service: outerScope.service.slice()
-      }
+      };
     }
     _ref = form;
     for (i = 0; i < _ref.length; ++i) {
@@ -1853,7 +1851,7 @@
         }
         buffer.push(form);
       } else {
-        newform = {}
+        newform = {};
         _ref11111111110 = form;
         for (key in _ref11111111110) {
           exp = _ref11111111110[key];
@@ -2088,7 +2086,7 @@
     scope = {
       hoist: outerScope.hoist.slice(),
       service: outerScope.service.slice()
-    }
+    };
     _ref = form;
     var args = 2 <= _ref.length ? [].slice.call(_ref, 0, _i = _ref.length - 1) : (_i = 0, []);
     body = _ref[_i++];
@@ -2214,7 +2212,7 @@
     scope = {
       hoist: outerScope.hoist.slice(),
       service: outerScope.service.slice()
-    }
+    };
     _ref = form;
     fname = _ref[0];
     var args = 3 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []);
@@ -2424,7 +2422,7 @@
         midcases[i] = {
           test: midtest,
           branch: collect(midbranch, collector, false, isNested)
-        }
+        };
       }
       comp = "if (" + pr(predicate) + ") { " + render(prebranch) + " } ";
       _ref111111110 = midcases;
@@ -2492,7 +2490,7 @@
       midcases[i] = {
         test: midtest,
         branch: collect(midbranch, collector, true, isNested)
-      }
+      };
     }
     _ref1111110 = compileResolve(postbranch, buffer, scope, opts, nested);
     postbranch = _ref1111110[0];
@@ -2883,7 +2881,7 @@
     }
     return Array(buffer, scope);
   });
-  macros = {}
+  macros = {};
 
   function importMacros() {
     var store, key, val, _i, _i0, _ref, _ref0;
@@ -3006,7 +3004,7 @@
       wrap: true,
       topScope: true,
       isTopLevel: true
-    }
+    };
     opts = util.merge(defaults, opts);
     parsed = parse(lex(tokenise(src)));
     parsed.unshift("do");
@@ -3134,7 +3132,7 @@
       script = _ref0[i];
       (function(script, i) {
         var options, _ref10;
-        options = {}
+        options = {};
         if (script.src) {
           _ref10 = jisp.load(script.src, (function(param) {
             jisps[i] = param;

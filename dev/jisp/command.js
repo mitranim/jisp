@@ -44,10 +44,10 @@
     ["-i", "--interactive", "run an interactive jisp REPL (this is the default with no options and arguments)"],
     ["-v", "--version", "display the version number"]
   ];
-  opts = {}
+  opts = {};
   sources = [];
   sourceCode = [];
-  notSources = {}
+  notSources = {};
   optionParser = null;
 
   function run() {
@@ -55,7 +55,7 @@
     parseOptions();
     replCliOpts = {
       useGlobal: true
-    }
+    };
     if (opts.version) {
       return version();
     }
@@ -272,7 +272,7 @@
     var answer, cwd, jsPath, jsDir, _ref, _ref0;
     answer = {
       filename: filename
-    }
+    };
     if (!filename) {
       _ref0 = answer;
     } else {
