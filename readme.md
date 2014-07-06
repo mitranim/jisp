@@ -4,7 +4,7 @@ Jisp is the modern JavaScript for the modern developer. Its macro system lets yo
 
 Jisp's extremely simple syntax protects against common JS pitfalls, and it builds some common coding patterns right into the language, helping keep your code short.
 
-See documentation on the project page.
+See [documentation on the project page](http://mitranim.github.io/jisp/).
 
 ## Installation and Usage
 

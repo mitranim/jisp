@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.4")
+(= exports.version "0.2.5")
 
 ; External dependencies
 (= vm          (require "vm")
