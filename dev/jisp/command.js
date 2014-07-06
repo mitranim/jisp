@@ -6,7 +6,7 @@
     _ref = lists;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       lst = _ref[_i0];
-      (_res = _res.concat(lst));
+      _res = _res.concat(lst);
     }
     return _res;
   }
@@ -44,10 +44,10 @@
     ["-i", "--interactive", "run an interactive jisp REPL (this is the default with no options and arguments)"],
     ["-v", "--version", "display the version number"]
   ];
-  opts = {};
+  opts = {}
   sources = [];
   sourceCode = [];
-  notSources = {};
+  notSources = {}
   optionParser = null;
 
   function run() {
@@ -55,16 +55,17 @@
     parseOptions();
     replCliOpts = {
       useGlobal: true
-    };
+    }
     if (opts.version) {
       return version();
-    } else {} if (opts.interactive || !opts.arguments.length) {
+    }
+    if (opts.interactive || !opts.arguments.length) {
       return require("./repl").start(replCliOpts);
-    } else {}
+    }
     literals = opts.run ? opts.arguments.splice(1) : [];
     process.argv = process.argv.slice(0, 1).concat(literals);
     process.argv[0] = 'jisp';
-    opts.output ? (opts.output = path.resolve(opts.output)) : undefined;
+    opts.output ? opts.output = path.resolve(opts.output) : undefined;
     _res = [];
     _ref = opts.arguments;
     for (_i = 0; _i < _ref.length; ++_i) {
@@ -77,42 +78,40 @@
   exports.run = run;
 
   function compilePath(source, topLevel, base) {
-    var stats, files, file, code, _ref, _i, _res, _ref0, _ref1, _ref2, _ref3;
-    if (([].indexOf.call(sources, source, sources) >= 0) || (!topLevel && (notSources[source] || hidden(source)))) {} else {}
+    var stats, files, file, code, _i, _res, _ref, _ref0, _ref10;
+    if (([].indexOf.call(sources, source, sources) >= 0) || (!topLevel && (notSources[source] || hidden(source)))) {}
     try {
       (stats = fs.statSync(source));
     } catch (err) {
       if (err.code === "ENOENT") {
         console.error("File not found:" + source);
         process.exit(1);
-      } else {}
+      }
       throw err;
     }
     if (stats.isDirectory()) {
       if (path.basename(source) === "node_modules") {
-        _ref1 = (notSources[source] = true);
+        _ref0 = (notSources[source] = true);
       } else if (opts.run) {
-        _ref1 = compilePath(findDirectoryIndex(source), topLevel, base);
+        _ref0 = compilePath(findDirectoryIndex(source), topLevel, base);
       } else {
         try {
           (files = fs.readdirSync(source));
         } catch (err) {
           if (err.code === "ENOENT") {} else {
-            _ref = undefined;
             throw err;
           }
-          _ref;
         }
         _res = [];
-        _ref0 = files;
-        for (_i = 0; _i < _ref0.length; ++_i) {
-          file = _ref0[_i];
+        _ref = files;
+        for (_i = 0; _i < _ref.length; ++_i) {
+          file = _ref[_i];
           _res.push(compilePath(path.join(source, file), false, base));
         }
-        _ref1 = _res;
+        _ref0 = _res;
       }
-      _ref2 = _ref1;
-    } else if (topLevel || util.isJisp(source)) {
+      _ref10 = _ref0;
+    } else if ((topLevel || util.isJisp(source))) {
       sources.push(source);
       sourceCode.push(null);
       delete notSources[source];
@@ -120,40 +119,32 @@
         (code = fs.readFileSync(source));
       } catch (err) {
         if (err.code === "ENOENT") {
-          _ref3 = undefined;
           return;
         } else {
-          _ref3 = undefined;
           throw err;
         }
-        _ref3;
       }
-      _ref2 = compileScript(source, code.toString(), base);
+      _ref10 = compileScript(source, code.toString(), base);
     } else {
-      _ref2 = (notSources[source] = true);
+      _ref10 = (notSources[source] = true);
     }
-    return _ref2;
+    return _ref10;
   }
   compilePath;
 
   function findDirectoryIndex(source) {
-    var ext, index, _i, _ref, _ref0, _ref1;
+    var ext, index, _i, _ref;
     _ref = jisp.fileExtensions;
     for (_i = 0; _i < _ref.length; ++_i) {
       ext = _ref[_i];
       index = path.join(source, "index" + ext);
       try {
-        _ref0 = fs.statSync(index).isFile() ? undefined : undefined;
+        fs.statSync(index).isFile() ? undefined : undefined;
       } catch (err) {
         if (!(err.code === "ENOENT")) {
-          _ref1 = undefined;
           throw err;
-        } else {
-          _ref1 = undefined;
         }
-        _ref0 = _ref1;
       }
-      _ref0;
     }
     console.error("Missing index.jisp in " + source);
     return process.exit(1);
@@ -162,7 +153,7 @@
 
   function compileScript(file, input, base) {
     var o, options, task, t, compiled, message, _ref, _ref0;
-    !(typeof base !== 'undefined' && base !== null) ? (base = null) : undefined;
+    !(typeof base !== 'undefined' && base !== null) ? base = null : undefined;
     o = opts;
     options = compileOptions(file, base);
     try {
@@ -184,7 +175,7 @@
       _ref0 = _ref;
     } catch (err) {
       jisp.emit("failure", err, task);
-      if (jisp.listeners("failure").length) {} else {}
+      if (jisp.listeners("failure").length) {}
       message = err.stack || err.toString();
       printWarn(message);
       _ref0 = process.exit(1);
@@ -198,7 +189,7 @@
     code = "";
     stdin = process.openStdin();
     stdin.on("data", (function(buffer) {
-      return buffer ? code += buffer.toString() : undefined;
+      return buffer ? (code += buffer.toString()) : undefined;
     }));
     return stdin.on("end", (function() {
       return compileScript(null, code);
@@ -223,12 +214,12 @@
 
   function outputPath(source, base, extension) {
     var basename, srcDir, dir, _ref;
-    !(typeof extension !== 'undefined' && extension !== null) ? (extension = ".js") : undefined;
+    !(typeof extension !== 'undefined' && extension !== null) ? extension = ".js" : undefined;
     basename = util.baseFileName(source, true, useWinPathSep);
     srcDir = path.dirname(source);
     if (!opts.output) {
       _ref = srcDir;
-    } else if (source === base) {
+    } else if ((source === base)) {
       _ref = opts.output;
     } else {
       _ref = path.join(opts.output, path.relative(base, srcDir));
@@ -246,7 +237,7 @@
     function compile() {
       var _ref;
       if (opts.compile) {
-        js.length <= 0 ? (js = " ") : undefined;
+        js.length <= 0 ? js = " " : undefined;
         _ref = fs.writeFile(jsPath, js, (function(err) {
           return err ? printLine(err.message) : undefined;
         }));
@@ -281,7 +272,7 @@
     var answer, cwd, jsPath, jsDir, _ref, _ref0;
     answer = {
       filename: filename
-    };
+    }
     if (!filename) {
       _ref0 = answer;
     } else {

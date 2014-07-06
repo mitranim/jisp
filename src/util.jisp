@@ -164,7 +164,8 @@
 ; Turns data objects into pretty-looking strings, with proper [ ] and { } delimiters for arrays and hash tables
 (= exports.pr (def pr item
      (if (isAtom item)
-         (+ "" item)
+         (do (+ "" item)
+             (.replace /;$/ ""))  ; remove trailing semicolon, if any
          (elif (isHash item)
            (do (= res "")
                (over val key item
@@ -196,7 +197,8 @@
                    (isa exp "undefined")
                    (is exp ""))
                (= buffer[i] undefined)  ; won't be displayed after `join`ing
-               (do (= res (pr exp))
+               (do (if (isa exp "string") (= exp (exp.trim)))
+                   (= res (pr exp))
                    ; hash tables and lambdas need extra parens when on their own line
                    (if (or (isHash exp)
                            (/^function\s*\(/.test res))
@@ -205,7 +207,8 @@
                    (if (not (/:$|\}$|;$/.test (res.slice -1)))
                        (+= res ";"))
                    (= buffer[i] res))))
-      (buffer.join " "))))
+      (buffer.join " ")
+      (.trim))))
 
 ; Removes all pairs of parentheses around a string
 ; MUST NOT be applied to strings compiled from multiple expressions, only a SINGLE expression

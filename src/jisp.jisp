@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.0")
+(= exports.version "0.2.1")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -295,7 +295,8 @@
               (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
         (do  ; Not a special form? -> function call
           ; Unset nested (callees assume true)
-          (= nested undefined)
+          (= isNested nested
+             nested   undefined)
           ; Compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
           ; If jisp-top-level func, hoist it
@@ -304,7 +305,7 @@
             (macDeclareVar first no))
           ; If operator, check if we're inside compile call to another operator; if not, put this into options
           (if (in first (Object.keys operators))
-              (if (not opts.compilingOperator)
+              (if (and (not opts.compilingOperator) (not isNested))
                   (do (= isOuterOperator yes)
                       (= opts.compilingOperator yes))
                   (= isOuterOperator no))
@@ -365,7 +366,8 @@
     (for exp i form (do
       ; `nested` tells the compiler whether the compiled form is going to be on its own line or merged with something
       (= nested (or (and (not isTopLevel)
-                         (is i (- form.length 1)))
+                         (is i (- form.length 1))
+                         isNested)
                     (isPropertyExp form[(+ i 1)])))
       (if (?! exp)
         (buffer.push exp)
@@ -599,6 +601,8 @@
   ; prepare forms
   (macCompileGetLast predicate predicate)
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
+  ; if this isn't nested, further compiled branches should be aware of that
+  (= nested isNested)
   (macCompileResolve prebranch prebranch)
   (macCompileResolve postbranch postbranch)
   ; choose between ternary and full form
@@ -625,9 +629,15 @@
       (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
       (for mid midcases
         (+= comp (+ " else if (" (spr mid.test) ") { " (render mid.branch) " }")))
-      (if (? postbranch) (+= comp (+ " else { " (render postbranch) " }")))
+      (if (and (? postbranch)
+               (or (> postbranch.length 1)
+                   (? (car postbranch))))
+          (+= comp (+ " else { " (render postbranch) " }")))
       (buffer.push comp)
-      (if isNested (buffer.push collector))))))))
+      (if isNested
+          (buffer.push collector)
+          ; more than 1 element in buffer signals to caller that this is not an expression
+          (buffer.push ""))))))))
 
 (= specials.switch (macCompileSpecial (code: (do
 ; (switch <exp> (case <test> ... <test> <case-branch>) ... <def-branch>)
@@ -645,6 +655,8 @@
   ; prepare forms
   (macCompileGetLast predicate predicate)
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
+  ; if this isn't nested, further compiled branches should be aware of that
+  (= nested isNested)
   (for mid i midcases (do
     (assertExp mid (fn x (is (x.shift) "case")) "case")
     (= (midtest midbranch) mid)
@@ -663,7 +675,10 @@
     (+= comp (+ " case " (spr mid.test) ": " (render mid.branch))))
   (+= comp (+ " default: " (render postbranch) " }"))
   (buffer.push comp)
-  (if isNested (buffer.push collector))))))
+  (if isNested
+      (buffer.push collector)
+      ; more than 1 element in buffer signals to caller that this is not an expression
+      (buffer.push ""))))))
 
 ; Mostly the same code for `for` and `over`
 (mac macLoopDefinition (type "for") (ind `"_i")
@@ -713,6 +728,8 @@
       (macDeclareService ref "_ref")  ; iterable
       (macCompileGetLast iterable iterable)
       (buffer.push (+ ref " = " (pr iterable)))
+      ; if this isn't nested, further compiled body should be aware of that
+      (= nested isNested)
       (macCompileResolve body body)
       (if (and isNested (not (util.kwtest (pr (last body)))))
           (body.push (+ collector ".push(" (pr (body.pop)) ")")))
@@ -720,7 +737,10 @@
         `(buffer.push (+ "for (" key " = 0; " key " < " ref ".length; ++" key ") { " value " = " ref "[" key "]; " (render body) " }"))
         (elif (is type "over")
          `(buffer.push (+ "for (" key " in " ref ") { " value " = " ref "[" key "]; " (render body) " }"))))
-      (if isNested (buffer.push collector))))))
+      (if isNested
+          (buffer.push collector)
+          ; more than 1 element in buffer signals to caller that this is not an expression
+          (buffer.push ""))))))
 
 (= specials.for (macLoopDefinition))
 ; (for <value> <index> <iterable> <body>)
@@ -743,12 +763,17 @@
           (buffer.push (+ collector " = []"))))
         (= comp ""))  ; rvalue: no array mode
     (macCompileGetLast test test)
+    ; if this isn't nested, further compiled body should be aware of that
+    (= nested isNested)
     (macCompileResolve body body)
     (if (and isNested (is form.length 2) (not (util.kwtest (pr (last body)))))
       (body.push (+ collector ".push(" (pr (body.pop)) ")")))
     (buffer.push (+ "while (" (pr test) ") { " (render body) " }"))
     (if (is form.length 2)
-      (if isNested (buffer.push collector))
+      (if isNested
+          (buffer.push collector)
+          ; more than 1 element in buffer signals to caller that this is not an expression
+          (buffer.push ""))
       (do (macCompileResolve rvalue rvalue)
           (buffer.push (render rvalue))))))))
 
@@ -770,6 +795,8 @@
         (assertExp err isVarName "valid identifier"))
       (macDeclareService err "_err"))  ; shouldn't be declared, it's like an argument, todo fix
     (if (?! catchForm) (= catchForm undefined))
+    ; if this isn't nested, further compiled parts should be aware of that
+    (= nested isNested)
     (macCompileResolve catchForm catchForm)
     (if (and isNested (not (util.kwtest (pr (last catchForm)))))
         (catchForm.push (+ collector " = " (pr (catchForm.pop)))))
@@ -784,7 +811,10 @@
     (= res (+ "try { " (render tryForm) " } catch (" (pr err) ") { " (render catchForm) " }"))
     (if (? finalForm) (+= res (+ " finally { " (render finalForm) " }")))
     (buffer.push res)
-    (if isNested (buffer.push collector))))))
+    (if isNested
+        (buffer.push collector)
+        ; more than 1 element in buffer signals to caller that this is not an expression
+        (buffer.push ""))))))
 
 (= specials.get (macCompileSpecial (argsMin: 1 argsMax: 2
 ; (get <object> <property>)

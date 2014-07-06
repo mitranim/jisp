@@ -6,7 +6,7 @@
     _ref = lists;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       lst = _ref[_i0];
-      (_res = _res.concat(lst));
+      _res = _res.concat(lst);
     }
     return _res;
   }
@@ -20,10 +20,10 @@
     }
     OptionParser;
     OptionParser.prototype.parse = (function(args) {
-      var options, skippingArgument, originalArgs, i, arg, pos, isOption, seenNonOptionArg, matchedRule, rule, value, _ref, _i, _ref0, _ref1, _ref2;
+      var options, skippingArgument, originalArgs, i, arg, pos, isOption, seenNonOptionArg, matchedRule, rule, value, _ref, _i, _ref0;
       options = {
         arguments: []
-      };
+      }
       skippingArgument = false;
       originalArgs = args;
       args = normaliseArguments(args);
@@ -33,11 +33,12 @@
         if (skippingArgument) {
           skippingArgument = false;
           continue;
-        } else {} if (arg === "--") {
+        }
+        if (arg === "--") {
           pos = originalArgs.indexOf("--");
           options.arguments = options.arguments.concat(originalArgs.slice(pos + 1));
           break;
-        } else {}
+        }
         isOption = !!(arg.match(long_flag) || arg.match(short_flag));
         seenNonOptionArg = options.arguments.length > 0;
         if (!seenNonOptionArg) {
@@ -49,25 +50,17 @@
               value = true;
               if (rule.hasArgument) {
                 skippingArgument = true;
-                (value = args[i + 1]);
-              } else {}
+                value = args[i + 1];
+              }
               options[rule.name] = rule.isList ? options[rule.name] || [].concat(value) : value;
               matchedRule = true;
-              _ref1 = undefined;
               break;
-            } else {
-              _ref1 = undefined;
             }
-            _ref1;
           }
           if (isOption && !matchedRule) {
-            _ref2 = undefined;
             throw new Error(("unrecognised option: " + arg));
-          } else {
-            _ref2 = undefined;
           }
-          _ref2;
-        } else {}
+        }
         seenNonOptionArg || !isOption ? options.arguments.push(arg) : undefined;
       }
       return options;
@@ -81,10 +74,10 @@
         rule = _ref[_i];
         spaces = 15 - rule.longFlag.length;
         spaces = spaces > 0 ? repeat(" ", spaces) : "";
-        letPart = rule.shortFlag ? rule.shortFlag + ", " : "    ";
+        letPart = rule.shortFlag ? (rule.shortFlag + ", ") : "    ";
         lines.push("  " + letPart + rule.longFlag + spaces + rule.description);
       }
-      return "\n" + lines.join("\n") + "\n";
+      return ("\n" + lines.join("\n") + "\n");
     });
     return OptionParser;
   })());
@@ -108,7 +101,7 @@
 
   function buildRule(shortFlag, longFlag, description, options) {
     var match;
-    !(typeof options !== 'undefined' && options !== null) ? (options = {}) : undefined;
+    !(typeof options !== 'undefined' && options !== null) ? options = {} : undefined;
     match = longFlag.match(optional);
     longFlag = longFlag.match(long_flag)[1];
     return {
@@ -123,24 +116,21 @@
   buildRule;
 
   function normaliseArguments(args) {
-    var result, arg, match, l, _i, _ref, _i0, _res, _ref0, _ref1;
+    var result, arg, match, l, _i, _ref, _i0, _ref0;
     args = args.slice(0);
     result = [];
     _ref = args;
     for (_i = 0; _i < _ref.length; ++_i) {
       arg = _ref[_i];
       if ((match = arg.match(multi_flag))) {
-        _res = [];
         _ref0 = match[1].split("");
         for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
           l = _ref0[_i0];
-          _res.push(result.push("-" + l));
+          result.push("-" + l);
         }
-        _ref1 = _res;
       } else {
-        _ref1 = result.push(arg);
+        result.push(arg);
       }
-      _ref1;
     }
     return result;
   }
