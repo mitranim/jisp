@@ -1,4 +1,0 @@
-#!/usr/bin/env node
-
-// dev
-require('../dev/jisp/command').run();
