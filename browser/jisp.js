@@ -14,7 +14,7 @@
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw));
+      _res.push(("^" + kw + " "));
     }
     re = RegExp(_res.join("|"));
     return re.test(str);
@@ -397,7 +397,7 @@
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw));
+      _res.push(("^" + kw + " "));
     }
     re = RegExp(_res.join("|"));
     return re.test(str);
@@ -1434,7 +1434,7 @@
     return _res;
   }
   var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  exports.version = "0.2.1";
+  exports.version = "0.2.2";
   vm = require("vm");
   fs = require("fs");
   path = require("path");

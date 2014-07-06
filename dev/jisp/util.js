@@ -9,7 +9,7 @@
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw));
+      _res.push(("^" + kw + " "));
     }
     re = RegExp(_res.join("|"));
     return re.test(str);

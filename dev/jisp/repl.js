@@ -15,7 +15,8 @@
           wrap: false,
           repl: true
         });
-        console.log("-- compiled:\n", js);
+        console.log("-- compiled:");
+        console.log(js);
         console.log("-- executing:");
         result = vm.runInThisContext(js, filename);
         _ref = cb(null, result);

@@ -23,7 +23,7 @@
 
 (= exports.kwtest (def kwtest str (do
    (= re (RegExp (do (for kw keywords
-                          (+ "^" kw))
+                          (+ "^" kw " "))
                      (.join "|"))))
    (re.test str))))
    ; (or (/^return/.test str)
