@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.3")
+(= exports.version "0.2.4")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -8,7 +8,7 @@
    beautify    (require "js-beautify"))
 
 ; Jisp dependencies
-(= toplevel    (require "./toplevel")
+(= functions   (require "./functions")
    util        (require "./util")
    ops         (require "./operators")
    operators   ops.operators
@@ -34,9 +34,9 @@
 
 ; # Globals
 
-; Lists of built-in toplevels whose names have been overridden by an early `=` or `def`
-(= toplevelRedeclare `()
-   toplevelRedefine  `())
+; Lists of built-in functions whose names have been overridden by an early `=` or `def`
+(= functionsRedeclare `()
+   functionsRedefine  `())
 
 ; # Helper functions
 
@@ -98,18 +98,14 @@
             lastItem        (buffer.pop))
          `(lastItem buffer scope)))
 
-(def splitName name (do
-  ; matches everything in an identifier until the last method, dot and bracket properties included
-  (if (= obj    (name.match /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*([$_\w](?!\.))+$|^([$_.\[\]\w])+(?=\.|(\[.*(?=\[+).*\]))+|^(?:[$_.\[\]\w])+(?=\.|\[)+/))
-      (do (= obj    obj[0]
-             method (name.replace obj ""))
-          `(,obj ,method))
-      `(name ""))))
-
 ; Prepends `return` to expression or form
 (def returnify form
      (if (or (isAtom form) (isHash form))
          `("return" form)
+         (elif (and (isList form) (util.isBlankObject form))  ; []
+               form)
+         (elif (and (isList form) (is form.length 1) (util.isBlankObject (car form)))  ; [[]]
+               (car form))
          (elif (and (isList form) (isnt (car form) "return"))
                `("return" form))
          form))
@@ -124,10 +120,10 @@
                    (arr.push (car arg)))))
       arr))
 
-; Checks if a toplevel built-in name has been redefined
+; Checks if a functions built-in name has been redefined
 (def notRedefined name
-  (and (not (in name toplevelRedeclare))
-       (not (in name toplevelRedefine))))
+  (and (not (in name functionsRedeclare))
+       (not (in name functionsRedefine))))
 
 ; Checks if a form begins with a property reference (for chaining)
 (def isPropertyExp form
@@ -151,17 +147,17 @@
 (mac macCompileResolve form container
   `(= (,container buffer scope) (compileResolve ,form buffer scope opts nested)))
 
-; Wrapper for declareVar with checks to override toplevel built-ins where relevant
+; Wrapper for declareVar with checks to override functions built-ins where relevant
 (mac macDeclareVar name (override yes) (declare yes)
   `(do (assertExp ,name isVarName "valid identifier")
     ,(if override
       `(if (and opts.topScope
-             (in ,name (Object.keys toplevel))
+             (of ,name functions)
              (not (in ,name scope.hoist))
              (notRedefined ,name))
         ,(if declare
-          `(toplevelRedeclare.push ,name)
-          `(toplevelRedefine.push  ,name))))
+          `(functionsRedeclare.push ,name)
+          `(functionsRedefine.push  ,name))))
     ,(if declare
       `(= scope (declareVar ,name scope)))))
 
@@ -185,13 +181,13 @@
     (for name scope.hoist
       (if (and (not (in name outerScope.hoist))
                (not (in name args)))
-        (if (in name (Object.keys toplevel))
-          (if (and opts.topScope (in name toplevelRedeclare))
+        (if (of name functions)
+          (if (and opts.topScope (in name functionsRedeclare))
               (vars.push name)
             (if (notRedefined name)
               (funcs.push name)))
-          (elif (or (in name (Object.keys opFuncs))
-                    (in name (Object.keys macros)))
+          (elif (or (of name opFuncs)
+                    (of name macros))
             (funcs.push name))
           (vars.push name))))
     (for name scope.service
@@ -205,22 +201,26 @@
       (+= dec (+ name ", "))))
     (if (> dec.length 4)
         (do (= dec (dec.slice 0 (- dec.length 2)))
-            ((get ,dest unshift) dec)))
-    ; Declare funcs if toplevel, otherwise bubble all the way up
+            (do ,dest (.unshift dec))))
+    ; Declare funcs if functions, otherwise bubble all the way up
     (if (and (? isTopLevel) isTopLevel)
       (while (> funcs.length 0) (do
         (= func (funcs.pop))
         (if (in func funcs)
           (throw (Error (+ "compiler error: duplicate func in declarations:" func))))  ; no pr, expecting string
-        (if (in func (Object.keys toplevel))
+        (if (of func functions)
           ; embed only if not redeclared or redefined
           (if (notRedefined func)
-              ((get ,dest unshift) (toplevel[func].toString)))
-          (elif (in func (Object.keys macros))
-            ((get ,dest unshift) (+ "var " func " = " macros[func] ";")))
+              (if (and (? functions[func].name) (isnt functions[func].name ""))
+                  ; embed like named function
+                  (do ,dest (.unshift (functions[func].toString)))
+                  ; embed like lambda
+                  (do ,dest (.unshift (+ "var " func " = " (functions[func].toString) ";")))))
+          (elif (of func macros)
+            (do ,dest (.unshift (+ "var " func " = " (macros[func].toString) ";"))))
             ; ToDo embedding of opFuncs with .toString and renaming of references in code when not first in list
-          (elif (in func (Object.keys opFuncs))
-            ((get ,dest unshift) (+ "var " opFuncs[func].name " = " opFuncs[func].func ";")))  ; no pr, expecting strings
+          (elif (of func opFuncs)
+            (do ,dest (.unshift (+ "var " opFuncs[func].name " = " (opFuncs[func].func.toString) ";"))))  ; no pr, expecting strings
           (throw (Error (+ "unrecognised func: " (pr func)))))))
         (for func funcs
           (if (not (in func outerScope.hoist))
@@ -267,12 +267,12 @@
       ; ToDo: check for reserved and forbidden words right here
       ; If name of toprange jisp func, hoist if not redefined earlier
       ; If name of operator, hoist appropriate func and replace atom with func name
-      (if (or (and (in form (Object.keys toplevel))
+      (if (or (and (of form functions)
                    (notRedefined form))
-              (in form (Object.keys macros)))
+              (of form macros))
         (macDeclareVar form no)
         ; ToDo only do this when not first element in list
-        (elif (in form (Object.keys opFuncs))
+        (elif (of form opFuncs)
           (do
             (macDeclareVar form no)
             (= form opFuncs[form].name))))
@@ -289,9 +289,9 @@
       (if (not (isList form)) (throw (Error (+ "expecting list, got: " (pr form)))))
       (= buffer `())
       (= form (form.slice))  ; duplicate object to avoid changing it for callers
-      (if (in (car form) (Object.keys specials))  ; special forms have their own rules
+      (if (of (car form) specials)  ; special forms have their own rules
         (= (buffer scope) (specials[(car form)] form scope opts nested))
-        (elif (in (car form) (Object.keys macros))
+        (elif (of (car form) macros)
               (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
         (do  ; Not a special form? -> function call
           ; Unset nested (callees assume true)
@@ -300,11 +300,11 @@
           ; Compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
           ; If jisp-top-level func, hoist it
-          (if (and (in first (Object.keys toplevel))
+          (if (and (of first functions)
                    (notRedefined first))
             (macDeclareVar first no))
           ; If operator, check if we're inside compile call to another operator; if not, put this into options
-          (if (in first (Object.keys operators))
+          (if (of first operators)
               (if (and (not opts.compilingOperator) (not isNested))
                   (do (= isOuterOperator yes)
                       (= opts.compilingOperator yes))
@@ -324,7 +324,7 @@
                      (= form[i] arg)))))
           ; Compile: simple or with spread
           (if (?! argsSpread)
-            (if (in first (Object.keys operators))
+            (if (of first operators)
                 (buffer.push (operators[first] form isOuterOperator))
                 (buffer.push (+ (pr first) "(" (spr form) ")")))
             (do  ; Compile as spread
@@ -333,15 +333,20 @@
               (macCompileGetLast form form)
               ; Embed as function and replace `first`
               ; Only operators that take multiple arguments allow spread; others give a compile error
-              (if (in first (Object.keys operators))
+              (if (of first operators)
                 ; ToDo implement embedding as .toString and renaming of references which are not first element in list
-                (if (and (in first (Object.keys opFuncs))
+                (if (and (of first opFuncs)
                          (spr opFuncs[first]))
                     (do (macDeclareVar first no)
                         (= first opFuncs[first].name))
                     (throw (Error (+ (pr first) " can't spread arguments (yet)")))))
               ; Split object name and method for applying
-              (= (name method) (splitName first))
+              (= split (util.splitName first))
+              (if (> split.length 1)
+                  (= method (split.pop)
+                     name   (split.join ""))
+                  (= method ""
+                     name   (car split)))
               ; Apply, passing self and list of spread args
               (if (isIdentifier name)
                 (buffer.push (+ name method ".apply(" name ", " (pr form) ")"))
@@ -376,7 +381,7 @@
           (do (= ref (buffer.pop))
             (if (?! ref) (= ref ""))
             (macCompileAdd exp)
-            (buffer.push (+ ref (buffer.pop))))
+            (buffer.push (+ ref "\n" (buffer.pop))))
           ; simple sequence element
           (macCompileAdd exp)))))
     (if isTopLevel (macDeclareOrHoist))))))
@@ -532,7 +537,7 @@
                 (= restname name
                    restind  i
                    args[i]  restname)
-                (= rest (list (+ name " = " args.length " <= arguments.length ? [].slice.call(arguments, " i ", " ind " = arguments.length - " (- args.length i 1) ") : (" ind " = " restind ", [])"))))
+                (= rest (list (+ "var " name " = " args.length " <= arguments.length ? [].slice.call(arguments, " i ", " ind " = arguments.length - " (- args.length i 1) ") : (" ind " = " restind ", [])"))))
               (do  ; assume optional parameter
                 (assertExp (= name (car arg)) isVarName "valid parameter name")
                 (= args[i] name)
@@ -595,7 +600,7 @@
   ; predicate prebranch   ...midcases postbranch
   ; test      then-branch ...elifs    else-branch
   (= (predicate prebranch ...midcases postbranch) form)
-  (if (and (? postbranch) (is (car postbranch) "elif"))
+  (if (and (isList postbranch) (is (car postbranch) "elif"))
       (do (midcases.push postbranch)
           (= postbranch undefined)))
   ; prepare forms
@@ -610,7 +615,9 @@
            (is midcases.length 0)
            (is postbranch.length 1) (not (util.kwtest (car postbranch))))
     ; ternary
-    (buffer.push (+ (pr predicate) " ? " (pr (car prebranch)) " : " (pr (car postbranch))))
+    (do (= res (+ (pr predicate) " ? " (pr (car prebranch)) " : " (pr (car postbranch))))
+        (if isNested (= res (+ "(" res ")")))
+        (buffer.push res))
     (do  ; full form
       (if isNested (macDeclareService collector "_ref"))
       (= prebranch (collect prebranch collector no isNested))
@@ -895,7 +902,7 @@
     (elif (util.isList form)
       (if (is (car form) "mac")
         (= form (parseMacros form))
-        (elif (in (car form) (Object.keys macros)) (do
+        (elif (of (car form) macros) (do
           (= form (macros[(car form)] ...(cdr form)))
           (if (is (typeof form) "undefined") (= form `()))  ; no render
           (= form (expandMacros form))))  ; check if expanded form has new macro definitions or expansions, apply them
@@ -905,7 +912,18 @@
 
 (def macroexpand src (expandMacros (parseMacros src)))
 
-; Export
+; # Functions import
+
+(= exports.importFunctions (def importFunctions ...stores
+  (do (for store stores
+        (over val key store
+          (if (isa val "function")
+            (if (and (? val.name) (isnt val.name ""))
+              (= functions[val.name] val)
+              (= functions[key] val)))))
+      functions)))
+
+; # Export
 
 (= exports.fileExtensions `(".jisp")
    exports.register       (fn (require "./register"))
@@ -914,20 +932,21 @@
    exports.parse          (fn src (parse (lex (tokenise src))))
    exports.macroexpand    (fn src (macroexpand (parse (lex (tokenise src))))))
 
-(= exports.macros macros)  ; expose macro object for override by user
+(= exports.macros macros)        ; expose macros object for override by user
+(= exports.functions functions)  ; expose functions object for override by user
 
 (= exports.compile (def compile src opts (do
    (= defaults (wrap:       yes
                 topScope:   yes   ; for built-in-func overrides
-                isTopLevel: yes)  ; for toplevel wrapping `do`
+                isTopLevel: yes)  ; for functions wrapping `do`
       opts     (util.merge defaults opts))
    (= parsed (parse (lex (tokenise src))))
    (parsed.unshift "do")  ; always put code into an implicit `do`
    (if opts.wrap
        (= parsed `(("get" ("fn" parsed) "call") "this")))
    (if (not opts.repl)
-       (= toplevelRedeclare `()
-          toplevelRedefine  `()))  ; reset toplevel override stores when compiling each new file
+       (= functionsRedeclare `()
+          functionsRedefine  `()))  ; reset functions override stores when compiling each new file
    (= expanded (macroexpand parsed))
    (= (compiled scope) (compileForm expanded (hoist:`() service:`()) opts))
    (if (? beautify)

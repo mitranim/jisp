@@ -81,19 +81,13 @@
             (if (not isOuter)
               (= res (+ "(" res ")")))
             res)))
-  "or":  (makeop "||" false)    ; single arg returns itself
-  "and": (makeop "&&" true)     ; single arg returns itself
-  "exists": (fn args isOuter    ; todo multiple args
-    (if (assertForm args 1 1)
-        (do (= res (+ "typeof " (spr args) " !== 'undefined' && " (spr args) " !== null"))
-            (if (not isOuter)
-                (= res (+ "(" res ")")))
-            res)))
+  "or":  (makeop "||" undefined 1 Infinity yes) ; single arg returns itself
+  "and": (makeop "&&" undefined 1 Infinity yes) ; single arg returns itself
   ; keywords
   "in": (fn args isOuter
     ; todo more than 2 args (concat / spread?)
     (if (assertForm args 2 2)
-        (do (= res (+ "[].indexOf.call(" (pr args[1]) ", " (spr args) ") >= 0"))
+        (do (= res (+ "[].indexOf.call(" (pr args[1]) ", " (pr (car args)) ") >= 0"))
             (if (not isOuter)
                 (= res (+ "(" res ")")))
             res)))
@@ -121,8 +115,8 @@
   ; arithmetic
   ("+" undefined 1 Infinity yes) ("-" undefined 1) ("*" 1) ("/" 1) ("%" undefined 1)
   ; logical
-  ("?"   "exists") ("==" "is")  ("===" "is") ("!=" "isnt")
-  ("!==" "isnt")   ("&&" "and") ("||"  "or") ("!"  "not")
+  ("==" "is")      ("===" "is")  ("!=" "isnt")
+  ("!==" "isnt")   ("&&" "and")  ("||"  "or")      ("!"  "not")
   ; comparison
   (">"   undefined 2) ("<"    undefined 2)
   (">="  undefined 2) ("<="   undefined 2)

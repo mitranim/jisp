@@ -8,6 +8,7 @@
 
 (= util            (require "./util")
    pr              util.pr
+   spr             util.spr
    isList          util.isList
    isAtom          util.isAtom
    isAtomString    util.isAtomString
@@ -22,6 +23,15 @@
    isPropSyntax    util.isPropSyntax)
 
 (= module.exports lex)
+
+(def printConditions conditions
+  (do (for cond (concat conditions)
+        (if (and (isa cond "function") (? cond.name))
+            cond.name
+            (elif (isList cond)
+              (printConditions cond))
+            (pr cond)))
+      (.join "  ")))
 
 (def maketest condition
      (if (is (typeof condition) "function")
@@ -50,11 +60,14 @@
                     (= test (maketest condition))
                     (if (test tokens)
                         (return (lex tokens mode)))))
-         ; todo print prettier
-         (throw (Error (+
-           "unexpected " (pr tokens[0]) " in possible modes: "
-           (modes.join " | ") "\nTested against: " (conditions.join "   ")
-           "\nTokens: " (pr (tokens.slice 0 10)) " ...")))))
+         ; todo print prettier error
+         (= err (if (?! (car tokens))
+                    (Error "unexpected end of input, probably missing ) ] }")
+                    (Error (+
+                      "unexpected " (pr tokens[0]) " in possible modes: "
+                      (modes.join " | ") "\n\nTested against: " (printConditions conditions)
+                      "\n\nTokens: " (spr (tokens.slice 0 10)) (if (> tokens.length 10) " ..." " ") ))))
+         (throw err)))
 
 (def expect tokens ...args
 ; lexes by the met condition and returns undefined if none are met

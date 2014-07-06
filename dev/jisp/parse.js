@@ -20,7 +20,7 @@
       _ref0 = form;
     } else {
       form = util.typify(form);
-      _ref0 = /^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form;
+      _ref0 = (/^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form);
     }
     return _ref0;
   }

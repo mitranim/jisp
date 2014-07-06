@@ -8,15 +8,15 @@
   assertForm = util.assertForm;
 
   function makeop(op, zv, min, max, drop) {
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
-    !(typeof drop !== 'undefined' && drop !== null) ? drop = false : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
+    !(typeof drop !== 'undefined') ? drop = false : undefined;
     return (function(args, isOuter) {
       var i, arg, res, _ref, _ref0, _ref10;
       if (assertForm(args, min, max)) {
         if (args.length === 0) {
           _ref0 = pr(zv);
-        } else if ((args.length === 1 && typeof zv !== 'undefined' && zv !== null)) {
+        } else if ((args.length === 1 && typeof zv !== 'undefined')) {
           res = zv + op + spr(args);
           !isOuter ? res = "(" + res + ")" : undefined;
           _ref0 = res;
@@ -45,7 +45,7 @@
 
   function makesing(op) {
     return (function(args, isOuter) {
-      return assertForm(args, 1, 1) ? (op + " " + spr(args)) : undefined;
+      return (assertForm(args, 1, 1) ? (op + " " + spr(args)) : undefined);
     });
   }
   makesing;
@@ -56,10 +56,10 @@
   reserved;
 
   function makestate(op, min, max) {
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
     return (function(args, isOuter) {
-      return assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined";
+      return (assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined");
     });
   }
   makestate;
@@ -108,7 +108,8 @@
           arg = _ref[_i];
           _res.push((pr(subj) + " === " + pr(arg)));
         }
-        res = _res.join(" || ");
+        res = _res
+          .join(" || ");
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
@@ -128,29 +129,19 @@
           arg = _ref[_i];
           _res.push((pr(subj) + " !== " + pr(arg)));
         }
-        res = _res.join(" && ");
+        res = _res
+          .join(" && ");
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
       return _ref0;
     }),
-    "or": makeop("||", false),
-    "and": makeop("&&", true),
-    "exists": (function(args, isOuter) {
-      var res, _ref;
-      if (assertForm(args, 1, 1)) {
-        res = "typeof " + spr(args) + " !== 'undefined' && " + spr(args) + " !== null";
-        !isOuter ? res = "(" + res + ")" : undefined;
-        _ref = res;
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
-    }),
+    "or": makeop("||", undefined, 1, Infinity, true),
+    "and": makeop("&&", undefined, 1, Infinity, true),
     "in": (function(args, isOuter) {
       var res, _ref;
       if (assertForm(args, 2, 2)) {
-        res = "[].indexOf.call(" + pr(args[1]) + ", " + spr(args) + ") >= 0";
+        res = "[].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0";
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref = res;
       } else {
@@ -160,7 +151,7 @@
     }),
     "of": makeop("in", undefined, 2, 2),
     "new": (function(args, isOuter) {
-      return assertForm(args, 1) ? ("new " + pr(args.shift()) + "(" + spr(args) + ")") : undefined;
+      return (assertForm(args, 1) ? ("new " + pr(args.shift()) + "(" + spr(args) + ")") : undefined);
     }),
     "function": (function() {
       return reserved("function");
@@ -187,7 +178,6 @@
     ["*", 1],
     ["/", 1],
     ["%", undefined, 1],
-    ["?", "exists"],
     ["==", "is"],
     ["===", "is"],
     ["!=", "isnt"],
@@ -240,41 +230,41 @@
 
   function add() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(0);
-    return args.length === 0 ? 0 : args.reduce((function() {
+    return (args.length === 0 ? 0 : args.reduce((function() {
       return arguments[0] + arguments[1];
-    }));
+    })));
   }
   add;
 
   function sub() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(0);
-    return args.length === 0 ? 0 : args.reduce((function() {
+    return (args.length === 0 ? 0 : args.reduce((function() {
       return arguments[0] - arguments[1];
-    }));
+    })));
   }
   sub;
 
   function mul() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(1);
-    return args.length === 0 ? 1 : args.reduce((function() {
+    return (args.length === 0 ? 1 : args.reduce((function() {
       return arguments[0] * arguments[1];
-    }));
+    })));
   }
   mul;
 
   function div() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(1);
-    return args.length === 0 ? 1 : args.reduce((function() {
+    return (args.length === 0 ? 1 : args.reduce((function() {
       return arguments[0] / arguments[1];
-    }));
+    })));
   }
   div;
   return exports.opFuncs = opFuncs;

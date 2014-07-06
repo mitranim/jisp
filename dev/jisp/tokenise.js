@@ -9,7 +9,26 @@
   rereg = /^\/[^\s]+\/[\w]*[^\s)]*/;
 
   function grate(str) {
-    return str.replace(/;.*$/gm, "").replace(/\{/g, "(fn (").replace(/\}/g, "))").replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\[$/g, " [ ").replace(/\['/g, " [ '").replace(/\["/g, ' [ "').replace(/'\]/g, "' ] ").replace(/"\]/g, '" ] ').replace(/\[[\s]*\(/g, " [ ( ").replace(/\)[\s]*\]/g, " ) ] ").replace(/:/g, " : ").replace(/`/g, " ` ").replace(/,/g, " , ").replace(/\.\.\./g, " ... ").replace(/…/g, " … ").trim().split(/\s+/);
+    return str
+      .replace(/;.*$/gm, "")
+      .replace(/\{/g, "(fn (")
+      .replace(/\}/g, "))")
+      .replace(/\(/g, " ( ")
+      .replace(/\)/g, " ) ")
+      .replace(/\[$/g, " [ ")
+      .replace(/\['/g, " [ '")
+      .replace(/\["/g, ' [ "')
+      .replace(/'\]/g, "' ] ")
+      .replace(/"\]/g, '" ] ')
+      .replace(/\[[\s]*\(/g, " [ ( ")
+      .replace(/\)[\s]*\]/g, " ) ] ")
+      .replace(/:/g, " : ")
+      .replace(/`/g, " ` ")
+      .replace(/,/g, " , ")
+      .replace(/\.\.\./g, " ... ")
+      .replace(/…/g, " … ")
+      .trim()
+      .split(/\s+/);
   }
   grate;
 
@@ -20,7 +39,7 @@
 
   function match(str, re) {
     var mask;
-    return (mask = str.match(re)) && (mask[0].length > 0) ? mask[0] : null;
+    return ((mask = str.match(re)) && (mask[0].length > 0) ? mask[0] : null);
   }
   match;
 
@@ -48,7 +67,7 @@
       }
     }
     return tokens.filter((function(x) {
-      return (typeof x !== 'undefined' && x !== null) && (x !== "" && x !== undefined && x !== null);
+      return (typeof x !== 'undefined') && (x !== "" && x !== undefined && x !== null);
     }));
   }
   return tokenise;

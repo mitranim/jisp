@@ -1,7 +1,19 @@
 (function() {
-  var util, pr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  function concat() {
+    var _res, lst, _i, _i0, _ref;
+    var lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = lists;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      lst = _ref[_i0];
+      _res = _res.concat(lst);
+    }
+    return _res;
+  }
+  var util, pr, spr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
   util = require("./util");
   pr = util.pr;
+  spr = util.spr;
   isList = util.isList;
   isAtom = util.isAtom;
   isAtomString = util.isAtomString;
@@ -15,6 +27,26 @@
   isBracketString = util.isBracketString;
   isPropSyntax = util.isPropSyntax;
   module.exports = lex;
+
+  function printConditions(conditions) {
+    var cond, _i, _res, _ref, _ref0;
+    _res = [];
+    _ref = concat(conditions);
+    for (_i = 0; _i < _ref.length; ++_i) {
+      cond = _ref[_i];
+      if ((typeof cond === "function") && ((typeof cond !== 'undefined') && (typeof cond.name !== 'undefined'))) {
+        _ref0 = cond.name;
+      } else if (isList(cond)) {
+        _ref0 = printConditions(cond);
+      } else {
+        _ref0 = pr(cond);
+      }
+      _res.push(_ref0);
+    }
+    return _res
+      .join("  ");
+  }
+  printConditions;
 
   function maketest(condition) {
     var _ref;
@@ -44,7 +76,7 @@
           }
           _res.push(_ref10);
         }
-        return _res ? true : undefined;
+        return (_res ? true : undefined);
       });
     } else {
       _ref = undefined;
@@ -55,8 +87,8 @@
   maketest;
 
   function demand(tokens) {
-    var conditions, modes, condition, mode, test, _i;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var conditions, modes, condition, mode, test, err, _i;
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     conditions = [];
     modes = [];
     while (args.length > 0) {
@@ -69,13 +101,14 @@
         return lex(tokens, mode);
       }
     }
-    throw Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\nTested against: " + conditions.join("   ") + "\nTokens: " + pr(tokens.slice(0, 10)) + " ...");
+    err = (typeof tokens[0] === 'undefined' ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
+    throw err;
   }
   demand;
 
   function expect(tokens) {
     var condition, mode, test, _i, _ref;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     while (args.length > 0) {
       condition = args.shift();
       mode = args.shift();
@@ -93,7 +126,7 @@
 
   function forbid(tokens) {
     var condition, _i, _i0, _res, _ref, _ref0;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     _res = [];
     _ref = args;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
@@ -120,7 +153,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0;
-    !(typeof mode !== 'undefined' && mode !== null) ? mode = "default" : undefined;
+    !(typeof mode !== 'undefined') ? mode = "default" : undefined;
     switch (mode) {
       case "default":
         _res = [];

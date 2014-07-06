@@ -1,7 +1,7 @@
 (= fs (require "fs"))
 
 (= files `("index"
-           "toplevel"
+           "functions"
            "util"
            "operators"
            "tokenise"
@@ -16,7 +16,7 @@
            "browser"))
 
 (= filesBrowser `("util"
-                  "toplevel"
+                  "functions"
                   "util"
                   "operators"
                   "tokenise"

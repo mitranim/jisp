@@ -15,7 +15,8 @@
    ; bitwise
    "&" "|" "^" "<<" ">>" ">>>" "~"
    ; assignment
-   "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "|=")))
+   "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "|="
+)))
 
 (= exports.keywords (= keywords `(
   "return" "break" "continue" "throw" "delete"
@@ -34,7 +35,7 @@
   "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN"
 )))
 
-(= exports.isSpecialValueStr (def isSpecialValue str
+(= exports.isSpecialValueStr (def isSpecialValueStr str
   (in str specialValues)))
 
 (= exports.isSpecialValue (def isSpecialValue form
@@ -157,6 +158,23 @@
 (= exports.assertExp (def assertExp exp test (expect "valid expression")
      (if (test exp) true
          (throw (Error (+ "expecting " (pr expect) ", got " (pr exp)))))))
+
+; splits an identifier into a list of substrings, splitting off all property notations
+(= exports.splitName (def splitName name (do
+  (= re              /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/
+     reDot           /\.[$_\w]+$/    ; .dot notation on end
+     reBracket       /\[[^\[\]]+\]$/ ; [bracket] notation on end
+     reBracketGreedy /\[.+\]$/)      ; [bracket[stuff]] notation on end
+  (= res `())
+  (while (name.match re) (do
+    ; find matching regex
+    (= reg (or (and (name.match reDot) reDot)
+               (and (name.match reBracket) reBracket)
+               (and (name.match reBracketGreedy) reBracketGreedy)))
+    (res.unshift (car (name.match reg)))
+    (= name (name.replace reg ""))))
+  (res.unshift name)
+  res)))
 
 ; # For rendering
 

@@ -16,16 +16,17 @@
       kw = _ref[_i];
       _res.push(("^" + kw + " "));
     }
-    re = RegExp(_res.join("|"));
+    re = RegExp(_res
+      .join("|"));
     return re.test(str);
   }
   exports.kwtest = kwtest;
   exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]);
 
-  function isSpecialValue(str) {
-    return [].indexOf.call(specialValues, str, specialValues) >= 0;
+  function isSpecialValueStr(str) {
+    return [].indexOf.call(specialValues, str) >= 0;
   }
-  exports.isSpecialValueStr = isSpecialValue;
+  exports.isSpecialValueStr = isSpecialValueStr;
 
   function isSpecialValue(form) {
     return (typeof form === "undefined") || (form === null) || ((typeof form === "number") && isNaN(form)) || (form === Infinity) || (typeof form === "boolean");
@@ -38,7 +39,7 @@
   exports.isAtom = isAtom;
 
   function isAtomString(form) {
-    return !isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form, symbolWhitelist) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+    return !isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
   }
   exports.isAtomString = isAtomString;
 
@@ -164,15 +165,15 @@
 
   function assertForm(form, min, max, first) {
     var _ref;
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
     if (!isList(form)) {
       _ref = undefined;
       throw Error("expecting list, got " + form);
     } else if (!(form.length >= min) && (form.length <= max)) {
       _ref = undefined;
       throw Error("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form));
-    } else if ((typeof first !== 'undefined' && first !== null && form[0] !== first)) {
+    } else if ((typeof first !== 'undefined' && form[0] !== first)) {
       _ref = undefined;
       throw Error("expecting " + pr(first) + " as first element, got " + pr(form[0]));
     } else {
@@ -184,7 +185,7 @@
 
   function assertExp(exp, test, expect) {
     var _ref;
-    !(typeof expect !== 'undefined' && expect !== null) ? expect = "valid expression" : undefined;
+    !(typeof expect !== 'undefined') ? expect = "valid expression" : undefined;
     if (test(exp)) {
       _ref = true;
     } else {
@@ -195,10 +196,28 @@
   }
   exports.assertExp = assertExp;
 
+  function splitName(name) {
+    var re, reDot, reBracket, reBracketGreedy, res, reg;
+    re = /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/;
+    reDot = /\.[$_\w]+$/;
+    reBracket = /\[[^\[\]]+\]$/;
+    reBracketGreedy = /\[.+\]$/;
+    res = [];
+    while (name.match(re)) {
+      reg = (name.match(reDot) && reDot) || (name.match(reBracket) && reBracket) || (name.match(reBracketGreedy) && reBracketGreedy);
+      res.unshift(name.match(reg)[0]);
+      name = name.replace(reg, "");
+    }
+    res.unshift(name);
+    return res;
+  }
+  exports.splitName = splitName;
+
   function pr(item) {
     var res, key, val, _ref, _ref0, _i, _ref10;
     if (isAtom(item)) {
-      _ref = ("" + item).replace(/;$/, "");
+      _ref = ("" + item)
+        .replace(/;$/, "");
     } else if (isHash(item)) {
       res = "";
       _ref0 = item;
@@ -248,13 +267,14 @@
       if ((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === "")) {
         buffer[i] = undefined;
       } else {
-        res = typeof exp === "string" ? exp.trim() : pr(exp);
+        res = (typeof exp === "string" ? exp.trim() : pr(exp));
         isHash(exp) || /^function\s*\(/.test(res) ? res = "(" + res + ")" : undefined;
         !/:$|\}$|;$/.test(res.slice(-1)) ? res += ";" : undefined;
         buffer[i] = res;
       }
     }
-    return buffer.join(" ").trim();
+    return buffer.join(" ")
+      .trim();
   }
   exports.render = render;
 
@@ -262,7 +282,9 @@
     var _ref;
     if (typeof str === "string") {
       while (str.match(/^\({1}/) && str.match(/\){1}$/)) {
-        (str = str.replace(/^\({1}/, "").replace(/\){1}$/, ""));
+        (str = str
+          .replace(/^\({1}/, "")
+          .replace(/\){1}$/, ""));
       }
       _ref = str;
     } else {
@@ -276,7 +298,9 @@
     var _ref;
     if (typeof str === "string") {
       while (str.match(/^\({2}/) && str.match(/\){2}$/)) {
-        (str = str.replace(/^\({2}/, "(").replace(/\){2}$/, ")"));
+        (str = str
+          .replace(/^\({2}/, "(")
+          .replace(/\){2}$/, ")"));
       }
       _ref = str;
     } else {
@@ -304,9 +328,9 @@
 
   function baseFileName(file, stripExt, useWinPathSep) {
     var pathSep, parts;
-    !(typeof stripExt !== 'undefined' && stripExt !== null) ? stripExt = false : undefined;
-    !(typeof useWinPathSep !== 'undefined' && useWinPathSep !== null) ? useWinPathSep = false : undefined;
-    pathSep = useWinPathSep ? /\\|\// : /\//;
+    !(typeof stripExt !== 'undefined') ? stripExt = false : undefined;
+    !(typeof useWinPathSep !== 'undefined') ? useWinPathSep = false : undefined;
+    pathSep = (useWinPathSep ? /\\|\// : /\//);
     parts = file.split(pathSep);
     file = parts.slice(-1)[0];
     if (!(stripExt && (file.indexOf(".") >= 0))) {
@@ -337,12 +361,12 @@
   return exports.isJisp = isJisp;
 }).call(this);
       return module.exports;
-    })();require['./toplevel'] = (function() {
+    })();require['./functions'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
   function concat() {
     var _res, lst, _i, _i0, _ref;
-    lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    var lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = lists;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
@@ -355,14 +379,14 @@
 
   function list() {
     var _i;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     return [].concat(args);
   }
   exports.list = list;
 
   function range(start, end) {
     var a, _res, _ref;
-    if (!(typeof end !== 'undefined' && end !== null)) {
+    if (!(typeof end !== 'undefined')) {
       end = start;
       start = 0;
     }
@@ -398,16 +422,17 @@
       kw = _ref[_i];
       _res.push(("^" + kw + " "));
     }
-    re = RegExp(_res.join("|"));
+    re = RegExp(_res
+      .join("|"));
     return re.test(str);
   }
   exports.kwtest = kwtest;
   exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]);
 
-  function isSpecialValue(str) {
-    return [].indexOf.call(specialValues, str, specialValues) >= 0;
+  function isSpecialValueStr(str) {
+    return [].indexOf.call(specialValues, str) >= 0;
   }
-  exports.isSpecialValueStr = isSpecialValue;
+  exports.isSpecialValueStr = isSpecialValueStr;
 
   function isSpecialValue(form) {
     return (typeof form === "undefined") || (form === null) || ((typeof form === "number") && isNaN(form)) || (form === Infinity) || (typeof form === "boolean");
@@ -420,7 +445,7 @@
   exports.isAtom = isAtom;
 
   function isAtomString(form) {
-    return !isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form, symbolWhitelist) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
+    return !isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form));
   }
   exports.isAtomString = isAtomString;
 
@@ -546,15 +571,15 @@
 
   function assertForm(form, min, max, first) {
     var _ref;
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
     if (!isList(form)) {
       _ref = undefined;
       throw Error("expecting list, got " + form);
     } else if (!(form.length >= min) && (form.length <= max)) {
       _ref = undefined;
       throw Error("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form));
-    } else if ((typeof first !== 'undefined' && first !== null && form[0] !== first)) {
+    } else if ((typeof first !== 'undefined' && form[0] !== first)) {
       _ref = undefined;
       throw Error("expecting " + pr(first) + " as first element, got " + pr(form[0]));
     } else {
@@ -566,7 +591,7 @@
 
   function assertExp(exp, test, expect) {
     var _ref;
-    !(typeof expect !== 'undefined' && expect !== null) ? expect = "valid expression" : undefined;
+    !(typeof expect !== 'undefined') ? expect = "valid expression" : undefined;
     if (test(exp)) {
       _ref = true;
     } else {
@@ -577,10 +602,28 @@
   }
   exports.assertExp = assertExp;
 
+  function splitName(name) {
+    var re, reDot, reBracket, reBracketGreedy, res, reg;
+    re = /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/;
+    reDot = /\.[$_\w]+$/;
+    reBracket = /\[[^\[\]]+\]$/;
+    reBracketGreedy = /\[.+\]$/;
+    res = [];
+    while (name.match(re)) {
+      reg = (name.match(reDot) && reDot) || (name.match(reBracket) && reBracket) || (name.match(reBracketGreedy) && reBracketGreedy);
+      res.unshift(name.match(reg)[0]);
+      name = name.replace(reg, "");
+    }
+    res.unshift(name);
+    return res;
+  }
+  exports.splitName = splitName;
+
   function pr(item) {
     var res, key, val, _ref, _ref0, _i, _ref10;
     if (isAtom(item)) {
-      _ref = ("" + item).replace(/;$/, "");
+      _ref = ("" + item)
+        .replace(/;$/, "");
     } else if (isHash(item)) {
       res = "";
       _ref0 = item;
@@ -630,13 +673,14 @@
       if ((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === "")) {
         buffer[i] = undefined;
       } else {
-        res = typeof exp === "string" ? exp.trim() : pr(exp);
+        res = (typeof exp === "string" ? exp.trim() : pr(exp));
         isHash(exp) || /^function\s*\(/.test(res) ? res = "(" + res + ")" : undefined;
         !/:$|\}$|;$/.test(res.slice(-1)) ? res += ";" : undefined;
         buffer[i] = res;
       }
     }
-    return buffer.join(" ").trim();
+    return buffer.join(" ")
+      .trim();
   }
   exports.render = render;
 
@@ -644,7 +688,9 @@
     var _ref;
     if (typeof str === "string") {
       while (str.match(/^\({1}/) && str.match(/\){1}$/)) {
-        (str = str.replace(/^\({1}/, "").replace(/\){1}$/, ""));
+        (str = str
+          .replace(/^\({1}/, "")
+          .replace(/\){1}$/, ""));
       }
       _ref = str;
     } else {
@@ -658,7 +704,9 @@
     var _ref;
     if (typeof str === "string") {
       while (str.match(/^\({2}/) && str.match(/\){2}$/)) {
-        (str = str.replace(/^\({2}/, "(").replace(/\){2}$/, ")"));
+        (str = str
+          .replace(/^\({2}/, "(")
+          .replace(/\){2}$/, ")"));
       }
       _ref = str;
     } else {
@@ -686,9 +734,9 @@
 
   function baseFileName(file, stripExt, useWinPathSep) {
     var pathSep, parts;
-    !(typeof stripExt !== 'undefined' && stripExt !== null) ? stripExt = false : undefined;
-    !(typeof useWinPathSep !== 'undefined' && useWinPathSep !== null) ? useWinPathSep = false : undefined;
-    pathSep = useWinPathSep ? /\\|\// : /\//;
+    !(typeof stripExt !== 'undefined') ? stripExt = false : undefined;
+    !(typeof useWinPathSep !== 'undefined') ? useWinPathSep = false : undefined;
+    pathSep = (useWinPathSep ? /\\|\// : /\//);
     parts = file.split(pathSep);
     file = parts.slice(-1)[0];
     if (!(stripExt && (file.indexOf(".") >= 0))) {
@@ -731,15 +779,15 @@
   assertForm = util.assertForm;
 
   function makeop(op, zv, min, max, drop) {
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
-    !(typeof drop !== 'undefined' && drop !== null) ? drop = false : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
+    !(typeof drop !== 'undefined') ? drop = false : undefined;
     return (function(args, isOuter) {
       var i, arg, res, _ref, _ref0, _ref10;
       if (assertForm(args, min, max)) {
         if (args.length === 0) {
           _ref0 = pr(zv);
-        } else if ((args.length === 1 && typeof zv !== 'undefined' && zv !== null)) {
+        } else if ((args.length === 1 && typeof zv !== 'undefined')) {
           res = zv + op + spr(args);
           !isOuter ? res = "(" + res + ")" : undefined;
           _ref0 = res;
@@ -768,7 +816,7 @@
 
   function makesing(op) {
     return (function(args, isOuter) {
-      return assertForm(args, 1, 1) ? (op + " " + spr(args)) : undefined;
+      return (assertForm(args, 1, 1) ? (op + " " + spr(args)) : undefined);
     });
   }
   makesing;
@@ -779,10 +827,10 @@
   reserved;
 
   function makestate(op, min, max) {
-    !(typeof min !== 'undefined' && min !== null) ? min = 0 : undefined;
-    !(typeof max !== 'undefined' && max !== null) ? max = Infinity : undefined;
+    !(typeof min !== 'undefined') ? min = 0 : undefined;
+    !(typeof max !== 'undefined') ? max = Infinity : undefined;
     return (function(args, isOuter) {
-      return assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined";
+      return (assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined");
     });
   }
   makestate;
@@ -831,7 +879,8 @@
           arg = _ref[_i];
           _res.push((pr(subj) + " === " + pr(arg)));
         }
-        res = _res.join(" || ");
+        res = _res
+          .join(" || ");
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
@@ -851,29 +900,19 @@
           arg = _ref[_i];
           _res.push((pr(subj) + " !== " + pr(arg)));
         }
-        res = _res.join(" && ");
+        res = _res
+          .join(" && ");
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
       return _ref0;
     }),
-    "or": makeop("||", false),
-    "and": makeop("&&", true),
-    "exists": (function(args, isOuter) {
-      var res, _ref;
-      if (assertForm(args, 1, 1)) {
-        res = "typeof " + spr(args) + " !== 'undefined' && " + spr(args) + " !== null";
-        !isOuter ? res = "(" + res + ")" : undefined;
-        _ref = res;
-      } else {
-        _ref = undefined;
-      }
-      return _ref;
-    }),
+    "or": makeop("||", undefined, 1, Infinity, true),
+    "and": makeop("&&", undefined, 1, Infinity, true),
     "in": (function(args, isOuter) {
       var res, _ref;
       if (assertForm(args, 2, 2)) {
-        res = "[].indexOf.call(" + pr(args[1]) + ", " + spr(args) + ") >= 0";
+        res = "[].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0";
         !isOuter ? res = "(" + res + ")" : undefined;
         _ref = res;
       } else {
@@ -883,7 +922,7 @@
     }),
     "of": makeop("in", undefined, 2, 2),
     "new": (function(args, isOuter) {
-      return assertForm(args, 1) ? ("new " + pr(args.shift()) + "(" + spr(args) + ")") : undefined;
+      return (assertForm(args, 1) ? ("new " + pr(args.shift()) + "(" + spr(args) + ")") : undefined);
     }),
     "function": (function() {
       return reserved("function");
@@ -910,7 +949,6 @@
     ["*", 1],
     ["/", 1],
     ["%", undefined, 1],
-    ["?", "exists"],
     ["==", "is"],
     ["===", "is"],
     ["!=", "isnt"],
@@ -963,41 +1001,41 @@
 
   function add() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(0);
-    return args.length === 0 ? 0 : args.reduce((function() {
+    return (args.length === 0 ? 0 : args.reduce((function() {
       return arguments[0] + arguments[1];
-    }));
+    })));
   }
   add;
 
   function sub() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(0);
-    return args.length === 0 ? 0 : args.reduce((function() {
+    return (args.length === 0 ? 0 : args.reduce((function() {
       return arguments[0] - arguments[1];
-    }));
+    })));
   }
   sub;
 
   function mul() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(1);
-    return args.length === 0 ? 1 : args.reduce((function() {
+    return (args.length === 0 ? 1 : args.reduce((function() {
       return arguments[0] * arguments[1];
-    }));
+    })));
   }
   mul;
 
   function div() {
     var _i110;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
     args.unshift(1);
-    return args.length === 0 ? 1 : args.reduce((function() {
+    return (args.length === 0 ? 1 : args.reduce((function() {
       return arguments[0] / arguments[1];
-    }));
+    })));
   }
   div;
   return exports.opFuncs = opFuncs;
@@ -1016,7 +1054,26 @@
   rereg = /^\/[^\s]+\/[\w]*[^\s)]*/;
 
   function grate(str) {
-    return str.replace(/;.*$/gm, "").replace(/\{/g, "(fn (").replace(/\}/g, "))").replace(/\(/g, " ( ").replace(/\)/g, " ) ").replace(/\[$/g, " [ ").replace(/\['/g, " [ '").replace(/\["/g, ' [ "').replace(/'\]/g, "' ] ").replace(/"\]/g, '" ] ').replace(/\[[\s]*\(/g, " [ ( ").replace(/\)[\s]*\]/g, " ) ] ").replace(/:/g, " : ").replace(/`/g, " ` ").replace(/,/g, " , ").replace(/\.\.\./g, " ... ").replace(/…/g, " … ").trim().split(/\s+/);
+    return str
+      .replace(/;.*$/gm, "")
+      .replace(/\{/g, "(fn (")
+      .replace(/\}/g, "))")
+      .replace(/\(/g, " ( ")
+      .replace(/\)/g, " ) ")
+      .replace(/\[$/g, " [ ")
+      .replace(/\['/g, " [ '")
+      .replace(/\["/g, ' [ "')
+      .replace(/'\]/g, "' ] ")
+      .replace(/"\]/g, '" ] ')
+      .replace(/\[[\s]*\(/g, " [ ( ")
+      .replace(/\)[\s]*\]/g, " ) ] ")
+      .replace(/:/g, " : ")
+      .replace(/`/g, " ` ")
+      .replace(/,/g, " , ")
+      .replace(/\.\.\./g, " ... ")
+      .replace(/…/g, " … ")
+      .trim()
+      .split(/\s+/);
   }
   grate;
 
@@ -1027,7 +1084,7 @@
 
   function match(str, re) {
     var mask;
-    return (mask = str.match(re)) && (mask[0].length > 0) ? mask[0] : null;
+    return ((mask = str.match(re)) && (mask[0].length > 0) ? mask[0] : null);
   }
   match;
 
@@ -1055,7 +1112,7 @@
       }
     }
     return tokens.filter((function(x) {
-      return (typeof x !== 'undefined' && x !== null) && (x !== "" && x !== undefined && x !== null);
+      return (typeof x !== 'undefined') && (x !== "" && x !== undefined && x !== null);
     }));
   }
   return tokenise;
@@ -1064,9 +1121,21 @@
     })();require['./lex'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var util, pr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  function concat() {
+    var _res, lst, _i, _i0, _ref;
+    var lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = lists;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      lst = _ref[_i0];
+      _res = _res.concat(lst);
+    }
+    return _res;
+  }
+  var util, pr, spr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
   util = require("./util");
   pr = util.pr;
+  spr = util.spr;
   isList = util.isList;
   isAtom = util.isAtom;
   isAtomString = util.isAtomString;
@@ -1080,6 +1149,26 @@
   isBracketString = util.isBracketString;
   isPropSyntax = util.isPropSyntax;
   module.exports = lex;
+
+  function printConditions(conditions) {
+    var cond, _i, _res, _ref, _ref0;
+    _res = [];
+    _ref = concat(conditions);
+    for (_i = 0; _i < _ref.length; ++_i) {
+      cond = _ref[_i];
+      if ((typeof cond === "function") && ((typeof cond !== 'undefined') && (typeof cond.name !== 'undefined'))) {
+        _ref0 = cond.name;
+      } else if (isList(cond)) {
+        _ref0 = printConditions(cond);
+      } else {
+        _ref0 = pr(cond);
+      }
+      _res.push(_ref0);
+    }
+    return _res
+      .join("  ");
+  }
+  printConditions;
 
   function maketest(condition) {
     var _ref;
@@ -1109,7 +1198,7 @@
           }
           _res.push(_ref10);
         }
-        return _res ? true : undefined;
+        return (_res ? true : undefined);
       });
     } else {
       _ref = undefined;
@@ -1120,8 +1209,8 @@
   maketest;
 
   function demand(tokens) {
-    var conditions, modes, condition, mode, test, _i;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var conditions, modes, condition, mode, test, err, _i;
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     conditions = [];
     modes = [];
     while (args.length > 0) {
@@ -1134,13 +1223,14 @@
         return lex(tokens, mode);
       }
     }
-    throw Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\nTested against: " + conditions.join("   ") + "\nTokens: " + pr(tokens.slice(0, 10)) + " ...");
+    err = (typeof tokens[0] === 'undefined' ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
+    throw err;
   }
   demand;
 
   function expect(tokens) {
     var condition, mode, test, _i, _ref;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     while (args.length > 0) {
       condition = args.shift();
       mode = args.shift();
@@ -1158,7 +1248,7 @@
 
   function forbid(tokens) {
     var condition, _i, _i0, _res, _ref, _ref0;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     _res = [];
     _ref = args;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
@@ -1185,7 +1275,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0;
-    !(typeof mode !== 'undefined' && mode !== null) ? mode = "default" : undefined;
+    !(typeof mode !== 'undefined') ? mode = "default" : undefined;
     switch (mode) {
       case "default":
         _res = [];
@@ -1291,7 +1381,7 @@
       _ref0 = form;
     } else {
       form = util.typify(form);
-      _ref0 = /^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form;
+      _ref0 = (/^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form);
     }
     return _ref0;
   }
@@ -1303,17 +1393,17 @@
       (function() {
   var macCar = function(x) {
     var _i;
-    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (!(typeof x !== 'undefined' && x !== null) || (other.length > 0)) {
-      throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
+    var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if ((typeof x === 'undefined') || (other.length > 0)) {
+      throw Error("expecting one argument, got: " + x + ", " + other);
     }
     return ["get", x, 0];
   };
   var macCdr = function(x) {
     var _i;
-    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (!(typeof x !== 'undefined' && x !== null) || (other.length > 0)) {
-      throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
+    var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if ((typeof x === 'undefined') || (other.length > 0)) {
+      throw Error("expecting one argument, got: " + x + ", " + other);
     }
     return [
       ["get", x, "slice"], 1
@@ -1321,9 +1411,9 @@
   };
   var macInit = function(x) {
     var _i;
-    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (!(typeof x !== 'undefined' && x !== null) || (other.length > 0)) {
-      throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
+    var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if ((typeof x === 'undefined') || (other.length > 0)) {
+      throw Error("expecting one argument, got: " + x + ", " + other);
     }
     return [
       ["get", x, "slice"], 0, -1
@@ -1331,65 +1421,89 @@
   };
   var macLast = function(x) {
     var _i;
-    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (!(typeof x !== 'undefined' && x !== null) || (other.length > 0)) {
-      throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
+    var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if ((typeof x === 'undefined') || (other.length > 0)) {
+      throw Error("expecting one argument, got: " + x + ", " + other);
     }
     return ["get", [
       ["get", x, "slice"], -1
     ], 0];
   };
   var macLet = function() {
-    var body, names, callArgs, _i;
-    args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
+    var body, names, callArgs, name, _i;
+    var args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
     body = arguments[_i++];
-    util.assertExp(args, (function(x) {
-      return (x.length % 2) === 0;
-    }), "an even number of arguments");
-    !(typeof body !== 'undefined' && body !== null) ? body = [] : undefined;
+    if ((args.length % 2) !== 0) {
+      throw Error, ("expecting an even number of arguments, got " + args.length);
+    }
+    typeof body === 'undefined' ? body = [] : undefined;
     names = [];
     callArgs = [];
     while (args.length > 0) {
-      names.push(checkVar(args.shift()));
+      name = args.shift();
+      true ? names.push(name) : undefined;
       callArgs.push(args.shift());
     }
     return [].concat([
       [].concat(["fn"]).concat(names).concat([body])
     ]).concat(callArgs);
   };
-  var macNotExist = function(x) {
+
+  function list() {
     var _i;
-    other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (!(typeof x !== 'undefined' && x !== null) || (other.length > 0)) {
-      throw Error("expecting one argument, got: " + pr(x) + ", " + spr(other));
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    return [].concat(args);
+  }
+  var macExist = function() {
+    var value, comp, elements, _i, _i0, _res, _ref;
+    var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = values;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      value = _ref[_i0];
+      comp = compartmentaliseExist(value);
+      _res.push((comp.length > 1 ? [].concat(["and"]).concat(comp) : comp[0]));
     }
-    return ["not", ["?", x]];
+    elements = _res;
+    return (elements.length > 1 ? [].concat(["or"]).concat(elements) : elements[0]);
+  };
+  var macNotExist = function() {
+    var value, comp, elements, _i, _i0, _res, _ref;
+    var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = values;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      value = _ref[_i0];
+      comp = compartmentaliseNotExist(value);
+      _res.push((comp.length > 1 ? [].concat(["or"]).concat(comp) : comp[0]));
+    }
+    elements = _res;
+    return (elements.length > 1 ? [].concat(["and"]).concat(elements) : elements[0]);
   };
   var macIsA = function(obj) {
     var _i;
-    types = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    var types = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     return [].concat(["is", ["typeof", obj]]).concat(types);
   };
+  var macIsNa = function(obj) {
+    var _i;
+    var types = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    return [].concat(["isnt", ["typeof", obj]]).concat(types);
+  };
   var macAny = function() {
-    var value, _i, _i0, _res, _ref;
-    values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    var value, elements, _i, _i0, _res, _ref;
+    var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
       _res.push(["and", ["?", value], value]);
     }
-    return [].concat(["or"]).concat(_res);
+    elements = _res;
+    return (elements.length > 1 ? [].concat(["or"]).concat(elements) : elements[0]);
   };
-  var util, pr, spr;
+  var util;
   util = require("./util");
-  pr = util.pr;
-  spr = util.spr;
-
-  function checkVar(exp) {
-    return util.assertExp(exp, util.isVarName, "valid identifier") ? exp : undefined;
-  }
-  checkVar;
   exports.car = macCar;
   exports.head = macCar;
   exports.cdr = macCdr;
@@ -1397,8 +1511,60 @@
   exports.init = macInit;
   exports.last = macLast;
   exports.let = macLet;
+
+  function compartmentaliseExist(form) {
+    var i, val, split, _ref, _res, _ref0;
+    if (util.isList(form) && (form[0] === "get")) {
+      _ref = list.apply(list, [].concat(compartmentaliseExist(form[1])).concat([
+        ["isnta", form, "'undefined'"]
+      ]));
+    } else if ((typeof form === "string" && util.isIdentifier(form) && !util.isSpecialValueStr(form))) {
+      _res = [];
+      _ref0 = (split = util.splitName(form));
+      for (i = 0; i < _ref0.length; ++i) {
+        val = _ref0[i];
+        _res.push(["isnta", split.slice(0, i + 1)
+          .join(""), "'undefined'"
+        ]);
+      }
+      _ref = _res;
+    } else {
+      _ref = [
+        ["isnta", form, "'undefined'"]
+      ];
+    }
+    return _ref;
+  }
+  compartmentaliseExist;
+  exports["?"] = macExist;
+
+  function compartmentaliseNotExist(form) {
+    var i, val, split, _ref, _res, _ref0;
+    if (util.isList(form) && (form[0] === "get")) {
+      _ref = list.apply(list, [].concat(compartmentaliseNotExist(form[1])).concat([
+        ["isa", form, "'undefined'"]
+      ]));
+    } else if ((typeof form === "string" && util.isIdentifier(form) && !util.isSpecialValueStr(form))) {
+      _res = [];
+      _ref0 = (split = util.splitName(form));
+      for (i = 0; i < _ref0.length; ++i) {
+        val = _ref0[i];
+        _res.push(["isa", split.slice(0, i + 1)
+          .join(""), "'undefined'"
+        ]);
+      }
+      _ref = _res;
+    } else {
+      _ref = [
+        ["isa", form, "'undefined'"]
+      ];
+    }
+    return _ref;
+  }
+  compartmentaliseNotExist;
   exports["?!"] = macNotExist;
   exports.isa = macIsA;
+  exports.isnta = macIsNa;
   return exports.any = macAny;
 }).call(this);
       return module.exports;
@@ -1407,13 +1573,13 @@
       (function() {
   function list() {
     var _i;
-    args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     return [].concat(args);
   }
 
   function range(start, end) {
     var a, _res, _ref;
-    if (!(typeof end !== 'undefined' && end !== null)) {
+    if (!(typeof end !== 'undefined')) {
       end = start;
       start = 0;
     }
@@ -1431,13 +1597,13 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, toplevel, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, toplevelRedeclare, toplevelRedefine, specials, macros;
-  exports.version = "0.2.3";
+  var vm, fs, path, beautify, functions, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros;
+  exports.version = "0.2.4";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
   beautify = require("js-beautify");
-  toplevel = require("./toplevel");
+  functions = require("./functions");
   util = require("./util");
   ops = require("./operators");
   operators = ops.operators;
@@ -1454,17 +1620,17 @@
   isVarName = util.isVarName;
   isIdentifier = util.isIdentifier;
   assertExp = util.assertExp;
-  toplevelRedeclare = [];
-  toplevelRedefine = [];
+  functionsRedeclare = [];
+  functionsRedefine = [];
 
   function plusname(name) {
-    return isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + 1 + Number(name.slice(-1)[0]));
+    return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + 1 + Number(name.slice(-1)[0])));
   }
   plusname;
 
   function declareVar(name, scope) {
     var _ref;
-    if ([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) {
+    if ([].indexOf.call(scope.hoist, name) >= 0) {
       _ref = scope;
     } else {
       scope.hoist.push(name);
@@ -1475,7 +1641,7 @@
   declareVar;
 
   function declareService(name, scope) {
-    while (([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) || ([].indexOf.call(scope.service, name, scope.service) >= 0)) {
+    while (([].indexOf.call(scope.hoist, name) >= 0) || ([].indexOf.call(scope.service, name) >= 0)) {
       name = plusname(name);
     }
     scope.service.push(name);
@@ -1496,9 +1662,9 @@
     _ref0 = scope.service;
     for (i in _ref0) {
       name = _ref0[i];
-      if ([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) {
+      if ([].indexOf.call(scope.hoist, name) >= 0) {
         newname = name;
-        while ([].indexOf.call(scope.hoist, newname, scope.hoist) >= 0) {
+        while ([].indexOf.call(scope.hoist, newname) >= 0) {
           newname = plusname(newname);
         }
         scope.service[i] = newname;
@@ -1507,7 +1673,7 @@
         _ref10 = buffer;
         for (i = 0; i < _ref10.length; ++i) {
           str = _ref10[i];
-          (typeof str !== 'undefined' && str !== null) && (typeof str === "string") ? buffer[i] = str.replace(re, subst) : undefined;
+          (typeof str !== 'undefined') && (typeof str === "string") ? buffer[i] = str.replace(re, subst) : undefined;
         }
       }
     }
@@ -1536,23 +1702,14 @@
   }
   compileGetLast;
 
-  function splitName(name) {
-    var obj, method, _ref;
-    if ((obj = name.match(/^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*([$_\w](?!\.))+$|^([$_.\[\]\w])+(?=\.|(\[.*(?=\[+).*\]))+|^(?:[$_.\[\]\w])+(?=\.|\[)+/))) {
-      obj = obj[0];
-      method = name.replace(obj, "");
-      _ref = [obj, method];
-    } else {
-      _ref = [name, ""];
-    }
-    return _ref;
-  }
-  splitName;
-
   function returnify(form) {
     var _ref;
     if (isAtom(form) || isHash(form)) {
       _ref = ["return", form];
+    } else if ((isList(form) && util.isBlankObject(form))) {
+      _ref = form;
+    } else if ((isList(form) && form.length === 1 && util.isBlankObject(form[0]))) {
+      _ref = form[0];
     } else if ((isList(form) && form[0] !== "return")) {
       _ref = ["return", form];
     } else {
@@ -1579,7 +1736,7 @@
   getArgNames;
 
   function notRedefined(name) {
-    return !([].indexOf.call(toplevelRedeclare, name, toplevelRedeclare) >= 0) && !([].indexOf.call(toplevelRedefine, name, toplevelRedefine) >= 0);
+    return !([].indexOf.call(functionsRedeclare, name) >= 0) && !([].indexOf.call(functionsRedefine, name) >= 0);
   }
   notRedefined;
 
@@ -1589,51 +1746,51 @@
   isPropertyExp;
 
   function compileForm(form, scope, opts, nested) {
-    var buffer, isNested, first, isOuterOperator, i, arg, argsSpread, name, method, collector, key, val, _ref, _i, _ref0, _i0, _ref10, _ref110, _i10, _ref1110, _i110, _ref11110, _i1110, _ref111110, _i11110, _ref1111110, _i111110, _ref11111110, _i1111110, _ref111111110, _ref1111111110, _ref11111111110, _i11111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    var buffer, isNested, first, isOuterOperator, i, arg, argsSpread, split, method, name, collector, key, val, _ref, _i, _ref0, _i0, _ref10, _ref110, _i10, _ref1110, _i110, _ref11110, _i1110, _ref111110, _i11110, _ref1111110, _i111110, _ref11111110, _ref111111110, _ref1111111110, _i1111110;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     if (isList(form) && util.isBlankObject(form)) {
-      _ref111111110 = [
+      _ref11111110 = [
         [""], scope
       ];
     } else if (isAtom(form)) {
-      if ((([].indexOf.call(Object.keys(toplevel), form, Object.keys(toplevel)) >= 0) && notRedefined(form)) || ([].indexOf.call(Object.keys(macros), form, Object.keys(macros)) >= 0)) {
+      if (((form in functions) && notRedefined(form)) || (form in macros)) {
         assertExp(form, isVarName, "valid identifier");
         scope = declareVar(form, scope);
-      } else if ([].indexOf.call(Object.keys(opFuncs), form, Object.keys(opFuncs)) >= 0) {
+      } else if (form in opFuncs) {
         assertExp(form, isVarName, "valid identifier");
         scope = declareVar(form, scope);
         form = opFuncs[form].name;
       }
-      _ref111111110 = [
+      _ref11111110 = [
         [form], scope
       ];
     } else if (isHash(form)) {
       buffer = [];
       nested = undefined;
-      _ref1111111110 = form;
-      for (key in _ref1111111110) {
-        val = _ref1111111110[key];
-        _ref11111111110 = compileGetLast(val, buffer, scope, opts, nested);
-        form[key] = _ref11111111110[0];
-        buffer = _ref11111111110[1];
-        scope = _ref11111111110[2];
+      _ref111111110 = form;
+      for (key in _ref111111110) {
+        val = _ref111111110[key];
+        _ref1111111110 = compileGetLast(val, buffer, scope, opts, nested);
+        form[key] = _ref1111111110[0];
+        buffer = _ref1111111110[1];
+        scope = _ref1111111110[2];
       }
       buffer.push(form);
-      _ref111111110 = [buffer, scope];
+      _ref11111110 = [buffer, scope];
     } else {
       if (!isList(form)) {
         throw Error("expecting list, got: " + pr(form));
       }
       buffer = [];
       form = form.slice();
-      if ([].indexOf.call(Object.keys(specials), form[0], Object.keys(specials)) >= 0) {
+      if (form[0] in specials) {
         _ref = specials[form[0]](form, scope, opts, nested);
         buffer = _ref[0];
         scope = _ref[1];
-      } else if ([].indexOf.call(Object.keys(macros), form[0], Object.keys(macros)) >= 0) {
-        _ref11111110 = compileAdd(expandMacros(form), buffer, scope, opts, nested);
-        buffer = _ref11111110[0];
-        scope = _ref11111110[1];
+      } else if (form[0] in macros) {
+        _ref1111110 = compileAdd(expandMacros(form), buffer, scope, opts, nested);
+        buffer = _ref1111110[0];
+        scope = _ref1111110[1];
       } else {
         isNested = nested;
         nested = undefined;
@@ -1641,11 +1798,11 @@
         first = _ref0[0];
         buffer = _ref0[1];
         scope = _ref0[2];
-        if (([].indexOf.call(Object.keys(toplevel), first, Object.keys(toplevel)) >= 0) && notRedefined(first)) {
+        if ((first in functions) && notRedefined(first)) {
           assertExp(first, isVarName, "valid identifier");
           scope = declareVar(first, scope);
         }
-        if ([].indexOf.call(Object.keys(operators), first, Object.keys(operators)) >= 0) {
+        if (first in operators) {
           if (!opts.compilingOperator && !isNested) {
             isOuterOperator = true;
             opts.compilingOperator = true;
@@ -1674,16 +1831,16 @@
             form[i] = arg;
           }
         }
-        if (!(typeof argsSpread !== 'undefined' && argsSpread !== null)) {
-          [].indexOf.call(Object.keys(operators), first, Object.keys(operators)) >= 0 ? buffer.push(operators[first](form, isOuterOperator)) : buffer.push(pr(first) + "(" + spr(form) + ")");
+        if (typeof argsSpread === 'undefined') {
+          first in operators ? buffer.push(operators[first](form, isOuterOperator)) : buffer.push(pr(first) + "(" + spr(form) + ")");
         } else {
           form = ["quote", form];
           _ref11110 = compileGetLast(form, buffer, scope, opts, nested);
           form = _ref11110[0];
           buffer = _ref11110[1];
           scope = _ref11110[2];
-          if ([].indexOf.call(Object.keys(operators), first, Object.keys(operators)) >= 0) {
-            if (([].indexOf.call(Object.keys(opFuncs), first, Object.keys(opFuncs)) >= 0) && spr(opFuncs[first])) {
+          if (first in operators) {
+            if ((first in opFuncs) && spr(opFuncs[first])) {
               assertExp(first, isVarName, "valid identifier");
               scope = declareVar(first, scope);
               first = opFuncs[first].name;
@@ -1691,34 +1848,38 @@
               throw Error(pr(first) + " can't spread arguments (yet)");
             }
           }
-          _ref111110 = splitName(first);
-          name = _ref111110[0];
-          method = _ref111110[1];
-          if (isIdentifier(name)) {
+          split = util.splitName(first);
+          if (split.length > 1) {
+            method = split.pop();
+            name = split.join("");
+          } else {
+            method = "";
+            name = split[0];
+          } if (isIdentifier(name)) {
             buffer.push(name + method + ".apply(" + name + ", " + pr(form) + ")");
           } else {
-            _ref1111110 = declareService("_ref", scope);
-            collector = _ref1111110[0];
-            scope = _ref1111110[1];
+            _ref111110 = declareService("_ref", scope);
+            collector = _ref111110[0];
+            scope = _ref111110[1];
             buffer.push("(" + collector + " = " + name + ")" + method + ".apply(" + collector + ", " + pr(form) + ")");
           }
         }
       } if (isOuterOperator) {
         delete opts.compilingOperator;
       }
-      _ref111111110 = [buffer, scope];
+      _ref11111110 = [buffer, scope];
     }
-    return _ref111111110;
+    return _ref11111110;
   }
   compileForm;
   specials = {};
   specials.do = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, isTopLevel, outerScope, i, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _i, _ref10, _i0, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -1738,16 +1899,16 @@
     for (i = 0; i < _ref.length; ++i) {
       exp = _ref[i];
       nested = (!isTopLevel && (i === (form.length - 1)) && isNested) || isPropertyExp(form[i + 1]);
-      if (!(typeof exp !== 'undefined' && exp !== null)) {
+      if (typeof exp === 'undefined') {
         buffer.push(exp);
       } else {
         if (isPropertyExp(exp)) {
           ref = buffer.pop();
-          !(typeof ref !== 'undefined' && ref !== null) ? ref = "" : undefined;
+          typeof ref === 'undefined' ? ref = "" : undefined;
           _ref0 = compileAdd(exp, buffer, scope, opts, nested);
           buffer = _ref0[0];
           scope = _ref0[1];
-          buffer.push(ref + buffer.pop());
+          buffer.push(ref + "\n" + buffer.pop());
         } else {
           _ref10 = compileAdd(exp, buffer, scope, opts, nested);
           buffer = _ref10[0];
@@ -1759,14 +1920,14 @@
       vars = [];
       funcs = [];
       dec = "var ";
-      !(typeof args !== 'undefined' && args !== null) ? args = [] : undefined;
+      typeof args === 'undefined' ? args = [] : undefined;
       _ref110 = scope.hoist;
       for (_i10 = 0; _i10 < _ref110.length; ++_i10) {
         name = _ref110[_i10];
-        if (!([].indexOf.call(outerScope.hoist, name, outerScope.hoist) >= 0) && !([].indexOf.call(args, name, args) >= 0)) {
-          if ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) {
-            opts.topScope && ([].indexOf.call(toplevelRedeclare, name, toplevelRedeclare) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
-          } else if (([].indexOf.call(Object.keys(opFuncs), name, Object.keys(opFuncs)) >= 0) || ([].indexOf.call(Object.keys(macros), name, Object.keys(macros)) >= 0)) {
+        if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+          if (name in functions) {
+            opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+          } else if ((name in opFuncs) || (name in macros)) {
             funcs.push(name);
           } else {
             vars.push(name);
@@ -1776,31 +1937,36 @@
       _ref1110 = scope.service;
       for (_i110 = 0; _i110 < _ref1110.length; ++_i110) {
         name = _ref1110[_i110];
-        !([].indexOf.call(outerScope.service, name, outerScope.service) >= 0) ? vars.push(name) : undefined;
+        !([].indexOf.call(outerScope.service, name) >= 0) ? vars.push(name) : undefined;
       }
       while (vars.length > 0) {
         name = vars.shift();
-        if ([].indexOf.call(vars, name, vars) >= 0) {
+        if ([].indexOf.call(vars, name) >= 0) {
           throw Error("compiler error: duplicate var in declarations:" + name);
         }
         dec += (name + ", ");
       }
       if (dec.length > 4) {
         dec = dec.slice(0, dec.length - 2);
-        buffer.unshift(dec);
+        buffer
+          .unshift(dec);
       }
-      if ((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel) {
+      if ((typeof isTopLevel !== 'undefined') && isTopLevel) {
         while (funcs.length > 0) {
           func = funcs.pop();
-          if ([].indexOf.call(funcs, func, funcs) >= 0) {
+          if ([].indexOf.call(funcs, func) >= 0) {
             throw Error("compiler error: duplicate func in declarations:" + func);
           }
-          if ([].indexOf.call(Object.keys(toplevel), func, Object.keys(toplevel)) >= 0) {
-            notRedefined(func) ? buffer.unshift(toplevel[func].toString()) : undefined;
-          } else if ([].indexOf.call(Object.keys(macros), func, Object.keys(macros)) >= 0) {
-            buffer.unshift("var " + func + " = " + macros[func] + ";");
-          } else if ([].indexOf.call(Object.keys(opFuncs), func, Object.keys(opFuncs)) >= 0) {
-            buffer.unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";");
+          if (func in functions) {
+            notRedefined(func) ? ((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "") ? buffer
+              .unshift(functions[func].toString()) : buffer
+              .unshift("var " + func + " = " + functions[func].toString() + ";") : undefined;
+          } else if (func in macros) {
+            buffer
+              .unshift("var " + func + " = " + macros[func].toString() + ";");
+          } else if (func in opFuncs) {
+            buffer
+              .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
           } else {
             throw Error("unrecognised func: " + pr(func));
           }
@@ -1809,7 +1975,7 @@
         _ref11110 = funcs;
         for (_i1110 = 0; _i1110 < _ref11110.length; ++_i1110) {
           func = _ref11110[_i1110];
-          !([].indexOf.call(outerScope.hoist, func, outerScope.hoist) >= 0) ? outerScope.hoist.push(func) : undefined;
+          !([].indexOf.call(outerScope.hoist, func) >= 0) ? outerScope.hoist.push(func) : undefined;
         }
       }
       scope = outerScope;
@@ -1818,7 +1984,7 @@
   });
   specials.quote = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, arr, res, exp, i, item, key, newform, _i, _ref, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _i11110, _ref111110, _ref1111110, _i111110, _ref11111110, _i1111110, _ref111111110, _ref1111111110, _i11111110, _ref11111111110, _ref111111111110, _i111111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -1828,7 +1994,7 @@
     if (form.length > 1) {
       throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -1876,7 +2042,7 @@
           exp = _ref110[0];
           buffer = _ref110[1];
           scope = _ref110[2];
-          if (typeof exp !== 'undefined' && exp !== null) {
+          if (typeof exp !== 'undefined') {
             if (arr.length > 0) {
               res += (".concat(" + pr(arr) + ")");
               arr = [];
@@ -1888,13 +2054,13 @@
           exp = _ref1110[0];
           buffer = _ref1110[1];
           scope = _ref1110[2];
-          typeof exp !== 'undefined' && exp !== null ? arr.push(exp) : undefined;
+          typeof exp !== 'undefined' ? arr.push(exp) : undefined;
         } else if (isList(exp) && (exp[0] === "unquote")) {
           _ref11110 = compileGetLast(exp, buffer, scope, opts, nested);
           exp = _ref11110[0];
           buffer = _ref11110[1];
           scope = _ref11110[2];
-          if ((typeof exp !== 'undefined' && exp !== null) && opts.macro) {
+          if ((typeof exp !== 'undefined') && opts.macro) {
             if (isList(exp)) {
               _ref111110 = exp;
               for (i = 0; i < _ref111110.length; ++i) {
@@ -1908,13 +2074,13 @@
               }
             }
           }
-          typeof exp !== 'undefined' && exp !== null ? arr.push(exp) : undefined;
+          typeof exp !== 'undefined' ? arr.push(exp) : undefined;
         } else if (isList(exp) && (exp[0] === "spread") && !opts.macro) {
           _ref11111110 = compileGetLast(exp, buffer, scope, opts, nested);
           exp = _ref11111110[0];
           buffer = _ref11111110[1];
           scope = _ref11111110[2];
-          if (typeof exp !== 'undefined' && exp !== null) {
+          if (typeof exp !== 'undefined') {
             if (arr.length > 0) {
               res += (".concat(" + pr(arr) + ")");
               arr = [];
@@ -1933,7 +2099,7 @@
             buffer = _ref10[1];
             scope = _ref10[2];
           }
-          typeof exp !== 'undefined' && exp !== null ? arr.push(exp) : undefined;
+          typeof exp !== 'undefined' ? arr.push(exp) : undefined;
         }
       }
       arr.length > 0 ? res === "[]" ? res = pr(arr) : res += (".concat(" + pr(arr) + ")") : undefined;
@@ -1943,7 +2109,7 @@
   });
   specials.unquote = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, _ref, _i, _ref0, _i0;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -1953,7 +2119,7 @@
     if (form.length > 1) {
       throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -1973,21 +2139,21 @@
   });
   specials["="] = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, left, right, lastAssign, res, ref, ind, spreads, i, name, spreadname, spreadind, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _ref111110, _i11110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
     if (form.length < 1) {
       throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
       isNested = true;
     } if (form.length === 1) {
       assertExp(form[0], isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), form[0], Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, form[0], scope.hoist) >= 0) && notRedefined(form[0]) ? toplevelRedeclare.push(form[0]) : undefined;
+      opts.topScope && (form[0] in functions) && !([].indexOf.call(scope.hoist, form[0]) >= 0) && notRedefined(form[0]) ? functionsRedeclare.push(form[0]) : undefined;
       scope = declareVar(form[0], scope);
       _ref = compileAdd(form[0], buffer, scope, opts, nested);
       buffer = _ref[0];
@@ -1999,7 +2165,7 @@
       while (form.length > 0) {
         left = form.shift();
         right = form.shift();
-        lastAssign = form.length === 0 ? true : undefined;
+        lastAssign = (form.length === 0 ? true : undefined);
         _ref0 = compileGetLast(right, buffer, scope, opts, nested);
         right = _ref0[0];
         buffer = _ref0[1];
@@ -2013,10 +2179,10 @@
           lastAssign && isNested ? res = "(" + res + ")" : undefined;
           buffer.push(res);
         } else if (isList(left)) {
-          _ref110 = declareService("_ref", scope, opts.function ? args : undefined);
+          _ref110 = declareService("_ref", scope, (opts.function ? args : undefined));
           ref = _ref110[0];
           scope = _ref110[1];
-          _ref1110 = declareService("_i", scope, opts.function ? args : undefined);
+          _ref1110 = declareService("_i", scope, (opts.function ? args : undefined));
           ind = _ref1110[0];
           scope = _ref1110[1];
           buffer.push(ref + " = " + pr(right));
@@ -2033,22 +2199,22 @@
               buffer = _ref111110[1];
               scope = _ref111110[2];
               assertExp(name, isVarName, "valid identifier");
-              opts.topScope && ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) && notRedefined(name) ? toplevelRedeclare.push(name) : undefined;
+              opts.topScope && (name in functions) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name) ? functionsRedeclare.push(name) : undefined;
               scope = declareVar(name, scope);
               spreadname = name;
               spreadind = i;
               buffer.push("var " + spreadname + " = " + left.length + " <= " + ref + ".length ? [].slice.call(" + ref + ", " + spreadind + ", " + ind + " = " + ref + ".length - " + (left.length - spreadind - 1) + ") : (" + ind + " = " + spreadind + ", [])");
-            } else if (!(typeof spreadname !== 'undefined' && spreadname !== null)) {
+            } else if (typeof spreadname === 'undefined') {
               if (isVarName(name)) {
                 assertExp(name, isVarName, "valid identifier");
-                opts.topScope && ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) && notRedefined(name) ? toplevelRedeclare.push(name) : undefined;
+                opts.topScope && (name in functions) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name) ? functionsRedeclare.push(name) : undefined;
                 scope = declareVar(name, scope);
               }
               buffer.push(pr(name) + " = " + ref + "[" + i + "]");
             } else {
               if (isVarName(name)) {
                 assertExp(name, isVarName, "valid identifier");
-                opts.topScope && ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, name, scope.hoist) >= 0) && notRedefined(name) ? toplevelRedeclare.push(name) : undefined;
+                opts.topScope && (name in functions) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name) ? functionsRedeclare.push(name) : undefined;
                 scope = declareVar(name, scope);
               }
               buffer.push(pr(name) + " = " + ref + "[" + ind + "++]");
@@ -2057,7 +2223,7 @@
         } else {
           if (isVarName(left)) {
             assertExp(left, isVarName, "valid identifier");
-            opts.topScope && ([].indexOf.call(Object.keys(toplevel), left, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, left, scope.hoist) >= 0) && notRedefined(left) ? toplevelRedeclare.push(left) : undefined;
+            opts.topScope && (left in functions) && !([].indexOf.call(scope.hoist, left) >= 0) && notRedefined(left) ? functionsRedeclare.push(left) : undefined;
             scope = declareVar(left, scope);
           }
           assertExp(left, isIdentifier);
@@ -2072,11 +2238,11 @@
   });
   specials.fn = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, outerScope, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _ref0, _ref10, _i0, _ref110, _i10, _ref1110, _i110, _i1110, _ref11110, _i11110, _ref111110, _i111110, _ref1111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2091,7 +2257,7 @@
     var args = 2 <= _ref.length ? [].slice.call(_ref, 0, _i = _ref.length - 1) : (_i = 0, []);
     body = _ref[_i++];
     scope.hoist.push.apply(scope.hoist, [].concat(getArgNames(args)));
-    !(typeof body !== 'undefined' && body !== null) ? body = [] : undefined;
+    typeof body === 'undefined' ? body = [] : undefined;
     optionals = [];
     spreads = 0;
     _ref0 = args;
@@ -2105,7 +2271,7 @@
           if (++spreads > 1) {
             throw Error("cannot define more than one rest parameter");
           }
-          _ref10 = declareService("_i", scope, opts.function ? args : undefined);
+          _ref10 = declareService("_i", scope, (opts.function ? args : undefined));
           ind = _ref10[0];
           scope = _ref10[1];
           _ref110 = compileGetLast(arg, buffer, scope, opts, nested);
@@ -2116,7 +2282,7 @@
           restname = name;
           restind = i;
           args[i] = restname;
-          rest = list(name + " = " + args.length + " <= arguments.length ? [].slice.call(arguments, " + i + ", " + ind + " = arguments.length - " + (args.length - i - 1) + ") : (" + ind + " = " + restind + ", [])");
+          rest = list("var " + name + " = " + args.length + " <= arguments.length ? [].slice.call(arguments, " + i + ", " + ind + " = arguments.length - " + (args.length - i - 1) + ") : (" + ind + " = " + restind + ", [])");
         } else {
           assertExp((name = arg[0]), isVarName, "valid parameter name");
           args[i] = name;
@@ -2128,7 +2294,7 @@
         rest.push(pr(arg) + " = arguments[" + ind + "++]");
       }
     }
-    typeof restind !== 'undefined' && restind !== null ? args = args.slice(0, restind) : undefined;
+    typeof restind !== 'undefined' ? args = args.slice(0, restind) : undefined;
     optionals.length > 0 ? body = [].concat(["do"]).concat(optionals).concat([body]) : undefined;
     body = returnify(body);
     _ref1110 = compileResolve(body, buffer, scope, opts, nested);
@@ -2139,14 +2305,14 @@
     vars = [];
     funcs = [];
     dec = "var ";
-    !(typeof args !== 'undefined' && args !== null) ? args = [] : undefined;
+    typeof args === 'undefined' ? args = [] : undefined;
     _ref11110 = scope.hoist;
     for (_i1110 = 0; _i1110 < _ref11110.length; ++_i1110) {
       name = _ref11110[_i1110];
-      if (!([].indexOf.call(outerScope.hoist, name, outerScope.hoist) >= 0) && !([].indexOf.call(args, name, args) >= 0)) {
-        if ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) {
-          opts.topScope && ([].indexOf.call(toplevelRedeclare, name, toplevelRedeclare) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
-        } else if (([].indexOf.call(Object.keys(opFuncs), name, Object.keys(opFuncs)) >= 0) || ([].indexOf.call(Object.keys(macros), name, Object.keys(macros)) >= 0)) {
+      if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+        if (name in functions) {
+          opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+        } else if ((name in opFuncs) || (name in macros)) {
           funcs.push(name);
         } else {
           vars.push(name);
@@ -2156,31 +2322,36 @@
     _ref111110 = scope.service;
     for (_i11110 = 0; _i11110 < _ref111110.length; ++_i11110) {
       name = _ref111110[_i11110];
-      !([].indexOf.call(outerScope.service, name, outerScope.service) >= 0) ? vars.push(name) : undefined;
+      !([].indexOf.call(outerScope.service, name) >= 0) ? vars.push(name) : undefined;
     }
     while (vars.length > 0) {
       name = vars.shift();
-      if ([].indexOf.call(vars, name, vars) >= 0) {
+      if ([].indexOf.call(vars, name) >= 0) {
         throw Error("compiler error: duplicate var in declarations:" + name);
       }
       dec += (name + ", ");
     }
     if (dec.length > 4) {
       dec = dec.slice(0, dec.length - 2);
-      body.unshift(dec);
+      body
+        .unshift(dec);
     }
-    if ((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel) {
+    if ((typeof isTopLevel !== 'undefined') && isTopLevel) {
       while (funcs.length > 0) {
         func = funcs.pop();
-        if ([].indexOf.call(funcs, func, funcs) >= 0) {
+        if ([].indexOf.call(funcs, func) >= 0) {
           throw Error("compiler error: duplicate func in declarations:" + func);
         }
-        if ([].indexOf.call(Object.keys(toplevel), func, Object.keys(toplevel)) >= 0) {
-          notRedefined(func) ? body.unshift(toplevel[func].toString()) : undefined;
-        } else if ([].indexOf.call(Object.keys(macros), func, Object.keys(macros)) >= 0) {
-          body.unshift("var " + func + " = " + macros[func] + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func, Object.keys(opFuncs)) >= 0) {
-          body.unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";");
+        if (func in functions) {
+          notRedefined(func) ? ((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "") ? body
+            .unshift(functions[func].toString()) : body
+            .unshift("var " + func + " = " + functions[func].toString() + ";") : undefined;
+        } else if (func in macros) {
+          body
+            .unshift("var " + func + " = " + macros[func].toString() + ";");
+        } else if (func in opFuncs) {
+          body
+            .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
           throw Error("unrecognised func: " + pr(func));
         }
@@ -2189,7 +2360,7 @@
       _ref1111110 = funcs;
       for (_i111110 = 0; _i111110 < _ref1111110.length; ++_i111110) {
         func = _ref1111110[_i111110];
-        !([].indexOf.call(outerScope.hoist, func, outerScope.hoist) >= 0) ? outerScope.hoist.push(func) : undefined;
+        !([].indexOf.call(outerScope.hoist, func) >= 0) ? outerScope.hoist.push(func) : undefined;
       }
     }
     scope = outerScope;
@@ -2198,11 +2369,11 @@
   });
   specials.def = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, outerScope, fname, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _ref0, _ref10, _i0, _ref110, _i10, _ref1110, _i110, _i1110, _ref11110, _i11110, _ref111110, _i111110, _ref1111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2218,9 +2389,9 @@
     var args = 3 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []);
     body = _ref[_i++];
     assertExp(fname, isVarName, "valid identifier");
-    opts.topScope && ([].indexOf.call(Object.keys(toplevel), fname, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, fname, scope.hoist) >= 0) && notRedefined(fname) ? toplevelRedefine.push(fname) : undefined;
+    opts.topScope && (fname in functions) && !([].indexOf.call(scope.hoist, fname) >= 0) && notRedefined(fname) ? functionsRedefine.push(fname) : undefined;
     scope.hoist.push.apply(scope.hoist, [].concat(getArgNames(args)));
-    !(typeof body !== 'undefined' && body !== null) ? body = [] : undefined;
+    typeof body === 'undefined' ? body = [] : undefined;
     optionals = [];
     spreads = 0;
     _ref0 = args;
@@ -2234,7 +2405,7 @@
           if (++spreads > 1) {
             throw Error("cannot define more than one rest parameter");
           }
-          _ref10 = declareService("_i", scope, opts.function ? args : undefined);
+          _ref10 = declareService("_i", scope, (opts.function ? args : undefined));
           ind = _ref10[0];
           scope = _ref10[1];
           _ref110 = compileGetLast(arg, buffer, scope, opts, nested);
@@ -2245,7 +2416,7 @@
           restname = name;
           restind = i;
           args[i] = restname;
-          rest = list(name + " = " + args.length + " <= arguments.length ? [].slice.call(arguments, " + i + ", " + ind + " = arguments.length - " + (args.length - i - 1) + ") : (" + ind + " = " + restind + ", [])");
+          rest = list("var " + name + " = " + args.length + " <= arguments.length ? [].slice.call(arguments, " + i + ", " + ind + " = arguments.length - " + (args.length - i - 1) + ") : (" + ind + " = " + restind + ", [])");
         } else {
           assertExp((name = arg[0]), isVarName, "valid parameter name");
           args[i] = name;
@@ -2257,7 +2428,7 @@
         rest.push(pr(arg) + " = arguments[" + ind + "++]");
       }
     }
-    typeof restind !== 'undefined' && restind !== null ? args = args.slice(0, restind) : undefined;
+    typeof restind !== 'undefined' ? args = args.slice(0, restind) : undefined;
     optionals.length > 0 ? body = [].concat(["do"]).concat(optionals).concat([body]) : undefined;
     body = returnify(body);
     _ref1110 = compileResolve(body, buffer, scope, opts, nested);
@@ -2268,14 +2439,14 @@
     vars = [];
     funcs = [];
     dec = "var ";
-    !(typeof args !== 'undefined' && args !== null) ? args = [] : undefined;
+    typeof args === 'undefined' ? args = [] : undefined;
     _ref11110 = scope.hoist;
     for (_i1110 = 0; _i1110 < _ref11110.length; ++_i1110) {
       name = _ref11110[_i1110];
-      if (!([].indexOf.call(outerScope.hoist, name, outerScope.hoist) >= 0) && !([].indexOf.call(args, name, args) >= 0)) {
-        if ([].indexOf.call(Object.keys(toplevel), name, Object.keys(toplevel)) >= 0) {
-          opts.topScope && ([].indexOf.call(toplevelRedeclare, name, toplevelRedeclare) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
-        } else if (([].indexOf.call(Object.keys(opFuncs), name, Object.keys(opFuncs)) >= 0) || ([].indexOf.call(Object.keys(macros), name, Object.keys(macros)) >= 0)) {
+      if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+        if (name in functions) {
+          opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0) ? vars.push(name) : notRedefined(name) ? funcs.push(name) : undefined;
+        } else if ((name in opFuncs) || (name in macros)) {
           funcs.push(name);
         } else {
           vars.push(name);
@@ -2285,31 +2456,36 @@
     _ref111110 = scope.service;
     for (_i11110 = 0; _i11110 < _ref111110.length; ++_i11110) {
       name = _ref111110[_i11110];
-      !([].indexOf.call(outerScope.service, name, outerScope.service) >= 0) ? vars.push(name) : undefined;
+      !([].indexOf.call(outerScope.service, name) >= 0) ? vars.push(name) : undefined;
     }
     while (vars.length > 0) {
       name = vars.shift();
-      if ([].indexOf.call(vars, name, vars) >= 0) {
+      if ([].indexOf.call(vars, name) >= 0) {
         throw Error("compiler error: duplicate var in declarations:" + name);
       }
       dec += (name + ", ");
     }
     if (dec.length > 4) {
       dec = dec.slice(0, dec.length - 2);
-      body.unshift(dec);
+      body
+        .unshift(dec);
     }
-    if ((typeof isTopLevel !== 'undefined' && isTopLevel !== null) && isTopLevel) {
+    if ((typeof isTopLevel !== 'undefined') && isTopLevel) {
       while (funcs.length > 0) {
         func = funcs.pop();
-        if ([].indexOf.call(funcs, func, funcs) >= 0) {
+        if ([].indexOf.call(funcs, func) >= 0) {
           throw Error("compiler error: duplicate func in declarations:" + func);
         }
-        if ([].indexOf.call(Object.keys(toplevel), func, Object.keys(toplevel)) >= 0) {
-          notRedefined(func) ? body.unshift(toplevel[func].toString()) : undefined;
-        } else if ([].indexOf.call(Object.keys(macros), func, Object.keys(macros)) >= 0) {
-          body.unshift("var " + func + " = " + macros[func] + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func, Object.keys(opFuncs)) >= 0) {
-          body.unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func + ";");
+        if (func in functions) {
+          notRedefined(func) ? ((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "") ? body
+            .unshift(functions[func].toString()) : body
+            .unshift("var " + func + " = " + functions[func].toString() + ";") : undefined;
+        } else if (func in macros) {
+          body
+            .unshift("var " + func + " = " + macros[func].toString() + ";");
+        } else if (func in opFuncs) {
+          body
+            .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
           throw Error("unrecognised func: " + pr(func));
         }
@@ -2318,7 +2494,7 @@
       _ref1111110 = funcs;
       for (_i111110 = 0; _i111110 < _ref1111110.length; ++_i111110) {
         func = _ref1111110[_i111110];
-        !([].indexOf.call(outerScope.hoist, func, outerScope.hoist) >= 0) ? outerScope.hoist.push(func) : undefined;
+        !([].indexOf.call(outerScope.hoist, func) >= 0) ? outerScope.hoist.push(func) : undefined;
       }
     }
     scope = outerScope;
@@ -2332,8 +2508,8 @@
 
   function collect(compiled, collector, isCase, isNested) {
     var plug, lastItem;
-    !(typeof isCase !== 'undefined' && isCase !== null) ? isCase = false : undefined;
-    !(typeof isNested !== 'undefined' && isNested !== null) ? isNested = true : undefined;
+    !(typeof isCase !== 'undefined') ? isCase = false : undefined;
+    !(typeof isNested !== 'undefined') ? isNested = true : undefined;
     if (isList(compiled) && (compiled.length > 0)) {
       /\{$/.test(compiled.slice(-1)[0]) ? plug = compiled.pop() : undefined;
       lastItem = compiled.pop();
@@ -2348,18 +2524,18 @@
       }
       compiled.push(lastItem);
       isCase ? compiled.push("break") : undefined;
-      typeof plug !== 'undefined' && plug !== null ? compiled.push(plug) : undefined;
+      typeof plug !== 'undefined' ? compiled.push(plug) : undefined;
     }
     return compiled;
   }
   collect;
   specials.if = (function(form, scope, opts, nested) {
-    var buffer, formName, isNested, predicate, prebranch, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _ref111110, _i11110, _ref1111110, _i111110, _ref11111110, _i1111110, _i11111110, _ref111111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    var buffer, formName, isNested, predicate, prebranch, midcases, postbranch, res, collector, i, mid, midtest, midbranch, comp, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _ref111110, _i11110, _ref1111110, _i111110, _ref11111110, _i1111110, _i11111110, _ref111111110;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2370,7 +2546,7 @@
     prebranch = _ref[1];
     var midcases = 4 <= _ref.length ? [].slice.call(_ref, 2, _i = _ref.length - 1) : (_i = 2, []);
     postbranch = _ref[_i++];
-    if ((typeof postbranch !== 'undefined' && postbranch !== null) && (postbranch[0] === "elif")) {
+    if (isList(postbranch) && (postbranch[0] === "elif")) {
       midcases.push(postbranch);
       postbranch = undefined;
     }
@@ -2378,7 +2554,7 @@
     predicate = _ref0[0];
     buffer = _ref0[1];
     scope = _ref0[2];
-    !(typeof predicate !== 'undefined' && predicate !== null) ? predicate = "false" : undefined;
+    typeof predicate === 'undefined' ? predicate = "false" : undefined;
     nested = isNested;
     _ref10 = compileResolve(prebranch, buffer, scope, opts, nested);
     prebranch = _ref10[0];
@@ -2389,10 +2565,12 @@
     buffer = _ref110[1];
     scope = _ref110[2];
     if ((prebranch.length === 1) && !util.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !util.kwtest(postbranch[0])) {
-      buffer.push(pr(predicate) + " ? " + pr(prebranch[0]) + " : " + pr(postbranch[0]));
+      res = pr(predicate) + " ? " + pr(prebranch[0]) + " : " + pr(postbranch[0]);
+      isNested ? res = "(" + res + ")" : undefined;
+      buffer.push(res);
     } else {
       if (isNested) {
-        _ref1110 = declareService("_ref", scope, opts.function ? args : undefined);
+        _ref1110 = declareService("_ref", scope, (opts.function ? args : undefined));
         collector = _ref1110[0];
         scope = _ref1110[1];
       }
@@ -2411,7 +2589,7 @@
         midtest = _ref1111110[0];
         buffer = _ref1111110[1];
         scope = _ref1111110[2];
-        !(typeof midtest !== 'undefined' && midtest !== null) ? midtest = "false" : undefined;
+        typeof midtest === 'undefined' ? midtest = "false" : undefined;
         if (midtest.length > 1) {
           throw Error(pr("elif") + " must compile to single expression (todo fix later); got:" + pr(midtest));
         }
@@ -2429,7 +2607,7 @@
       for (_i11111110 = 0; _i11111110 < _ref111111110.length; ++_i11111110) {
         mid = _ref111111110[_i11111110];
         comp += (" else if (" + spr(mid.test) + ") { " + render(mid.branch) + " }");
-      }(typeof postbranch !== 'undefined' && postbranch !== null) && ((postbranch.length > 1) || (typeof postbranch[0] !== 'undefined' && postbranch[0] !== null)) ? comp += (" else { " + render(postbranch) + " }") : undefined;
+      }(typeof postbranch !== 'undefined') && ((postbranch.length > 1) || (typeof postbranch[0] !== 'undefined')) ? comp += (" else { " + render(postbranch) + " }") : undefined;
       buffer.push(comp);
       isNested ? buffer.push(collector) : buffer.push("");
     }
@@ -2437,11 +2615,11 @@
   });
   specials.switch = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, predicate, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _ref1110, _i110, _ref11110, _i1110, _ref111110, _i11110, _ref1111110, _i111110, _i1111110, _ref11111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2451,12 +2629,12 @@
     predicate = _ref[0];
     var midcases = 3 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []);
     postbranch = _ref[_i++];
-    if ((typeof postbranch !== 'undefined' && postbranch !== null) && (postbranch[0] === "case")) {
+    if ((typeof postbranch !== 'undefined') && (postbranch[0] === "case")) {
       midcases.push(postbranch);
       postbranch = undefined;
     }
     if (isNested) {
-      _ref0 = declareService("_ref", scope, opts.function ? args : undefined);
+      _ref0 = declareService("_ref", scope, (opts.function ? args : undefined));
       collector = _ref0[0];
       scope = _ref0[1];
     }
@@ -2464,7 +2642,7 @@
     predicate = _ref10[0];
     buffer = _ref10[1];
     scope = _ref10[2];
-    !(typeof predicate !== 'undefined' && predicate !== null) ? predicate = "false" : undefined;
+    typeof predicate === 'undefined' ? predicate = "false" : undefined;
     nested = isNested;
     _ref110 = midcases;
     for (i = 0; i < _ref110.length; ++i) {
@@ -2479,7 +2657,7 @@
       midtest = _ref11110[0];
       buffer = _ref11110[1];
       scope = _ref11110[2];
-      !(typeof midtest !== 'undefined' && midtest !== null) ? midtest = "false" : undefined;
+      typeof midtest === 'undefined' ? midtest = "false" : undefined;
       if (midtest.length > 1) {
         throw Error(pr("case") + " must compile to single expression (todo fix later); got:" + pr(midtest));
       }
@@ -2510,7 +2688,7 @@
   });
   specials.for = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _i11110, _ref111110, _i111110, _ref1111110, _i1111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2520,7 +2698,7 @@
     if (form.length > 4) {
       throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2531,46 +2709,46 @@
     key = _ref[1];
     iterable = _ref[2];
     body = _ref[3];
-    if (!(typeof body !== 'undefined' && body !== null)) {
-      if (!(typeof iterable !== 'undefined' && iterable !== null)) {
+    if (typeof body === 'undefined') {
+      if (typeof iterable === 'undefined') {
         if (isNaN(Number(value)) || !(parseInt(value) > 0)) {
           throw Error("expecting integer, got " + pr(value));
         }
         body = key;
         iterable = ["quote", [range, 1, [parseInt, value]]];
-        _ref0 = declareService("_i", scope, opts.function ? args : undefined);
+        _ref0 = declareService("_i", scope, (opts.function ? args : undefined));
         key = _ref0[0];
         scope = _ref0[1];
-        _ref10 = declareService("_val", scope, opts.function ? args : undefined);
+        _ref10 = declareService("_val", scope, (opts.function ? args : undefined));
         value = _ref10[0];
         scope = _ref10[1];
       } else {
         body = iterable;
         iterable = key;
-        _ref110 = declareService("_i", scope, opts.function ? args : undefined);
+        _ref110 = declareService("_i", scope, (opts.function ? args : undefined));
         key = _ref110[0];
         scope = _ref110[1];
         assertExp(value, isVarName, "valid identifier");
-        opts.topScope && ([].indexOf.call(Object.keys(toplevel), value, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, value, scope.hoist) >= 0) && notRedefined(value) ? toplevelRedeclare.push(value) : undefined;
+        opts.topScope && (value in functions) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value) ? functionsRedeclare.push(value) : undefined;
         scope = declareVar(value, scope);
       }
     } else {
       assertExp(key, isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), key, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, key, scope.hoist) >= 0) && notRedefined(key) ? toplevelRedeclare.push(key) : undefined;
+      opts.topScope && (key in functions) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key) ? functionsRedeclare.push(key) : undefined;
       scope = declareVar(key, scope);
       assertExp(value, isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), value, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, value, scope.hoist) >= 0) && notRedefined(value) ? toplevelRedeclare.push(value) : undefined;
+      opts.topScope && (value in functions) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value) ? functionsRedeclare.push(value) : undefined;
       scope = declareVar(value, scope);
     }
     assertExp(key, isVarName, "valid identifier");
     assertExp(value, isVarName, "valid identifier");
     if (isNested) {
-      _ref1110 = declareService("_res", scope, opts.function ? args : undefined);
+      _ref1110 = declareService("_res", scope, (opts.function ? args : undefined));
       collector = _ref1110[0];
       scope = _ref1110[1];
       buffer.push(collector + " = []");
     }
-    _ref11110 = declareService("_ref", scope, opts.function ? args : undefined);
+    _ref11110 = declareService("_ref", scope, (opts.function ? args : undefined));
     ref = _ref11110[0];
     scope = _ref11110[1];
     _ref111110 = compileGetLast(iterable, buffer, scope, opts, nested);
@@ -2590,7 +2768,7 @@
   });
   specials.over = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _i11110, _ref111110, _i111110, _ref1111110, _i1111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2600,7 +2778,7 @@
     if (form.length > 4) {
       throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2611,41 +2789,41 @@
     key = _ref[1];
     iterable = _ref[2];
     body = _ref[3];
-    if (!(typeof body !== 'undefined' && body !== null)) {
+    if (typeof body === 'undefined') {
       body = iterable;
       iterable = key;
-      _ref0 = declareService("_key", scope, opts.function ? args : undefined);
+      _ref0 = declareService("_key", scope, (opts.function ? args : undefined));
       key = _ref0[0];
       scope = _ref0[1];
       assertExp(value, isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), value, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, value, scope.hoist) >= 0) && notRedefined(value) ? toplevelRedeclare.push(value) : undefined;
+      opts.topScope && (value in functions) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value) ? functionsRedeclare.push(value) : undefined;
       scope = declareVar(value, scope);
-    } else if (!(typeof iterable !== 'undefined' && iterable !== null)) {
+    } else if (typeof iterable === 'undefined') {
       body = key;
       iterable = value;
-      _ref10 = declareService("_key", scope, opts.function ? args : undefined);
+      _ref10 = declareService("_key", scope, (opts.function ? args : undefined));
       key = _ref10[0];
       scope = _ref10[1];
-      _ref110 = declareService("_val", scope, opts.function ? args : undefined);
+      _ref110 = declareService("_val", scope, (opts.function ? args : undefined));
       value = _ref110[0];
       scope = _ref110[1];
     } else {
       assertExp(key, isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), key, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, key, scope.hoist) >= 0) && notRedefined(key) ? toplevelRedeclare.push(key) : undefined;
+      opts.topScope && (key in functions) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key) ? functionsRedeclare.push(key) : undefined;
       scope = declareVar(key, scope);
       assertExp(value, isVarName, "valid identifier");
-      opts.topScope && ([].indexOf.call(Object.keys(toplevel), value, Object.keys(toplevel)) >= 0) && !([].indexOf.call(scope.hoist, value, scope.hoist) >= 0) && notRedefined(value) ? toplevelRedeclare.push(value) : undefined;
+      opts.topScope && (value in functions) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value) ? functionsRedeclare.push(value) : undefined;
       scope = declareVar(value, scope);
     }
     assertExp(key, isVarName, "valid identifier");
     assertExp(value, isVarName, "valid identifier");
     if (isNested) {
-      _ref1110 = declareService("_res", scope, opts.function ? args : undefined);
+      _ref1110 = declareService("_res", scope, (opts.function ? args : undefined));
       collector = _ref1110[0];
       scope = _ref1110[1];
       buffer.push(collector + " = []");
     }
-    _ref11110 = declareService("_ref", scope, opts.function ? args : undefined);
+    _ref11110 = declareService("_ref", scope, (opts.function ? args : undefined));
     ref = _ref11110[0];
     scope = _ref11110[1];
     _ref111110 = compileGetLast(iterable, buffer, scope, opts, nested);
@@ -2665,7 +2843,7 @@
   });
   specials.while = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, test, body, rvalue, collector, comp, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2675,7 +2853,7 @@
     if (form.length > 3) {
       throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2687,7 +2865,7 @@
     rvalue = _ref[2];
     if (form.length === 2) {
       if (isNested) {
-        _ref0 = declareService("_res", scope, opts.function ? args : undefined);
+        _ref0 = declareService("_res", scope, (opts.function ? args : undefined));
         collector = _ref0[0];
         scope = _ref0[1];
         buffer.push(collector + " = []");
@@ -2719,7 +2897,7 @@
   });
   specials.try = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, tryForm, catchForm, finalForm, collector, err, res, _ref, _i, _ref0, _i0, _ref10, _i10, _ref110, _i110, _ref1110, _i1110, _ref11110, _i11110, _ref111110, _i111110;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2729,7 +2907,7 @@
     if (form.length > 3) {
       throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2744,7 +2922,7 @@
     buffer = _ref0[1];
     scope = _ref0[2];
     if (isNested) {
-      _ref10 = declareService("_ref", scope, opts.function ? args : undefined);
+      _ref10 = declareService("_ref", scope, (opts.function ? args : undefined));
       collector = _ref10[0];
       scope = _ref10[1];
       tryForm.push(collector + " = " + pr(tryForm.pop()));
@@ -2759,17 +2937,18 @@
       catchForm = _ref110[2];
       assertExp(err, isVarName, "valid identifier");
     } else {
-      _ref1110 = declareService("_err", scope, opts.function ? args : undefined);
+      _ref1110 = declareService("_err", scope, (opts.function ? args : undefined));
       err = _ref1110[0];
       scope = _ref1110[1];
-    }!(typeof catchForm !== 'undefined' && catchForm !== null) ? catchForm = undefined : undefined;
+    }
+    typeof catchForm === 'undefined' ? catchForm = undefined : undefined;
     nested = isNested;
     _ref11110 = compileResolve(catchForm, buffer, scope, opts, nested);
     catchForm = _ref11110[0];
     buffer = _ref11110[1];
     scope = _ref11110[2];
     isNested && !util.kwtest(pr(catchForm.slice(-1)[0])) ? catchForm.push(collector + " = " + pr(catchForm.pop())) : undefined;
-    if (typeof finalForm !== 'undefined' && finalForm !== null) {
+    if (typeof finalForm !== 'undefined') {
       if (isList(finalForm) && (finalForm[0] === "finally")) {
         assertExp(finalForm, (function() {
           return arguments[0].length === 2;
@@ -2783,14 +2962,14 @@
       isNested && !util.kwtest(pr(finalForm.slice(-1)[0])) ? finalForm.push(collector + " = " + pr(finalForm.pop())) : undefined;
     }
     res = "try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }";
-    typeof finalForm !== 'undefined' && finalForm !== null ? res += (" finally { " + render(finalForm) + " }") : undefined;
+    typeof finalForm !== 'undefined' ? res += (" finally { " + render(finalForm) + " }") : undefined;
     buffer.push(res);
     isNested ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.get = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, object, property, _ref, _i, _ref0, _i0, _ref10, _i10;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2800,7 +2979,7 @@
     if (form.length > 2) {
       throw Error(pr(formName) + " expects no more than " + pr(2) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2809,7 +2988,7 @@
     _ref = form;
     object = _ref[0];
     property = _ref[1];
-    if (!(typeof property !== 'undefined' && property !== null)) {
+    if (typeof property === 'undefined') {
       property = object;
       object = "";
     }
@@ -2822,14 +3001,14 @@
     buffer = _ref10[1];
     scope = _ref10[2];
     assertExp(object, (function() {
-      return typeof arguments[0] !== 'undefined' && arguments[0] !== null;
+      return (typeof arguments !== 'undefined') && (typeof arguments[0] !== 'undefined');
     }), "valid object");
     isVarName(property) ? buffer.push(pr(object) + "." + property) : buffer.push(pr(object) + "[" + pr(property) + "]");
     return Array(buffer, scope);
   });
   specials.spread = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, _ref, _i;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2839,7 +3018,7 @@
     if (form.length > 1) {
       throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2859,14 +3038,14 @@
   });
   specials.return = (function(form, scope, opts, nested) {
     var buffer, formName, isNested, _ref, _i;
-    !(typeof opts !== 'undefined' && opts !== null) ? opts = {} : undefined;
+    !(typeof opts !== 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
     formName = form.shift();
     if (form.length > 1) {
       throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     }
-    if (typeof nested !== 'undefined' && nested !== null) {
+    if (typeof nested !== 'undefined') {
       isNested = nested;
       nested = undefined;
     } else {
@@ -2885,7 +3064,7 @@
 
   function importMacros() {
     var store, key, val, _i, _i0, _ref, _ref0;
-    stores = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    var stores = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _ref = stores;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       store = _ref[_i0];
@@ -2928,10 +3107,10 @@
     _ref = form;
     name = _ref[0];
     var body = 2 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 0) : (_i = 1, []);
-    if (!(typeof name !== 'undefined' && name !== null)) {
+    if (typeof name === 'undefined') {
       throw Error("a macro requires a name");
     }
-    if (!(typeof body !== 'undefined' && body !== null)) {
+    if (typeof body === 'undefined') {
       throw Error("a macro requires a body");
     }
     body.unshift("fn");
@@ -2960,7 +3139,7 @@
     } else if (util.isList(form)) {
       if (form[0] === "mac") {
         form = parseMacros(form);
-      } else if ([].indexOf.call(Object.keys(macros), form[0], Object.keys(macros)) >= 0) {
+      } else if (form[0] in macros) {
         form = macros[form[0]].apply(macros, [].concat(form.slice(1)));
         typeof form === "undefined" ? form = [] : undefined;
         form = expandMacros(form);
@@ -2980,6 +3159,22 @@
     return expandMacros(parseMacros(src));
   }
   macroexpand;
+
+  function importFunctions() {
+    var store, key, val, _i, _i0, _ref, _ref0;
+    var stores = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _ref = stores;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      store = _ref[_i0];
+      _ref0 = store;
+      for (key in _ref0) {
+        val = _ref0[key];
+        typeof val === "function" ? ((typeof val !== 'undefined') && (typeof val.name !== 'undefined')) && (val.name !== "") ? functions[val.name] = val : functions[key] = val : undefined;
+      }
+    }
+    return functions;
+  }
+  exports.importFunctions = importFunctions;
   exports.fileExtensions = [".jisp"];
   exports.register = (function() {
     return require("./register");
@@ -2997,6 +3192,7 @@
     return macroexpand(parse(lex(tokenise(src))));
   });
   exports.macros = macros;
+  exports.functions = functions;
 
   function compile(src, opts) {
     var defaults, parsed, expanded, compiled, scope, _ref, _i;
@@ -3012,8 +3208,8 @@
       ["get", ["fn", parsed], "call"], "this"
     ] : undefined;
     if (!opts.repl) {
-      toplevelRedeclare = [];
-      toplevelRedefine = [];
+      functionsRedeclare = [];
+      functionsRedefine = [];
     }
     expanded = macroexpand(parsed);
     _ref = compileForm(expanded, {
@@ -3022,21 +3218,21 @@
     }, opts);
     compiled = _ref[0];
     scope = _ref[1];
-    return typeof beautify !== 'undefined' && beautify !== null ? beautify(render(compiled), {
+    return (typeof beautify !== 'undefined' ? beautify(render(compiled), {
       indent_size: 2
-    }) : render(compiled);
+    }) : render(compiled));
   }
   exports.compile = compile;
 
   function jispEval(src) {
-    return (typeof vm !== 'undefined' && vm !== null) && (typeof vm.runInThisContext !== 'undefined' && vm.runInThisContext !== null) ? vm.runInThisContext(src) : eval(src);
+    return ((typeof vm !== 'undefined') && ((typeof vm !== 'undefined') && (typeof vm.runInThisContext !== 'undefined')) ? vm.runInThisContext(src) : eval(src));
   }
   exports.eval = jispEval;
 
   function compileFile(filename) {
     var raw, stripped, _ref;
     raw = fs.readFileSync(filename, "utf8");
-    stripped = raw.charCodeAt(0) === 65279 ? raw.substring(1) : raw;
+    stripped = (raw.charCodeAt(0) === 65279 ? raw.substring(1) : raw);
     try {
       _ref = exports.compile(stripped);
     } catch (err) {
@@ -3048,11 +3244,11 @@
 
   function run(code, options) {
     var mainModule, dir;
-    !(typeof options !== 'undefined' && options !== null) ? options = {} : undefined;
+    !(typeof options !== 'undefined') ? options = {} : undefined;
     mainModule = require.main;
-    mainModule.filename = (process.argv[1] = options.filename ? fs.realpathSync(options.filename) : ".");
+    mainModule.filename = (process.argv[1] = (options.filename ? fs.realpathSync(options.filename) : "."));
     mainModule.moduleCache ? mainModule.moduleCache = {} : undefined;
-    dir = options.filename ? path.dirname(fs.realpathSync(options.filename)) : fs.realpathSync(".");
+    dir = (options.filename ? path.dirname(fs.realpathSync(options.filename)) : fs.realpathSync("."));
     mainModule.paths = require("module")._nodeModulePaths(dir);
     !util.isJisp(mainModule.filename) || require.extensions ? code = exports.compile(code) : undefined;
     return mainModule._compile(code, mainModule.filename);
@@ -3068,24 +3264,24 @@
   jisp.require = require;
   compile = jisp.compile;
   jisp.eval = (function(code, options) {
-    !(typeof options !== 'undefined' && options !== null) ? options = {} : undefined;
+    !(typeof options !== 'undefined') ? options = {} : undefined;
     options.wrap = false;
     return eval(compile(code, options));
   });
   jisp.run = (function(code, options) {
     var compiled;
-    !(typeof options !== 'undefined' && options !== null) ? options = {} : undefined;
+    !(typeof options !== 'undefined') ? options = {} : undefined;
     options.wrap = false;
     compiled = compile(code, options);
     return Function(compile(code, options))();
   });
-  if (!(typeof window !== 'undefined' && window !== null)) {}
+  if (typeof window === 'undefined') {}
   jisp.load = (function(url, callback, options, hold) {
     var xhr;
-    !(typeof options !== 'undefined' && options !== null) ? options = {} : undefined;
-    !(typeof hold !== 'undefined' && hold !== null) ? hold = false : undefined;
+    !(typeof options !== 'undefined') ? options = {} : undefined;
+    !(typeof hold !== 'undefined') ? hold = false : undefined;
     options.sourceFiles = [url];
-    xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest();
+    xhr = (window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest());
     xhr.open("GET", url, true);
     "overrideMimeType" in xhr ? xhr.overrideMimeType("text/plain") : undefined;
     xhr.onreadystatechange = (function() {
@@ -3098,7 +3294,7 @@
           throw new Error(("Could not load " + url));
         }
       }
-      return callback ? callback(param) : undefined;
+      return (callback ? callback(param) : undefined);
     });
     return xhr.send(null);
   });

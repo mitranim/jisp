@@ -5,17 +5,22 @@
   ; (any) -> a sliding switch (or (if (? x) x) (if (? y) y) ...)
   ; ...
 
-(= util (require "./util")
-   pr   util.pr
-   spr  util.spr)
+; For embedding purposes, macros should not enclose any objects. They must be fully self-sufficient when printed with .toString
+; Meaning, all utilities in this file must be macros themselves, and nothing must be imported
+; A possible exception is the macros that can't be referenced by name (like ?!)
 
-(def checkVar exp
-  (if (util.assertExp exp util.isVarName "valid identifier")
-       exp))
+(= util (require "./util"))
+
+(mac macCheckVar exp
+; a very approximate check if exp is an identifier
+  (if (and (isa exp "string")
+           (/^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test exp))
+      true
+      (throw Error (+ "expecting valid identifier, got " exp))))
 
 (mac macOneArg name rest
   `(if (or (?! ,name) (> (get ,rest length) 0))
-       (throw (Error (+ "expecting one argument, got: " (pr ,name) ", " (spr ,rest))))))
+       (throw (Error (+ "expecting one argument, got: " ,name ", " ,rest)))))
 
 ; `car`: x[0]
 ; `head`: x[0]
@@ -51,22 +56,69 @@
 
 ; `let`: self-executing lambda with auto-passed arguments
 (mac macLet ...args body (do
-  (util.assertExp args (fn x (is (% x.length 2) 0))
-                          "an even number of arguments")
+  (if (isnt (% args.length 2) 0)
+      (throw Error (+ "expecting an even number of arguments, got " args.length)))
   (if (?! body) (= body `()))
   (= names    `()
      callArgs `())
   (while (> args.length 0)
-    (do (names.push (checkVar (args.shift)))
+    (do (= name (args.shift))
+        (if (macCheckVar name)
+            (names.push name))
         (callArgs.push (args.shift))))
   `((fn ,...names ,body) ,...callArgs)))
 
 (= exports.let macLet)
 
-; `?!`: (not (? x))
-(mac macNotExist x ...other (do
-  (macOneArg x other)
-  `(not (? ,x))))
+; helper for `?`
+; takes a form and makes an array of property references, starting with base object
+; with existence check wrapped around each
+(def compartmentaliseExist form
+  (if (and (util.isList form) (is (car form) "get"))
+    (list ...(compartmentaliseExist form[1]) `("isnta" form "'undefined'"))
+    (elif (and (isa form "string") (util.isIdentifier form) (not (util.isSpecialValueStr form)))
+      (for val i (= split (util.splitName form))
+        `("isnta" ,(do (split.slice 0 (+ i 1)) (.join "")) "'undefined'")))
+    `(("isnta" form "'undefined'"))))
+
+; `?`: existence check
+; (not (isa x "undefined"))
+; (or (? x) (? y) ...)
+(mac macExist ...values (do
+  (= elements (for value values (do
+    (= comp (compartmentaliseExist value))
+    (if (> comp.length 1)
+      `(and ,...comp)
+      (car comp)))))
+  (if (> elements.length 1)
+    `(or ,...elements)
+    (car elements))))
+
+(= exports["?"] macExist)
+
+; helper for `?!`
+; takes a form and makes an array of property references, starting with base object
+; with inexistence check wrapped around each
+(def compartmentaliseNotExist form
+  (if (and (util.isList form) (is (car form) "get"))
+    (list ...(compartmentaliseNotExist form[1]) `("isa" form "'undefined'"))
+    (elif (and (isa form "string") (util.isIdentifier form) (not (util.isSpecialValueStr form)))
+      (for val i (= split (util.splitName form))
+        `("isa" ,(do (split.slice 0 (+ i 1)) (.join "")) "'undefined'")))
+    `(("isa" form "'undefined'"))))
+
+; `?!`: inexistence check
+; (isa x "undefined")
+; (or (?! x) (?! y) ...)
+(mac macNotExist ...values (do
+  (= elements (for value values (do
+    (= comp (compartmentaliseNotExist value))
+    (if (> comp.length 1)
+      `(or ,...comp)
+      (car comp)))))
+  (if (> elements.length 1)
+    `(and ,...elements)
+    (car elements))))
 
 (= exports["?!"] macNotExist)
 
@@ -76,9 +128,18 @@
 
 (= exports.isa macIsA)
 
+; `isnta`: (isnt (typeof x) y)
+(mac macIsNa obj ...types
+  `(isnt (typeof ,obj) ,...types))
+
+(= exports.isnta macIsNa)
+
 ; `any`: picks first existing value
-(mac macAny ...values
-  `(or ,...(for value values
-    `(and (? ,value) ,value))))
+(mac macAny ...values (do
+  (= elements (for value values
+    `(and (? ,value) ,value)))
+  (if (> elements.length 1)
+    `(or ,...elements)
+    (car elements))))
 
 (= exports.any macAny)
