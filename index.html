@@ -1340,19 +1340,29 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <h2 id="built-ins">Built-ins and Embedding</h2><p>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</p>
 
           <h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors.</p>
-<pre><code>car    ; x[0]
-head   ; x[0]
-cdr    ; x.slice(1)
-tail   ; x.slice(1)
-init   ; x.slice(0, -1)
-last   ; x.slice(-1)[0]
-let    ; self-executing lambda with auto-passed arguments
-isa    ; (is (typeof x) y)
-isnta  ; (isnt (typeof x) y)
-?      ; existence check
-?!     ; inexistence check
-any    ; picks first existing and truthy value
-</code></pre>
+
+          <isolated-code>
+            <div style="height: 18em; min-height: 18em;" class="codeblock form-group">
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(car  x)
+(head x)
+(cdr  x)
+(tail x)
+(init x)
+(last x)
+(let  x 10 (* x 2))
+(isa  x 'type')
+(isnt x 'type')
+(?    x)
+(?!   x)
+(any  x y)
+
+              </textarea>
+              <pre ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+              <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-right">eval</button>
+              <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+              <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
+            </div>
+          </isolated-code>
           <h3 id="built-in-functions">Functions</h3><p>Jisp has a special faculty for adding global functions to the language. If any of them is referenced in code, it’s embedded at the top of your program on compile. No globals are leaked. If the function is reassigned before being referenced, it’s not embedded. Like with macros, jisp provides a way to import these functions, extending the language. It also comes with a few:</p>
 <p><code>list</code> is a list (array) builder. It’s roughly equivalent to <code>(Array x)</code>, but also accepts 0 or 1 arguments.</p>
 <pre><code>(list [&lt;args&gt; ...])
