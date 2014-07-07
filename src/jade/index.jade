@@ -1083,10 +1083,10 @@ block content
 
           It's important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass _names_, or code in general. A macro doesn't give a flying duck about scope or variable bindings. You aren't constrained by scope or object reference issues, and don't have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.
 
-        h2#built-ins Built-ins
+        h2#built-ins Built-ins and Embedding
 
         :markdown
-          Jisp comes with some built-in macros and functions.
+          Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.
 
         h3#built-in-macros Macros
 
@@ -1326,7 +1326,7 @@ block content
             li(data-target='#conditionals' bs-scrollspy): a(href='#conditionals') Conditionals
             li(data-target='#loops' bs-scrollspy): a(href='#loops') Loops
             li(data-target='#macros' bs-scrollspy): a(href='#macros') Macros
-            li(data-target='#built-ins' bs-scrollspy): a(href='#built-ins') Built-ins
+            li(data-target='#built-ins' bs-scrollspy): a(href='#built-ins') Built-ins and Embedding
             li(data-target='#style' bs-scrollspy): a(href='#style') Style
             li(data-target='#known-bugs' bs-scrollspy): a(href='#known-bugs') Known Bugs and NYI
             li(data-target='#why' bs-scrollspy): a(href='#why') Why Use Jisp
