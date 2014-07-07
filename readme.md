@@ -14,24 +14,28 @@ Install from npm:
 
 Or download the source and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
 
-Require in Node:
+Require in Node, registering the file extension:
 
-    require('jisp/register')
+    require('jisp/register');
 
-This allows you to `require` jisp scripts directly from your code.
+This allows you to `require` jisp scripts directly from your code, like so:
 
-Launch a REPL:
+    require('./app.jisp');
+
+Launch an interactive REPL:
 
     $ jisp
     jisp>
 
-Compile a file:
+Compile a file or directory:
 
     $ jisp -c <file>
 
 Stream-compile with [gulp-jisp](https://github.com/Mitranim/gulp-jisp).
 
-Super basic Sublime Text build system:
+While not recommended for production, jisp can be directly used in the browser. Include the `browser/jisp.js` file with your webpage. It registers the `text/jisp` script type to automatically compile and run jisp scripts loaded with `src` or included in script tags. It also exposes a global object with the `compile` and `eval` methods for jisp code. This is how this documentation is implemented.
+
+Super basic Sublime Text build system (OS X):
 * _Tools_ > _Build System_ > _New Build System_
 * put line: `"cmd": ["jisp", "$file"]`
 * save to: `~/Library/Application Support/Sublime Text 3/Packages/User`
