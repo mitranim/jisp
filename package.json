@@ -11,9 +11,7 @@
   ],
   "author": "Mitranim",
   "license": "MIT",
-  "homepage": {
-    "url": "http://jisp.io"
-  },
+  "homepage": "http://jisp.io",
   "devDependencies": {
     "node-static": "latest",
     "gulp-concat": "latest",
