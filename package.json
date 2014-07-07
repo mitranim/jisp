@@ -1,6 +1,6 @@
 {
   "name": "jisp",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "The modern JavaScript: a programmable language",
   "keywords": [
     "javascript",
@@ -27,7 +27,7 @@
     "url": "git://github.com/Mitranim/jisp.git"
   },
   "homepage": {
-    "url:" "http://mitranim.github.io/jisp/"
+    "url:" "http://jisp.io"
   },
   "author": "Mitranim",
   "license": "MIT",

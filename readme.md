@@ -4,7 +4,7 @@ Jisp is the modern JavaScript for the modern developer. Its macro system lets yo
 
 Jisp's extremely simple syntax protects against common JS pitfalls, and it builds some common coding patterns right into the language, helping keep your code short.
 
-See the [interactive online documentation](http://mitranim.github.io/jisp/). You can contribute to the documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of this repo.
+See the [interactive online documentation](http://jisp.io). You can contribute to the documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of this repo.
 
 ## Installation and Usage
 
@@ -29,7 +29,7 @@ Compile a file:
 
     $ jisp -c <file>
 
-Stream-compile for the browser with [gulp-jisp](https://github.com/Mitranim/gulp-jisp) (not friendly to old engines, todo polyfill).
+Stream-compile with [gulp-jisp](https://github.com/Mitranim/gulp-jisp).
 
 Super basic Sublime Text build system:
 * _Tools_ > _Build System_ > _New Build System_
