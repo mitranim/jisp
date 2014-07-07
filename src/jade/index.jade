@@ -3,7 +3,7 @@ extends layout
 mixin code(height)
    isolated-code
     .codeblock.form-group(style='height: #{height}em; min-height: #{height}em;')
-      textarea.form-control.form-code.left(type='text' model-init='exampleCode' ng-model-options='{ debounce: 0 }' autofocus!=attributes.autofocus)
+      textarea.form-control.form-code.left(type='text' model-init='exampleCode' autofocus!=attributes.autofocus)
         if block
           block
       pre.form-code.right(ng-show='!showJSOutput') {{compiledCode}}
@@ -71,13 +71,15 @@ block content
 
           Or download the source and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
 
-          Require in Node:
+          Require in Node, registering the file extension:
 
-              require('jisp/register')
+              require('jisp/register');
 
-          This allows you to `require` jisp scripts directly from your code.
+          This allows you to `require` jisp scripts directly from your code, like so:
 
-          Launch a REPL:
+              require('./app.jisp');
+
+          Launch an interactive REPL:
 
               $ jisp
               jisp>

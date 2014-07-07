@@ -43,7 +43,7 @@
           <h2>Interactive playground</h2>
           <isolated-code>
             <div style="height: 30em; min-height: 30em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" autofocus="" class="form-control form-code left">(mac task name ...args (do 
+              <textarea type="text" model-init="exampleCode" autofocus="" class="form-control form-code left">(mac task name ...args (do 
   (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
   (while (&gt; args.length 0) (do
     (= left  (args.shift)
@@ -77,10 +77,11 @@
           <h2 id="installation">Installation and Usage</h2><p>Install from npm:</p>
 <pre><code>$ npm install -g jisp
 </code></pre><p>Or download the source and use <code>./bin/jisp</code> and <code>./jisp/jisp.js</code> as entry points.</p>
-<p>Require in Node:</p>
-<pre><code>require(&#39;jisp/register&#39;)
-</code></pre><p>This allows you to <code>require</code> jisp scripts directly from your code.</p>
-<p>Launch a REPL:</p>
+<p>Require in Node, registering the file extension:</p>
+<pre><code>require(&#39;jisp/register&#39;);
+</code></pre><p>This allows you to <code>require</code> jisp scripts directly from your code, like so:</p>
+<pre><code>require(&#39;./app.jisp&#39;);
+</code></pre><p>Launch an interactive REPL:</p>
 <pre><code>$ jisp
 jisp&gt;
 </code></pre><p>Compile a file:</p>
@@ -97,7 +98,7 @@ jisp&gt;
 
           <isolated-code>
             <div style="height: 22em; min-height: 22em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; list that compiles to a function call
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; list that compiles to a function call
 (alert 'Fire in the house!')
 
 ; quoted list — array literal
@@ -124,7 +125,7 @@ jisp&gt;
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; object literal (hash table)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; object literal (hash table)
 (place: 'tavern' drink: 'rum')
 
 ; empty object literal
@@ -140,7 +141,7 @@ jisp&gt;
 
           <isolated-code>
             <div style="height: 24em; min-height: 24em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; number
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; number
 Infinity
 
 ; string literal
@@ -172,7 +173,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; function call
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; function call
 (alert 'A dragon cometh!')
 
 ; nested call
@@ -188,7 +189,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; operator expression
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; operator expression
 (&amp; 2 3 4)
 (+ 'using jisp' 'you’re' 'awesome')
 
@@ -205,7 +206,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= x `(1 2 3 4))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= x `(1 2 3 4))
 (x.sort &lt;)        ; result: (4 3 2 1)
 
               </textarea>
@@ -230,7 +231,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; name binding
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; name binding
 (= x 10)
 
 ; anonymous function (lambda)
@@ -254,7 +255,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; without quote
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; without quote
 (1 2 3)
 
 ; with quote
@@ -273,7 +274,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; name
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; name
 `myvar
 
 ; string
@@ -290,7 +291,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; without quote
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; without quote
 (+ (^ 2 1) (is 'π' 'Ω'))
 
 ; with quote, invalid javascript
@@ -306,7 +307,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; without unquote: invalid javascript
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; without unquote: invalid javascript
 `((* 2 3) (is true false))
 
 ; with unquote: valid javascript
@@ -324,7 +325,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 9em; min-height: 9em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(def elongate str
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(def elongate str
   (do (+= str str)
       (console.log 'duplicated:' str)
       str))
@@ -340,7 +341,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; take last value
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; take last value
 (alert (do (= bugs `())
   (bugs.push 'butterfree')
   (bugs.push 'beedrill')
@@ -362,7 +363,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(let health 100
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(let health 100
   (console.log health))   ; logs 100
 
 (console.log (? health))  ; logs false: out ot scope
@@ -379,7 +380,7 @@ null undefined true
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
 bunny.bouncy
 bunny['fluffy']
 
@@ -393,7 +394,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 4em; min-height: 4em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(get bunny bouncy)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(get bunny bouncy)
 (get bunny 'fluffy')
 
               </textarea>
@@ -408,7 +409,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 4em; min-height: 4em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(console.log (get (String 113) length))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(console.log (get (String 113) length))
 
               </textarea>
               <pre ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
@@ -420,7 +421,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(do cartoonSnake
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(do cartoonSnake
    (.crawlForward 10)
    (.turnLeft)
    (['crawlForward'] 5)
@@ -440,7 +441,7 @@ bunny['fluffy']
 </code></pre>
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(def fact x
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(def fact x
   (if (is x 0) 1
       (* x (fact (- x 1)))))
 
@@ -455,7 +456,7 @@ bunny['fluffy']
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(fn first second (+ first second))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(fn first second (+ first second))
 
 (fn returnMe)
 
@@ -471,7 +472,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; define, then call
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; define, then call
 (= ringMyBell (fn bell (alert bell)))
 (ringMyBell '\x07')
 
@@ -488,7 +489,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(def numerify x
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(def numerify x
   (if (isNaN (Number x))
       (do (console.log 'not a number:' x)
           NaN)          ; branch `then`
@@ -505,7 +506,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">((fn (* #0 #2)) 3 100 4)    ; 12
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">((fn (* #0 #2)) 3 100 4)    ; 12
 
               </textarea>
               <pre ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
@@ -520,7 +521,7 @@ bunny['fluffy']
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">{alert 'It’s a dragon!'}
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">{alert 'It’s a dragon!'}
 
 {+ 3 4}
 
@@ -536,7 +537,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">{* #0 #1}
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">{* #0 #1}
 
 (array.filter {&gt; #0 1})
               </textarea>
@@ -552,7 +553,7 @@ bunny['fluffy']
 </code></pre>
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; assign a literal
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; assign a literal
 (= newvar 'some value')
 
 ; assign an expression
@@ -568,7 +569,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= lastest (= first  'Coffee'
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= lastest (= first  'Coffee'
               second 'Beer'
               third  'Milk'))
 
@@ -582,7 +583,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= x (= shifty null
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= x (= shifty null
         picky  (if false 'nose up' 'smile')
         dodgy  (try (+ something) 'unsuccessful')))
               </textarea>
@@ -595,7 +596,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 4em; min-height: 4em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(alert (= emptyVar))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(alert (= emptyVar))
 
               </textarea>
               <pre ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
@@ -609,7 +610,7 @@ bunny['fluffy']
 </code></pre>
           <isolated-code>
             <div style="height: 7em; min-height: 7em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
 
               </textarea>
               <pre ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
@@ -621,7 +622,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= (first ...mid closing) `(4 8 0 3))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= (first ...mid closing) `(4 8 0 3))
 
 ; first:   4
 ; mid:     (8 0)
@@ -640,7 +641,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">`(1 2 (3 4) (5 6))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">`(1 2 (3 4) (5 6))
 
 `(1 2 ...`(3 4) ...`(5 6))
 
@@ -657,7 +658,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= pair `('dog' 'lizard'))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= pair `('dog' 'lizard'))
 
 (console.log 'cat' ...pair)
 
@@ -673,7 +674,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 18em; min-height: 18em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(def categorise quick ...moderate slow
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(def categorise quick ...moderate slow
   (console.log (+ '(' (moderate.join ' ') ')')))
 
 (categorise 'hare' 'turtle' 'human' 'snail')
@@ -692,7 +693,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(range 0 5)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(range 0 5)
 
 ; (0 1 2 3 4 5)
 
@@ -706,7 +707,7 @@ bunny['fluffy']
 
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(console.log
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(console.log
   (for x (range 0 6) (* x x)))
 
 ; (0 1 4 9 16 25 36)
@@ -739,7 +740,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; truthiness check
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; truthiness check
 (is true)
 
 ; equality
@@ -761,7 +762,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; falsiness check (same as `not`)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; falsiness check (same as `not`)
 (isnt false)
 
 ; inequality
@@ -782,7 +783,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 5em; min-height: 5em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(or NaN Infinity `myvar)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(or NaN Infinity `myvar)
 
 (and true 'sun is hot' (&lt; 2 3))
 
@@ -797,7 +798,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 8em; min-height: 8em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= bush 'woods')
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= bush 'woods')
 
 (in bush `('forest' 'woods' 'thicket'))  ; true
 
@@ -814,7 +815,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= snake (venom:  yes
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= snake (venom:  yes
           fangs:  yes
           talons: no))
 
@@ -831,7 +832,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(isa Math.PI 'number')         ; true
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(isa Math.PI 'number')         ; true
 
 (isa null 'number' 'boolean')  ; false
 
@@ -846,7 +847,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(isnta null 'function')          ; true
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(isnta null 'function')          ; true
 
 (isnta 'Sun' 'number' 'string')  ; false
 
@@ -865,7 +866,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= elephants 'exist')
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= elephants 'exist')
 
 (? dinosaurs)           ; false
 
@@ -881,7 +882,7 @@ switch  ; switch
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(? object.property[0]['method'])
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(? object.property[0]['method'])
 
 ; false because object not defined
 ; no runtime error
@@ -899,7 +900,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(?! myVar null)             ; false: null exists
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(?! myVar null)             ; false: null exists
 
 (?! obj.prop[0]['method'])  ; true: not defined
 
@@ -914,7 +915,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(any NaN Infinity)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(any NaN Infinity)
 
 ; Infinity: it's truthy
 
@@ -937,7 +938,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 18em; min-height: 18em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; ternary form: single expression per branch
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; ternary form: single expression per branch
 
 (if (is 'universe expanding')      ; test
     (console.log 'flight normal')  ; then-branch
@@ -960,7 +961,7 @@ switch  ; switch
 
           <isolated-code>
             <div style="height: 22em; min-height: 22em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(def hashToArray form
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(def hashToArray form
   (if (isa form 'object')
     (over val key form
       (+ key ': ' val))))
@@ -978,7 +979,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(if hungry
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(if hungry
     (eat)                   ; then-branch
     (elif thirsty (drink))
     (elif tired (sleep))
@@ -996,7 +997,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(switch x
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(switch x
   (case -1 'negative one')
   (case 0  'zero-ish')
   NaN)
@@ -1011,7 +1012,7 @@ switch  ; switch
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(console.log (switch Math.PI
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(console.log (switch Math.PI
   (case 1 'welcome to Lineland')
   (case 2 'welcome to Flatland')
   (case 3 'welcome to ancient Egypt')
@@ -1034,7 +1035,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
 
 (over val key animals (console.log key val))
 
@@ -1051,7 +1052,7 @@ switch  ; switch
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
 
 (= catnames
    (over name cats name))
@@ -1075,7 +1076,7 @@ switch  ; switch
 </code></pre>
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(for char index 'meow'
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
   (console.log index char))
 
 ; 0 m
@@ -1093,7 +1094,7 @@ switch  ; switch
 
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(console.log
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(console.log
   (for char index 'winter'
        (+ index ': ' char)))
 
@@ -1116,7 +1117,7 @@ warcry
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
 
 (console.log
   (while (&gt; bugs.length 0)
@@ -1136,7 +1137,7 @@ warcry
 </code></pre>
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(= beers 0)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(= beers 0)
 (def sober (&lt; beers 10))
 
 (console.log
@@ -1162,7 +1163,7 @@ Call:
 </code></pre>
           <isolated-code>
             <div style="height: 14em; min-height: 14em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(mac firstDefinedTruthy ...values
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(mac firstDefinedTruthy ...values
   `(or ,...(for value values
     `(and (? ,value) ,value))))
 
@@ -1192,7 +1193,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 </code></pre>
           <isolated-code>
             <div style="height: 24em; min-height: 24em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">; yanked at macro parse
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">; yanked at macro parse
 (mac makeReduce name operator
   `(def ,name ...args
     (if (isnt args.length 0)
@@ -1220,7 +1221,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <isolated-code>
             <div style="height: 30em; min-height: 30em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(mac makeReduce name operator zeroValue
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(mac makeReduce name operator zeroValue
   `(def ,name ...args (do
     ; included if zeroValue was passed
     ,(if (? zeroValue)
@@ -1249,7 +1250,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <isolated-code>
             <div style="height: 20em; min-height: 20em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(mac reverse form (do
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(mac reverse form (do
   (def rev form
      (if (Array.isArray form)
          (do (for f form
@@ -1281,7 +1282,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <isolated-code>
             <div style="height: 26em; min-height: 26em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(mac task name ...args (do
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(mac task name ...args (do
   (= pipeline `(do (handle (,(args.shift)
                             ,(args.shift)))))
   (while (&gt; args.length 0) (do
@@ -1357,7 +1358,7 @@ any    ; picks first existing and truthy value
 </code></pre>
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(list 'wizard' 'hat' 'staff')
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(list 'wizard' 'hat' 'staff')
 
 ; ('wizard' 'hat' 'staff')
 
@@ -1376,7 +1377,7 @@ any    ; picks first existing and truthy value
 </code></pre>
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
 
 ; (yes no NaN Infinity)
 
@@ -1391,7 +1392,7 @@ any    ; picks first existing and truthy value
 </code></pre>
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" class="form-control form-code left">(range -1 6)
+              <textarea type="text" model-init="exampleCode" class="form-control form-code left">(range -1 6)
 
 ; (-1 0 1 2 3 4 5 6)
 
