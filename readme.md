@@ -4,6 +4,10 @@ To compile Jade, Less, and jisp, and recompile on changes, run:
 
     gulp
 
-To host the page locally, run:
+To host the page locally on port 3400, run:
 
     npm start
+
+Or specify port with `node-static`:
+
+    node-static -p <port>
