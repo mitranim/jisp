@@ -1,0 +1,92 @@
+(= gulp   (require "gulp")
+   util   (require "gulp-util")
+   less   (require "gulp-less")
+   jisp   (require "gulp-jisp")
+   jade   (require "gulp-jade")
+   concat (require "gulp-concat")
+   uglify (require "gulp-uglify")
+   rename (require "gulp-rename"))
+
+(= jssrc `(
+  "bower_components/angular/angular.js"
+  "bower_components/angular-strap/dist/angular-strap.js"
+  "bower_components/angular-strap/dist/angular-strap.tpl.js"
+  "bower_components/angular-animate/angular-animate.js"
+  "bower_components/js-beautify/js/lib/beautify.js"
+  ; "bower_components/marked/lib/marked.js"
+  "bower_components/jquery/dist/jquery.min.js"
+))
+
+(def handle stream
+  (stream.on "error" (fn err (do
+    (util.log err)
+    (util.log "\x07\x07\x07\x07\x07")
+    (stream.end)))))
+
+(mac task name pre ...args (do
+  (if (and (not (Array.isArray pre)) (? pre))
+    (do (args.unshift pre)
+        (= pre ``())))
+  (if (is args.length 0)
+    (= pipeline `())
+    (do (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
+        (while (> args.length 0) (do
+          (= left  (args.shift)
+             right (args.shift))
+          (if (is right null) (= right ""))
+          (pipeline.push `(.pipe (handle (,left ,right))))))))
+  `(gulp.task ,name ,pre (fn ,pipeline))))
+
+; less
+(task       "less"
+  gulp.src  "src/less/app.less"
+  less      null
+  gulp.dest "css/")
+
+; js
+(task       "js"
+  gulp.src  jssrc
+  concat    "deps.js"
+  uglify    (mangle: no)  ; takes forever
+  gulp.dest "js/tmp/")
+
+; jisp
+(task       "jisp"
+  gulp.src  "src/jisp/*.jisp"
+  concat    "app-jisp.jisp"
+  jisp      null
+  uglify    (mangle: no)  ; takes forever
+  gulp.dest "js/tmp/")
+
+; jisp-browser
+(task       "jisp-browser"
+  gulp.src  "node_modules/jisp/browser/jisp.js"
+  ; uglify    (mangle: no)
+  gulp.dest "js/")
+
+; scripts
+(task       "scripts" `("js" "jisp" "jisp-browser")
+  gulp.src  `("js/tmp/deps.js" "js/tmp/app-jisp.js")
+  concat    "app.js"
+  gulp.dest "js/")
+
+; scripts-mini
+(task       "scripts-mini" `("jisp")
+  gulp.src  `("js/tmp/deps.js" "js/tmp/app-jisp.js")
+  concat    "app.js"
+  gulp.dest "js/")
+
+; jade
+(task       "jade"
+  gulp.src  "src/jade/index.jade"
+  jade      (pretty: yes)
+  gulp.dest "")
+
+; watch files for changes
+(gulp.task "watch" (fn (do
+  (gulp.watch "src/jisp/*.jisp"      `("scripts-mini"))
+  (gulp.watch "src/less/*.less"      `("less"))
+  (gulp.watch "src/jade/*.jade"      `("jade")))))
+
+; default
+(task "default" `("less" "scripts" "jade" "watch"))

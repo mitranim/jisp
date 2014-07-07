@@ -1,0 +1,11 @@
+extends layout
+
+block title
+  //- title= error.name
+  title Error #{error.status}
+
+block content
+  .container
+    h1= message
+    h2= error.status
+    pre #{error.stack}

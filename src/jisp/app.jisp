@@ -1,0 +1,66 @@
+(angular.module "jispApp"
+  `(
+    ; "ngRoute"
+    ; "ngResource"
+    "ngAnimate"
+    "mgcrea.ngStrap"
+    "jispApp.controller"))
+
+(.config (fn $provide
+  ($provide.decorator "$browser" (fn $delegate (do
+    (= $delegate.onUrlChange {}
+       $delegate.url (fn ""))
+    $delegate)))))
+
+; (.directive "contentEditable" (fn
+;   (require: "ngModel"
+;    link:    (fn scope elem attrs ctrl (do
+;               (elem.on "blur" {scope.$apply {ctrl.$setViewValue (elem.html)}})
+;               (= ctrl.$render {elem.html ctrl.$viewValue})
+;               (ctrl.$setViewValue (elem.html)))))))
+
+(.directive "modelInit" (fn $compile
+; same as ngModel but assigns the initial text of the element to the corresponding model
+  (restrict: "A"
+   priority: 1010
+   link: (fn scope elem attrs (do
+    (= (get scope attrs.modelInit) ((get (elem.text) trim)))
+    (elem.attr "ng-model" attrs.modelInit)
+    (elem.removeAttr "model-init")
+    (($compile elem) scope)
+    (scope.$watch "exampleCode" (fn input
+      (= scope.compiledCode (jispCompile input))))
+    (= scope.evalJS (fn (do
+      (= res "")
+      ; redirect console.log for eval output
+      (= consoleLog  console.log
+         console.log (fn ...str
+                       (do (for s str (+= res s " "))
+                           (= res (init res))
+                           (+= res "\n"))))
+      ; run and log result
+      (try (eval scope.compiledCode)
+        (catch err err.message))
+      (= scope.evalJSOutput res)
+      ; restore console.log
+      (= console.log consoleLog)
+      ; toggle output panel
+      (= scope.showJSOutput true)))))))))
+
+(.directive "isolatedCode" (fn
+  (priority:   1020
+   restrict:   "E"
+   template:   "<div ng-transclude></div>"
+   transclude: yes)))
+
+; # Util
+
+(def jispCompile src
+  (if (and (? src) (> src.length 0))
+      (try (js_beautify
+             (jisp.compile (do ($ "<div/>") (.html src) (.text))
+               ; ^ decode things like &gt; encoded by Jade
+               (wrap: no))
+             (indent_size: 2))
+        (catch err (do (console.log err.stack) err.message)))
+      ""))

@@ -1,0 +1,10 @@
+(angular.module "jispApp.controller" `())
+
+(.controller "MainControl" (fn $scope $location $anchorScroll (do
+  (= $scope.gotoTop (fn (do
+  ; doesn't clear native anchor hash, todo fix
+     ($location.hash "top")
+     ($anchorScroll)
+     ($location.hash ""))))
+  (console.log (jisp.eval '(console.log "If we’re seeing this, jisp.eval works.")'))
+))) ; / MainControl

@@ -1,0 +1,31 @@
+{
+  "name": "jisp-page",
+  "version": "0.1.0",
+  "description": "Interactive documentation for jisp",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/node-static/bin/cli.js -p 3400"
+  },
+  "keywords": [
+    "jisp"
+  ],
+  "author": "Mitranim",
+  "license": "MIT",
+  "homepage": {
+    "url": "http://mitranim.github.io/jisp/"
+  },
+  "devDependencies": {
+    "node-static": "latest",
+    "gulp-rename": "latest",
+    "gulp-concat": "latest",
+    "gulp-jisp": "latest",
+    "gulp-util": "latest",
+    "gulp-uglify": "latest",
+    "gulp": "latest",
+    "bower": "latest",
+    "gulp-less": "latest",
+    "gulp-jade": "latest",
+    "marked": "latest",
+    "jisp": "latest"
+  }
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title></title>
+    <title>about:jisp</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,7 +17,7 @@
     <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js' </script>
     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js' </script>
     <![endif]
-
+    
     -->
   </head>
   <body id="top" ng-app="jispApp" ng-controller="MainControl">
@@ -42,7 +42,7 @@
           <h2>Interactive playground</h2>
           <isolated-code>
             <div style="height: 30em; min-height: 30em;" class="codeblock form-group">
-              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" autofocus="" class="form-control form-code left">(mac task name ...args (do
+              <textarea type="text" model-init="exampleCode" ng-model-options="{ debounce: 0 }" autofocus="" class="form-control form-code left">(mac task name ...args (do 
   (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
   (while (&gt; args.length 0) (do
     (= left  (args.shift)
