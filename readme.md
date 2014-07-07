@@ -33,7 +33,7 @@ Compile a file or directory:
 
 Stream-compile with [gulp-jisp](https://github.com/Mitranim/gulp-jisp).
 
-While not recommended for production, jisp can be directly used in the browser. Include the `browser/jisp.js` file with your webpage. It registers the `text/jisp` script type to automatically compile and run jisp scripts loaded with `src` or included in script tags. It also exposes a global object with the `compile` and `eval` methods for jisp code. This is how this documentation is implemented.
+While not recommended for production, jisp can be directly used in the browser. Include the `browser/jisp.js` file with your webpage. It registers the `text/jisp` script type to automatically compile and run jisp scripts loaded with `src` or included in script tags. It also exposes a global object with the `compile` and `eval` methods for jisp code. This is how the [documentation](http://jisp.io) is implemented.
 
 Super basic Sublime Text build system (OS X):
 * _Tools_ > _Build System_ > _New Build System_
