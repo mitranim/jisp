@@ -12,7 +12,7 @@
   "author": "Mitranim",
   "license": "MIT",
   "homepage": {
-    "url": "http://mitranim.github.io/jisp/"
+    "url": "http://jisp.io"
   },
   "devDependencies": {
     "node-static": "latest",

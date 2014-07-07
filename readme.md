@@ -1,4 +1,4 @@
-This is the [documentation for the jisp language](http://mitranim.github.io/jisp), hosted via Github Pages.
+This is the [documentation for the jisp language](http://jisp.io), hosted via Github Pages.
 
 After cloning the repo, run `npm install` to get the dependencies. You also need `gulp` installed globally with `npm install -g gulp`.
 
