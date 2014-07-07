@@ -33,14 +33,13 @@
         (while (> args.length 0) (do
           (= left  (args.shift)
              right (args.shift))
-          (if (is right null) (= right ""))
           (pipeline.push `(.pipe (handle (,left ,right))))))))
   `(gulp.task ,name ,pre (fn ,pipeline))))
 
 ; less
 (task       "less"
   gulp.src  "src/less/app.less"
-  less      null
+  less      ()
   gulp.dest "css/")
 
 ; js
@@ -54,7 +53,7 @@
 (task       "jisp"
   gulp.src  "src/jisp/*.jisp"
   concat    "app-jisp.jisp"
-  jisp      null
+  jisp      ()
   uglify    (mangle: no)  ; takes forever
   gulp.dest "js/tmp/")
 
