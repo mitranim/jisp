@@ -88,7 +88,7 @@ jisp&gt;
 <pre><code>$ jisp -c &lt;file&gt;
 </code></pre><p>Stream-compile with <a href="https://github.com/Mitranim/gulp-jisp">gulp-jisp</a>.</p>
 <p>While not recommended for production, jisp can be directly used in the browser. Include the <code>browser/jisp.js</code> file with your webpage. It registers the <code>text/jisp</code> script type to automatically compile and run jisp scripts loaded with <code>src</code> or included in script tags. It also exposes a global object with the <code>compile</code> and <code>eval</code> methods for jisp code. This is how this documentation is implemented.</p>
-<p>Super basic Sublime Text build system:</p>
+<p>Super basic Sublime Text build system (OS X):</p>
 <ul>
 <li><em>Tools</em> &gt; <em>Build System</em> &gt; <em>New Build System</em></li>
 <li>put line: <code>&quot;cmd&quot;: [&quot;jisp&quot;, &quot;$file&quot;]</code></li>
