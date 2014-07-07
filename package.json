@@ -26,6 +26,9 @@
     "type": "git",
     "url": "git://github.com/Mitranim/jisp.git"
   },
+  "homepage": {
+    "url:" "http://mitranim.github.io/jisp/"
+  },
   "author": "Mitranim",
   "license": "MIT",
   "dependencies": {
