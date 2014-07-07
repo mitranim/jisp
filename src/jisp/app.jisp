@@ -6,6 +6,7 @@
     "mgcrea.ngStrap"
     "jispApp.controller"))
 
+; disable angular # routing to enable native browser anchoring
 (.config (fn $provide
   ($provide.decorator "$browser" (fn $delegate (do
     (= $delegate.onUrlChange {}
@@ -40,7 +41,7 @@
                            (+= res "\n"))))
       ; run and log result
       (try (eval scope.compiledCode)
-        (catch err err.message))
+        (catch err (console.log err.message)))
       (= scope.evalJSOutput res)
       ; restore console.log
       (= console.log consoleLog)
