@@ -1,11 +1,5 @@
 (= gulp   (require "gulp")
-   util   (require "gulp-util")
-   less   (require "gulp-less")
-   jisp   (require "gulp-jisp")
-   jade   (require "gulp-jade")
-   concat (require "gulp-concat")
-   uglify (require "gulp-uglify")
-   rename (require "gulp-rename")
+   plug   ((require "gulp-load-plugins"))
    marked (require "marked"))
 
 (= jsFiles `(
@@ -14,7 +8,6 @@
   "bower_components/angular-strap/dist/angular-strap.tpl.js"
   "bower_components/angular-animate/angular-animate.js"
   "bower_components/js-beautify/js/lib/beautify.js"
-  ; "bower_components/marked/lib/marked.js"
   "bower_components/jquery/dist/jquery.min.js"
 ))
 
@@ -28,8 +21,8 @@
 
 (def handle stream
   (stream.on "error" (fn err (do
-    (util.log err)
-    (util.log "\x07\x07\x07\x07\x07")
+    (plug.util.log err)
+    (plug.util.log "\x07\x07\x07\x07\x07")
     (stream.end)))))
 
 (mac task name pre ...args (do
@@ -46,49 +39,48 @@
   `(gulp.task ,name ,pre (fn ,pipeline))))
 
 ; less
-(task       "less"
-  gulp.src  "src/less/app.less"
-  less      ()
-  gulp.dest "css/")
+(task         "less"
+  gulp.src    "src/less/app.less"
+  plug.less   ()
+  gulp.dest   "css/")
 
 ; js
-(task       "js"
-  gulp.src  jsFiles
-  concat    "deps.js"
-  uglify    (mangle: no)  ; takes forever
-  gulp.dest "js/tmp/")
+(task         "js"
+  gulp.src    jsFiles
+  plug.concat "deps.js"
+  plug.uglify (mangle: no)  ; takes forever
+  gulp.dest   "js/tmp/")
 
 ; jisp
-(task       "jisp"
-  gulp.src  "src/jisp/*.jisp"
-  concat    "app-jisp.jisp"
-  jisp      ()
-  uglify    (mangle: no)  ; takes forever
-  gulp.dest "js/tmp/")
+(task         "jisp"
+  gulp.src    "src/jisp/*.jisp"
+  plug.concat "app-jisp.jisp"
+  plug.jisp   ()
+  plug.uglify (mangle: no)  ; takes forever
+  gulp.dest   "js/tmp/")
 
 ; jisp-browser
-(task       "jisp-browser"
-  gulp.src  "node_modules/jisp/browser/jisp.js"
-  ; uglify    (mangle: no)
-  gulp.dest "js/")
+(task         "jisp-browser"
+  gulp.src    "node_modules/jisp/browser/jisp.js"
+  gulp.dest   "js/")
 
 ; scripts
-(task       "scripts" `("js" "jisp" "jisp-browser")
-  gulp.src  `("js/tmp/deps.js" "js/tmp/app-jisp.js")
-  concat    "app.js"
-  gulp.dest "js/")
+(task         "scripts" `("js" "jisp" "jisp-browser")
+  gulp.src    `("js/tmp/deps.js" "js/tmp/app-jisp.js")
+  plug.concat "app.js"
+  gulp.dest   "js/")
 
 ; scripts-mini
-(task       "scripts-mini" `("jisp")
-  gulp.src  `("js/tmp/deps.js" "js/tmp/app-jisp.js")
-  concat    "app.js"
-  gulp.dest "js/")
+(task         "scripts-mini" `("jisp")
+  gulp.src    `("js/tmp/deps.js" "js/tmp/app-jisp.js")
+  plug.concat "app.js"
+  gulp.dest   "js/")
 
 ; jade
-(task       "jade"
-  gulp.src  "src/jade/index.jade"
-  jade      (pretty: yes)
-  gulp.dest "")
+(task         "jade"
+  gulp.src    "src/jade/index.jade"
+  plug.jade   (pretty: yes)
+  gulp.dest   "")
 
 ; watch files for changes
 (gulp.task "watch" (fn (do

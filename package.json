@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "node-static": "latest",
-    "gulp-rename": "latest",
     "gulp-concat": "latest",
     "gulp-jisp": "latest",
     "gulp-util": "latest",
@@ -26,6 +25,7 @@
     "gulp-less": "latest",
     "gulp-jade": "latest",
     "marked": "latest",
-    "jisp": "latest"
+    "jisp": "latest",
+    "gulp-load-plugins": "latest"
   }
 }
