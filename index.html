@@ -1335,7 +1335,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 <p>To avoid confusing macros for functions, it’s good style to begin their names with <code>mac</code>.</p>
 <p>It’s important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass <em>names</em>, or code in general. A macro doesn’t give a flying duck about scope or variable bindings. You aren’t constrained by scope or object reference issues, and don’t have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.</p>
 
-          <h2 id="built-ins">Built-ins</h2><p>Jisp comes with some built-in macros and functions.</p>
+          <h2 id="built-ins">Built-ins and Embedding</h2><p>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</p>
 
           <h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors.</p>
 <pre><code>car    ; x[0]
@@ -1521,6 +1521,7 @@ sqr      ; function embed
 </ul>
 
           <h2 id="acknowledgements">Acknowledgements</h2><p>Jisp is massively inspired by <a href="http://coffeescript.org">CoffeeScript</a> and uses bits of its source for CLI utils. Design inspiration from <a href="http://paulgraham.com/arc.html">Arc</a> and the Lisp family of languages, bits from other places. General inspiration from <a href="https://github.com/smihica/arc-js">Arc-js</a>.</p>
+<p>Copyright (c) 2014 Mitranim, under the MIT License.</p>
 
         </div>
         <div class="col-lg-3">
@@ -1540,7 +1541,7 @@ sqr      ; function embed
               <li data-target="#conditionals" bs-scrollspy><a href="#conditionals">Conditionals</a></li>
               <li data-target="#loops" bs-scrollspy><a href="#loops">Loops</a></li>
               <li data-target="#macros" bs-scrollspy><a href="#macros">Macros</a></li>
-              <li data-target="#built-ins" bs-scrollspy><a href="#built-ins">Built-ins</a></li>
+              <li data-target="#built-ins" bs-scrollspy><a href="#built-ins">Built-ins and Embedding</a></li>
               <li data-target="#style" bs-scrollspy><a href="#style">Style</a></li>
               <li data-target="#known-bugs" bs-scrollspy><a href="#known-bugs">Known Bugs and NYI</a></li>
               <li data-target="#why" bs-scrollspy><a href="#why">Why Use Jisp</a></li>
