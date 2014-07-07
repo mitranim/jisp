@@ -5,9 +5,10 @@
    jade   (require "gulp-jade")
    concat (require "gulp-concat")
    uglify (require "gulp-uglify")
-   rename (require "gulp-rename"))
+   rename (require "gulp-rename")
+   marked (require "marked"))
 
-(= jssrc `(
+(= jsFiles `(
   "bower_components/angular/angular.js"
   "bower_components/angular-strap/dist/angular-strap.js"
   "bower_components/angular-strap/dist/angular-strap.tpl.js"
@@ -16,6 +17,14 @@
   ; "bower_components/marked/lib/marked.js"
   "bower_components/jquery/dist/jquery.min.js"
 ))
+
+; configure markdown converter
+(marked.setOptions
+  (gfm:         yes
+   tables:      yes
+   breaks:      yes
+   sanitize:    no
+   smartypants: yes))
 
 (def handle stream
   (stream.on "error" (fn err (do
@@ -44,7 +53,7 @@
 
 ; js
 (task       "js"
-  gulp.src  jssrc
+  gulp.src  jsFiles
   concat    "deps.js"
   uglify    (mangle: no)  ; takes forever
   gulp.dest "js/tmp/")

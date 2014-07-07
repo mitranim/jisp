@@ -32,12 +32,13 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-9">
-          <p class="lead">Jisp is a programmable language that compiles to JavaScript.</p><p>It&#39;s simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp&#39;s extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.</p>
+          <p class="lead">Jisp is a programmable language that compiles to JavaScript.</p><p>It’s simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp’s extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.</p>
 <p>The jisp compiler is itself written in jisp. See the <a href="https://github.com/Mitranim/jisp">sourcecode on git</a>.</p>
+<p>You can contribute to this documentation by sending pull requests to the <a href="https://github.com/Mitranim/jisp/tree/gh-pages">gh-pages</a> branch of the project repo.</p>
 <blockquote>
-<p>All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don&#39;t see them, make sure JS is enabled and refresh the page.</p>
+<p>All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don’t see them, make sure JS is enabled and refresh the page.</p>
 </blockquote>
-<p>Most examples don&#39;t have side effects. To see results when eval&#39;ing, wrap expressions into <code>(console.log)</code> or <code>(alert)</code>.</p>
+<p>Most examples don’t have side effects. To see results when eval’ing, wrap expressions into <code>(console.log)</code> or <code>(alert)</code>.</p>
 
           <h2>Interactive playground</h2>
           <isolated-code>
@@ -92,7 +93,7 @@ jisp&gt;
 <li>save to: <code>~/Library/Application Support/Sublime Text 3/Packages/User</code></li>
 </ul>
 
-          <h2 id="code-structure">Code Structure</h2><p><em>Jisp code consists of nested arrays</em>. To be easier on the eyes, they&#39;re delimited with parentheses <code>()</code> instead of brackets. Individual elements are separated by whitespace rather than commas. This documentation refers to them as <em>lists</em>, but it&#39;s just arrays.</p>
+          <h2 id="code-structure">Code Structure</h2><p><em>Jisp code consists of nested arrays</em>. To be easier on the eyes, they’re delimited with parentheses <code>()</code> instead of brackets. Individual elements are separated by whitespace rather than commas. This documentation refers to them as <em>lists</em>, but it’s just arrays.</p>
 
           <isolated-code>
             <div style="height: 22em; min-height: 22em;" class="codeblock form-group">
@@ -165,7 +166,7 @@ null undefined true
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code><p>Strings in jisp are multiline.</p>
-<p>Parentheses in the jisp code are <strong>not cosmetic</strong>. Your code <em>consists</em> of arrays. This allows to easily deconstruct and construct it when using macros. We&#39;ll get to this in the <a href="#macros">Macros</a> section.</p>
+<p>Parentheses in the jisp code are <strong>not cosmetic</strong>. Your code <em>consists</em> of arrays. This allows to easily deconstruct and construct it when using macros. We’ll get to this in the <a href="#macros">Macros</a> section.</p>
 <p>Jisp is mostly whitespace-agnostic. Elements in lists and hash tables are separated by whitespace, but other than that, jisp is completely insensitive to whitespace and indentation, relying on parentheses as delimiters. Forms can contain linebreaks.</p>
 <p>In a non-quoted list, the first element is considered a function, and the list compiles as a function call:</p>
 
@@ -200,7 +201,7 @@ null undefined true
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p><strong>[NYI]</strong> Planned feature: you&#39;ll be able to pass operators around like any other function:</p>
+          </isolated-code><p><strong>[NYI]</strong> Planned feature: you’ll be able to pass operators around like any other function:</p>
 
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
@@ -247,7 +248,7 @@ null undefined true
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p>Inside a nested form, forms are resolved left-to-right, inner-to-outer, just like you&#39;d expect.</p>
+          </isolated-code><p>Inside a nested form, forms are resolved left-to-right, inner-to-outer, just like you’d expect.</p>
 
           <h2 id="quoting">Quoting</h2><p>If lists resolve as function calls, how do you write array literals? The answer is quoting. The special form <code>(quote x)</code> prevents the list <code>x</code> from being resolved, letting it remain an array. Prepending a list with <code>` </code> is shorthand syntax:</p>
 
@@ -335,7 +336,7 @@ null undefined true
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code><p>On compile, a jisp file is implicitly wrapped in a top-level <code>do</code> form.</p>
-<p><code>do</code> resolves to the value of its last form. It&#39;s a requirement for chaining methods:</p>
+<p><code>do</code> resolves to the value of its last form. It’s a requirement for chaining methods:</p>
 
           <isolated-code>
             <div style="height: 16em; min-height: 16em;" class="codeblock form-group">
@@ -374,7 +375,7 @@ null undefined true
             </div>
           </isolated-code><p><code>let</code> is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native <code>let</code> statement with a block.</p>
 
-          <h2 id="object-props">Object Properties</h2><p>As you&#39;d expect, object properties are referenced with the <code>.dot</code> or <code>[bracket]</code> notation:</p>
+          <h2 id="object-props">Object Properties</h2><p>As you’d expect, object properties are referenced with the <code>.dot</code> or <code>[bracket]</code> notation:</p>
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
@@ -401,9 +402,9 @@ bunny['fluffy']
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p><strong>[NYI]</strong> You&#39;ll be able to access properties of resolved forms:</p>
+          </isolated-code><p><strong>[NYI]</strong> You’ll be able to access properties of resolved forms:</p>
 <pre><code>(console.log (String 113).length)  ; 3
-</code></pre><p>Until it&#39;s implemented, use the <code>get</code> form, and <code>do</code> for methods (below).</p>
+</code></pre><p>Until it’s implemented, use the <code>get</code> form, and <code>do</code> for methods (below).</p>
 
           <isolated-code>
             <div style="height: 4em; min-height: 4em;" class="codeblock form-group">
@@ -466,7 +467,7 @@ bunny['fluffy']
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p>A function call is a list starting with the function&#39;s name or with a form that resolves to a function:</p>
+          </isolated-code><p>A function call is a list starting with the function’s name or with a form that resolves to a function:</p>
 
           <isolated-code>
             <div style="height: 12em; min-height: 12em;" class="codeblock form-group">
@@ -499,8 +500,8 @@ bunny['fluffy']
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p>It&#39;s often best to keep each function&#39;s body a single conditional tree with branches ending in return values.</p>
-<p>Inside a function&#39;s body, <code>#</code> (<strong>NYI</strong>) is an array of the arguments passed to it, and <code>#n</code> refers to an individual argument by order.</p>
+          </isolated-code><p>It’s often best to keep each function’s body a single conditional tree with branches ending in return values.</p>
+<p>Inside a function’s body, <code>#</code> (<strong>NYI</strong>) is an array of the arguments passed to it, and <code>#n</code> refers to an individual argument by order.</p>
 
           <isolated-code>
             <div style="height: 6em; min-height: 6em;" class="codeblock form-group">
@@ -686,7 +687,7 @@ bunny['fluffy']
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code>
-          <h2 id="comprehensions">Comprehensions</h2><p>Other languages typically devise special syntax for list comprehensions (a set builder notation). Jisp&#39;s basic features serve as a limited version of list comprehension without any special notation.</p>
+          <h2 id="comprehensions">Comprehensions</h2><p>Other languages typically devise special syntax for list comprehensions (a set builder notation). Jisp’s basic features serve as a limited version of list comprehension without any special notation.</p>
 <p><code>range</code> is a trivial built-in function that returns a list from N to M:</p>
 
           <isolated-code>
@@ -716,7 +717,7 @@ bunny['fluffy']
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code>
-          <h2 id="conditionals">Conditionals</h2><p>Jisp improves the JavaScript conditionals and gives you some new ones. It&#39;s also trivial to define your own conditionals with <a href="#macros">macros</a>.</p>
+          <h2 id="conditionals">Conditionals</h2><p>Jisp improves the JavaScript conditionals and gives you some new ones. It’s also trivial to define your own conditionals with <a href="#macros">macros</a>.</p>
 <pre><code>is      ; equality test
 isnt    ; inequality test
 not     ; negation
@@ -825,7 +826,7 @@ switch  ; switch
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p><code>isa</code> is a short way to test an object&#39;s type. It takes multiple arguments and returns true if any match:</p>
+          </isolated-code><p><code>isa</code> is a short way to test an object’s type. It takes multiple arguments and returns true if any match:</p>
 <pre><code>(isa &lt;name&gt; &lt;type&gt; [&lt;type&gt; ...])
 </code></pre>
           <isolated-code>
@@ -876,7 +877,7 @@ switch  ; switch
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p>It&#39;s smart about properties: it takes property references apart and checks them in order, starting with the base object, letting you pinpoint the existence of a property with just one conditional:</p>
+          </isolated-code><p>It’s smart about properties: it takes property references apart and checks them in order, starting with the base object, letting you pinpoint the existence of a property with just one conditional:</p>
 
           <isolated-code>
             <div style="height: 10em; min-height: 10em;" class="codeblock form-group">
@@ -1069,7 +1070,7 @@ switch  ; switch
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code>
-          <h3 id="for">For</h3><p>When iterating over arrays and strings, you usually want to hit all elements in order and don&#39;t want extra properties tagging along. In those cases, use the <code>for</code> loop:</p>
+          <h3 id="for">For</h3><p>When iterating over arrays and strings, you usually want to hit all elements in order and don’t want extra properties tagging along. In those cases, use the <code>for</code> loop:</p>
 <pre><code>(for [&lt;value&gt; [&lt;index&gt;]] &lt;iterable&gt; &lt;body&gt;)
 </code></pre>
           <isolated-code>
@@ -1110,7 +1111,7 @@ switch  ; switch
 warcry
 ; waagh! waagh! waagh! waagh! waagh!
 </code></pre>
-          <h3 id="while">While</h3><p>For finer-grained control, use the <code>while</code> loop. It works like in JavaScript, but like everything in jisp, it&#39;s an expression. By default, it resolves to a list of values from each iteration:</p>
+          <h3 id="while">While</h3><p>For finer-grained control, use the <code>while</code> loop. It works like in JavaScript, but like everything in jisp, it’s an expression. By default, it resolves to a list of values from each iteration:</p>
 <pre><code>(while &lt;test&gt; &lt;body&gt;)
 </code></pre>
           <isolated-code>
@@ -1152,7 +1153,7 @@ warcry
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code>
-          <h2 id="macros">Macros</h2><p>Macros are compile-time functions that generate code. A macro takes code as input and returns code that&#39;s put in its place. At compile, macro definitions are yanked from your code, then macros are recursively expanded. After all macros are expanded, jisp is compiled to JS:</p>
+          <h2 id="macros">Macros</h2><p>Macros are compile-time functions that generate code. A macro takes code as input and returns code that’s put in its place. At compile, macro definitions are yanked from your code, then macros are recursively expanded. After all macros are expanded, jisp is compiled to JS:</p>
 <pre><code>Definition:
 (mac name [&lt;params&gt;] &lt;body&gt;)
 
@@ -1180,9 +1181,9 @@ Call:
 <pre><code>code -&gt; compile into JS -&gt; execute
 </code></pre><p>The lifetime with macros:</p>
 <pre><code>code =&gt; parse macros &lt;-&gt; expand macros -&gt; compile into JS =&gt; execute
-</code></pre><p>It seems to be a trend among modern languages to introduce limited macro support in form of templates. Jisp brings macros to JavaScript but it&#39;s <strong>not</strong> limited to templating. Macros are complete, real, custom functions using the full power of the language to run arbitrary logic and transform code in arbitrary ways.</p>
+</code></pre><p>It seems to be a trend among modern languages to introduce limited macro support in form of templates. Jisp brings macros to JavaScript but it’s <strong>not</strong> limited to templating. Macros are complete, real, custom functions using the full power of the language to run arbitrary logic and transform code in arbitrary ways.</p>
 
-          <h3 id="templating">Templating</h3><p>Templating is the most basic use. Let&#39;s make a macro that generates named function definitions:</p>
+          <h3 id="templating">Templating</h3><p>Templating is the most basic use. Let’s make a macro that generates named function definitions:</p>
 <pre><code>Prefix code to return with `:
 `(&lt;code&gt;)
 
@@ -1215,7 +1216,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
           </isolated-code><p>In this example, the macro returns the form starting with <code>def</code>. Quoting with <code>` </code> prevents this form from resolving during the macro call and lets the macro return it as code. Unquoting the macro arguments <code>name</code> and <code>operator</code> by prepending them with <code>,</code> transcludes them into the template. Try adding your own macro calls to generate new definitions.</p>
-<p>Because macros are real functions, you can edit the return code in arbitrary ways. For instance, based on the arguments passed. Let&#39;s make our operator macro slightly more versatile:</p>
+<p>Because macros are real functions, you can edit the return code in arbitrary ways. For instance, based on the arguments passed. Let’s make our operator macro slightly more versatile:</p>
 
           <isolated-code>
             <div style="height: 30em; min-height: 30em;" class="codeblock form-group">
@@ -1268,7 +1269,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p>But let&#39;s get more serious. Getting back to the example at the top of the page. Suppose you&#39;re writing a gulp config file full of repetitive blocks like these:</p>
+          </isolated-code><p>But let’s get more serious. Getting back to the example at the top of the page. Suppose you’re writing a gulp config file full of repetitive blocks like these:</p>
 <pre><code>gulp.task(&#39;jisp&#39;, function() {
   return handle(gulp.src(jispFiles))
   .pipe(handle(concat(&#39;app.js&#39;)))
@@ -1276,7 +1277,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
   .pipe(handle(uglify({mangle: false})))
   .pipe(handle(gulp.dest(&#39;public/js/tmp/&#39;)));
 });
-</code></pre><p>You can&#39;t deduplicate this with functional abstractions alone, and are forced to write this repetitive code by hand. But you can abstract it away with a macro:</p>
+</code></pre><p>You can’t deduplicate this with functional abstractions alone, and are forced to write this repetitive code by hand. But you can abstract it away with a macro:</p>
 
           <isolated-code>
             <div style="height: 26em; min-height: 26em;" class="codeblock form-group">
@@ -1314,7 +1315,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
   (.pipe (handle (uglify (mangle: no))))
   (.pipe (handle (gulp.dest &#39;public/js/tmp/&#39;))))))
 </code></pre><p>And it replaces the macro call before the code is compiled.</p>
-<p>We&#39;ve just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See <code>jisp.jisp</code> for bigger examples.</p>
+<p>We’ve just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See <code>jisp.jisp</code> for bigger examples.</p>
 
           <h3 id="macro-import-export">Macro Import and Export</h3><p>Macros can be imported in three ways:</p>
 <ul>
@@ -1322,17 +1323,17 @@ Unquote elements with , to resolve (transclude) them during macro call:
 <li>use the <code>importMacros</code> method of the object exported by the compiler;</li>
 <li>access the <code>macros</code> store exported by the compiler.</li>
 </ul>
-<p>Macros are kept in the <code>macros</code> object that exists during the compiler runtime. It&#39;s exposed in the <code>jisp</code> object and can be accessed and modified directly. The recommended way to import macros is by calling the <code>importMacros</code> method that takes one or more macro stores and merges them into the macro object, overriding the existing macros. Each store is a hash table where keys are macro names and values are macro functions.</p>
+<p>Macros are kept in the <code>macros</code> object that exists during the compiler runtime. It’s exposed in the <code>jisp</code> object and can be accessed and modified directly. The recommended way to import macros is by calling the <code>importMacros</code> method that takes one or more macro stores and merges them into the macro object, overriding the existing macros. Each store is a hash table where keys are macro names and values are macro functions.</p>
 <pre><code>(= myStore (testMacro: (fn `nameToReturn)))
 (= jisp (require &#39;jisp&#39;))
 (jisp.importMacros myStore)
 (testMacro)  ; replaced by `nameToReturn`
-</code></pre><p>The <code>macros</code> object persists between compiler calls. If you&#39;re using a build script that compiles multiple jisp files within the same runtime, you can simply put macros in a file and require or compile it before others. This also works when running jisp scripts directly with <code>require</code>.</p>
-<p>When a macro is referenced in code, it&#39;s embedded at the top of your program and can be assigned and exported from a module. See <code>macros.jisp</code> for an example.</p>
+</code></pre><p>The <code>macros</code> object persists between compiler calls. If you’re using a build script that compiles multiple jisp files within the same runtime, you can simply put macros in a file and require or compile it before others. This also works when running jisp scripts directly with <code>require</code>.</p>
+<p>When a macro is referenced in code, it’s embedded at the top of your program and can be assigned and exported from a module. See <code>macros.jisp</code> for an example.</p>
 
           <h3 id="macro-notes">Notes</h3><p>After each macro expansion, the new code is recursively checked for macro definitions and calls. This allows macros to be nested, and even contain new macro definitions. See <code>jisp.jisp</code> for examples; most of it is written with nested macros.</p>
-<p>To avoid confusing macros for functions, it&#39;s good style to begin their names with <code>mac</code>.</p>
-<p>It&#39;s important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass <em>names</em>, or code in general. A macro doesn&#39;t give a flying duck about scope or variable bindings. You aren&#39;t constrained by scope or object reference issues, and don&#39;t have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.</p>
+<p>To avoid confusing macros for functions, it’s good style to begin their names with <code>mac</code>.</p>
+<p>It’s important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass <em>names</em>, or code in general. A macro doesn’t give a flying duck about scope or variable bindings. You aren’t constrained by scope or object reference issues, and don’t have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.</p>
 
           <h2 id="built-ins">Built-ins</h2><p>Jisp comes with some built-in macros and functions.</p>
 
@@ -1350,8 +1351,8 @@ isnta  ; (isnt (typeof x) y)
 ?!     ; inexistence check
 any    ; picks first existing and truthy value
 </code></pre>
-          <h3 id="built-in-functions">Functions</h3><p>Jisp has a special faculty for adding global functions to the language. If any of them is referenced in code, it&#39;s embedded at the top of your program on compile. No globals are leaked. If the function is reassigned before being referenced, it&#39;s not embedded. Like with macros, jisp provides a way to import these functions, extending the language. It also comes with a few:</p>
-<p><code>list</code> is a list (array) builder. It&#39;s roughly equivalent to <code>(Array x)</code>, but also accepts 0 or 1 arguments.</p>
+          <h3 id="built-in-functions">Functions</h3><p>Jisp has a special faculty for adding global functions to the language. If any of them is referenced in code, it’s embedded at the top of your program on compile. No globals are leaked. If the function is reassigned before being referenced, it’s not embedded. Like with macros, jisp provides a way to import these functions, extending the language. It also comes with a few:</p>
+<p><code>list</code> is a list (array) builder. It’s roughly equivalent to <code>(Array x)</code>, but also accepts 0 or 1 arguments.</p>
 <pre><code>(list [&lt;args&gt; ...])
 </code></pre>
           <isolated-code>
@@ -1385,7 +1386,7 @@ any    ; picks first existing and truthy value
               <pre ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
               <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-right">close</button>
             </div>
-          </isolated-code><p><code>range</code> is a function that builds a list from N to M. It&#39;s used in comprehensions:</p>
+          </isolated-code><p><code>range</code> is a function that builds a list from N to M. It’s used in comprehensions:</p>
 <pre><code>(range [start] end)  ; default start 0
 </code></pre>
           <isolated-code>
@@ -1406,7 +1407,7 @@ any    ; picks first existing and truthy value
 <li>use the <code>importFunctions</code> method of the module object;</li>
 <li>directly access and modify the function store exposed by the module.</li>
 </ul>
-<p>The global functions are stored in the <code>functions</code> object that exists during the compiler runtime. Unlike macros, compiling a file doesn&#39;t affect the function store. You need to import them like so:</p>
+<p>The global functions are stored in the <code>functions</code> object that exists during the compiler runtime. Unlike macros, compiling a file doesn’t affect the function store. You need to import them like so:</p>
 <pre><code>(= myFuncs (sqr:  (fn x (* x x))
             cube: (def cube x (* x x x))))
 
@@ -1418,7 +1419,7 @@ sqr      ; function embed
 (cube 3) ; function embed, 27
 </code></pre><p>Try this in a REPL or a file to see how functions are embedded after importing. This faculty makes it easy to extend the language in a modular way with zero global leaks and zero global dependency.</p>
 
-          <h2 id="style">Style</h2><p>Jisp is insensitive to whitespace, but humans don&#39;t read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions, branches of execution. Parallel branches share the same indent, nested branches are indented further.</p>
+          <h2 id="style">Style</h2><p>Jisp is insensitive to whitespace, but humans don’t read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions, branches of execution. Parallel branches share the same indent, nested branches are indented further.</p>
 <pre><code>; BAD, misleading about nesting
 (def plusname name
      (if (isNaN (Number (last name)))
@@ -1430,19 +1431,19 @@ sqr      ; function embed
      (if (isNaN (Number (last name)))
          (+ name 0)
          (+ (init name) (+ 1 (Number (last name))))))
-</code></pre><p>When nesting isn&#39;t deep, try lining up each next indent with the second word on the preceding line (example above). Otherwise, stick with two spaces for each new level.</p>
+</code></pre><p>When nesting isn’t deep, try lining up each next indent with the second word on the preceding line (example above). Otherwise, stick with two spaces for each new level.</p>
 
-          <h2 id="known-bugs">Known Bugs and NYI</h2><p>I&#39;ll be gradually moving this to the <a href="https://github.com/Mitranim/jisp/issues">git issues</a>. You can help by opening new issues.</p>
+          <h2 id="known-bugs">Known Bugs and NYI</h2><p>I’ll be gradually moving this to the <a href="https://github.com/Mitranim/jisp/issues">git issues</a>. You can help by opening new issues.</p>
 <p>Syntax (tokeniser and lexer limitations):</p>
 <ul>
-<li>[NYI] <code>.dot</code> and <code>[bracket]</code> notation can&#39;t be used with primitive literals and lists, using <code>(get object property)</code> and <code>do</code> notation for now.</li>
-<li><code>#n</code> notation can&#39;t be used with <code>` </code> <code>...</code> <code>.dot</code> and <code>[bracket]</code> notation, using <code>get</code> and <code>do</code> for now.</li>
+<li>[NYI] <code>.dot</code> and <code>[bracket]</code> notation can’t be used with primitive literals and lists, using <code>(get object property)</code> and <code>do</code> notation for now.</li>
+<li><code>#n</code> notation can’t be used with <code>` </code> <code>...</code> <code>.dot</code> and <code>[bracket]</code> notation, using <code>get</code> and <code>do</code> for now.</li>
 <li>Regex literals are mangled when passed as an argument to a function.</li>
 <li>Whitespace in regexes bugs out the tokeniser regexes.</li>
-<li>Tokeniser can&#39;t handle more than one backslash immediately preceding a quote.</li>
+<li>Tokeniser can’t handle more than one backslash immediately preceding a quote.</li>
 <li>Tokeniser fails to split <code>&quot;}&quot;}</code>.</li>
 <li>Tokeniser sometimes fails to split <code>[</code> <code>]</code> from other things (example: <code>form[</code> in <code>form[,i]</code>).</li>
-<li>[NYI] Identifier names (variables etc) can&#39;t include non-ASCII letters.</li>
+<li>[NYI] Identifier names (variables etc) can’t include non-ASCII letters.</li>
 </ul>
 <p>REPL:</p>
 <ul>
@@ -1452,41 +1453,41 @@ sqr      ; function embed
 <p>Operator-functions like <code>+</code>:</p>
 <ul>
 <li>[NYI] spread not implemented.</li>
-<li>[NYI] can&#39;t be passed around by name.</li>
+<li>[NYI] can’t be passed around by name.</li>
 </ul>
 <p>Macros quirks:</p>
 <ul>
 <li>Macros break when they contain strings with quotes inside them (probably tokeniser).</li>
 <li>Dot and bracket notation on regexes renders as <code>[native code]</code>, use the <code>get</code> and <code>do</code> notation for now.</li>
 <li>In quoted lists in macros, internal quoted lists have to be double-quoted. Todo comprehend and fix.</li>
-<li>(Not sure if bug, todo review.) When passing a non-quoted list to a macro, it&#39;s spread out instead of being passed as a list. (Got fixed? ToDo check.)</li>
+<li>(Not sure if bug, todo review.) When passing a non-quoted list to a macro, it’s spread out instead of being passed as a list. (Got fixed? ToDo check.)</li>
 </ul>
 <p>The parser (?) appends an extra <code>undefined</code> to the end of the file if the last line is a comment (got fixed? need to check).</p>
 <p>When using conditionals (e.g. <code>and</code>) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.</p>
 <p>Hoisting of multi-line statements above their place in code can sometimes cause actions to be executed out of order. Example: a logical conditional like <code>and</code> consisting of block expressions like <code>try</code>.</p>
-<p>[NYI] <code>command</code> doesn&#39;t automatically load the <code>register</code> module.</p>
-<p>Macro embedding-hoisting doesn&#39;t respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are core to the language.</p>
-<p>More &#39;operators&#39; need to support multiple arguments.</p>
+<p>[NYI] <code>command</code> doesn’t automatically load the <code>register</code> module.</p>
+<p>Macro embedding-hoisting doesn’t respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are core to the language.</p>
+<p>More ‘operators’ need to support multiple arguments.</p>
 
-          <h2 id="why">Why Use Jisp</h2><p>Generally, you should read this documentation to get an idea of the possibilities opened by jisp. Here&#39;s a super short gist.</p>
+          <h2 id="why">Why Use Jisp</h2><p>Generally, you should read this documentation to get an idea of the possibilities opened by jisp. Here’s a super short gist.</p>
 <h4 id="simple-and-safe">Simple and Safe</h4>
-<p>Despite being more powerful, jisp is a lot simpler than JavaScript. Is has practically no syntax; there&#39;s no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.</p>
+<p>Despite being more powerful, jisp is a lot simpler than JavaScript. Is has practically no syntax; there’s no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.</p>
 <p>It also absracts away legacy implementation details like <code>var</code>, <code>break</code> and the primitive <code>for</code> loop, eliminating entire classes of easy to make and hard to spot errors.</p>
 <h4 id="powerful">Powerful</h4>
-<p>At its heart, jisp is just JavaScript. But it&#39;s also much more.</p>
+<p>At its heart, jisp is just JavaScript. But it’s also much more.</p>
 <p>On the surface level, it builds some coding patterns right into the language and provides powerful higher-level conditionals and loops, making your programs terser. Its expressive functional syntax and implicit value resolution lets you focus on your ideas and have the language take care of data returns.</p>
 <p>More importantly, it lets you define syntactic abstractions and automatically generate code, reprogram and extend the language, implement embedded domain-specific languages on top of JS, deduplicate code in ways impossible with plain JavaScript.</p>
 
-          <h3 id="why-over">Why Jisp Over [insert dialect X]</h3><p>There&#39;s a bunch of Lisp-JavaScript dialects floating in the wild. So why jisp?</p>
+          <h3 id="why-over">Why Jisp Over [insert dialect X]</h3><p>There’s a bunch of Lisp-JavaScript dialects floating in the wild. So why jisp?</p>
 <h4 id="javascript-first">JavaScript-first</h4>
-<p>Most other Lisp-JavaScript implementations are attempts to port a [language X] to JavaScript. In best cases, they carry legacy design details that don&#39;t make sense in the JavaScript environment or obfuscate the code (example: artificial distinction between arrays and code in most dialects). In worse cases, they clog the runtime with a reimplementation of another language on top of JavaScript.</p>
+<p>Most other Lisp-JavaScript implementations are attempts to port a [language X] to JavaScript. In best cases, they carry legacy design details that don’t make sense in the JavaScript environment or obfuscate the code (example: artificial distinction between arrays and code in most dialects). In worse cases, they clog the runtime with a reimplementation of another language on top of JavaScript.</p>
 <p>Jisp is JS-native and axiomatic. Is has no needless concepts, no legacy syntax, and no runtime cost. Jisp focuses on the core ideas of code-as-data, S-expressions, macros, and brings them to JavaScript, introducing as few new concepts as possible. Everything else is left looking familiar and fits intuitively within the new syntax.</p>
 <p>It also carefully abstracts away legacy JavaScript pitfalls, making the language safer without introducing alien concepts as a cost.</p>
-<p>Jisp doesn&#39;t target an [insert language X] programmer. It targets the JavaScript programmer.</p>
+<p>Jisp doesn’t target an [insert language X] programmer. It targets the JavaScript programmer.</p>
 <h4 id="featureful">Featureful</h4>
-<p>Jisp is full of features of immediate, practical use to a JavaScript developer. It&#39;s not different for difference sake: it enables a whole new level of abstraction and makes full use of it, coming prepackaged with powerful tools. It takes practical features from other modern languages and the future of JavaScript and gives them to you now. Built-in macros and functions, shortcuts to common patterns, import and embedding for macros and global functions, spreading, destructuring, and more.</p>
+<p>Jisp is full of features of immediate, practical use to a JavaScript developer. It’s not different for difference sake: it enables a whole new level of abstraction and makes full use of it, coming prepackaged with powerful tools. It takes practical features from other modern languages and the future of JavaScript and gives them to you now. Built-in macros and functions, shortcuts to common patterns, import and embedding for macros and global functions, spreading, destructuring, and more.</p>
 <h4 id="axiomatic">Axiomatic</h4>
-<p>Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn&#39;t try to imitate [language X] — or JavaScript, for that matter. It aims to be succinct and get out of your way.</p>
+<p>Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn’t try to imitate [language X] — or JavaScript, for that matter. It aims to be succinct and get out of your way.</p>
 
           <h2 id="todo-upcoming">ToDo Upcoming</h2><p>Working on these.</p>
 <ul>
