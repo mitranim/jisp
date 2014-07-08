@@ -5799,41 +5799,59 @@ h6 {
 }
 /* Navbar */
 /* Jumbotron */
-/* Code */
-pre.form-code {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
+/*------------------*/
+/* Code field setup */
+/*------------------*/
+/* Variables and fonts */
 .mono {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-.codeblock {
-  width: 100%;
-  min-width: 100%;
-  position: relative;
-}
-.left,
-.right {
-  width: 50%;
-  height: 100%;
-  min-height: 100%;
-  margin: 0;
-  padding: 0.5em;
-  display: inline-block;
-  vertical-align: middle;
-}
-.left {
-  margin-right: -4px;
 }
 code,
 pre {
   font-size: 12px;
 }
-/* Code field setup */
-textarea.form-code {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+/* Positioning */
+@media (max-width: 992px) {
+  .col-code.left {
+    margin-bottom: -1px;
+  }
 }
+@media (min-width: 992px) {
+  .col-code.left {
+    padding-right: 0;
+    margin-right: -1px;
+  }
+  .col-code.right {
+    padding-left: 0;
+  }
+}
+.form-code {
+  word-wrap: normal;
+}
+textarea.form-code {
+  overflow: auto;
+}
+@media (max-width: 992px) {
+  textarea.form-code {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  pre.form-code {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+@media (min-width: 992px) {
+  textarea.form-code {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  pre.form-code {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+/* Colours */
 .form-code,
 .form-code:disabled {
   font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
@@ -5846,16 +5864,22 @@ textarea.form-code {
   background-color: #f6f2f4;
 }
 /* Eval buttons */
-.button-left,
-.button-right {
+.button-eval {
   position: absolute;
-  bottom: 0.5em;
+  margin: 0;
+  box-sizing: border-box;
 }
-.button-left {
-  right: 51%;
+@media (max-width: 992px) {
+  .button-eval {
+    bottom: 0.5em;
+    right: 1.5em;
+  }
 }
-.button-right {
-  right: 0.5em;
+@media (min-width: 992px) {
+  .button-eval {
+    bottom: 1em;
+    right: 1.5em;
+  }
 }
 /*----------*/
 /* Side nav */

@@ -4,7 +4,7 @@
   "description": "Interactive documentation for jisp",
   "private": true,
   "scripts": {
-    "start": "node node_modules/node-static/bin/cli.js -p 3400"
+    "start": "browser-sync start --server --files \"css/*.css, js/*.js\" --port 3400"
   },
   "keywords": [
     "jisp"
@@ -24,6 +24,7 @@
     "gulp-jade": "latest",
     "marked": "latest",
     "jisp": "latest",
-    "gulp-load-plugins": "latest"
+    "gulp-load-plugins": "latest",
+    "browser-sync": "latest"
   }
 }

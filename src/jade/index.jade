@@ -1,15 +1,17 @@
 extends layout
 
 mixin code(height)
-   isolated-code
-    .codeblock.form-group(style='height: #{height}em; min-height: #{height}em;')
-      textarea.form-control.form-code.left(type='text' model-init='exampleCode' autofocus!=attributes.autofocus)
-        if block
-          block
-      pre.form-code.right(ng-show='!showJSOutput') {{compiledCode}}
-      button.btn.btn-sm.btn-default.button-right(role='button' ng-click='evalJS()' ng-show='!showJSOutput') eval
-      pre.form-code.right.output(ng-show='showJSOutput') {{evalJSOutput}}
-      button.btn.btn-sm.btn-warning.button-right(role='button' ng-click='showJSOutput = false' ng-show='showJSOutput') close
+  isolated-code
+    .row
+      .col-md-6.col-code.left
+        textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;" model-init='exampleCode' autofocus!=attributes.autofocus)
+          if block
+            block
+      .col-md-6.col-code.right
+        pre.form-code.right(style="height: #{height}em; min-height: #{height}em;" ng-show='!showJSOutput') {{compiledCode}}
+        button.btn.btn-sm.btn-default.button-eval(role='button' ng-click='evalJS()' ng-show='!showJSOutput') eval
+        pre.form-code.right.output(style="height: #{height}em; min-height: #{height}em;" ng-show='showJSOutput') {{evalJSOutput}}
+        button.btn.btn-sm.btn-warning.button-eval(role='button' ng-click='showJSOutput = false' ng-show='showJSOutput') close
 
 block title
   title about:jisp
