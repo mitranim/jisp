@@ -1,5 +1,7 @@
 (= gulp   (require "gulp")
    plug   ((require "gulp-load-plugins"))
+   brsync (require "browser-sync")
+   reload brsync.reload
    marked (require "marked"))
 
 (= jsFiles `(
@@ -42,7 +44,8 @@
 (task         "less"
   gulp.src    "src/less/app.less"
   plug.less   ()
-  gulp.dest   "css/")
+  gulp.dest   "css/"
+  reload      (stream: yes))
 
 ; js
 (task         "js"
@@ -74,13 +77,19 @@
 (task         "scripts-mini" `("jisp")
   gulp.src    `("js/tmp/deps.js" "js/tmp/app-jisp.js")
   plug.concat "app.js"
-  gulp.dest   "js/")
+  gulp.dest   "js/"
+  reload      (stream: yes))
 
 ; jade
 (task         "jade"
   gulp.src    "src/jade/index.jade"
   plug.jade   (pretty: yes)
-  gulp.dest   "")
+  gulp.dest   ""
+  reload      (stream: yes))
+
+; static server
+(gulp.task "browser-sync" (fn
+  (brsync (server: (baseDir: "./") port: 3400))))
 
 ; watch files for changes
 (gulp.task "watch" (fn (do
@@ -89,4 +98,4 @@
   (gulp.watch "src/jade/*.jade"      `("jade")))))
 
 ; default
-(task "default" `("less" "scripts" "jade" "watch"))
+(task "default" `("less" "scripts" "jade" "watch" "browser-sync"))

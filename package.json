@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "Interactive documentation for jisp",
   "private": true,
-  "scripts": {
-    "start": "browser-sync start --server --files \"css/*.css, js/*.js\" --port 3400"
-  },
   "keywords": [
     "jisp"
   ],
@@ -13,7 +10,6 @@
   "license": "MIT",
   "homepage": "http://jisp.io",
   "devDependencies": {
-    "node-static": "latest",
     "gulp-concat": "latest",
     "gulp-jisp": "latest",
     "gulp-util": "latest",

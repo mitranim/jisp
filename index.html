@@ -44,7 +44,7 @@
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 30em; min-height: 30em;" model-init="exampleCode" autofocus="" class="form-control form-code left">(mac task name ...args (do 
+                <textarea type="text" style="height: 36em; min-height: 36em;" model-init="exampleCode" autofocus="" class="form-control form-code left">(mac task name ...args (do 
   (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
   (while (&gt; args.length 0) (do
     (= left  (args.shift)
@@ -70,9 +70,9 @@
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 30em; min-height: 30em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 36em; min-height: 36em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 30em; min-height: 30em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 36em; min-height: 36em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -104,7 +104,7 @@ jisp&gt;
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">; list that compiles to a function call
+                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">; list that compiles to a function call
 (alert 'Fire in the house!')
 
 ; quoted list — array literal
@@ -124,9 +124,9 @@ jisp&gt;
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -135,7 +135,7 @@ jisp&gt;
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; object literal (hash table)
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; object literal (hash table)
 (place: 'tavern' drink: 'rum')
 
 ; empty object literal
@@ -144,9 +144,9 @@ jisp&gt;
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -155,7 +155,7 @@ jisp&gt;
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">; number
+                <textarea type="text" style="height: 28em; min-height: 28em;" model-init="exampleCode" class="form-control form-code left">; number
 Infinity
 
 ; string literal
@@ -177,9 +177,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 28em; min-height: 28em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 28em; min-height: 28em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -191,32 +191,11 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; function call
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; function call
 (alert 'A dragon cometh!')
 
 ; nested call
 (isNaN (parseInt Infinity))
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code><p>In fact, even operators are considered functions and use the prefix notation. This allows them to take multiple arguments:</p>
-
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; operator expression
-(&amp; 2 3 4)
-(+ 'using jisp' 'you’re' 'awesome')
-
-; nested operator expressions
-(* 4 5 (- 3 6 10) (^ 1 5))
 
                 </textarea>
               </div>
@@ -227,20 +206,41 @@ null undefined true
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
+          </isolated-code><p>In fact, even operators are considered functions and use the prefix notation. This allows them to take multiple arguments:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">; operator expression
+(&amp; 2 3 4)
+(+ 'using jisp' 'you’re' 'awesome')
+
+; nested operator expressions
+(* 4 5 (- 3 6 10) (^ 1 5))
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
           </isolated-code><p><strong>[NYI]</strong> Planned feature: you’ll be able to pass operators around like any other function:</p>
 
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(= x `(1 2 3 4))
+                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(= x `(1 2 3 4))
 (x.sort &lt;)        ; result: (4 3 2 1)
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 6em; min-height: 6em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 6em; min-height: 6em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -261,7 +261,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">; name binding
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">; name binding
 (= x 10)
 
 ; anonymous function (lambda)
@@ -276,9 +276,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -289,7 +289,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">; without quote
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; without quote
 (1 2 3)
 
 ; with quote
@@ -301,9 +301,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -312,7 +312,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; name
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; name
 `myvar
 
 ; string
@@ -321,9 +321,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -333,7 +333,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; without quote
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; without quote
 (+ (^ 2 1) (is 'π' 'Ω'))
 
 ; with quote, invalid javascript
@@ -342,9 +342,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -353,7 +353,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; without unquote: invalid javascript
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; without unquote: invalid javascript
 `((* 2 3) (is true false))
 
 ; with unquote: valid javascript
@@ -362,9 +362,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -375,7 +375,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(def elongate str
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(def elongate str
   (do (+= str str)
       (console.log 'duplicated:' str)
       str))
@@ -383,9 +383,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -395,7 +395,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">; take last value
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">; take last value
 (alert (do (= bugs `())
   (bugs.push 'butterfree')
   (bugs.push 'beedrill')
@@ -410,9 +410,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -421,7 +421,7 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(let health 100
+                <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
   (console.log health))   ; logs 100
 
 (console.log (? health))  ; logs false: out ot scope
@@ -429,9 +429,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -442,16 +442,16 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
 bunny.bouncy
 bunny['fluffy']
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -460,15 +460,15 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 4em; min-height: 4em;" model-init="exampleCode" class="form-control form-code left">(get bunny bouncy)
+                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(get bunny bouncy)
 (get bunny 'fluffy')
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 4em; min-height: 4em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 6em; min-height: 6em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 4em; min-height: 4em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 6em; min-height: 6em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -495,7 +495,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(do cartoonSnake
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(do cartoonSnake
    (.crawlForward 10)
    (.turnLeft)
    (['crawlForward'] 5)
@@ -505,9 +505,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -538,32 +538,11 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(fn first second (+ first second))
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(fn first second (+ first second))
 
 (fn returnMe)
 
 (fn)
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code><p>A function call is a list starting with the function’s name or with a form that resolves to a function:</p>
-
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">; define, then call
-(= ringMyBell (fn bell (alert bell)))
-(ringMyBell '\x07')
-
-; define and call
-((fn x (console.log (+ 'Hello ' x))) 'World!')
 
                 </textarea>
               </div>
@@ -574,12 +553,33 @@ bunny['fluffy']
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
+          </isolated-code><p>A function call is a list starting with the function’s name or with a form that resolves to a function:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; define, then call
+(= ringMyBell (fn bell (alert bell)))
+(ringMyBell '\x07')
+
+; define and call
+((fn x (console.log (+ 'Hello ' x))) 'World!')
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
           </isolated-code><p>A function returns the resolved value of its body. You almost never need to return values manually:</p>
 
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(def numerify x
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(def numerify x
   (if (isNaN (Number x))
       (do (console.log 'not a number:' x)
           NaN)          ; branch `then`
@@ -588,9 +588,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -619,7 +619,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">{alert 'It’s a dragon!'}
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">{alert 'It’s a dragon!'}
 
 {+ 3 4}
 
@@ -628,9 +628,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -639,15 +639,15 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">{* #0 #1}
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">{* #0 #1}
 
 (array.filter {&gt; #0 1})
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -659,7 +659,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">; assign a literal
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; assign a literal
 (= newvar 'some value')
 
 ; assign an expression
@@ -667,9 +667,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -679,16 +679,16 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(= lastest (= first  'Coffee'
+                <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(= lastest (= first  'Coffee'
               second 'Beer'
               third  'Milk'))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -697,15 +697,15 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(= x (= shifty null
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(= x (= shifty null
         picky  (if false 'nose up' 'smile')
         dodgy  (try (+ something) 'unsuccessful')))
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -714,14 +714,14 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 4em; min-height: 4em;" model-init="exampleCode" class="form-control form-code left">(alert (= emptyVar))
+                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(alert (= emptyVar))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 4em; min-height: 4em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 6em; min-height: 6em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 4em; min-height: 4em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 6em; min-height: 6em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -732,14 +732,14 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 7em; min-height: 7em;" model-init="exampleCode" class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
+                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 7em; min-height: 7em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 7em; min-height: 7em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -771,7 +771,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">`(1 2 (3 4) (5 6))
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">`(1 2 (3 4) (5 6))
 
 `(1 2 ...`(3 4) ...`(5 6))
 
@@ -780,9 +780,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -792,7 +792,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(= pair `('dog' 'lizard'))
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= pair `('dog' 'lizard'))
 
 (console.log 'cat' ...pair)
 
@@ -800,9 +800,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -812,7 +812,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(def categorise quick ...moderate slow
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(def categorise quick ...moderate slow
   (console.log (+ '(' (moderate.join ' ') ')')))
 
 (categorise 'hare' 'turtle' 'human' 'snail')
@@ -822,9 +822,9 @@ bunny['fluffy']
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -835,16 +835,16 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(range 0 5)
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(range 0 5)
 
 ; (0 1 2 3 4 5)
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -853,16 +853,16 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(console.log
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(console.log
   (for x (range 0 6) (* x x)))
 
 ; (0 1 4 9 16 25 36)
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -890,7 +890,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">; truthiness check
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; truthiness check
 (is true)
 
 ; equality
@@ -902,9 +902,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -916,7 +916,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">; falsiness check (same as `not`)
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; falsiness check (same as `not`)
 (isnt false)
 
 ; inequality
@@ -928,9 +928,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -941,16 +941,16 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 5em; min-height: 5em;" model-init="exampleCode" class="form-control form-code left">(or NaN Infinity `myvar)
+                <textarea type="text" style="height: 7em; min-height: 7em;" model-init="exampleCode" class="form-control form-code left">(or NaN Infinity `myvar)
 
 (and true 'sun is hot' (&lt; 2 3))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 5em; min-height: 5em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 5em; min-height: 5em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -960,32 +960,11 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(= bush 'woods')
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= bush 'woods')
 
 (in bush `('forest' 'woods' 'thicket'))  ; true
 
 (in 's' 'mystring')  ; true
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code><p>Check if an object has a property with <code>of</code>:</p>
-<pre><code>(of &lt;property&gt; &lt;object&gt;)
-</code></pre>
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= snake (venom:  yes
-          fangs:  yes
-          talons: no))
-
-(of 'venom' snake)  ; true
 
                 </textarea>
               </div>
@@ -996,22 +975,43 @@ switch  ; switch
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
+          </isolated-code><p>Check if an object has a property with <code>of</code>:</p>
+<pre><code>(of &lt;property&gt; &lt;object&gt;)
+</code></pre>
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(= snake (venom:  yes
+          fangs:  yes
+          talons: no))
+
+(of 'venom' snake)  ; true
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
           </isolated-code><p><code>isa</code> is a short way to test an object’s type. It takes multiple arguments and returns true if any match:</p>
 <pre><code>(isa &lt;name&gt; &lt;type&gt; [&lt;type&gt; ...])
 </code></pre>
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(isa Math.PI 'number')         ; true
+                <textarea type="text" style="height: 7em; min-height: 7em;" model-init="exampleCode" class="form-control form-code left">(isa Math.PI 'number')         ; true
 
 (isa null 'number' 'boolean')  ; false
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 6em; min-height: 6em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 6em; min-height: 6em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1021,16 +1021,16 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(isnta null 'function')          ; true
+                <textarea type="text" style="height: 7em; min-height: 7em;" model-init="exampleCode" class="form-control form-code left">(isnta null 'function')          ; true
 
 (isnta 'Sun' 'number' 'string')  ; false
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 6em; min-height: 6em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 6em; min-height: 6em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 7em; min-height: 7em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1064,7 +1064,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(? object.property[0]['method'])
+                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(? object.property[0]['method'])
 
 ; false because object not defined
 ; no runtime error
@@ -1072,9 +1072,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1086,16 +1086,16 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(?! myVar null)             ; false: null exists
+                <textarea type="text" style="height: 8em; min-height: 8em;" model-init="exampleCode" class="form-control form-code left">(?! myVar null)             ; false: null exists
 
 (?! obj.prop[0]['method'])  ; true: not defined
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 8em; min-height: 8em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1105,7 +1105,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(any NaN Infinity)
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(any NaN Infinity)
 
 ; Infinity: it's truthy
 
@@ -1116,9 +1116,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1132,7 +1132,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">; ternary form: single expression per branch
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">; ternary form: single expression per branch
 
 (if (is 'universe expanding')      ; test
     (console.log 'flight normal')  ; then-branch
@@ -1148,9 +1148,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1159,7 +1159,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(def hashToArray form
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(def hashToArray form
   (if (isa form 'object')
     (over val key form
       (+ key ': ' val))))
@@ -1169,9 +1169,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1203,7 +1203,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(switch x
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(switch x
   (case -1 'negative one')
   (case 0  'zero-ish')
   NaN)
@@ -1211,9 +1211,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1222,7 +1222,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(console.log (switch Math.PI
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(console.log (switch Math.PI
   (case 1 'welcome to Lineland')
   (case 2 'welcome to Flatland')
   (case 3 'welcome to ancient Egypt')
@@ -1233,9 +1233,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1249,7 +1249,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
 
 (over val key animals (console.log key val))
 
@@ -1259,9 +1259,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1270,7 +1270,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
 
 (= catnames
    (over name cats name))
@@ -1285,9 +1285,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1298,7 +1298,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
   (console.log index char))
 
 ; 0 m
@@ -1309,9 +1309,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1320,7 +1320,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(console.log
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(console.log
   (for char index 'winter'
        (+ index ': ' char)))
 
@@ -1329,9 +1329,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1371,7 +1371,7 @@ warcry
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(= beers 0)
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(= beers 0)
 (def sober (&lt; beers 10))
 
 (console.log
@@ -1384,9 +1384,9 @@ warcry
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1435,7 +1435,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">; yanked at macro parse
+                <textarea type="text" style="height: 28em; min-height: 28em;" model-init="exampleCode" class="form-control form-code left">; yanked at macro parse
 (mac makeReduce name operator
   `(def ,name ...args
     (if (isnt args.length 0)
@@ -1455,9 +1455,9 @@ Unquote elements with , to resolve (transclude) them during macro call:
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 28em; min-height: 28em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 28em; min-height: 28em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1500,7 +1500,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(mac reverse form (do
+                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">(mac reverse form (do
   (def rev form
      (if (Array.isArray form)
          (do (for f form
@@ -1517,9 +1517,9 @@ Unquote elements with , to resolve (transclude) them during macro call:
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1536,7 +1536,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 26em; min-height: 26em;" model-init="exampleCode" class="form-control form-code left">(mac task name ...args (do
+                <textarea type="text" style="height: 30em; min-height: 30em;" model-init="exampleCode" class="form-control form-code left">(mac task name ...args (do
   (= pipeline `(do (handle (,(args.shift)
                             ,(args.shift)))))
   (while (&gt; args.length 0) (do
@@ -1559,9 +1559,9 @@ Unquote elements with , to resolve (transclude) them during macro call:
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 26em; min-height: 26em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 30em; min-height: 30em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 26em; min-height: 26em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 30em; min-height: 30em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1600,7 +1600,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(car  x)
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(car  x)
 (head x)
 (cdr  x)
 (tail x)
@@ -1616,9 +1616,9 @@ Unquote elements with , to resolve (transclude) them during macro call:
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1653,16 +1653,16 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
 
 ; (yes no NaN Infinity)
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1672,16 +1672,16 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(range -1 6)
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(range -1 6)
 
 ; (-1 0 1 2 3 4 5 6)
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>

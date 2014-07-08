@@ -36,7 +36,7 @@ block content
 
         h2 Interactive playground
 
-        +code(30)(autofocus='')
+        +code(36)(autofocus='')
           = "(mac task name ...args (do \n"
           = "  (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))\n"
           = "  (while (> args.length 0) (do\n"
@@ -104,7 +104,7 @@ block content
         :markdown
           _Jisp code consists of nested arrays_. To be easier on the eyes, they're delimited with parentheses `()` instead of brackets. Individual elements are separated by whitespace rather than commas. This documentation refers to them as _lists_, but it's just arrays.
 
-        +code(22)
+        +code(24)
           = "; list that compiles to a function call\n"
           = "(alert 'Fire in the house!')\n"
           = "\n"
@@ -125,7 +125,7 @@ block content
         :markdown
           Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as _hash tables_ to discern them from objects in general.
 
-        +code(8)
+        +code(10)
           = "; object literal (hash table)\n"
           = "(place: 'tavern' drink: 'rum')\n"
           = "\n"
@@ -135,7 +135,7 @@ block content
         :markdown
           Identifiers and literals without parentheses are called _atoms_:
 
-        +code(24)
+        +code(28)
           = "; number\n"
           = "Infinity\n"
           = "\n"
@@ -164,7 +164,7 @@ block content
 
           In a non-quoted list, the first element is considered a function, and the list compiles as a function call:
 
-        +code(8)
+        +code(10)
           = "; function call\n"
           = "(alert 'A dragon cometh!')\n"
           = "\n"
@@ -174,7 +174,7 @@ block content
         :markdown
           In fact, even operators are considered functions and use the prefix notation. This allows them to take multiple arguments:
 
-        +code(10)
+        +code(12)
           = "; operator expression\n"
           = "(& 2 3 4)\n"
           = "(+ 'using jisp' 'you’re' 'awesome')\n"
@@ -185,7 +185,7 @@ block content
         :markdown
           **[NYI]** Planned feature: you'll be able to pass operators around like any other function:
 
-        +code(6)
+        +code(8)
           = "(= x `(1 2 3 4))\n"
           = "(x.sort <)        ; result: (4 3 2 1)\n"
 
@@ -210,7 +210,7 @@ block content
 
           Examples:
 
-        +code(16)
+        +code(20)
           = "; name binding\n"
           = "(= x 10)\n"
           = "\n"
@@ -231,7 +231,7 @@ block content
         :markdown
           If lists resolve as function calls, how do you write array literals? The answer is quoting. The special form `(quote x)` prevents the list `x` from being resolved, letting it remain an array. Prepending a list with `` ` `` is shorthand syntax:
 
-        +code(12)
+        +code(14)
           = "; without quote\n"
           = "(1 2 3)\n"
           = "\n"
@@ -244,7 +244,7 @@ block content
         :markdown
           Directly quoting a non-primitive atom (name or string) stringifies it:
 
-        +code(8)
+        +code(10)
           = "; name\n"
           = "`myvar\n"
           = "\n"
@@ -256,7 +256,7 @@ block content
 
           Quoting implicitly propagates to inner lists:
 
-        +code(8)
+        +code(10)
           = "; without quote\n"
           = "(+ (^ 2 1) (is 'π' 'Ω'))\n"
           = "\n"
@@ -266,7 +266,7 @@ block content
         :markdown
           To let an element resolve, _unquote_ it with a comma `,`:
 
-        +code(8)
+        +code(10)
           = "; without unquote: invalid javascript\n"
           = "`((* 2 3) (is true false))\n"
           = "\n"
@@ -281,7 +281,7 @@ block content
         :markdown
           If everything is an expression and all forms are lists, how do you write consequtive commands? By wrapping them in the special form `do`:
 
-        +code(9)
+        +code(10)
           = "(def elongate str\n"
           = "  (do (+= str str)\n"
           = "      (console.log 'duplicated:' str)\n"
@@ -292,7 +292,7 @@ block content
 
           `do` resolves to the value of its last form. It's a requirement for chaining methods:
 
-        +code(16)
+        +code(18)
           = "; take last value\n"
           = "(alert (do (= bugs `())\n"
           = "  (bugs.push 'butterfree')\n"
@@ -308,7 +308,7 @@ block content
         :markdown
           `let` creates an isolated scope with the variables declared in it:
 
-        +code(8)
+        +code(9)
           = "(let health 100\n"
           = "  (console.log health))   ; logs 100\n"
           = "\n"
@@ -322,7 +322,7 @@ block content
         :markdown
           As you'd expect, object properties are referenced with the `.dot` or `[bracket]` notation:
 
-        +code(10)
+        +code(12)
           = "(= bunny (bouncy: true fluffy: false))\n"
           = "bunny.bouncy\n"
           = "bunny['fluffy']\n"
@@ -330,7 +330,7 @@ block content
         :markdown
           Dot and bracket notation is a syntax shortcut to getting a property of an object. Internally, jisp uses the `(get obj prop)` special form:
 
-        +code(4)
+        +code(6)
           = "(get bunny bouncy)\n"
           = "(get bunny 'fluffy')\n"
 
@@ -347,7 +347,7 @@ block content
         :markdown
           To chain methods, wrap them in a `do` form:
 
-        +code(10)
+        +code(12)
           = "(do cartoonSnake\n"
           = "   (.crawlForward 10)\n"
           = "   (.turnLeft)\n"
@@ -374,7 +374,7 @@ block content
 
               (fn [<... params>] [<body>])
 
-        +code(10)
+        +code(12)
           = "(fn first second (+ first second))\n"
           = "\n"
           = "(fn returnMe)\n"
@@ -384,7 +384,7 @@ block content
         :markdown
           A function call is a list starting with the function's name or with a form that resolves to a function:
 
-        +code(12)
+        +code(14)
           = "; define, then call\n"
           = "(= ringMyBell (fn bell (alert bell)))\n"
           = "(ringMyBell '\\x07')\n"
@@ -395,7 +395,7 @@ block content
         :markdown
           A function returns the resolved value of its body. You almost never need to return values manually:
 
-        +code(16)
+        +code(18)
           = "(def numerify x\n"
           = "  (if (isNaN (Number x))\n"
           = "      (do (console.log 'not a number:' x)\n"
@@ -420,7 +420,7 @@ block content
 
               {<body>}
 
-        +code(10)
+        +code(12)
           = "{alert 'It’s a dragon!'}\n"
           = "\n"
           = "{+ 3 4}\n"
@@ -430,7 +430,7 @@ block content
         :markdown
           This goes hand in hand with the `#` notation:
 
-        +code(10)
+        +code(12)
           = "{* #0 #1}\n"
           = "\n"
           = "(array.filter {> #0 1})"
@@ -443,7 +443,7 @@ block content
               (= var value [... var value])
               (= var)
 
-        +code(8)
+        +code(10)
           = "; assign a literal\n"
           = "(= newvar 'some value')\n"
           = "\n"
@@ -455,7 +455,7 @@ block content
 
           Like many other forms, `=` takes multiple arguments. It assigns them in pairs. Its resolved value is the last assignment:
 
-        +code(8)
+        +code(9)
           = "(= lastest (= first  'Coffee'\n"
           = "              second 'Beer'\n"
           = "              third  'Milk'))\n"
@@ -463,7 +463,7 @@ block content
         :markdown
           The right hand of an assignment can be an arbitrary form, even a block:
 
-        +code(12)
+        +code(16)
           = "(= x (= shifty null\n"
           = "        picky  (if false 'nose up' 'smile')\n"
           = "        dodgy  (try (+ something) 'unsuccessful')))"
@@ -471,7 +471,7 @@ block content
         :markdown
           Calling `=` with a single argument merely declares that name if not already in scope:
 
-        +code(4)
+        +code(6)
           = "(alert (= emptyVar))\n"
 
         h2#destructuring Destructuring Assignment
@@ -481,7 +481,7 @@ block content
 
               (= (var0 [... varN]) value)
 
-        +code(7)
+        +code(8)
           = "(= (smaller bigger) `(3 Infinity))\n"
 
         :markdown
@@ -507,7 +507,7 @@ block content
         :markdown
           In a list, prefix elements with `...` or `…` to spread their elements into the list, flattening it:
 
-        +code(8)
+        +code(10)
           = "`(1 2 (3 4) (5 6))\n"
           = "\n"
           = "`(1 2 ...`(3 4) ...`(5 6))\n"
@@ -519,7 +519,7 @@ block content
         :markdown
           Spread a list into a function call to pass its elements as individual arguments:
 
-        +code(8)
+        +code(10)
           = "(= pair `('dog' 'lizard'))\n"
           = "\n"
           = "(console.log 'cat' ...pair)\n"
@@ -531,7 +531,7 @@ block content
         :markdown
           Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collects the remaining arguments into a list. This works the same way as destructuring assignment:
 
-        +code(18)
+        +code(14)
           = "(def categorise quick ...moderate slow\n"
           = "  (console.log (+ '(' (moderate.join ' ') ')')))\n"
           = "\n"
@@ -546,7 +546,7 @@ block content
 
           `range` is a trivial built-in function that returns a list from N to M:
 
-        +code(14)
+        +code(18)
           = "(range 0 5)\n"
           = "\n"
           = "; (0 1 2 3 4 5)\n"
@@ -554,7 +554,7 @@ block content
         :markdown
           `for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:
 
-        +code(14)
+        +code(18)
           = "(console.log\n"
           = "  (for x (range 0 6) (* x x)))\n"
           = "\n"
@@ -586,7 +586,7 @@ block content
               (is <name> <something>)
               (is <name> <something> [<other> ...])
 
-        +code(12)
+        +code(14)
           = "; truthiness check\n"
           = "(is true)\n"
           = "\n"
@@ -603,7 +603,7 @@ block content
               (isnt <name> <something>)
               (isnt <name> <something> [<other> ...])
 
-        +code(12)
+        +code(14)
           = "; falsiness check (same as `not`)\n"
           = "(isnt false)\n"
           = "\n"
@@ -619,7 +619,7 @@ block content
               (or  [<a> [<b> ...]])
               (and [<a> [<b> ...]])
 
-        +code(5)
+        +code(7)
           = "(or NaN Infinity `myvar)\n"
           = "\n"
           = "(and true 'sun is hot' (< 2 3))\n"
@@ -629,7 +629,7 @@ block content
 
               (in <value> <iterable>)
 
-        +code(8)
+        +code(10)
           = "(= bush 'woods')\n"
           = "\n"
           = "(in bush `('forest' 'woods' 'thicket'))  ; true\n"
@@ -641,7 +641,7 @@ block content
 
               (of <property> <object>)
 
-        +code(10)
+        +code(12)
           = "(= snake (venom:  yes\n"
           = "          fangs:  yes\n"
           = "          talons: no))\n"
@@ -653,7 +653,7 @@ block content
 
               (isa <name> <type> [<type> ...])
 
-        +code(6)
+        +code(7)
           = "(isa Math.PI 'number')         ; true\n"
           = "\n"
           = "(isa null 'number' 'boolean')  ; false\n"
@@ -663,7 +663,7 @@ block content
 
               (isnta <name> <type> [<type> ...])
 
-        +code(6)
+        +code(7)
           = "(isnta null 'function')          ; true\n"
           = "\n"
           = "(isnta 'Sun' 'number' 'string')  ; false\n"
@@ -689,7 +689,7 @@ block content
         :markdown
           It's smart about properties: it takes property references apart and checks them in order, starting with the base object, letting you pinpoint the existence of a property with just one conditional:
 
-        +code(10)
+        +code(8)
           = "(? object.property[0]['method'])\n"
           = "\n"
           = "; false because object not defined\n"
@@ -702,7 +702,7 @@ block content
               (?! <name> [<name> ...])
               (?! <object.property> [<name> ...])
 
-        +code(10)
+        +code(8)
           = "(?! myVar null)             ; false: null exists\n"
           = "\n"
           = "(?! obj.prop[0]['method'])  ; true: not defined\n"
@@ -712,7 +712,7 @@ block content
 
               (any <name> [<name> ...])
 
-        +code(14)
+        +code(12)
           = "(any NaN Infinity)\n"
           = "\n"
           = "; Infinity: it's truthy\n"
@@ -734,7 +734,7 @@ block content
               (if <test> <then> <else>)
               (if <test> <then>)
 
-        +code(18)
+        +code(22)
           = "; ternary form: single expression per branch\n"
           = "\n"
           = "(if (is 'universe expanding')      ; test\n"
@@ -751,7 +751,7 @@ block content
         :markdown
           Like everything else, the block form resolves to a value that can be assigned or returned:
 
-        +code(22)
+        +code(20)
           = "(def hashToArray form\n"
           = "  (if (isa form 'object')\n"
           = "    (over val key form\n"
@@ -778,7 +778,7 @@ block content
 
               (switch <predicate> [<case test body> ...] <default>)
 
-        +code(14)
+        +code(16)
           = "(switch x\n"
           = "  (case -1 'negative one')\n"
           = "  (case 0  'zero-ish')\n"
@@ -787,7 +787,7 @@ block content
         :markdown
           Quite naturally, `switch` is also an expression that resolves to a value:
 
-        +code(16)
+        +code(20)
           = "(console.log (switch Math.PI\n"
           = "  (case 1 'welcome to Lineland')\n"
           = "  (case 2 'welcome to Flatland')\n"
@@ -811,7 +811,7 @@ block content
 
               (over [<value> [<key>]] <iterable> <body>)
 
-        +code(14)
+        +code(16)
           = "(= animals (squirrel: 'Eevee' fox: 'Vulpix'))\n"
           = "\n"
           = "(over val key animals (console.log key val))\n"
@@ -822,7 +822,7 @@ block content
         :markdown
           `over` automatically builds a list of values from each iteration. This list is its resolved value:
 
-        +code(16)
+        +code(18)
           = "(= cats (pink: 'Persian' yellow: 'Skitty'))\n"
           = "\n"
           = "(= catnames\n"
@@ -842,7 +842,7 @@ block content
 
               (for [<value> [<index>]] <iterable> <body>)
 
-        +code(10)
+        +code(12)
           = "(for char index 'meow'\n"
           = "  (console.log index char))\n"
           = "\n"
@@ -854,7 +854,7 @@ block content
         :markdown
           It resolves to a list of values from each iteration, if asked nicely:
 
-        +code(12)
+        +code(14)
           = "(console.log\n"
           = "  (for char index 'winter'\n"
           = "       (+ index ': ' char)))\n"
@@ -891,7 +891,7 @@ block content
 
               (while <test> <body> <return-value>)
 
-        +code(16)
+        +code(18)
           = "(= beers 0)\n"
           = "(def sober (< beers 10))\n"
           = "\n"
@@ -946,7 +946,7 @@ block content
               Unquote elements with , to resolve (transclude) them during macro call:
               `(<code> ,<elem> <code>)
 
-        +code(24)
+        +code(28)
           = "; yanked at macro parse\n"
           = "(mac makeReduce name operator\n"
           = "  `(def ,name ...args\n"
@@ -996,7 +996,7 @@ block content
 
           As a silly example, you could enable reverse syntax by reversing the code passed to a macro:
 
-        +code(20)
+        +code(24)
           = "(mac reverse form (do\n"
           = "  (def rev form\n"
           = "     (if (Array.isArray form)\n"
@@ -1025,7 +1025,7 @@ block content
         :markdown
           You can't deduplicate this with functional abstractions alone, and are forced to write this repetitive code by hand. But you can abstract it away with a macro:
 
-        +code(26)
+        +code(30)
           = "(mac task name ...args (do\n"
           = "  (= pipeline `(do (handle (,(args.shift)\n"
           = "                            ,(args.shift)))))\n"
@@ -1099,7 +1099,7 @@ block content
         :markdown
           Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors.
 
-        +code(18)
+        +code(22)
           = "(car  x)\n"
           = "(head x)\n"
           = "(cdr  x)\n"
@@ -1136,7 +1136,7 @@ block content
 
               (concat [<args> ...])
 
-        +code(12)
+        +code(16)
           = "(concat `(yes no) `(NaN) Infinity)\n"
           = "\n"
           = "; (yes no NaN Infinity)\n"
@@ -1146,7 +1146,7 @@ block content
 
               (range [start] end)  ; default start 0
 
-        +code(12)
+        +code(16)
           = "(range -1 6)\n"
           = "\n"
           = "; (-1 0 1 2 3 4 5 6)\n"
