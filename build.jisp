@@ -1,4 +1,10 @@
-(= fs (require "fs"))
+(= fs   (require "fs")
+   args (get (require "yargs") argv))
+
+; Accepted arguments:
+  ; no arguments -- rebuild dev with dev
+  ; -r           -- rebuild dev with stable
+  ; -s           -- rebuild stable with dev
 
 (= files `("index"
            "functions"
@@ -26,24 +32,42 @@
                   "jisp"
                   "browser"))
 
-; Load compiler
-(console.log "-- trying to load new compiler...")
-(= jisp      (require "./dev/jisp/jisp"))
-
-(def buildFile compiler filename (do
-     (= srcPath   (+ "./src/" filename ".jisp")
-        destpath  (+ "./lib/jisp/" filename ".js")
+(def buildFile compiler filename srcDir destDir (do
+     (= srcPath   (+ srcDir filename ".jisp")
+        destPath  (+ destDir filename ".js")
         src       (fs.readFileSync srcPath "utf8"))
      (console.log (+ "-- compiling " filename "..."))
      (= js (compiler.compile src))
-     (fs.writeFileSync destpath js "utf8")))
+     (fs.writeFileSync destPath js "utf8")))
 
-(def build jisp (do
+(def build jisp srcDir destDir (do
      (console.log "-- building...")
-     (for filename files (buildFile jisp filename))
+     (for filename files (buildFile jisp filename srcDir destDir))
      (console.log "-- if you're reading this, compilation has succeeded!")))
 
-(build jisp)
+(if args.r
+  (do
+    ; Load compiler
+    (console.log "-- trying to load stable compiler...")
+    (= jisp      (require "./lib/jisp/jisp"))
+    ; Build with stable
+    (console.log "-- rebuilding dev with stable...")
+    (build jisp "./src/" "./dev/jisp/"))
+  (elif args.s (do
+    ; Load compiler
+    (console.log "-- trying to load unstable compiler...")
+    (= jisp_unstable (require "./dev/jisp/jisp"))
+    ; Build with unstable
+    (console.log "-- trying to build lib with unstable compiler...")
+    (build jisp_unstable "./src/" "./lib/jisp/")))
+  (do
+    ; Load compiler
+    (console.log "-- trying to load unstable compiler...")
+    (= jisp_unstable (require "./dev/jisp/jisp"))
+    ; Build with unstable
+    (console.log "-- trying to build dev with unstable compiler...")
+    (build jisp_unstable "./src/" "./dev/jisp/")
+    (console.log "-- when testing the unstable version, recompile at least twice!")))
 
 ; Build the concatenated version for the browser
 ; Copied from the CoffeeScript cakefile
@@ -54,7 +78,7 @@
   (+= code (+
     "require['./" name "'] = (function() {
       var exports = {}, module = {exports: exports};
-      " (fs.readFileSync (+ "./lib/jisp/" name ".js")) "
+      " (fs.readFileSync (+ "./dev/jisp/" name ".js")) "
       return module.exports;
     })();")))
 

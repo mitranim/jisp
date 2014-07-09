@@ -1,6 +1,6 @@
 {
   "name": "jisp",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "The modern JavaScript: a programmable language",
   "keywords": [
     "javascript",
@@ -19,8 +19,10 @@
     "jisp": "./bin/jisp"
   },
   "scripts": {
-    "test": "./bin/jisp ./test.jisp",
-    "prepublish": "./bin/jisp ./build.jisp"
+    "test": "./bin/build && ./bin/build",
+    "reset": "./bin/build -r",
+    "build": "./bin/build -s",
+    "prepublish": "./bin/build -s"
   },
   "repository": {
     "type": "git",
@@ -32,5 +34,8 @@
   "dependencies": {
     "mkdirp": "latest",
     "js-beautify": "latest"
+  },
+  "devDependencies": {
+    "yargs": "latest"
   }
 }
