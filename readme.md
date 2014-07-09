@@ -8,11 +8,11 @@ See the [interactive online documentation](http://jisp.io). You can contribute t
 
 ## Installation and Usage
 
-Install from npm:
+Get [Node.js](http://nodejs.org). This will give you the local node runtime and the npm package manager. Install jisp from npm:
 
     $ npm install -g jisp
 
-Or download the source and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
+Alternatively, download the source, run npm install to get the dependencies, and use ./bin/jisp and ./jisp/jisp.js as entry points.
 
 Require in Node, registering the file extension:
 
