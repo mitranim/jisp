@@ -1,5 +1,5 @@
 (function() {
-  var util, pr, spr, render, isIdentifier, assertForm, operators, singops, op, ops, stateops, opFuncs, _i, _ref, _i0, _ref0, _i10, _ref10;
+  var util, pr, spr, render, isIdentifier, assertForm, operators, singops, op, ops, stateops, opFuncs, _i, _ref, _i0, _ref0, _i1, _ref1;
   util = require("./util");
   pr = util.pr;
   spr = util.spr;
@@ -8,21 +8,21 @@
   assertForm = util.assertForm;
 
   function makeop(op, zv, min, max, drop) {
-    !(typeof min !== 'undefined') ? min = 0 : undefined;
-    !(typeof max !== 'undefined') ? max = Infinity : undefined;
-    !(typeof drop !== 'undefined') ? drop = false : undefined;
-    return (function(args, isOuter) {
-      var i, arg, res, _ref, _ref0, _ref10;
+    (typeof min === 'undefined') ? min = 0 : undefined;
+    (typeof max === 'undefined') ? max = Infinity : undefined;
+    (typeof drop === 'undefined') ? drop = false : undefined;
+    return (function(args, innerType) {
+      var i, arg, res, _ref, _ref0, _ref1;
       if (assertForm(args, min, max)) {
-        if (args.length === 0) {
+        if ((args.length === 0)) {
           _ref0 = pr(zv);
-        } else if ((args.length === 1 && typeof zv !== 'undefined')) {
+        } else if ((args.length === 1) && (typeof zv !== 'undefined')) {
           res = zv + op + spr(args);
-          !isOuter ? res = "(" + res + ")" : undefined;
+          (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
           _ref0 = res;
-        } else if ((args.length === 1 && drop)) {
+        } else if ((args.length === 1) && drop) {
           _ref0 = spr(args);
-        } else if ((args.length === 1)) {
+        } else if (args.length === 1) {
           _ref0 = (op + spr(args));
         } else {
           _ref = args;
@@ -31,20 +31,20 @@
             args[i] = pr(arg);
           }
           res = args.join(" " + op + " ");
-          !isOuter ? res = "(" + res + ")" : undefined;
+          (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
           _ref0 = res;
         }
-        _ref10 = _ref0;
+        _ref1 = _ref0;
       } else {
-        _ref10 = undefined;
+        _ref1 = undefined;
       }
-      return _ref10;
+      return _ref1;
     });
   }
   makeop;
 
   function makesing(op) {
-    return (function(args, isOuter) {
+    return (function(args, innerType) {
       return (assertForm(args, 1, 1) ? (op + " " + spr(args)) : undefined);
     });
   }
@@ -56,15 +56,15 @@
   reserved;
 
   function makestate(op, min, max) {
-    !(typeof min !== 'undefined') ? min = 0 : undefined;
-    !(typeof max !== 'undefined') ? max = Infinity : undefined;
-    return (function(args, isOuter) {
+    (typeof min === 'undefined') ? min = 0 : undefined;
+    (typeof max === 'undefined') ? max = Infinity : undefined;
+    return (function(args, innerType) {
       return (assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined");
     });
   }
   makestate;
   operators = {
-    "++": (function(args, isOuter) {
+    "++": (function(args, innerType) {
       var _ref, _ref0;
       if (assertForm(args, 1, 1)) {
         if (!isIdentifier(args[0])) {
@@ -79,7 +79,7 @@
       }
       return _ref0;
     }),
-    "--": (function(args, isOuter) {
+    "--": (function(args, innerType) {
       var _ref, _ref0;
       if (assertForm(args, 1, 1)) {
         if (!isIdentifier(args[0])) {
@@ -94,11 +94,11 @@
       }
       return _ref0;
     }),
-    "is": (function(args, isOuter) {
+    "is": (function(args, innerType) {
       var subj, arg, res, _i, _res, _ref, _ref0;
-      if (args.length === 0) {
+      if ((args.length === 0)) {
         _ref0 = true;
-      } else if ((args.length === 1)) {
+      } else if (args.length === 1) {
         _ref0 = ("!!" + spr(args));
       } else {
         subj = args.shift();
@@ -110,16 +110,16 @@
         }
         res = _res
           .join(" || ");
-        !isOuter ? res = "(" + res + ")" : undefined;
+        (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
       return _ref0;
     }),
-    "isnt": (function(args, isOuter) {
+    "isnt": (function(args, innerType) {
       var subj, arg, res, _i, _res, _ref, _ref0;
-      if (args.length === 0) {
+      if ((args.length === 0)) {
         _ref0 = false;
-      } else if ((args.length === 1)) {
+      } else if (args.length === 1) {
         _ref0 = ("!" + spr(args));
       } else {
         subj = args.shift();
@@ -131,18 +131,18 @@
         }
         res = _res
           .join(" && ");
-        !isOuter ? res = "(" + res + ")" : undefined;
+        (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
         _ref0 = res;
       }
       return _ref0;
     }),
     "or": makeop("||", undefined, 1, Infinity, true),
     "and": makeop("&&", undefined, 1, Infinity, true),
-    "in": (function(args, isOuter) {
+    "in": (function(args, innerType) {
       var res, _ref;
       if (assertForm(args, 2, 2)) {
         res = "[].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0";
-        !isOuter ? res = "(" + res + ")" : undefined;
+        (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
         _ref = res;
       } else {
         _ref = undefined;
@@ -150,7 +150,7 @@
       return _ref;
     }),
     "of": makeop("in", undefined, 2, 2),
-    "new": (function(args, isOuter) {
+    "new": (function(args, innerType) {
       return (assertForm(args, 1) ? ("new " + pr(args.shift()) + "(" + spr(args) + ")") : undefined);
     }),
     "function": (function() {
@@ -212,7 +212,7 @@
   _ref0 = ops;
   for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
     op = _ref0[_i0];
-    typeof op[1] === "string" ? operators[op[0]] = operators[op[1]] : operators[op[0]] = makeop.apply(makeop, [].concat(op));
+    (typeof op[1] === "string") ? operators[op[0]] = operators[op[1]] : operators[op[0]] = makeop.apply(makeop, [].concat(op));
   }
   stateops = [
     ["return", 0, 1],
@@ -220,50 +220,50 @@
     ["continue", 0, 0],
     ["throw", 1, 1]
   ];
-  _ref10 = stateops;
-  for (_i10 = 0; _i10 < _ref10.length; ++_i10) {
-    op = _ref10[_i10];
+  _ref1 = stateops;
+  for (_i1 = 0; _i1 < _ref1.length; ++_i1) {
+    op = _ref1[_i1];
     operators[op[0]] = makestate(op[0]);
   }
   exports.operators = operators;
   opFuncs = {};
 
   function add() {
-    var _i110;
-    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var _i2;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
-    return (args.length === 0 ? 0 : args.reduce((function() {
-      return arguments[0] + arguments[1];
+    return ((args.length === 0) ? 0 : args.reduce((function() {
+      return (arguments[0] + arguments[1]);
     })));
   }
   add;
 
   function sub() {
-    var _i110;
-    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var _i2;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(0);
-    return (args.length === 0 ? 0 : args.reduce((function() {
-      return arguments[0] - arguments[1];
+    return ((args.length === 0) ? 0 : args.reduce((function() {
+      return (arguments[0] - arguments[1]);
     })));
   }
   sub;
 
   function mul() {
-    var _i110;
-    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var _i2;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
-    return (args.length === 0 ? 1 : args.reduce((function() {
-      return arguments[0] * arguments[1];
+    return ((args.length === 0) ? 1 : args.reduce((function() {
+      return (arguments[0] * arguments[1]);
     })));
   }
   mul;
 
   function div() {
-    var _i110;
-    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i110 = arguments.length - 0) : (_i110 = 0, []);
+    var _i2;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i2 = arguments.length - 0) : (_i2 = 0, []);
     args.unshift(1);
-    return (args.length === 0 ? 1 : args.reduce((function() {
-      return arguments[0] / arguments[1];
+    return ((args.length === 0) ? 1 : args.reduce((function() {
+      return (arguments[0] / arguments[1]);
     })));
   }
   div;

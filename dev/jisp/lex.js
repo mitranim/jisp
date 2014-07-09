@@ -34,7 +34,7 @@
     _ref = concat(conditions);
     for (_i = 0; _i < _ref.length; ++_i) {
       cond = _ref[_i];
-      if ((typeof cond === "function") && ((typeof cond !== 'undefined') && (typeof cond.name !== 'undefined'))) {
+      if (((typeof cond === "function") && ((typeof cond !== 'undefined') && (typeof cond.name !== 'undefined')))) {
         _ref0 = cond.name;
       } else if (isList(cond)) {
         _ref0 = printConditions(cond);
@@ -50,7 +50,7 @@
 
   function maketest(condition) {
     var _ref;
-    if (typeof condition === "function") {
+    if ((typeof condition === "function")) {
       _ref = (function(tokens) {
         return condition(tokens[0]);
       });
@@ -60,21 +60,21 @@
       });
     } else if (isAtom(condition)) {
       _ref = (function(tokens) {
-        return tokens[0] === condition;
+        return (tokens[0] === condition);
       });
     } else if (isList(condition)) {
       _ref = (function(tokens) {
-        var i, cond, _res, _ref0, _ref10;
+        var i, cond, _res, _ref0, _ref1;
         _res = [];
         _ref0 = condition;
         for (i = 0; i < _ref0.length; ++i) {
           cond = _ref0[i];
           if (!maketest(cond)(tokens.slice(i))) {
-            return _ref10 = false;
+            return _ref1 = false;
           } else {
-            _ref10 = undefined;
+            _ref1 = undefined;
           }
-          _res.push(_ref10);
+          _res.push(_ref1);
         }
         return (_res ? true : undefined);
       });
@@ -101,7 +101,7 @@
         return lex(tokens, mode);
       }
     }
-    err = (typeof tokens[0] === 'undefined' ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
+    err = ((typeof tokens[0] === 'undefined') ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
     throw err;
   }
   demand;
@@ -153,7 +153,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0;
-    !(typeof mode !== 'undefined') ? mode = "default" : undefined;
+    (typeof mode === 'undefined') ? mode = "default" : undefined;
     switch (mode) {
       case "default":
         _res = [];
@@ -193,7 +193,7 @@
       case "property":
         if (isDotName(tokens[0])) {
           _ref0 = demand(tokens, isDotName, "drop").slice(1);
-        } else if ((isBracketName(tokens[0]) || isBracketString(tokens[0]))) {
+        } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
           _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
         } else {
           demand(tokens, "[", "drop");

@@ -3,7 +3,7 @@
   util = require("./util");
 
   function parse(form) {
-    var i, val, key, _ref, _ref0, _ref10;
+    var i, val, key, _ref, _ref0, _ref1;
     if (util.isList(form)) {
       _ref = form;
       for (i = 0; i < _ref.length; ++i) {
@@ -12,9 +12,9 @@
       }
       _ref0 = form;
     } else if (util.isHash(form)) {
-      _ref10 = form;
-      for (key in _ref10) {
-        val = _ref10[key];
+      _ref1 = form;
+      for (key in _ref1) {
+        val = _ref1[key];
         form[key] = parse(val);
       }
       _ref0 = form;

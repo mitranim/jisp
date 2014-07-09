@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.8")
+(= exports.version "0.2.9")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -28,7 +28,7 @@
    isIdentifier util.isIdentifier
    assertExp    util.assertExp)
 
-; This file has got insanely big and repetitive, todo rearchitect and deduplicate
+; This file has gotten insanely big and repetitive, todo rearchitect and deduplicate
 
 ; ToDo move exports to a `jisp` object and export just that object
 
@@ -136,18 +136,18 @@
 ; # Helper macros
 
 ; Shorter version of compileAdd
-(mac macCompileAdd form
-   `(= (buffer scope) (compileAdd ,form buffer scope opts nested)))
+(mac macCompileAdd form (nested "nested")
+   `(= (buffer scope) (compileAdd ,form buffer scope opts ,nested)))
 
 ; Shorter version of compileGetLast
-(mac macCompileGetLast form name
-  `(= (,name buffer scope) (compileGetLast ,form buffer scope opts nested)))
+(mac macCompileGetLast form name (nested "nested")
+  `(= (,name buffer scope) (compileGetLast ,form buffer scope opts ,nested)))
 
 ; Shorter version of compileResolve
-(mac macCompileResolve form container
-  `(= (,container buffer scope) (compileResolve ,form buffer scope opts nested)))
+(mac macCompileResolve form container (nested "nested")
+  `(= (,container buffer scope) (compileResolve ,form buffer scope opts ,nested)))
 
-; Wrapper for declareVar with checks to override functions built-ins where relevant
+; Wrapper for declareVar with checks to override built-in functions where relevant
 (mac macDeclareVar name (override yes) (declare yes)
   `(do (assertExp ,name isVarName "valid identifier")
     ,(if override
@@ -167,8 +167,9 @@
 
 (mac macForkScope
 ; If this form declares variables, fork scope
-  `(= outerScope scope
-      scope      (hoist: (outerScope.hoist.slice) service: (outerScope.service.slice))))
+  `(do (= outerScope scope
+          scope      (hoist: (outerScope.hoist.slice) service: (outerScope.service.slice)))
+       (delete opts.topScope)))
 
 (mac macDeclareOrHoist (dest "buffer") (do
 ; Declare vars and funcs or hoist funcs as appropriate
@@ -241,11 +242,9 @@
     ,(if opts.argsMax
          `(if (> form.length ,opts.argsMax)
               (throw (Error (+ (pr formName) " expects no more than " (pr ,opts.argsMax) " arguments")))))
-    ; Unset nested if passed, move value under another name to avoid propagating it further (compile macros do it automatically)
-    (if (? nested)
-      (= isNested nested
-         nested   undefined)
-      (= isNested true))  ; default assumption: nested
+    ; Unset nested if passed, move value under another name to avoid propagating it further (compile macros pass it automatically)
+    (= nestedLocal (if (? nested) nested true)
+       nested      undefined)
     ; Put in code from caller
     ,opts.code
     ; Return compiled
@@ -295,8 +294,8 @@
               (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
         (do  ; Not a special form? -> function call
           ; Unset nested (callees assume true)
-          (= isNested nested
-             nested   undefined)
+          (= nestedLocal nested
+             nested      undefined)
           ; Compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
           ; If jisp-top-level func, hoist it
@@ -305,10 +304,9 @@
             (macDeclareVar first no))
           ; If operator, check if we're inside compile call to another operator; if not, put this into options
           (if (of first operators)
-              (if (and (not opts.compilingOperator) (not isNested))
-                  (do (= isOuterOperator yes)
-                      (= opts.compilingOperator yes))
-                  (= isOuterOperator no))
+              (do (if (not opts.compilingOperator) (= isOuterOperator yes))
+                  (= innerType              (or nestedLocal (is opts.compilingOperator))
+                     opts.compilingOperator yes))
               ; If not operator, unset operator option for inner calls
               (do (= opts (JSON.parse (JSON.stringify opts)))
                   (delete opts.compilingOperator)))
@@ -325,7 +323,7 @@
           ; Compile: simple or with spread
           (if (?! argsSpread)
             (if (of first operators)
-                (buffer.push (operators[first] form isOuterOperator))
+                (buffer.push (operators[first] form innerType))
                 (buffer.push (+ (pr first) "(" (spr form) ")")))
             (do  ; Compile as spread
               ; Compile args into expression that produces single list with elements spread into it, like `(1 2 ...`(3 4)) -> `(1 2 3 4)
@@ -353,8 +351,8 @@
                 (do (= (collector scope) (declareService "_ref" scope))
                     (buffer.push (+ "(" collector " = " name ")" method ".apply(" collector ", " (pr form) ")"))))))))
           ; Unset operator option for outer calls
-          (if isOuterOperator
-            (delete opts.compilingOperator))
+          (if (? isOuterOperator)
+              (delete opts.compilingOperator))
           ; Return compiled
           `(buffer scope)))))
 
@@ -372,7 +370,7 @@
       ; `nested` tells the compiler whether the compiled form is going to be on its own line or merged with something
       (= nested (or (and (not isTopLevel)
                          (is i (- form.length 1))
-                         isNested)
+                         nestedLocal)
                     (isPropertyExp form[(+ i 1)])))
       (if (?! exp)
         (buffer.push exp)
@@ -480,7 +478,8 @@
           (if (and (isList left) (is (car left) "get"))  ; property access
             (do (macCompileGetLast left left)
                 (= res (+ (pr left) " = " (pr right)))
-                (if (and lastAssign isNested) (= res (+ "(" res ")")))
+                (if (and lastAssign nestedLocal (isnt nestedLocal "parens"))
+                    (= res (+ "(" res ")")))
                 (buffer.push res))
             (elif (isList left) (do  ; destructuring assignment
               (macDeclareService ref "_ref")
@@ -504,9 +503,10 @@
             (do (if (isVarName left) (macDeclareVar left))  ; normal assignment
                 (assertExp left isIdentifier)
                 (= res (+ (pr left) " = " (pr right)))
-                (if (and (isHash right) (not isNested))
+                (if (and (isHash right) (not nestedLocal))
                   (+= res ";"))  ; a hash table assignment needs to end with a semicolon, otherwise the next line is considered a part of this one
-                (if (and lastAssign isNested) (= res (+ "(" res ")")))
+                (if (and lastAssign nestedLocal (isnt nestedLocal "parens"))
+                    (= res (+ "(" res ")")))
                 (buffer.push res)))))))))))
 
 ; Mostly the same code for `fn` and `def`
@@ -541,7 +541,7 @@
               (do  ; assume optional parameter
                 (assertExp (= name (car arg)) isVarName "valid parameter name")
                 (= args[i] name)
-                (optionals.push ``("if" ("not" ("?" name)) ("=" name arg[1]))))))
+                (optionals.push ``("if" ("?!" name) ("=" name arg[1]))))))
           (elif restname
             (rest.push (+ (pr arg) " = arguments[" ind "++]")))))  ; when there's a restname, `ind` is defined
       (if (? restind) (= args (args.slice 0 restind)))  ; drop restarg and all following args from arg list; prevents bug with empty rest
@@ -573,7 +573,7 @@
   (makeMacro form)))
 
 ; Puts collector variable in end of given branch
-(def collect compiled collector (isCase no) (isNested yes) (do
+(def collect compiled collector (isCase no) (nestedLocal yes) (do
   (if (and (isList compiled) (> compiled.length 0)) (do
     ; when I wrote this, only God and I knew what this /\{$/ logic was for
     ; now, God only knows
@@ -581,7 +581,7 @@
       (= plug (compiled.pop)))
     (= lastItem (compiled.pop))
     ; collectify if we're nested
-    (if isNested
+    (if nestedLocal
         (if ((get /^return\s/ test) lastItem)
           (= lastItem (lastItem.replace /^return\s/ (+ "return " collector " = ")))
           (elif (util.kwtest lastItem)
@@ -604,10 +604,11 @@
       (do (midcases.push postbranch)
           (= postbranch undefined)))
   ; prepare forms
+  (= nested yes)  ; an absolute must for the ternary predicate: it can contain an operator with a lower precedence than the ternary `?`
   (macCompileGetLast predicate predicate)
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
   ; if this isn't nested, further compiled branches should be aware of that
-  (= nested isNested)
+  (= nested nestedLocal)
   (macCompileResolve prebranch prebranch)
   (macCompileResolve postbranch postbranch)
   ; choose between ternary and full form
@@ -616,22 +617,23 @@
            (is postbranch.length 1) (not (util.kwtest (car postbranch))))
     ; ternary
     (do (= res (+ (pr predicate) " ? " (pr (car prebranch)) " : " (pr (car postbranch))))
-        (if isNested (= res (+ "(" res ")")))
+        (if (and nestedLocal (isnt nestedLocal "parens"))
+            (= res (+ "(" res ")")))
         (buffer.push res))
     (do  ; full form
-      (if isNested (macDeclareService collector "_ref"))
-      (= prebranch (collect prebranch collector no isNested))
-      (= postbranch (collect postbranch collector no isNested))
+      (if nestedLocal (macDeclareService collector "_ref"))
+      (= prebranch (collect prebranch collector no nestedLocal))
+      (= postbranch (collect postbranch collector no nestedLocal))
       (for mid i midcases (do
         (assertExp mid (fn x (is (x.shift) "elif")) "elif")
         (= (midtest midbranch) mid)
-        (macCompileResolve midtest midtest)
+        (macCompileResolve midtest midtest "parens")
         (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
         ; temporary ban on more-than-single-expression tests in midcases
         ; todo implement later (check if can use multiple exps with commas)
         (if (> midtest.length 1) (throw (Error (+ (pr "elif") " must compile to single expression (todo fix later); got:" (pr midtest)))))
         (macCompileResolve midbranch midbranch)
-        (= midcases[i] (test: midtest branch: (collect midbranch collector no isNested)))))
+        (= midcases[i] (test: midtest branch: (collect midbranch collector no nestedLocal)))))
       ; compile full form
       (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
       (for mid midcases
@@ -641,7 +643,7 @@
                    (? (car postbranch))))
           (+= comp (+ " else { " (render postbranch) " }")))
       (buffer.push comp)
-      (if isNested
+      (if nestedLocal
           (buffer.push collector)
           ; more than 1 element in buffer signals to caller that this is not an expression
           (buffer.push ""))))))))
@@ -658,12 +660,12 @@
   (if (and (? postbranch) (is (car postbranch) "case"))
       (do (midcases.push postbranch)
           (= postbranch undefined)))
-  (if isNested (macDeclareService collector "_ref"))
+  (if nestedLocal (macDeclareService collector "_ref"))
   ; prepare forms
-  (macCompileGetLast predicate predicate)
+  (macCompileGetLast predicate predicate "parens")
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
   ; if this isn't nested, further compiled branches should be aware of that
-  (= nested isNested)
+  (= nested nestedLocal)
   (for mid i midcases (do
     (assertExp mid (fn x (is (x.shift) "case")) "case")
     (= (midtest midbranch) mid)
@@ -673,16 +675,16 @@
     ; todo implement later (check if can use multiple exps with commas)
     (if (> midtest.length 1) (throw (Error (+ (pr "case") " must compile to single expression (todo fix later); got:" (pr midtest)))))
     (macCompileResolve midbranch midbranch)
-    (= midcases[i] (test: midtest branch: (collect midbranch collector yes isNested)))))
+    (= midcases[i] (test: midtest branch: (collect midbranch collector yes nestedLocal)))))
   (macCompileResolve postbranch postbranch)
-  (= postbranch (collect postbranch collector no isNested))
+  (= postbranch (collect postbranch collector no nestedLocal))
   ; compile
   (= comp (+ "switch (" (pr predicate) ") { "))
   (for mid midcases
     (+= comp (+ " case " (spr mid.test) ": " (render mid.branch))))
   (+= comp (+ " default: " (render postbranch) " }"))
   (buffer.push comp)
-  (if isNested
+  (if nestedLocal
       (buffer.push collector)
       ; more than 1 element in buffer signals to caller that this is not an expression
       (buffer.push ""))))))
@@ -729,22 +731,22 @@
             (macDeclareVar value)))))
       (assertExp key isVarName "valid identifier")
       (assertExp value isVarName "valid identifier")
-      (if isNested
+      (if nestedLocal
           (do (macDeclareService collector "_res")  ; array for iteration results
               (buffer.push (+ collector " = []"))))
       (macDeclareService ref "_ref")  ; iterable
       (macCompileGetLast iterable iterable)
       (buffer.push (+ ref " = " (pr iterable)))
       ; if this isn't nested, further compiled body should be aware of that
-      (= nested isNested)
+      (= nested nestedLocal)
       (macCompileResolve body body)
-      (if (and isNested (not (util.kwtest (pr (last body)))))
+      (if (and nestedLocal (not (util.kwtest (pr (last body)))))
           (body.push (+ collector ".push(" (pr (body.pop)) ")")))
       ,(if (is type "for")
         `(buffer.push (+ "for (" key " = 0; " key " < " ref ".length; ++" key ") { " value " = " ref "[" key "]; " (render body) " }"))
         (elif (is type "over")
          `(buffer.push (+ "for (" key " in " ref ") { " value " = " ref "[" key "]; " (render body) " }"))))
-      (if isNested
+      (if nestedLocal
           (buffer.push collector)
           ; more than 1 element in buffer signals to caller that this is not an expression
           (buffer.push ""))))))
@@ -766,18 +768,18 @@
     (= (test body rvalue) form)
     (if (is form.length 2)  ; no rvalue: array mode
       ; checking by form length to allow user to pass `undefined` and `null` as rvalue
-      (if isNested (do (macDeclareService collector "_res")
+      (if nestedLocal (do (macDeclareService collector "_res")
           (buffer.push (+ collector " = []"))))
         (= comp ""))  ; rvalue: no array mode
-    (macCompileGetLast test test)
+    (macCompileGetLast test test "parens")
     ; if this isn't nested, further compiled body should be aware of that
-    (= nested isNested)
+    (= nested nestedLocal)
     (macCompileResolve body body)
-    (if (and isNested (is form.length 2) (not (util.kwtest (pr (last body)))))
+    (if (and nestedLocal (is form.length 2) (not (util.kwtest (pr (last body)))))
       (body.push (+ collector ".push(" (pr (body.pop)) ")")))
     (buffer.push (+ "while (" (pr test) ") { " (render body) " }"))
     (if (is form.length 2)
-      (if isNested
+      (if nestedLocal
           (buffer.push collector)
           ; more than 1 element in buffer signals to caller that this is not an expression
           (buffer.push ""))
@@ -792,9 +794,9 @@
 ; (try <try>)
   code: (do
     (= (tryForm catchForm finalForm) form)
-    (macCompileResolve tryForm tryForm)
-    (if isNested (do (macDeclareService collector "_ref")
-                     (tryForm.push (+ collector " = " (pr (tryForm.pop))))))
+    (macCompileResolve tryForm tryForm "parens")
+    (if nestedLocal (do (macDeclareService collector "_ref")
+                        (tryForm.push (+ collector " = " (pr (tryForm.pop))))))
     (if (and (isList catchForm) (is (car catchForm) "catch"))
       (do
         (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
@@ -803,9 +805,9 @@
       (macDeclareService err "_err"))  ; shouldn't be declared, it's like an argument, todo fix
     (if (?! catchForm) (= catchForm undefined))
     ; if this isn't nested, further compiled parts should be aware of that
-    (= nested isNested)
+    (= nested nestedLocal)
     (macCompileResolve catchForm catchForm)
-    (if (and isNested (not (util.kwtest (pr (last catchForm)))))
+    (if (and nestedLocal (not (util.kwtest (pr (last catchForm)))))
         (catchForm.push (+ collector " = " (pr (catchForm.pop)))))
     (if (? finalForm)
       (do
@@ -813,12 +815,12 @@
           (do (assertExp finalForm {is (get #0 length) 2})
               (= finalForm (last finalForm))))
         (macCompileResolve finalForm finalForm)
-        (if (and isNested (not (util.kwtest (pr (last finalForm)))))
+        (if (and nestedLocal (not (util.kwtest (pr (last finalForm)))))
             (finalForm.push (+ collector " = " (pr (finalForm.pop)))))))
     (= res (+ "try { " (render tryForm) " } catch (" (pr err) ") { " (render catchForm) " }"))
     (if (? finalForm) (+= res (+ " finally { " (render finalForm) " }")))
     (buffer.push res)
-    (if isNested
+    (if nestedLocal
         (buffer.push collector)
         ; more than 1 element in buffer signals to caller that this is not an expression
         (buffer.push ""))))))
@@ -851,7 +853,7 @@
   code: (do
     (if (isnt form.length 0)
       (do
-        (macCompileGetLast (car form) form)
+        (macCompileGetLast (car form) form yes)
         (if (not (util.kwtest form))
             (= form (+ "return " (pr form))))
         (buffer.push form)))))))
