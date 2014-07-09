@@ -39,8 +39,11 @@
                        (do (for s str (+= res s " "))
                            (= res (init res))
                            (+= res "\n"))))
+      ; recompile src, wrapping it into (console.log (do ... )) for logging
+      (= src (+ "(console.log (do " scope.exampleCode "\n))"))
+      (= compiled (jispCompile src))
       ; run and log result
-      (try (eval scope.compiledCode)
+      (try (eval compiled)
         (catch err (console.log err.message)))
       (= scope.evalJSOutput res)
       ; restore console.log

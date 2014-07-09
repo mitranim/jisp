@@ -32,8 +32,6 @@ block content
 
           > All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don't see them, make sure JS is enabled and refresh the page.
 
-          Most examples don't have side effects. To see results when eval'ing, wrap expressions into `(console.log)` or `(alert)`.
-
         h2 Interactive playground
 
         +code(36)(autofocus='')
@@ -106,7 +104,7 @@ block content
 
         +code(24)
           = "; list that compiles to a function call\n"
-          = "(alert 'Fire in the house!')\n"
+          = "(console.log 'Fire in the house!')\n"
           = "\n"
           = "; quoted list — array literal\n"
           = "`(1 NaN 'bison')\n"
@@ -292,14 +290,15 @@ block content
 
           `do` resolves to the value of its last form. It's a requirement for chaining methods:
 
-        +code(18)
+        +code(20)
           = "; take last value\n"
-          = "(alert (do (= bugs `())\n"
+          = "(console.log (do (= bugs `())\n"
           = "  (bugs.push 'butterfree')\n"
           = "  (bugs.push 'beedrill')\n"
           = "  bugs))\n"
           = "\n"
           = "; assign result of chaining methods\n"
+          = "(= str ',…x')\n"
           = "(= grated (do str\n"
           = "   (.replace /…/g ' … ')\n"
           = "   (.replace /,/g ' , ')\n"
@@ -312,7 +311,7 @@ block content
           = "(let health 100\n"
           = "  (console.log health))   ; logs 100\n"
           = "\n"
-          = "(console.log (? health))  ; logs false: out ot scope\n"
+          = "(? health)                ; logs false: out ot scope\n"
 
         :markdown
           `let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.
@@ -342,7 +341,7 @@ block content
           Until it's implemented, use the `get` form, and `do` for methods (below).
 
         +code(4)
-          = "(console.log (get (String 113) length))\n"
+          = "(get (String 113) length)\n"
 
         :markdown
           To chain methods, wrap them in a `do` form:
@@ -386,11 +385,11 @@ block content
 
         +code(14)
           = "; define, then call\n"
-          = "(= ringMyBell (fn bell (alert bell)))\n"
+          = "(= ringMyBell (fn bell (console.log bell)))\n"
           = "(ringMyBell '\\x07')\n"
           = "\n"
           = "; define and call\n"
-          = "((fn x (console.log (+ 'Hello ' x))) 'World!')\n"
+          = "((fn x (+ 'Hello ' x)) 'World!')\n"
 
         :markdown
           A function returns the resolved value of its body. You almost never need to return values manually:
@@ -430,7 +429,9 @@ block content
         :markdown
           This goes hand in hand with the `#` notation:
 
-        +code(12)
+        +code(14)
+          = "(= array `(0 1 2 3))\n"
+          = "\n"
           = "{* #0 #1}\n"
           = "\n"
           = "(array.filter {> #0 1})"
@@ -472,7 +473,7 @@ block content
           Calling `=` with a single argument merely declares that name if not already in scope:
 
         +code(6)
-          = "(alert (= emptyVar))\n"
+          = "(= emptyVar)\n"
 
         h2#destructuring Destructuring Assignment
 
@@ -490,9 +491,7 @@ block content
         +code(10)
           = "(= (first ...mid closing) `(4 8 0 3))\n"
           = "\n"
-          = "; first:   4\n"
-          = "; mid:     (8 0)\n"
-          = "; closing: 3"
+          = "mid    ; (8 0)\n"
 
         :markdown
           `...x` and `…x` is a shortcut to the `(spread x)` special form, which you can, and sometimes need to, use directly. Spreading is moderately greedy: it takes as many elements as possible, but has lower priority than non-spread identifiers.
@@ -555,8 +554,7 @@ block content
           `for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:
 
         +code(18)
-          = "(console.log\n"
-          = "  (for x (range 0 6) (* x x)))\n"
+          = "(for x (range 0 6) (* x x))\n"
           = "\n"
           = "; (0 1 4 9 16 25 36)"
 
@@ -591,7 +589,7 @@ block content
           = "(is true)\n"
           = "\n"
           = "; equality\n"
-          = "(is grass green)\n"
+          = "(is grass 'green')\n"
           = "\n"
           = "; or-equality: true if any match\n"
           = "(is she 'smart' 'beautiful' 'artistic')\n"
@@ -816,6 +814,7 @@ block content
           = "\n"
           = "(over val key animals (console.log key val))\n"
           = "\n"
+          = "''\n"
           = "; squirrel Eevee\n"
           = "; fox Vulpix\n"
 
@@ -846,6 +845,7 @@ block content
           = "(for char index 'meow'\n"
           = "  (console.log index char))\n"
           = "\n"
+          = "''\n"
           = "; 0 m\n"
           = "; 1 e\n"
           = "; 2 o\n"
@@ -855,9 +855,8 @@ block content
           It resolves to a list of values from each iteration, if asked nicely:
 
         +code(14)
-          = "(console.log\n"
-          = "  (for char index 'winter'\n"
-          = "       (+ index ': ' char)))\n"
+          = "(for char index 'winter'\n"
+          = "     (+ index ': ' char))\n"
           = "\n"
           = "; ('0: w' '1: i' '2: n' '3: t' '4: e' '5: r')\n"
 
@@ -879,9 +878,8 @@ block content
         +code(14)
           = "(= bugs `('missing comma' 'missing semicolon'))\n"
           = "\n"
-          = "(console.log\n"
-          = "  (while (> bugs.length 0)\n"
-          = "    (+ (bugs.shift) ' avoided')))\n"
+          = "(while (> bugs.length 0)\n"
+          = "       (+ (bugs.shift) ' avoided'))\n"
           = "\n"
           = "; ('missing comma avoided'\n"
           = ";  'missing semicolon avoided')\n"
@@ -895,10 +893,9 @@ block content
           = "(= beers 0)\n"
           = "(def sober (< beers 10))\n"
           = "\n"
-          = "(console.log\n"
-          = "  (while (sober)\n"
-          = "    (++ beers)\n"
-          = "    (+ 'drunk after ' beers ' beers')))\n"
+          = "(= drunk (while (sober)\n"
+          = "                (++ beers)\n"
+          = "                (+ 'drunk after ' beers ' beers')))\n"
           = "\n"
           = "; drunk after 10 beers\n"
 
@@ -1123,13 +1120,13 @@ block content
               (list [<args> ...])
 
         +code(12)
-          = "(list 'wizard' 'hat' 'staff')\n"
-          = "\n"
-          = "; ('wizard' 'hat' 'staff')\n"
-          = "\n"
           = "(list)\n"
           = "\n"
           = "; ()\n"
+          = "\n"
+          = "(list 'wizard' 'hat' 'staff')\n"
+          = "\n"
+          = "; ('wizard' 'hat' 'staff')\n"
 
         :markdown
           `concat` is like `list` except it flattens lists passed as arguments, concatenating them:

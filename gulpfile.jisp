@@ -84,12 +84,12 @@
 (task         "jade"
   gulp.src    "src/jade/index.jade"
   plug.jade   (pretty: yes)
-  gulp.dest   ""
+  gulp.dest   "./"
   reload      (stream: yes))
 
 ; static server
 (gulp.task "browser-sync" (fn
-  (brsync (server: (baseDir: "./") port: 3400))))
+  (brsync (server: (baseDir: "./") port: 3400 online: no))))
 
 ; watch files for changes
 (gulp.task "watch" (fn (do

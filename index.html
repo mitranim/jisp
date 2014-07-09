@@ -38,7 +38,6 @@
 <blockquote>
 <p>All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don’t see them, make sure JS is enabled and refresh the page.</p>
 </blockquote>
-<p>Most examples don’t have side effects. To see results when eval’ing, wrap expressions into <code>(console.log)</code> or <code>(alert)</code>.</p>
 
           <h2>Interactive playground</h2>
           <isolated-code>
@@ -105,7 +104,7 @@ jisp&gt;
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">; list that compiles to a function call
-(alert 'Fire in the house!')
+(console.log 'Fire in the house!')
 
 ; quoted list — array literal
 `(1 NaN 'bison')
@@ -395,13 +394,14 @@ null undefined true
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">; take last value
-(alert (do (= bugs `())
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">; take last value
+(console.log (do (= bugs `())
   (bugs.push 'butterfree')
   (bugs.push 'beedrill')
   bugs))
 
 ; assign result of chaining methods
+(= str ',…x')
 (= grated (do str
    (.replace /…/g ' … ')
    (.replace /,/g ' , ')
@@ -410,9 +410,9 @@ null undefined true
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -424,7 +424,7 @@ null undefined true
                 <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
   (console.log health))   ; logs 100
 
-(console.log (? health))  ; logs false: out ot scope
+(? health)                ; logs false: out ot scope
 
                 </textarea>
               </div>
@@ -479,7 +479,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 4em; min-height: 4em;" model-init="exampleCode" class="form-control form-code left">(console.log (get (String 113) length))
+                <textarea type="text" style="height: 4em; min-height: 4em;" model-init="exampleCode" class="form-control form-code left">(get (String 113) length)
 
                 </textarea>
               </div>
@@ -559,11 +559,11 @@ bunny['fluffy']
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; define, then call
-(= ringMyBell (fn bell (alert bell)))
+(= ringMyBell (fn bell (console.log bell)))
 (ringMyBell '\x07')
 
 ; define and call
-((fn x (console.log (+ 'Hello ' x))) 'World!')
+((fn x (+ 'Hello ' x)) 'World!')
 
                 </textarea>
               </div>
@@ -639,15 +639,17 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">{* #0 #1}
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= array `(0 1 2 3))
+
+{* #0 #1}
 
 (array.filter {&gt; #0 1})
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -714,7 +716,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(alert (= emptyVar))
+                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">(= emptyVar)
 
                 </textarea>
               </div>
@@ -750,9 +752,8 @@ bunny['fluffy']
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= (first ...mid closing) `(4 8 0 3))
 
-; first:   4
-; mid:     (8 0)
-; closing: 3
+mid    ; (8 0)
+
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
@@ -853,8 +854,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(console.log
-  (for x (range 0 6) (* x x)))
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(for x (range 0 6) (* x x))
 
 ; (0 1 4 9 16 25 36)
                 </textarea>
@@ -894,7 +894,7 @@ switch  ; switch
 (is true)
 
 ; equality
-(is grass green)
+(is grass 'green')
 
 ; or-equality: true if any match
 (is she 'smart' 'beautiful' 'artistic')
@@ -1253,6 +1253,7 @@ switch  ; switch
 
 (over val key animals (console.log key val))
 
+''
 ; squirrel Eevee
 ; fox Vulpix
 
@@ -1301,6 +1302,7 @@ switch  ; switch
                 <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
   (console.log index char))
 
+''
 ; 0 m
 ; 1 e
 ; 2 o
@@ -1320,9 +1322,8 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(console.log
-  (for char index 'winter'
-       (+ index ': ' char)))
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(for char index 'winter'
+     (+ index ': ' char))
 
 ; ('0: w' '1: i' '2: n' '3: t' '4: e' '5: r')
 
@@ -1349,9 +1350,8 @@ warcry
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
 
-(console.log
-  (while (&gt; bugs.length 0)
-    (+ (bugs.shift) ' avoided')))
+(while (&gt; bugs.length 0)
+       (+ (bugs.shift) ' avoided'))
 
 ; ('missing comma avoided'
 ;  'missing semicolon avoided')
@@ -1374,10 +1374,9 @@ warcry
                 <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(= beers 0)
 (def sober (&lt; beers 10))
 
-(console.log
-  (while (sober)
-    (++ beers)
-    (+ 'drunk after ' beers ' beers')))
+(= drunk (while (sober)
+                (++ beers)
+                (+ 'drunk after ' beers ' beers')))
 
 ; drunk after 10 beers
 
@@ -1630,13 +1629,13 @@ Unquote elements with , to resolve (transclude) them during macro call:
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(list 'wizard' 'hat' 'staff')
-
-; ('wizard' 'hat' 'staff')
-
-(list)
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(list)
 
 ; ()
+
+(list 'wizard' 'hat' 'staff')
+
+; ('wizard' 'hat' 'staff')
 
                 </textarea>
               </div>
