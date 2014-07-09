@@ -356,6 +356,8 @@ block content
 
         :markdown
 
+          Named function:
+
               (def <name> [<... params>] [<body>])
 
         +code(8)
@@ -381,11 +383,10 @@ block content
           A function call is a list starting with the function's name or with a form that resolves to a function:
 
         +code(14)
-          = "; define, then call\n"
           = "(= ringMyBell (fn bell (console.log bell)))\n"
+          = "\n"
           = "(ringMyBell '\\x07')\n"
           = "\n"
-          = "; define and call\n"
           = "((fn x (+ 'Hello ' x)) 'World!')\n"
 
         :markdown
@@ -395,8 +396,8 @@ block content
           = "(def numerify x\n"
           = "  (if (isNaN (Number x))\n"
           = "      (do (console.log 'not a number:' x)\n"
-          = "          NaN)          ; branch `then`\n"
-          = "      (Number x)))      ; branch `else`\n"
+          = "          NaN)\n"
+          = "      (Number x)))\n"
 
         :markdown
           It's often best to keep each function's body a single conditional tree with branches ending in return values.
@@ -404,7 +405,7 @@ block content
           Inside a function's body, `#` (**NYI**) is an array of the arguments passed to it, and `#n` refers to an individual argument by order.
 
         +code(6)
-          = "((fn (* #0 #2)) 3 100 4)    ; 12\n"
+          = "((fn (* #0 #2)) 3 100 4)\n"
 
         :markdown
           As a side effect of implicit returns, when making a prototype constructor, you need to end it with `this` as the return value to make the `new` declarations work.
@@ -436,13 +437,25 @@ block content
         h3#let Let
 
         :markdown
-          `let` is a short way to declare variables in an isolated scope:
+          `let` is a short way to declare variables in an isolated scope and run that scope. It resolves to the value returned by its body.
+
+              (let [var value [var value ...]] [<body>])
 
         +code(9)
           = "(let health 100\n"
           = "  (console.log health))   ; logs 100\n"
           = "\n"
           = "(? health)                ; logs false: out ot scope\n"
+
+        :markdown
+          Just like assignment, it takes variables in pairs:
+
+        +code(10)
+          = "(let plus  110\n"
+          = "     minus -12\n"
+          = "     (console.log (^ plus minus)))\n"
+          = "\n"
+          = "(? plus minus)    ; false: out of scope\n"
 
         :markdown
           `let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.

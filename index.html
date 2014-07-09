@@ -496,8 +496,9 @@ bunny['fluffy']
           </isolated-code>
           <h2 id="functions">Functions</h2><p>Jisp mirrors JavaScript function facilities 1-1 and adds some more.</p>
 
-          <h3 id="definition">Definition</h3><p>(def <name> [&lt;… params&gt;] [<body>])</p>
-
+          <h3 id="definition">Definition</h3><p>Named function:</p>
+<pre><code>(def &lt;name&gt; [&lt;... params&gt;] [&lt;body&gt;])
+</code></pre>
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
@@ -541,11 +542,10 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">; define, then call
-(= ringMyBell (fn bell (console.log bell)))
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= ringMyBell (fn bell (console.log bell)))
+
 (ringMyBell '\x07')
 
-; define and call
 ((fn x (+ 'Hello ' x)) 'World!')
 
                 </textarea>
@@ -565,8 +565,8 @@ bunny['fluffy']
                 <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(def numerify x
   (if (isNaN (Number x))
       (do (console.log 'not a number:' x)
-          NaN)          ; branch `then`
-      (Number x)))      ; branch `else`
+          NaN)
+      (Number x)))
 
                 </textarea>
               </div>
@@ -583,7 +583,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">((fn (* #0 #2)) 3 100 4)    ; 12
+                <textarea type="text" style="height: 6em; min-height: 6em;" model-init="exampleCode" class="form-control form-code left">((fn (* #0 #2)) 3 100 4)
 
                 </textarea>
               </div>
@@ -637,8 +637,9 @@ bunny['fluffy']
               </div>
             </div>
           </isolated-code>
-          <h3 id="let">Let</h3><p><code>let</code> is a short way to declare variables in an isolated scope:</p>
-
+          <h3 id="let">Let</h3><p><code>let</code> is a short way to declare variables in an isolated scope and run that scope. It resolves to the value returned by its body.</p>
+<pre><code>(let [var value [var value ...]] [&lt;body&gt;])
+</code></pre>
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
@@ -653,6 +654,26 @@ bunny['fluffy']
                 <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
                 <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code><p>Just like assignment, it takes variables in pairs:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(let plus  110
+     minus -12
+     (console.log (^ plus minus)))
+
+(? plus minus)    ; false: out of scope
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
