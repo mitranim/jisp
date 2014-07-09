@@ -26,6 +26,8 @@ block content
 
           It's simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp's extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.
 
+          See the [why jisp](#why) section for a gist of why you should use it.
+
           The jisp compiler is itself written in jisp. See the [sourcecode on git](https://github.com/Mitranim/jisp).
 
           You can contribute to this documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of the project repo.
@@ -65,11 +67,11 @@ block content
 
         :markdown
 
-          Install from npm:
+          Get [Node.js](http://nodejs.org). This will give you the local `node` runtime and the `npm` package manager. Install jisp from npm:
 
               $ npm install -g jisp
 
-          Or download the source and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
+          Alternatively, download the source, run `npm install` to get the dependencies, and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
 
           Require in Node, registering the file extension:
 
@@ -305,16 +307,7 @@ block content
           = "   (.trim)))\n"
 
         :markdown
-          `let` creates an isolated scope with the variables declared in it:
-
-        +code(9)
-          = "(let health 100\n"
-          = "  (console.log health))   ; logs 100\n"
-          = "\n"
-          = "(? health)                ; logs false: out ot scope\n"
-
-        :markdown
-          `let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.
+          **Note**: `do` is the **only** jisp expression that can consist of multiple forms. The body of each function, loop, etc. is always a single form, and requires a `do` to include multiple expressions.
 
         h2#object-props Object Properties
 
@@ -359,7 +352,9 @@ block content
         :markdown
           Jisp mirrors JavaScript function facilities 1-1 and adds some more.
 
-          Named function:
+        h3#definition Definition
+
+        :markdown
 
               (def <name> [<... params>] [<body>])
 
@@ -379,6 +374,8 @@ block content
           = "(fn returnMe)\n"
           = "\n"
           = "(fn)\n"
+
+        h3#call-return Calling and Returning
 
         :markdown
           A function call is a list starting with the function's name or with a form that resolves to a function:
@@ -412,7 +409,7 @@ block content
         :markdown
           As a side effect of implicit returns, when making a prototype constructor, you need to end it with `this` as the return value to make the `new` declarations work.
 
-        h3#anonymous Anonymous Syntax
+        h3#lambda Lambda Syntax
 
         :markdown
           Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax for anonymous functions:
@@ -435,6 +432,20 @@ block content
           = "{* #0 #1}\n"
           = "\n"
           = "(array.filter {> #0 1})"
+
+        h3#let Let
+
+        :markdown
+          `let` is a short way to declare variables in an isolated scope:
+
+        +code(9)
+          = "(let health 100\n"
+          = "  (console.log health))   ; logs 100\n"
+          = "\n"
+          = "(? health)                ; logs false: out ot scope\n"
+
+        :markdown
+          `let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.
 
         h2#assignment Assignment
 
@@ -577,6 +588,10 @@ block content
               any     ; picks first existing value, if any
               if      ; if
               switch  ; switch
+
+        h3#logic Logic
+
+        :markdown
 
           `is` is the equality test. With a single argument, it checks its truthiness by double negation. With two or more arguments, it checks if the first equals any of the others by a combination of `===` and `||`:
 
@@ -1318,25 +1333,54 @@ block content
       .col-lg-3
         .bs-sidebar.hidden-print(role='complementary' bs-affix bs-scrollspy-list)
           ul.nav.bs-sidenav
-            li(data-target='#installation' bs-scrollspy): a(href='#installation') Installation and Usage
-            li(data-target='#code-structure' bs-scrollspy): a(href='#code-structure') Code Structure
-            li(data-target='#everything-exp' bs-scrollspy): a(href='#everything-exp') Everything an Expression
-            li(data-target='#quoting' bs-scrollspy): a(href='#quoting') Quoting
-            li(data-target='#blocks' bs-scrollspy): a(href='#blocks') Blocks and Chaining
-            li(data-target='#object-props' bs-scrollspy): a(href='#object-props') Object Properties
-            li(data-target='#functions' bs-scrollspy): a(href='#functions') Functions
-            li(data-target='#assignment' bs-scrollspy): a(href='#assignment') Assignment
-            li(data-target='#destructuring' bs-scrollspy): a(href='#destructuring') Destructuring Assignment
-            li(data-target='#spreading-rest' bs-scrollspy): a(href='#spreading-rest') Spreading and Rest Parameter
-            li(data-target='#comprehensions' bs-scrollspy): a(href='#comprehensions') Comprehensions
-            li(data-target='#conditionals' bs-scrollspy): a(href='#conditionals') Conditionals
-            li(data-target='#loops' bs-scrollspy): a(href='#loops') Loops
-            li(data-target='#macros' bs-scrollspy): a(href='#macros') Macros
-            li(data-target='#built-ins' bs-scrollspy): a(href='#built-ins') Built-ins and Embedding
-            li(data-target='#style' bs-scrollspy): a(href='#style') Style
-            li(data-target='#known-bugs' bs-scrollspy): a(href='#known-bugs') Known Bugs and NYI
-            li(data-target='#why' bs-scrollspy): a(href='#why') Why Use Jisp
-            li(data-target='#todo-upcoming' bs-scrollspy): a(href='#todo-upcoming') ToDo Upcoming
-            li(data-target='#todo-wishlist' bs-scrollspy): a(href='#todo-wishlist') ToDo Wishlist
-            li(data-target='#acknowledgements' bs-scrollspy): a(href='#acknowledgements') Acknowledgements
+            li(data-target='#installation'): a(href='#installation') Installation and Usage
+            li(data-target='#code-structure'): a(href='#code-structure') Code Structure
+            li(data-target='#everything-exp'): a(href='#everything-exp') Everything an Expression
+            li(data-target='#quoting'): a(href='#quoting') Quoting
+            li(data-target='#blocks'): a(href='#blocks') Blocks and Chaining
+            li(data-target='#object-props'): a(href='#object-props') Object Properties
+            li(data-target='#functions'): a(href='#functions') Functions
+              ul.nav
+                li(data-target='#definition'): a(href='#definition') Definition
+                li(data-target='#call-return'): a(href='#call-return') Calling and Returning
+                li(data-target='#lambda'): a(href='#lambda') Lambda Syntax
+                li(data-target='#let'): a(href='#let') Let
+            li(data-target='#assignment'): a(href='#assignment') Assignment
+            li(data-target='#destructuring'): a(href='#destructuring') Destructuring Assignment
+            li(data-target='#spreading-rest'): a(href='#spreading-rest') Spreading and Rest Parameter
+              ul.nav
+                li(data-target='#spread-into-list'): a(href='#spread-into-list') Spread Into List
+                li(data-target='#argument-spread'): a(href='#argument-spread') Argument Spread
+                li(data-target='#rest-parameter'): a(href='#rest-parameter') Rest Parameter
+            li(data-target='#comprehensions'): a(href='#comprehensions') Comprehensions
+            li(data-target='#conditionals'): a(href='#conditionals') Conditionals
+              ul.nav
+                li(data-target='#logic'): a(href='#logic') Logic
+                li(data-target='#existence'): a(href='#existence') Existence
+                li(data-target='#if'): a(href='#if') If
+                li(data-target='#switch'): a(href='#switch') Switch
+            li(data-target='#loops'): a(href='#loops') Loops
+              ul.nav
+                li(data-target='#over'): a(href='#over') Over
+                li(data-target='#for'): a(href='#for') For
+                li(data-target='#while'): a(href='#while') While
+            li(data-target='#macros'): a(href='#macros') Macros
+              ul.nav
+                li(data-target='#templating'): a(href='#templating') Templating
+                li(data-target='#code-construction'): a(href='#code-construction') Code Construction
+                li(data-target='#macro-import-export'): a(href='#macro-import-export') Macro Import and Export
+                li(data-target='#macro-notes'): a(href='#macro-notes') Notes
+            li(data-target='#built-ins'): a(href='#built-ins') Built-ins and Embedding
+              ul.nav
+                li(data-target='#built-in-macros'): a(href='#built-in-macros') Macros
+                li(data-target='#built-in-functions'): a(href='#built-in-functions') Functions
+                li(data-target='#function-import-export'): a(href='#function-import-export') Function Import and Export
+            li(data-target='#style'): a(href='#style') Style
+            li(data-target='#known-bugs'): a(href='#known-bugs') Known Bugs and NYI
+            li(data-target='#why'): a(href='#why') Why Use Jisp
+              ul.nav
+                li(data-target='#why-over'): a(href='#why-over') Why Jisp Over [insert dialect X]
+            li(data-target='#todo-upcoming'): a(href='#todo-upcoming') ToDo Upcoming
+            li(data-target='#todo-wishlist'): a(href='#todo-wishlist') ToDo Wishlist
+            li(data-target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements
             li: a(ng-click='gotoTop()') Top

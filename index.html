@@ -33,6 +33,7 @@
       <div class="row">
         <div class="col-lg-9">
           <p class="lead">Jisp is a programmable language that compiles to JavaScript.</p><p>It’s simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp’s extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.</p>
+<p>See the <a href="#why">why jisp</a> section for a gist of why you should use it.</p>
 <p>The jisp compiler is itself written in jisp. See the <a href="https://github.com/Mitranim/jisp">sourcecode on git</a>.</p>
 <p>You can contribute to this documentation by sending pull requests to the <a href="https://github.com/Mitranim/jisp/tree/gh-pages">gh-pages</a> branch of the project repo.</p>
 <blockquote>
@@ -77,9 +78,9 @@
             </div>
           </isolated-code><p>Example of dynamically constructing code with a macro.</p>
 
-          <h2 id="installation">Installation and Usage</h2><p>Install from npm:</p>
+          <h2 id="installation">Installation and Usage</h2><p>Get <a href="http://nodejs.org">Node.js</a>. This will give you the local <code>node</code> runtime and the <code>npm</code> package manager. Install jisp from npm:</p>
 <pre><code>$ npm install -g jisp
-</code></pre><p>Or download the source and use <code>./bin/jisp</code> and <code>./jisp/jisp.js</code> as entry points.</p>
+</code></pre><p>Alternatively, download the source, run <code>npm install</code> to get the dependencies, and use <code>./bin/jisp</code> and <code>./jisp/jisp.js</code> as entry points.</p>
 <p>Require in Node, registering the file extension:</p>
 <pre><code>require(&#39;jisp/register&#39;);
 </code></pre><p>This allows you to <code>require</code> jisp scripts directly from your code, like so:</p>
@@ -416,26 +417,7 @@ null undefined true
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
-          </isolated-code><p><code>let</code> creates an isolated scope with the variables declared in it:</p>
-
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
-  (console.log health))   ; logs 100
-
-(? health)                ; logs false: out ot scope
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code><p><code>let</code> is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native <code>let</code> statement with a block.</p>
+          </isolated-code><p><strong>Note</strong>: <code>do</code> is the <strong>only</strong> jisp expression that can consist of multiple forms. The body of each function, loop, etc. is always a single form, and requires a <code>do</code> to include multiple expressions.</p>
 
           <h2 id="object-props">Object Properties</h2><p>As you’d expect, object properties are referenced with the <code>.dot</code> or <code>[bracket]</code> notation:</p>
 
@@ -513,9 +495,9 @@ bunny['fluffy']
             </div>
           </isolated-code>
           <h2 id="functions">Functions</h2><p>Jisp mirrors JavaScript function facilities 1-1 and adds some more.</p>
-<p>Named function:</p>
-<pre><code>(def &lt;name&gt; [&lt;... params&gt;] [&lt;body&gt;])
-</code></pre>
+
+          <h3 id="definition">Definition</h3><p>(def <name> [&lt;… params&gt;] [<body>])</p>
+
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
@@ -553,7 +535,8 @@ bunny['fluffy']
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
-          </isolated-code><p>A function call is a list starting with the function’s name or with a form that resolves to a function:</p>
+          </isolated-code>
+          <h3 id="call-return">Calling and Returning</h3><p>A function call is a list starting with the function’s name or with a form that resolves to a function:</p>
 
           <isolated-code>
             <div class="row">
@@ -613,7 +596,7 @@ bunny['fluffy']
             </div>
           </isolated-code><p>As a side effect of implicit returns, when making a prototype constructor, you need to end it with <code>this</code> as the return value to make the <code>new</code> declarations work.</p>
 
-          <h3 id="anonymous">Anonymous Syntax</h3><p>Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax for anonymous functions:</p>
+          <h3 id="lambda">Lambda Syntax</h3><p>Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax for anonymous functions:</p>
 <pre><code>{&lt;body&gt;}
 </code></pre>
           <isolated-code>
@@ -654,6 +637,27 @@ bunny['fluffy']
               </div>
             </div>
           </isolated-code>
+          <h3 id="let">Let</h3><p><code>let</code> is a short way to declare variables in an isolated scope:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
+  (console.log health))   ; logs 100
+
+(? health)                ; logs false: out ot scope
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 9em; min-height: 9em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 9em; min-height: 9em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code><p><code>let</code> is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native <code>let</code> statement with a block.</p>
+
           <h2 id="assignment">Assignment</h2><p>Like all other forms, assignment uses the prefix notation:</p>
 <pre><code>(= var value [... var value])
 (= var)
@@ -882,7 +886,8 @@ isnta   ; negative type check
 any     ; picks first existing value, if any
 if      ; if
 switch  ; switch
-</code></pre><p><code>is</code> is the equality test. With a single argument, it checks its truthiness by double negation. With two or more arguments, it checks if the first equals any of the others by a combination of <code>===</code> and <code>||</code>:</p>
+</code></pre>
+          <h3 id="logic">Logic</h3><p><code>is</code> is the equality test. With a single argument, it checks its truthiness by double negation. With two or more arguments, it checks if the first equals any of the others by a combination of <code>===</code> and <code>||</code>:</p>
 <pre><code>(is &lt;name&gt;)
 (is &lt;name&gt; &lt;something&gt;)
 (is &lt;name&gt; &lt;something&gt; [&lt;other&gt; ...])
@@ -1810,27 +1815,63 @@ sqr      ; function embed
         <div class="col-lg-3">
           <div role="complementary" bs-affix bs-scrollspy-list class="bs-sidebar hidden-print">
             <ul class="nav bs-sidenav">
-              <li data-target="#installation" bs-scrollspy><a href="#installation">Installation and Usage</a></li>
-              <li data-target="#code-structure" bs-scrollspy><a href="#code-structure">Code Structure</a></li>
-              <li data-target="#everything-exp" bs-scrollspy><a href="#everything-exp">Everything an Expression</a></li>
-              <li data-target="#quoting" bs-scrollspy><a href="#quoting">Quoting</a></li>
-              <li data-target="#blocks" bs-scrollspy><a href="#blocks">Blocks and Chaining</a></li>
-              <li data-target="#object-props" bs-scrollspy><a href="#object-props">Object Properties</a></li>
-              <li data-target="#functions" bs-scrollspy><a href="#functions">Functions</a></li>
-              <li data-target="#assignment" bs-scrollspy><a href="#assignment">Assignment</a></li>
-              <li data-target="#destructuring" bs-scrollspy><a href="#destructuring">Destructuring Assignment</a></li>
-              <li data-target="#spreading-rest" bs-scrollspy><a href="#spreading-rest">Spreading and Rest Parameter</a></li>
-              <li data-target="#comprehensions" bs-scrollspy><a href="#comprehensions">Comprehensions</a></li>
-              <li data-target="#conditionals" bs-scrollspy><a href="#conditionals">Conditionals</a></li>
-              <li data-target="#loops" bs-scrollspy><a href="#loops">Loops</a></li>
-              <li data-target="#macros" bs-scrollspy><a href="#macros">Macros</a></li>
-              <li data-target="#built-ins" bs-scrollspy><a href="#built-ins">Built-ins and Embedding</a></li>
-              <li data-target="#style" bs-scrollspy><a href="#style">Style</a></li>
-              <li data-target="#known-bugs" bs-scrollspy><a href="#known-bugs">Known Bugs and NYI</a></li>
-              <li data-target="#why" bs-scrollspy><a href="#why">Why Use Jisp</a></li>
-              <li data-target="#todo-upcoming" bs-scrollspy><a href="#todo-upcoming">ToDo Upcoming</a></li>
-              <li data-target="#todo-wishlist" bs-scrollspy><a href="#todo-wishlist">ToDo Wishlist</a></li>
-              <li data-target="#acknowledgements" bs-scrollspy><a href="#acknowledgements">Acknowledgements</a></li>
+              <li data-target="#installation"><a href="#installation">Installation and Usage</a></li>
+              <li data-target="#code-structure"><a href="#code-structure">Code Structure</a></li>
+              <li data-target="#everything-exp"><a href="#everything-exp">Everything an Expression</a></li>
+              <li data-target="#quoting"><a href="#quoting">Quoting</a></li>
+              <li data-target="#blocks"><a href="#blocks">Blocks and Chaining</a></li>
+              <li data-target="#object-props"><a href="#object-props">Object Properties</a></li>
+              <li data-target="#functions"><a href="#functions">Functions
+                  <ul class="nav">
+                    <li data-target="#definition"><a href="#definition">Definition</a></li>
+                    <li data-target="#call-return"><a href="#call-return">Calling and Returning</a></li>
+                    <li data-target="#lambda"><a href="#lambda">Lambda Syntax</a></li>
+                    <li data-target="#let"><a href="#let">Let</a></li>
+                  </ul></a></li>
+              <li data-target="#assignment"><a href="#assignment">Assignment</a></li>
+              <li data-target="#destructuring"><a href="#destructuring">Destructuring Assignment</a></li>
+              <li data-target="#spreading-rest"><a href="#spreading-rest">Spreading and Rest Parameter
+                  <ul class="nav">
+                    <li data-target="#spread-into-list"><a href="#spread-into-list">Spread Into List</a></li>
+                    <li data-target="#argument-spread"><a href="#argument-spread">Argument Spread</a></li>
+                    <li data-target="#rest-parameter"><a href="#rest-parameter">Rest Parameter</a></li>
+                  </ul></a></li>
+              <li data-target="#comprehensions"><a href="#comprehensions">Comprehensions</a></li>
+              <li data-target="#conditionals"><a href="#conditionals">Conditionals
+                  <ul class="nav">
+                    <li data-target="#logic"><a href="#logic">Logic</a></li>
+                    <li data-target="#existence"><a href="#existence">Existence</a></li>
+                    <li data-target="#if"><a href="#if">If</a></li>
+                    <li data-target="#switch"><a href="#switch">Switch</a></li>
+                  </ul></a></li>
+              <li data-target="#loops"><a href="#loops">Loops
+                  <ul class="nav">
+                    <li data-target="#over"><a href="#over">Over</a></li>
+                    <li data-target="#for"><a href="#for">For</a></li>
+                    <li data-target="#while"><a href="#while">While</a></li>
+                  </ul></a></li>
+              <li data-target="#macros"><a href="#macros">Macros
+                  <ul class="nav">
+                    <li data-target="#templating"><a href="#templating">Templating</a></li>
+                    <li data-target="#code-construction"><a href="#code-construction">Code Construction</a></li>
+                    <li data-target="#macro-import-export"><a href="#macro-import-export">Macro Import and Export</a></li>
+                    <li data-target="#macro-notes"><a href="#macro-notes">Notes</a></li>
+                  </ul></a></li>
+              <li data-target="#built-ins"><a href="#built-ins">Built-ins and Embedding
+                  <ul class="nav">
+                    <li data-target="#built-in-macros"><a href="#built-in-macros">Macros</a></li>
+                    <li data-target="#built-in-functions"><a href="#built-in-functions">Functions</a></li>
+                    <li data-target="#function-import-export"><a href="#function-import-export">Function Import and Export</a></li>
+                  </ul></a></li>
+              <li data-target="#style"><a href="#style">Style</a></li>
+              <li data-target="#known-bugs"><a href="#known-bugs">Known Bugs and NYI</a></li>
+              <li data-target="#why"><a href="#why">Why Use Jisp
+                  <ul class="nav">
+                    <li data-target="#why-over"><a href="#why-over">Why Jisp Over [insert dialect X]</a></li>
+                  </ul></a></li>
+              <li data-target="#todo-upcoming"><a href="#todo-upcoming">ToDo Upcoming</a></li>
+              <li data-target="#todo-wishlist"><a href="#todo-wishlist">ToDo Wishlist</a></li>
+              <li data-target="#acknowledgements"><a href="#acknowledgements">Acknowledgements</a></li>
               <li><a ng-click="gotoTop()">Top</a></li>
             </ul>
           </div>
