@@ -1735,17 +1735,17 @@ sqr      ; function embed
 </ul>
 <p>REPL:</p>
 <ul>
-<li>Multiline counts parens inside strings and all.</li>
-<li>Hangs on multiline input with unclosed <code>{</code>.</li>
+<li>Multiline input counts parentheses inside strings and regexes.</li>
 </ul>
 <p>Operator-functions like <code>+</code>:</p>
 <ul>
-<li>[NYI] spread not implemented.</li>
-<li>[NYI] can’t be passed around by name.</li>
+<li>[NYI] Spread not implemented.</li>
+<li>[NYI] Can’t be passed around by name.</li>
+<li>[NYI] More of them need to support multiple arguments.</li>
 </ul>
 <p>Macros quirks:</p>
 <ul>
-<li>Macros break when they contain strings with quotes inside them (probably tokeniser).</li>
+<li>Macros break when they contain strings with quotes inside them (probably the tokeniser).</li>
 <li>Dot and bracket notation on regexes renders as <code>[native code]</code>, use the <code>get</code> and <code>do</code> notation for now.</li>
 <li>In quoted lists in macros, internal quoted lists have to be double-quoted. Todo comprehend and fix.</li>
 <li>(Not sure if bug, todo review.) When passing a non-quoted list to a macro, it’s spread out instead of being passed as a list. (Got fixed? ToDo check.)</li>
@@ -1755,7 +1755,6 @@ sqr      ; function embed
 <p>Hoisting of multi-line statements above their place in code can sometimes cause actions to be executed out of order. Example: a logical conditional like <code>and</code> consisting of block expressions like <code>try</code>.</p>
 <p>[NYI] <code>command</code> doesn’t automatically load the <code>register</code> module.</p>
 <p>Macro embedding-hoisting doesn’t respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are core to the language.</p>
-<p>More ‘operators’ need to support multiple arguments.</p>
 
           <h2 id="why">Why Use Jisp</h2><p>Generally, you should read this documentation to get an idea of the possibilities opened by jisp. Here’s a super short gist.</p>
 <h4 id="simple-and-safe">Simple and Safe</h4>
