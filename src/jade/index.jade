@@ -1109,15 +1109,18 @@ block content
 
         :markdown
           Macros can be imported in three ways:
-          * compile or `require` a macro-containing file before others within the same Node runtime;
-          * use the `importMacros` method of the object exported by the compiler;
+          * compile or `require` a macro-containing file before others within the same Node runtime or on the same browser page;
+          * use the `importMacros` method of the object exported by the compiler or the global `jisp` object in the browser;
           * access the `macros` store exported by the compiler.
 
           Macros are kept in the `macros` object that exists during the compiler runtime. It's exposed in the `jisp` object and can be accessed and modified directly. The recommended way to import macros is by calling the `importMacros` method that takes one or more macro stores and merges them into the macro object, overriding the existing macros. Each store is a hash table where keys are macro names and values are macro functions.
 
               (= myStore (testMacro: (fn `nameToReturn)))
+
               (= jisp (require 'jisp'))
+
               (jisp.importMacros myStore)
+
               (testMacro)  ; replaced by `nameToReturn`
 
         :markdown
@@ -1200,7 +1203,7 @@ block content
 
         :markdown
           Similarly to macros, functions can be imported in two ways:
-          * use the `importFunctions` method of the module object;
+          * use the `importFunctions` method of the object imported with `require` or the global `jisp` object in the browser;
           * directly access and modify the function store exposed by the module.
 
           The global functions are stored in the `functions` object that exists during the compiler runtime. Unlike macros, compiling a file doesn't affect the function store. You need to import them like so:

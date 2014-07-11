@@ -1629,14 +1629,17 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <h3 id="macro-import-export">Macro Import and Export</h3><p>Macros can be imported in three ways:</p>
 <ul>
-<li>compile or <code>require</code> a macro-containing file before others within the same Node runtime;</li>
-<li>use the <code>importMacros</code> method of the object exported by the compiler;</li>
+<li>compile or <code>require</code> a macro-containing file before others within the same Node runtime or on the same browser page;</li>
+<li>use the <code>importMacros</code> method of the object exported by the compiler or the global <code>jisp</code> object in the browser;</li>
 <li>access the <code>macros</code> store exported by the compiler.</li>
 </ul>
 <p>Macros are kept in the <code>macros</code> object that exists during the compiler runtime. It’s exposed in the <code>jisp</code> object and can be accessed and modified directly. The recommended way to import macros is by calling the <code>importMacros</code> method that takes one or more macro stores and merges them into the macro object, overriding the existing macros. Each store is a hash table where keys are macro names and values are macro functions.</p>
 <pre><code>(= myStore (testMacro: (fn `nameToReturn)))
+
 (= jisp (require &#39;jisp&#39;))
+
 (jisp.importMacros myStore)
+
 (testMacro)  ; replaced by `nameToReturn`
 </code></pre><p>The <code>macros</code> object persists between compiler calls. If you’re using a build script that compiles multiple jisp files within the same runtime, you can simply put macros in a file and require or compile it before others. This also works when running jisp scripts directly with <code>require</code>.</p>
 <p>When a macro is referenced in code, it’s embedded at the top of your program and can be assigned and exported from a module. See <code>macros.jisp</code> for an example.</p>
@@ -1740,7 +1743,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
           </isolated-code>
           <h3 id="function-import-export">Function Import and Export</h3><p>Similarly to macros, functions can be imported in two ways:</p>
 <ul>
-<li>use the <code>importFunctions</code> method of the module object;</li>
+<li>use the <code>importFunctions</code> method of the object imported with <code>require</code> or the global <code>jisp</code> object in the browser;</li>
 <li>directly access and modify the function store exposed by the module.</li>
 </ul>
 <p>The global functions are stored in the <code>functions</code> object that exists during the compiler runtime. Unlike macros, compiling a file doesn’t affect the function store. You need to import them like so:</p>
