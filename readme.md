@@ -1,6 +1,6 @@
 ## Description
 
-Jisp is the modern JavaScript for the modern developer. Its macro system lets you treat code as data and write functions that write code for you. Reuse code without runtime limitations, make your code more abstract and shorter, reprogram the language itself.
+Jisp is [the modern JavaScript for the modern developer](http://jisp.io). Its macro system lets you treat code as data and write functions that write code for you. Reuse code without runtime limitations, make your code more abstract and shorter, reprogram the language itself.
 
 Jisp's extremely simple syntax protects against common JS pitfalls, and it builds some common coding patterns right into the language, helping keep your code short.
 
@@ -8,11 +8,11 @@ See the [interactive online documentation](http://jisp.io). You can contribute t
 
 ## Installation and Usage
 
-Get [Node.js](http://nodejs.org). This will give you the local node runtime and the npm package manager. Install jisp from npm:
+Get [Node.js](http://nodejs.org). This will give you the local `node` runtime and the `npm` package manager. Install jisp with `npm`:
 
     $ npm install -g jisp
 
-Alternatively, download the source, run npm install to get the dependencies, and use ./bin/jisp and ./jisp/jisp.js as entry points.
+Alternatively, download the source, run `npm install` to get the dependencies, and use `./bin/jisp` and `./jisp/jisp.js` as entry points.
 
 Require in Node, registering the file extension:
 

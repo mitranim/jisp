@@ -673,7 +673,7 @@
     (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
     ; temporary ban on more-than-single-expression tests in midcases
     ; todo implement later (check if can use multiple exps with commas)
-    (if (> midtest.length 1) (throw (Error (+ (pr "case") " must compile to single expression (todo fix later); got:" (pr midtest)))))
+    (if (> midtest.length 1) (throw (Error (+ (pr "case") " must compile to single expression (todo fix later); got: " (pr midtest)))))
     (macCompileResolve midbranch midbranch)
     (= midcases[i] (test: midtest branch: (collect midbranch collector yes nestedLocal)))))
   (macCompileResolve postbranch postbranch)

@@ -35,11 +35,11 @@
 
 (def maketest condition
      (if (is (typeof condition) "function")
-         (fn tokens (condition tokens[0]))
+         (fn tokens (condition (car tokens)))
          (elif (isRegex condition)
-               (fn tokens (condition.test tokens[0])))
+               (fn tokens (condition.test (car tokens))))
          (elif (isAtom condition)
-               (fn tokens (is tokens[0] condition)))
+               (fn tokens (is (car tokens) condition)))
          (elif (isList condition)  ; assume list of tests
                (fn tokens
                    (if (for cond i condition
@@ -64,7 +64,7 @@
          (= err (if (?! (car tokens))
                     (Error "unexpected end of input, probably missing ) ] }")
                     (Error (+
-                      "unexpected " (pr tokens[0]) " in possible modes: "
+                      "unexpected " (pr (car tokens)) " in possible modes: "
                       (modes.join " | ") "\n\nTested against: " (printConditions conditions)
                       "\n\nTokens: " (spr (tokens.slice 0 10)) (if (> tokens.length 10) " ..." " ") ))))
          (throw err)))
@@ -82,10 +82,10 @@
 ; throws an error if one of the conditions is met
   (for condition args
        (if ((maketest condition) tokens)
-           (throw (Error (+ "unexpected " (pr tokens[0])))))))
+           (throw (Error (+ "unexpected " (pr (car tokens))))))))
 
 (def addProperties tokens lexed
-  (do (while (is tokens[0] "[")
+  (do (while (is (car tokens) "[")
              (= lexed `("get" ,lexed ,(lex tokens "property"))))
       lexed))
 
@@ -110,7 +110,7 @@
                 "["          "property"
                 isPropSyntax "property"))
               (lexed.push `("get" prop)))
-          (while (isnt tokens[0] ")")  ; EOF will be caught by demand
+          (while (isnt (car tokens) ")")  ; EOF will be caught by demand
             (lexed.push
               (demand tokens
                 `("("  ":"  ")") "emptyhash"
@@ -131,7 +131,7 @@
     (case "hash"
       (do (= lexed (:))
           (demand tokens "(" "drop")
-          (while (isnt tokens[0] ")")  ; EOF will be caught by demand
+          (while (isnt (car tokens) ")")  ; EOF will be caught by demand
             (do (= key  (demand tokens isKey "key"))
                 (demand tokens ":" "drop")
                 (= prop (demand tokens
@@ -145,10 +145,10 @@
           (demand tokens ")" "drop")
           (addProperties tokens lexed)))
     (case "property"
-      (if (isDotName tokens[0])
+      (if (isDotName (car tokens))
           ((get (demand tokens isDotName "drop") slice) 1)
-          (elif (or (isBracketName tokens[0])
-                    (isBracketString tokens[0]))
+          (elif (or (isBracketName (car tokens))
+                    (isBracketString (car tokens)))
                 (demand tokens
                   isBracketName   "drop"
                   isBracketString "drop"))

@@ -2624,7 +2624,7 @@
       scope = _ref4[2];
       (typeof midtest === 'undefined') ? midtest = "false" : undefined;
       if ((midtest.length > 1)) {
-        throw Error(pr("case") + " must compile to single expression (todo fix later); got:" + pr(midtest));
+        throw Error(pr("case") + " must compile to single expression (todo fix later); got: " + pr(midtest));
       }
       _ref5 = compileResolve(midbranch, buffer, scope, opts, nested);
       midbranch = _ref5[0];
