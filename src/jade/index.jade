@@ -822,6 +822,26 @@ block content
           = "\n"
           = "; world still spinning\n"
 
+
+        h3#try-catch Try / Catch
+
+        :markdown
+          In jisp, even `try` is an expression. Use it like so:
+
+              (try <try> (catch err <catch>) <finally>)
+              (try <try> (catch err <catch>))
+              (try <try> <catch> <finally>)
+              (try <try> <catch>)
+              (try <try>)
+
+        +code(20)
+          = "(console.log\n"
+          = "  (try (jump '10 meters high')))  ; implicit catch\n"
+          = "\n"
+          = "(try (eat 'a kilogram of sushi')\n"
+          = "  (catch err (console.log err))\n"
+          = "  (finally 'But I’m happy anyway'))\n"
+
         :markdown
           More conditionals coming up. The [macro](#macros) system also makes it trivial to define your own conditionals with arbitrary syntax.
 
@@ -869,7 +889,7 @@ block content
 
               (for [<value> [<index>]] <iterable> <body>)
 
-        +code(12)
+        +code(14)
           = "(for char index 'meow'\n"
           = "  (console.log index char))\n"
           = "\n"
@@ -1325,7 +1345,6 @@ block content
 
           Smaller:
 
-          * Prettier JS output (fewer parens etc.).
           * Distinguish between `;` `;;` and `;;;` comments. `;;` should quote the next form in parentheses, ignoring end-of-line. `;;;` should be a multiline block comment.
           * Auto-reindent plugins for code editors (Sublime Text, Atom).
           * Support for multiple expressions in `elif` tests when possible (comma-separated).
@@ -1370,6 +1389,7 @@ block content
                 li(data-target='#existence'): a(href='#existence') Existence
                 li(data-target='#if'): a(href='#if') If
                 li(data-target='#switch'): a(href='#switch') Switch
+                li(data-target='#try-catch'): a(href='#try-catch') Try / Catch
             li(data-target='#loops'): a(href='#loops') Loops
               ul.nav
                 li(data-target='#over'): a(href='#over') Over

@@ -1265,6 +1265,33 @@ switch  ; switch
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
+          </isolated-code>
+          <h3 id="try-catch">Try / Catch</h3><p>In jisp, even <code>try</code> is an expression. Use it like so:</p>
+<pre><code>(try &lt;try&gt; (catch err &lt;catch&gt;) &lt;finally&gt;)
+(try &lt;try&gt; (catch err &lt;catch&gt;))
+(try &lt;try&gt; &lt;catch&gt; &lt;finally&gt;)
+(try &lt;try&gt; &lt;catch&gt;)
+(try &lt;try&gt;)
+</code></pre>
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(console.log
+  (try (jump '10 meters high')))  ; implicit catch
+
+(try (eat 'a kilogram of sushi')
+  (catch err (console.log err))
+  (finally 'But I’m happy anyway'))
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
           </isolated-code><p>More conditionals coming up. The <a href="#macros">macro</a> system also makes it trivial to define your own conditionals with arbitrary syntax.</p>
 
           <h2 id="loops">Loops</h2><p>Jisp abstracts away the legacy details of JavaScript loops and makes them expressive. It comes with three loops: <code>for</code>, <code>over</code>, and <code>while</code>.</p>
@@ -1325,7 +1352,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
   (console.log index char))
 
 ''
@@ -1337,9 +1364,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1818,7 +1845,6 @@ sqr      ; function embed
 </ul>
 <p>Smaller:</p>
 <ul>
-<li>Prettier JS output (fewer parens etc.).</li>
 <li>Distinguish between <code>;</code> <code>;;</code> and <code>;;;</code> comments. <code>;;</code> should quote the next form in parentheses, ignoring end-of-line. <code>;;;</code> should be a multiline block comment.</li>
 <li>Auto-reindent plugins for code editors (Sublime Text, Atom).</li>
 <li>Support for multiple expressions in <code>elif</code> tests when possible (comma-separated).</li>
@@ -1863,6 +1889,7 @@ sqr      ; function embed
                     <li data-target="#existence"><a href="#existence">Existence</a></li>
                     <li data-target="#if"><a href="#if">If</a></li>
                     <li data-target="#switch"><a href="#switch">Switch</a></li>
+                    <li data-target="#try-catch"><a href="#try-catch">Try / Catch</a></li>
                   </ul></a></li>
               <li data-target="#loops"><a href="#loops">Loops
                   <ul class="nav">
