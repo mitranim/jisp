@@ -33,9 +33,9 @@
       <div class="row">
         <div class="col-lg-9">
           <p class="lead">Jisp is a programmable language that compiles to JavaScript.</p><p>It’s simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp’s extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.</p>
-<p>See the <a href="#why">why jisp</a> section for a gist of why you should use it.</p>
-<p>The jisp compiler is itself written in jisp. See the <a href="https://github.com/Mitranim/jisp">sourcecode on git</a>.</p>
-<p>You can contribute to this documentation by sending pull requests to the <a href="https://github.com/Mitranim/jisp/tree/gh-pages">gh-pages</a> branch of the project repo.</p>
+<p>See <a href="#why">Why Jisp</a> for a gist of why you should use it.</p>
+<p>The jisp compiler is itself written in jisp. See the <a href="https://github.com/Mitranim/jisp">sourcecode on GitHub</a>. See the <a href="https://github.com/Mitranim/jisp/issues">issues</a> section for known problems, upcoming enhancements, and ideas how to contribute to the language.</p>
+<p>You can improve this documentation by sending pull requests to the <a href="https://github.com/Mitranim/jisp/tree/gh-pages">gh-pages</a> branch of the project repository.</p>
 <blockquote>
 <p>All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don’t see them, make sure JS is enabled and refresh the page.</p>
 </blockquote>
@@ -1772,42 +1772,7 @@ sqr      ; function embed
          (+ (init name) (+ 1 (Number (last name))))))
 </code></pre><p>When nesting isn’t deep, try lining up each next indent with the second word on the preceding line (example above). Otherwise, stick with two spaces for each new level.</p>
 
-          <h2 id="known-bugs">Known Bugs and NYI</h2><p>I’ll be gradually moving this to the <a href="https://github.com/Mitranim/jisp/issues">git issues</a>. You can help by opening new issues.</p>
-<p>Syntax (tokeniser and lexer limitations):</p>
-<ul>
-<li>[NYI] <code>.dot</code> and <code>[bracket]</code> notation can’t be used with primitive literals and lists, using <code>(get object property)</code> and <code>do</code> notation for now.</li>
-<li><code>#n</code> notation can’t be used with <code>` </code> <code>...</code> <code>.dot</code> and <code>[bracket]</code> notation, using <code>get</code> and <code>do</code> for now.</li>
-<li>Regex literals are mangled when passed as an argument to a function.</li>
-<li>Whitespace in regexes bugs out the tokeniser regexes.</li>
-<li>Tokeniser can’t handle more than one backslash immediately preceding a quote.</li>
-<li>Tokeniser fails to split <code>&quot;}&quot;}</code>.</li>
-<li>Tokeniser sometimes fails to split <code>[</code> <code>]</code> from other things (example: <code>form[</code> in <code>form[,i]</code>).</li>
-<li>[NYI] Identifier names (variables etc) can’t include non-ASCII letters.</li>
-</ul>
-<p>REPL:</p>
-<ul>
-<li>Multiline input counts parentheses inside strings and regexes.</li>
-</ul>
-<p>Operator-functions like <code>+</code>:</p>
-<ul>
-<li>[NYI] Spread not implemented.</li>
-<li>[NYI] Can’t be passed around by name.</li>
-<li>[NYI] More of them need to support multiple arguments.</li>
-</ul>
-<p>Macros quirks:</p>
-<ul>
-<li>Macros break when they contain strings with quotes inside them (probably the tokeniser).</li>
-<li>Dot and bracket notation on regexes renders as <code>[native code]</code>, use the <code>get</code> and <code>do</code> notation for now.</li>
-<li>In quoted lists in macros, internal quoted lists have to be double-quoted. Todo comprehend and fix.</li>
-<li>(Not sure if bug, todo review.) When passing a non-quoted list to a macro, it’s spread out instead of being passed as a list. (Got fixed? ToDo check.)</li>
-</ul>
-<p>The parser (?) appends an extra <code>undefined</code> to the end of the file if the last line is a comment (got fixed? need to check).</p>
-<p>When using conditionals (e.g. <code>and</code>) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.</p>
-<p>Hoisting of multi-line statements above their place in code can sometimes cause actions to be executed out of order. Example: a logical conditional like <code>and</code> consisting of block expressions like <code>try</code>.</p>
-<p>[NYI] <code>command</code> doesn’t automatically load the <code>register</code> module.</p>
-<p>Macro embedding-hoisting doesn’t respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are core to the language.</p>
-
-          <h2 id="why">Why Use Jisp</h2><p>Generally, you should read this documentation to get an idea of the possibilities opened by jisp. Here’s a super short gist.</p>
+          <h2 id="why">Why Use Jisp</h2><p>You should read this documentation to get a real idea of jisp’s power. But here’s a super short gist.</p>
 <h4 id="simple-and-safe">Simple and Safe</h4>
 <p>Despite being more powerful, jisp is a lot simpler than JavaScript. Is has practically no syntax; there’s no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.</p>
 <p>It also absracts away legacy implementation details like <code>var</code>, <code>break</code> and the primitive <code>for</code> loop, eliminating entire classes of easy to make and hard to spot errors.</p>
@@ -1827,37 +1792,8 @@ sqr      ; function embed
 <h4 id="axiomatic">Axiomatic</h4>
 <p>Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn’t try to imitate [language X] — or JavaScript, for that matter. It aims to be succinct and get out of your way.</p>
 
-          <h2 id="todo-upcoming">ToDo Upcoming</h2><p>Working on these.</p>
-<ul>
-<li>Fix the known bugs and NYI.</li>
-<li>More built-in macros.</li>
-<li>Embedding of operator-functions to allow passing them around by name (e.g. <code>(arr.sort &gt;)</code>).</li>
-<li>Compiler error messages for when special forms like <code>=</code> and <code>quote</code>, as well as JS keywords, are met outside their destined place (first element in list).</li>
-<li>Lexer or parser error messages for common but hard to spot errors like infix <code>+</code>.</li>
-<li>Polyfill for older engines.</li>
-</ul>
-
-          <h2 id="todo-wishlist">ToDo Wishlist</h2><p>These will take me a while. Get hacking and contribute!</p>
-<p>Bigger:</p>
-<ul>
-<li>A test suite.</li>
-<li>Source map support.</li>
-<li>Syntax highlighting for HTML and language modules for code editors (Sublime Text, Atom).</li>
-<li>Some way of generating guaranteed unique variable names in macros (like <code>gensym</code>). Not sure if necessary.</li>
-<li>Compiler option to only macroexpand and print out expanded jisp code (needs a jisp beautifier).</li>
-</ul>
-<p>Smaller:</p>
-<ul>
-<li>Distinguish between <code>;</code> <code>;;</code> and <code>;;;</code> comments. <code>;;</code> should quote the next form in parentheses, ignoring end-of-line. <code>;;;</code> should be a multiline block comment.</li>
-<li>Auto-reindent plugins for code editors (Sublime Text, Atom).</li>
-<li>Support for multiple expressions in <code>elif</code> tests when possible (comma-separated).</li>
-<li>Support for multiple tests in <code>switch</code>/<code>case</code>.</li>
-<li>Multiline regexes.</li>
-<li>REPL non-verbose option.</li>
-<li>REPL history.</li>
-</ul>
-
-          <h2 id="acknowledgements">Acknowledgements</h2><p>Jisp is massively inspired by <a href="http://coffeescript.org">CoffeeScript</a> and uses bits of its source for CLI utils. Design inspiration from <a href="http://paulgraham.com/arc.html">Arc</a> and the Lisp family of languages, bits from other places. General inspiration from <a href="https://github.com/smihica/arc-js">Arc-js</a>.</p>
+          <h2 id="acknowledgements">Acknowledgements and Notes</h2><p>Jisp is massively inspired by <a href="http://coffeescript.org">CoffeeScript</a> and uses bits of its source for CLI utils. Design inspiration from <a href="http://paulgraham.com/arc.html">Arc</a> and the Lisp family of languages, bits from other places. General inspiration from <a href="https://github.com/smihica/arc-js">Arc-js</a>.</p>
+<p>The author is easily reachable by instant messaging (preferably Skype) or email. See my contacts <a href="http://mitranim.com">here</a>. The email is also a valid Jabber ID.</p>
 <p>Copyright (c) 2014 Mitranim, under the MIT License.</p>
 
         </div>
@@ -1914,14 +1850,11 @@ sqr      ; function embed
                     <li data-target="#function-import-export"><a href="#function-import-export">Function Import and Export</a></li>
                   </ul></a></li>
               <li data-target="#style"><a href="#style">Style</a></li>
-              <li data-target="#known-bugs"><a href="#known-bugs">Known Bugs and NYI</a></li>
               <li data-target="#why"><a href="#why">Why Use Jisp
                   <ul class="nav">
                     <li data-target="#why-over"><a href="#why-over">Why Jisp Over [insert dialect X]</a></li>
                   </ul></a></li>
-              <li data-target="#todo-upcoming"><a href="#todo-upcoming">ToDo Upcoming</a></li>
-              <li data-target="#todo-wishlist"><a href="#todo-wishlist">ToDo Wishlist</a></li>
-              <li data-target="#acknowledgements"><a href="#acknowledgements">Acknowledgements</a></li>
+              <li data-target="#acknowledgements"><a href="#acknowledgements">Acknowledgements and Notes</a></li>
               <li><a ng-click="gotoTop()">Top</a></li>
             </ul>
           </div>

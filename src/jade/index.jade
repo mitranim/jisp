@@ -26,11 +26,11 @@ block content
 
           It's simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp's extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.
 
-          See the [why jisp](#why) section for a gist of why you should use it.
+          See [Why Jisp](#why) for a gist of why you should use it.
 
-          The jisp compiler is itself written in jisp. See the [sourcecode on git](https://github.com/Mitranim/jisp).
+          The jisp compiler is itself written in jisp. See the [sourcecode on GitHub](https://github.com/Mitranim/jisp). See the [issues](https://github.com/Mitranim/jisp/issues) section for known problems, upcoming enhancements, and ideas how to contribute to the language.
 
-          You can contribute to this documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of the project repo.
+          You can improve this documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of the project repository.
 
           > All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don't see them, make sure JS is enabled and refresh the page.
 
@@ -1239,50 +1239,11 @@ block content
 
           When nesting isn't deep, try lining up each next indent with the second word on the preceding line (example above). Otherwise, stick with two spaces for each new level.
 
-        h2#known-bugs Known Bugs and NYI
-
-        :markdown
-          I'll be gradually moving this to the [git issues](https://github.com/Mitranim/jisp/issues). You can help by opening new issues.
-
-          Syntax (tokeniser and lexer limitations):
-          * [NYI] `.dot` and `[bracket]` notation can't be used with primitive literals and lists, using `(get object property)` and `do` notation for now.
-          * `#n` notation can't be used with `` ` `` `...` `.dot` and `[bracket]` notation, using `get` and `do` for now.
-          * Regex literals are mangled when passed as an argument to a function.
-          * Whitespace in regexes bugs out the tokeniser regexes.
-          * Tokeniser can't handle more than one backslash immediately preceding a quote.
-          * Tokeniser fails to split `"}"}`.
-          * Tokeniser sometimes fails to split `[` `]` from other things (example: `form[` in `form[,i]`).
-          * [NYI] Identifier names (variables etc) can't include non-ASCII letters.
-
-          REPL:
-          * Multiline input counts parentheses inside strings and regexes.
-
-          Operator-functions like `+`:
-          * [NYI] Spread not implemented.
-          * [NYI] Can't be passed around by name.
-          * [NYI] More of them need to support multiple arguments.
-
-          Macros quirks:
-          * Macros break when they contain strings with quotes inside them (probably the tokeniser).
-          * Dot and bracket notation on regexes renders as `[native code]`, use the `get` and `do` notation for now.
-          * In quoted lists in macros, internal quoted lists have to be double-quoted. Todo comprehend and fix.
-          * (Not sure if bug, todo review.) When passing a non-quoted list to a macro, it's spread out instead of being passed as a list. (Got fixed? ToDo check.)
-
-          The parser (?) appends an extra `undefined` to the end of the file if the last line is a comment (got fixed? need to check).
-
-          When using conditionals (e.g. `and`) with forms that compile to multiple lines, all but last line will be put before the conditional, executing regardless of which of the tests are passed.
-
-          Hoisting of multi-line statements above their place in code can sometimes cause actions to be executed out of order. Example: a logical conditional like `and` consisting of block expressions like `try`.
-
-          [NYI] `command` doesn't automatically load the `register` module.
-
-          Macro embedding-hoisting doesn't respect global scope, overwrites previously defined names. Not sure what to do about this; it might be a good thing, considering that macros are core to the language.
-
         h2#why Why Use Jisp
 
         :markdown
 
-          Generally, you should read this documentation to get an idea of the possibilities opened by jisp. Here's a super short gist.
+          You should read this documentation to get a real idea of jisp's power. But here's a super short gist.
 
           #### Simple and Safe
 
@@ -1321,45 +1282,12 @@ block content
 
           Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn't try to imitate [language X] — or JavaScript, for that matter. It aims to be succinct and get out of your way.
 
-        h2#todo-upcoming ToDo Upcoming
-
-        :markdown
-          Working on these.
-
-          * Fix the known bugs and NYI.
-          * More built-in macros.
-          * Embedding of operator-functions to allow passing them around by name (e.g. `(arr.sort >)`).
-          * Compiler error messages for when special forms like `=` and `quote`, as well as JS keywords, are met outside their destined place (first element in list).
-          * Lexer or parser error messages for common but hard to spot errors like infix `+`.
-          * Polyfill for older engines.
-
-        h2#todo-wishlist ToDo Wishlist
-
-        :markdown
-          These will take me a while. Get hacking and contribute!
-
-          Bigger:
-
-          * A test suite.
-          * Source map support.
-          * Syntax highlighting for HTML and language modules for code editors (Sublime Text, Atom).
-          * Some way of generating guaranteed unique variable names in macros (like `gensym`). Not sure if necessary.
-          * Compiler option to only macroexpand and print out expanded jisp code (needs a jisp beautifier).
-
-          Smaller:
-
-          * Distinguish between `;` `;;` and `;;;` comments. `;;` should quote the next form in parentheses, ignoring end-of-line. `;;;` should be a multiline block comment.
-          * Auto-reindent plugins for code editors (Sublime Text, Atom).
-          * Support for multiple expressions in `elif` tests when possible (comma-separated).
-          * Support for multiple tests in `switch`/`case`.
-          * Multiline regexes.
-          * REPL non-verbose option.
-          * REPL history.
-
-        h2#acknowledgements Acknowledgements
+        h2#acknowledgements Acknowledgements and Notes
 
         :markdown
           Jisp is massively inspired by [CoffeeScript](http://coffeescript.org) and uses bits of its source for CLI utils. Design inspiration from [Arc](http://paulgraham.com/arc.html) and the Lisp family of languages, bits from other places. General inspiration from [Arc-js](https://github.com/smihica/arc-js).
+
+          The author is easily reachable by instant messaging (preferably Skype) or email. See my contacts [here](http://mitranim.com). The email is also a valid Jabber ID.
 
           Copyright (c) 2014 Mitranim, under the MIT License.
 
@@ -1410,11 +1338,8 @@ block content
                 li(data-target='#built-in-functions'): a(href='#built-in-functions') Functions
                 li(data-target='#function-import-export'): a(href='#function-import-export') Function Import and Export
             li(data-target='#style'): a(href='#style') Style
-            li(data-target='#known-bugs'): a(href='#known-bugs') Known Bugs and NYI
             li(data-target='#why'): a(href='#why') Why Use Jisp
               ul.nav
                 li(data-target='#why-over'): a(href='#why-over') Why Jisp Over [insert dialect X]
-            li(data-target='#todo-upcoming'): a(href='#todo-upcoming') ToDo Upcoming
-            li(data-target='#todo-wishlist'): a(href='#todo-wishlist') ToDo Wishlist
-            li(data-target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements
+            li(data-target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements and Notes
             li: a(ng-click='gotoTop()') Top
