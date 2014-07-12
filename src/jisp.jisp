@@ -596,6 +596,7 @@
 ; (if <test> <then-branch> (elif <test> <elif-branch>)... <else-branch>)
 ; (if <test> <then-branch>)  ;; <else-branch> = undefined
 ; todo if last form in function and no returns inside, end each branch with return instead of collector variable
+; todo compile to `if (test) then;` instead of ternary when there's no `else` branch
 ; what arguments mean:
   ; predicate prebranch   ...midcases postbranch
   ; test      then-branch ...elifs    else-branch
