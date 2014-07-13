@@ -6,5 +6,5 @@
      ($location.hash "top")
      ($anchorScroll)
      ($location.hash ""))))
-  (console.log (jisp.eval '(console.log "If we’re seeing this, jisp.eval works.")'))
+  (console.log (jisp.eval '(prn "If we’re seeing this, jisp.eval works.")'))
 ))) ; / MainControl

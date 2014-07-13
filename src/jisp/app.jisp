@@ -40,7 +40,7 @@
                            (= res (init res))
                            (+= res "\n"))))
       ; recompile src, wrapping it into (console.log (do ... )) for logging
-      (= src (+ "(console.log (do " scope.exampleCode "\n))"))
+      (= src (+ "(prn (do " scope.exampleCode "\n))"))
       (= compiled (jispCompile src))
       ; run and log result
       (try (eval compiled)
