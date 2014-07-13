@@ -24,12 +24,9 @@
 
 (= exports.kwtest (def kwtest str (do
    (= re (RegExp (do (for kw keywords
-                          (+ "^" kw " "))
+                          (+ "^" kw " |^" kw "$"))
                      (.join "|"))))
    (re.test str))))
-   ; (or (/^return/.test str)
-   ;     (/^break/.test str)
-   ;     (/^continue/.test str))))
 
 (= exports.specialValues (= specialValues `(
   "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN"
