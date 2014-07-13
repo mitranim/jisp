@@ -4,32 +4,32 @@
   jisp.require = require;
   compile = jisp.compile;
   jisp.eval = (function(code, options) {
-    (typeof options === 'undefined') ? options = {} : undefined;
+    if ((typeof options === 'undefined')) options = {};
     options.wrap = false;
     return eval(compile(code, options));
   });
   jisp.run = (function(code, options) {
     var compiled;
-    (typeof options === 'undefined') ? options = {} : undefined;
+    if ((typeof options === 'undefined')) options = {};
     options.wrap = false;
     compiled = compile(code, options);
     return Function(compile(code, options))();
   });
-  if ((typeof window === 'undefined')) {}
+  if ((typeof window === 'undefined')) return;
   jisp.load = (function(url, callback, options, hold) {
     var xhr;
-    (typeof options === 'undefined') ? options = {} : undefined;
-    (typeof hold === 'undefined') ? hold = false : undefined;
+    if ((typeof options === 'undefined')) options = {};
+    if ((typeof hold === 'undefined')) hold = false;
     options.sourceFiles = [url];
     xhr = (window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest());
     xhr.open("GET", url, true);
-    ("overrideMimeType" in xhr) ? xhr.overrideMimeType("text/plain") : undefined;
+    if (("overrideMimeType" in xhr)) xhr.overrideMimeType("text/plain");
     xhr.onreadystatechange = (function() {
       var param;
       if ((xhr.readyState === 4)) {
         if ((xhr.status === 0 || xhr.status === 200)) {
           param = [xhr.responseText, options];
-          !hold ? jisp.run.apply(jisp, [].concat(param)) : undefined;
+          if (!hold) jisp.run.apply(jisp, [].concat(param));
         } else {
           throw new Error(("Could not load " + url));
         }
@@ -47,7 +47,7 @@
     _ref = scripts;
     for (_i = 0; _i < _ref.length; ++_i) {
       s = _ref[_i];
-      (s.type === "text/jisp") ? jisps.push(s) : undefined;
+      if ((s.type === "text/jisp")) jisps.push(s);
     }
 
     function execute() {

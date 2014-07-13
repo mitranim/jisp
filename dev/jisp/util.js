@@ -160,8 +160,8 @@
 
   function assertForm(form, min, max, first) {
     var _ref;
-    (typeof min === 'undefined') ? min = 0 : undefined;
-    (typeof max === 'undefined') ? max = Infinity : undefined;
+    if ((typeof min === 'undefined')) min = 0;
+    if ((typeof max === 'undefined')) max = Infinity;
     if (!isList(form)) {
       _ref = undefined;
       throw Error("expecting list, got " + form);
@@ -180,7 +180,7 @@
 
   function assertExp(exp, test, expect) {
     var _ref;
-    (typeof expect === 'undefined') ? expect = "valid expression" : undefined;
+    if ((typeof expect === 'undefined')) expect = "valid expression";
     if (test(exp)) {
       _ref = true;
     } else {
@@ -263,8 +263,8 @@
         buffer[i] = undefined;
       } else {
         res = ((typeof exp === "string") ? exp.trim() : pr(exp));
-        (isHash(exp) || /^function\s*\(/.test(res)) ? res = "(" + res + ")" : undefined;
-        !/:$|\}$|;$/.test(res.slice(-1)) ? res += ";" : undefined;
+        if ((isHash(exp) || /^function\s*\(/.test(res))) res = "(" + res + ")";
+        if (!/:$|\}$|;$/.test(res.slice(-1))) res += ";";
         buffer[i] = res;
       }
     }
@@ -323,17 +323,15 @@
 
   function baseFileName(file, stripExt, useWinPathSep) {
     var pathSep, parts;
-    (typeof stripExt === 'undefined') ? stripExt = false : undefined;
-    (typeof useWinPathSep === 'undefined') ? useWinPathSep = false : undefined;
+    if ((typeof stripExt === 'undefined')) stripExt = false;
+    if ((typeof useWinPathSep === 'undefined')) useWinPathSep = false;
     pathSep = (useWinPathSep ? /\\|\// : /\//);
     parts = file.split(pathSep);
     file = parts.slice(-1)[0];
-    if (!(stripExt && (file.indexOf(".") >= 0))) {
-      return file;
-    }
+    if (!(stripExt && (file.indexOf(".") >= 0))) return file;
     parts = file.split(".");
     parts.pop();
-    ((parts.slice(-1)[0] === "jisp") && (parts.length > 1)) ? parts.pop() : undefined;
+    if (((parts.slice(-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
     return parts.join(".");
   }
   exports.baseFileName = baseFileName;
@@ -342,7 +340,7 @@
     var res;
     res = "";
     while (n > 0) {
-      (n & 1) ? res += str : undefined;
+      if ((n & 1)) res += str;
       n >>>= 1;
       str += str;
     }

@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.12")
+(= exports.version "0.2.13")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -595,7 +595,6 @@
 ; (if <test> <then-branch> (elif <test> <elif-branch>)... <else-branch>)
 ; (if <test> <then-branch>)  ;; <else-branch> = undefined
 ; todo if last form in function and no returns inside, end each branch with return instead of collector variable
-; todo compile to `if (test) then;` instead of ternary when there's no `else` branch
 ; what arguments mean:
   ; predicate prebranch   ...midcases postbranch
   ; test      then-branch ...elifs    else-branch
@@ -611,42 +610,53 @@
   (= nested nestedLocal)
   (macCompileResolve prebranch prebranch)
   (macCompileResolve postbranch postbranch)
-  ; choose between ternary and full form
-  (if (and (is prebranch.length 1) (not (util.kwtest (car prebranch)))
+  ; choose between binary, ternary and full form
+  (if (and (isnt nestedLocal)        ; binary form not an expression!
+           (<= prebranch.length 1)
            (is midcases.length 0)
-           (is postbranch.length 1) (not (util.kwtest (car postbranch))))
-    ; ternary
-    (do (= res (+ (pr predicate) " ? " (pr (car prebranch)) " : " (pr (car postbranch))))
-        (if (and nestedLocal (isnt nestedLocal "parens"))
-            (= res (+ "(" res ")")))
-        (buffer.push res))
-    (do  ; full form
-      (if nestedLocal (macDeclareService collector "_ref"))
-      (= prebranch (collect prebranch collector no nestedLocal))
-      (= postbranch (collect postbranch collector no nestedLocal))
-      (for mid i midcases (do
-        (assertExp mid (fn x (is (x.shift) "elif")) "elif")
-        (= (midtest midbranch) mid)
-        (macCompileResolve midtest midtest "parens")
-        (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
-        ; temporary ban on more-than-single-expression tests in midcases
-        ; todo implement later (check if can use multiple exps with commas)
-        (if (> midtest.length 1) (throw (Error (+ (pr "elif") " must compile to single expression (todo fix later); got:" (pr midtest)))))
-        (macCompileResolve midbranch midbranch)
-        (= midcases[i] (test: midtest branch: (collect midbranch collector no nestedLocal)))))
-      ; compile full form
-      (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
-      (for mid midcases
-        (+= comp (+ " else if (" (spr mid.test) ") { " (render mid.branch) " }")))
-      (if (and (? postbranch)
-               (or (> postbranch.length 1)
-                   (? (car postbranch))))
-          (+= comp (+ " else { " (render postbranch) " }")))
-      (buffer.push comp)
-      (if nestedLocal
-          (buffer.push collector)
-          ; more than 1 element in buffer signals to caller that this is not an expression
-          (buffer.push ""))))))))
+           (or (is postbranch.length 0)
+               (?! (car postbranch))
+               (is (car postbranch) "")))
+    ; binary
+    (do (= res (+ "if (" (pr predicate) ")" (pr (car prebranch)) ";"))  ; print `undefined` if nothing
+        (buffer.push res ""))  ; extra "" signals this is a multi-line statement
+    (elif (and (is prebranch.length 1) (not (util.kwtest (car prebranch)))
+               (is midcases.length 0)
+               (is postbranch.length 1) (not (util.kwtest (car postbranch))))
+      ; ternary
+      (do (= res (+ (pr predicate) " ? "
+                    (or (pr (car prebranch)) undefined) " : "  ; print `undefined` if nothing
+                    (or (pr (car postbranch)) undefined)))     ; print `undefined` if nothing
+          (if (and nestedLocal (isnt nestedLocal "parens"))
+              (= res (+ "(" res ")")))
+          (buffer.push res)))
+      (do  ; full form
+        (if nestedLocal (macDeclareService collector "_ref"))
+        (= prebranch (collect prebranch collector no nestedLocal))
+        (= postbranch (collect postbranch collector no nestedLocal))
+        (for mid i midcases (do
+          (assertExp mid (fn x (is (x.shift) "elif")) "elif")
+          (= (midtest midbranch) mid)
+          (macCompileResolve midtest midtest "parens")
+          (if (?! midtest) (= midtest "false"))  ; JS requires something in that field
+          ; temporary ban on more-than-single-expression tests in midcases
+          ; todo implement later (check if can use multiple exps with commas)
+          (if (> midtest.length 1) (throw (Error (+ (pr "elif") " must compile to single expression (todo fix later); got:" (pr midtest)))))
+          (macCompileResolve midbranch midbranch)
+          (= midcases[i] (test: midtest branch: (collect midbranch collector no nestedLocal)))))
+        ; compile full form
+        (= comp (+ "if (" (pr predicate) ") { " (render prebranch) " } "))
+        (for mid midcases
+          (+= comp (+ " else if (" (spr mid.test) ") { " (render mid.branch) " }")))
+        (if (and (? postbranch)
+                 (or (> postbranch.length 1)
+                     (? (car postbranch))))
+            (+= comp (+ " else { " (render postbranch) " }")))
+        (buffer.push comp)
+        (if nestedLocal
+            (buffer.push collector)
+            ; more than 1 element in buffer signals to caller that this is not an expression
+            (buffer.push ""))))))))
 
 (= specials.switch (macCompileSpecial (code: (do
 ; (switch <exp> (case <test> ... <test> <case-branch>) ... <def-branch>)

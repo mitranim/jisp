@@ -56,16 +56,12 @@
     replCliOpts = {
       useGlobal: true
     };
-    if (opts.version) {
-      return version();
-    }
-    if ((opts.interactive || !opts.arguments.length)) {
-      return require("./repl").start(replCliOpts);
-    }
+    if (opts.version) return version();
+    if ((opts.interactive || !opts.arguments.length)) return require("./repl").start(replCliOpts);
     literals = (opts.run ? opts.arguments.splice(1) : []);
     process.argv = process.argv.slice(0, 1).concat(literals);
     process.argv[0] = 'jisp';
-    opts.output ? opts.output = path.resolve(opts.output) : undefined;
+    if (opts.output) opts.output = path.resolve(opts.output);
     _res = [];
     _ref = opts.arguments;
     for (_i = 0; _i < _ref.length; ++_i) {
@@ -79,7 +75,7 @@
 
   function compilePath(source, topLevel, base) {
     var stats, files, file, code, _i, _res, _ref, _ref0, _ref1, _ref2;
-    if ((([].indexOf.call(sources, source) >= 0) || (!topLevel && (notSources[source] || hidden(source))))) {}
+    if ((([].indexOf.call(sources, source) >= 0) || (!topLevel && (notSources[source] || hidden(source))))) undefined;
     try {
       stats = fs.statSync(source);
     } catch (err) {
@@ -141,9 +137,7 @@
       try {
         fs.statSync(index).isFile() ? undefined : undefined;
       } catch (err) {
-        if (!(err.code === "ENOENT")) {
-          throw err;
-        }
+        if (!(err.code === "ENOENT")) throw err;
       }
     }
     console.error("Missing index.jisp in " + source);
@@ -153,7 +147,7 @@
 
   function compileScript(file, input, base) {
     var o, options, task, t, compiled, message, _ref, _ref0;
-    (typeof base === 'undefined') ? base = null : undefined;
+    if ((typeof base === 'undefined')) base = null;
     o = opts;
     options = compileOptions(file, base);
     try {
@@ -175,7 +169,7 @@
       _ref0 = _ref;
     } catch (err) {
       jisp.emit("failure", err, task);
-      if (jisp.listeners("failure").length) {}
+      if (jisp.listeners("failure").length) undefined;
       message = err.stack || err.toString();
       printWarn(message);
       _ref0 = process.exit(1);
@@ -214,7 +208,7 @@
 
   function outputPath(source, base, extension) {
     var basename, srcDir, dir, _ref;
-    (typeof extension === 'undefined') ? extension = ".js" : undefined;
+    if ((typeof extension === 'undefined')) extension = ".js";
     basename = util.baseFileName(source, true, useWinPathSep);
     srcDir = path.dirname(source);
     if (!opts.output) {
@@ -237,7 +231,7 @@
     function compile() {
       var _ref;
       if (opts.compile) {
-        (js.length <= 0) ? js = " " : undefined;
+        if ((js.length <= 0)) js = " ";
         _ref = fs.writeFile(jsPath, js, (function(err) {
           return (err ? printLine(err.message) : undefined);
         }));

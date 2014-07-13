@@ -18,7 +18,7 @@
   ((Function (compile code options))))))
 
 ; If we're not in a browser environment, end the script
-(if (?! window) (return))
+(if (?! window) return)
 
 ; Load remote script by XHR
 (= jisp.load (fn url callback (options (:)) (hold no) (do

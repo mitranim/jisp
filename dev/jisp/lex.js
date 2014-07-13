@@ -95,9 +95,7 @@
       conditions.push(condition);
       modes.push(mode);
       test = maketest(condition);
-      if (test(tokens)) {
-        return lex(tokens, mode);
-      }
+      if (test(tokens)) return lex(tokens, mode);
     }
     err = ((typeof tokens[0] === 'undefined') ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
     throw err;
@@ -150,7 +148,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0, _ref1;
-    (typeof mode === 'undefined') ? mode = "default" : undefined;
+    if ((typeof mode === 'undefined')) mode = "default";
     switch (mode) {
       case "default":
         _res = [];
@@ -162,7 +160,7 @@
       case "list":
         demand(tokens, "(", "drop");
         lexed = [];
-        (prop = expect(tokens, "[", "property", isPropSyntax, "property")) ? lexed.push(["get", prop]) : undefined;
+        if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
         while (tokens[0] !== ")") {
           lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom"));
         }
