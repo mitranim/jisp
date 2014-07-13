@@ -14,7 +14,7 @@
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      if (typeof(_ref0 = ("^" + kw + " ")) !== 'undefined') _res.push(_ref0);
+      if (typeof(_ref0 = ("^" + kw + " |^" + kw + "$")) !== 'undefined') _res.push(_ref0);
     }
     re = RegExp(_res
       .join("|"));
@@ -419,7 +419,7 @@
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      if (typeof(_ref0 = ("^" + kw + " ")) !== 'undefined') _res.push(_ref0);
+      if (typeof(_ref0 = ("^" + kw + " |^" + kw + "$")) !== 'undefined') _res.push(_ref0);
     }
     re = RegExp(_res
       .join("|"));
@@ -1598,7 +1598,7 @@
     return _res;
   }
   var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.11";
+  exports.version = "0.2.12";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
