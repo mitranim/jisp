@@ -1,8 +1,5 @@
 (angular.module "jispApp"
-  `(
-    ; "ngRoute"
-    ; "ngResource"
-    "ngAnimate"
+  `("ngAnimate"
     "mgcrea.ngStrap"
     "jispApp.controller"))
 
