@@ -106,7 +106,7 @@ block content
 
         +code(24)
           = "; list that compiles to a function call\n"
-          = "(console.log 'Fire in the house!')\n"
+          = "(prn 'Fire in the house!')\n"
           = "\n"
           = "; quoted list — array literal\n"
           = "`(1 NaN 'bison')\n"
@@ -284,7 +284,7 @@ block content
         +code(10)
           = "(def elongate str\n"
           = "  (do (+= str str)\n"
-          = "      (console.log 'duplicated:' str)\n"
+          = "      (prn 'duplicated:' str)\n"
           = "      str))\n"
 
         :markdown
@@ -294,7 +294,7 @@ block content
 
         +code(20)
           = "; take last value\n"
-          = "(console.log (do (= bugs `())\n"
+          = "(prn (do (= bugs `())\n"
           = "  (bugs.push 'butterfree')\n"
           = "  (bugs.push 'beedrill')\n"
           = "  bugs))\n"
@@ -329,7 +329,7 @@ block content
         :markdown
           **[NYI]** You'll be able to access properties of resolved forms:
 
-              (console.log (String 113).length)  ; 3
+              (prn (String 113).length)  ; 3
 
           Until it's implemented, use the `get` form, and `do` for methods (below).
 
@@ -383,7 +383,7 @@ block content
           A function call is a list starting with the function's name or with a form that resolves to a function:
 
         +code(14)
-          = "(= ringMyBell (fn bell (console.log bell)))\n"
+          = "(= ringMyBell (fn bell (prn bell)))\n"
           = "\n"
           = "(ringMyBell '\\x07')\n"
           = "\n"
@@ -395,7 +395,7 @@ block content
         +code(18)
           = "(def numerify x\n"
           = "  (if (isNaN (Number x))\n"
-          = "      (do (console.log 'not a number:' x)\n"
+          = "      (do (prn 'not a number:' x)\n"
           = "          NaN)\n"
           = "      (Number x)))\n"
 
@@ -443,7 +443,7 @@ block content
 
         +code(9)
           = "(let health 100\n"
-          = "  (console.log health))   ; logs 100\n"
+          = "  (prn health))   ; logs 100\n"
           = "\n"
           = "(? health)                ; logs false: out ot scope\n"
 
@@ -453,7 +453,7 @@ block content
         +code(10)
           = "(let plus  110\n"
           = "     minus -12\n"
-          = "     (console.log (^ plus minus)))\n"
+          = "     (prn (^ plus minus)))\n"
           = "\n"
           = "(? plus minus)    ; false: out of scope\n"
 
@@ -545,7 +545,7 @@ block content
         +code(10)
           = "(= pair `('dog' 'lizard'))\n"
           = "\n"
-          = "(console.log 'cat' ...pair)\n"
+          = "(prn 'cat' ...pair)\n"
           = "\n"
           = "; cat dog lizard"
 
@@ -556,31 +556,11 @@ block content
 
         +code(14)
           = "(def categorise quick ...moderate slow\n"
-          = "  (console.log (+ '(' (moderate.join ' ') ')')))\n"
+          = "  (prn (+ '(' (moderate.join ' ') ')')))\n"
           = "\n"
           = "(categorise 'hare' 'turtle' 'human' 'snail')\n"
           = "\n"
           = "; (turtle human)\n"
-
-        h2#comprehensions Comprehensions
-
-        :markdown
-          Other languages typically devise special syntax for list comprehensions (a set builder notation). Jisp's basic features serve as a limited version of list comprehension without any special notation.
-
-          `range` is a trivial built-in function that returns a list from N to M:
-
-        +code(18)
-          = "(range 0 5)\n"
-          = "\n"
-          = "; (0 1 2 3 4 5)\n"
-
-        :markdown
-          `for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:
-
-        +code(18)
-          = "(for x (range 0 6) (* x x))\n"
-          = "\n"
-          = "; (0 1 4 9 16 25 36)"
 
         h2#conditionals Conditionals
 
@@ -764,7 +744,7 @@ block content
           = "; ternary form: single expression per branch\n"
           = "\n"
           = "(if (is 'universe expanding')      ; test\n"
-          = "    (console.log 'flight normal')  ; then-branch\n"
+          = "    (prn 'flight normal')  ; then-branch\n"
           = "    (alert 'catastrophe'))         ; else-branch\n"
           = "\n"
           = "; block form: more than one expression per branch\n"
@@ -814,7 +794,7 @@ block content
           Quite naturally, `switch` is also an expression that resolves to a value:
 
         +code(20)
-          = "(console.log (switch Math.PI\n"
+          = "(prn (switch Math.PI\n"
           = "  (case 1 'welcome to Lineland')\n"
           = "  (case 2 'welcome to Flatland')\n"
           = "  (case 3 'welcome to ancient Egypt')\n"
@@ -835,11 +815,11 @@ block content
               (try <try>)
 
         +code(20)
-          = "(console.log\n"
+          = "(prn\n"
           = "  (try (jump '10 meters high')))  ; implicit catch\n"
           = "\n"
           = "(try (eat 'a kilogram of sushi')\n"
-          = "  (catch err (console.log err))\n"
+          = "  (catch err (prn err))\n"
           = "  (finally 'But I’m happy anyway'))\n"
 
         :markdown
@@ -857,10 +837,10 @@ block content
 
               (over [<value> [<key>]] <iterable> <body>)
 
-        +code(16)
+        +code(18)
           = "(= animals (squirrel: 'Eevee' fox: 'Vulpix'))\n"
           = "\n"
-          = "(over val key animals (console.log key val))\n"
+          = "(over val key animals (prn key val))\n"
           = "\n"
           = "''\n"
           = "; squirrel Eevee\n"
@@ -882,6 +862,17 @@ block content
           = "\n"
           = "; ('PINK' 'YELLOW')\n"
 
+        :markdown
+          Iteration only collects results that are not `undefined`, so you can easily filter them:
+
+        +code(22)
+          = "(= cats (pink: 'Mew' yellow: 'Meowth' white: 'Absol'))\n"
+          = "\n"
+          = "(= mCats\n"
+          = "  (over cat cats\n"
+          = "    (if (is (car cat) 'M')\n"
+          = "        cat)))\n"
+
         h3#for For
 
         :markdown
@@ -889,24 +880,26 @@ block content
 
               (for [<value> [<index>]] <iterable> <body>)
 
-        +code(14)
+        +code(12)
           = "(for char index 'meow'\n"
-          = "  (console.log index char))\n"
+          = "  (prn index char))\n"
           = "\n"
           = "''\n"
-          = "; 0 m\n"
-          = "; 1 e\n"
-          = "; 2 o\n"
-          = "; 3 w\n"
 
         :markdown
-          It resolves to a list of values from each iteration, if asked nicely:
+          It resolves to a list of values from each iteration. Just like `over`, it filters them by `undefined`:
 
-        +code(14)
-          = "(for char index 'winter'\n"
-          = "     (+ index ': ' char))\n"
+        +code(22)
+          = "(= array `(('drink' 'milk') ('sweet' 'icecream') ('drink' 'coffee')))\n"
           = "\n"
-          = "; ('0: w' '1: i' '2: n' '3: t' '4: e' '5: r')\n"
+          = "(prn '-- all:')\n"
+          = "(prn (for x array x))\n"
+          = "\n"
+          = "(prn '')\n"
+          = "\n"
+          = "(prn '-- only drinks:')\n"
+          = "(for x array\n"
+          = "  (if (is (car x) 'drink') x))\n"
 
         :markdown
           **[NYI]**: planned feature. If the iterable is an integer larger than 0, jisp will substitute it for a range starting at 1, making for a repeat-N loop:
@@ -919,18 +912,23 @@ block content
         h3#while While
 
         :markdown
-          For finer-grained control, use the `while` loop. It works like in JavaScript, but like everything in jisp, it's an expression. By default, it resolves to a list of values from each iteration:
+          For finer-grained control, use the `while` loop. It works like in JavaScript, but like everything in jisp, it's an expression. By default, it resolves to a list of values from each iteration. Like `for` and `over`, it filters them by `undefined`, allowing you to skip values:
 
               (while <test> <body>)
 
-        +code(14)
+        +code(22)
           = "(= bugs `('missing comma' 'missing semicolon'))\n"
           = "\n"
-          = "(while (> bugs.length 0)\n"
-          = "       (+ (bugs.shift) ' avoided'))\n"
+          = "(prn\n"
+          = "  (while (> bugs.length 0)\n"
+          = "         (+ (bugs.shift) ' avoided')))\n"
           = "\n"
-          = "; ('missing comma avoided'\n"
-          = ";  'missing semicolon avoided')\n"
+          = "(= array `(0 1 2 3 4))\n"
+          = "\n"
+          = "(= even\n"
+          = "  (while (> array.length 0)\n"
+          = "    (do (= x (array.pop))\n"
+          = "        (if (is (% x 2) 0) x))))\n"
 
         :markdown
           You can also order a final resolved value:
@@ -946,6 +944,33 @@ block content
           = "                (+ 'drunk after ' beers ' beers')))\n"
           = "\n"
           = "; drunk after 10 beers\n"
+
+        h2#comprehensions Comprehensions
+
+        :markdown
+          Other languages typically devise special syntax for list comprehensions (a set builder notation). In jisp, you get the same functionality just by combining its basic features.
+
+          `range` is a trivial built-in function that returns a list from N to M:
+
+        +code(18)
+          = "(range 0 5)\n"
+          = "\n"
+          = "; (0 1 2 3 4 5)\n"
+
+        :markdown
+          `for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:
+
+        +code(18)
+          = "(prn\n"
+          = "  (for x (range 0 6) (* x x)))\n"
+          = "\n"
+          = "; (0 1 4 9 16 25 36)\n"
+          = "\n"
+          = "(for x (range 0 6)\n"
+          = "     (if (is (% x 2) 0)\n"
+          = "         (* x x)))\n"
+          = "\n"
+          = "; (0 4 16 36)\n"
 
         h2#macros Macros
 
@@ -1052,7 +1077,7 @@ block content
           = "  (rev form)))\n"
           = "\n"
           = "(reverse\n"
-          = "  (('world' 'hello ' (() quote) +) console.log))\n"
+          = "  (('world' 'hello ' (() quote) +) prn))\n"
           = "\n"
           = "; try your own reverse code\n"
 
@@ -1145,9 +1170,9 @@ block content
         h3#built-in-macros Macros
 
         :markdown
-          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors.
+          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`.
 
-        +code(22)
+        +code(24)
           = "(car   x)\n"
           = "(head  x)\n"
           = "(cdr   x)\n"
@@ -1160,6 +1185,7 @@ block content
           = "(?     x.y)\n"
           = "(?!    x.y)\n"
           = "(any   x y)\n"
+          = "(prn   x y)\n"
 
         h3#built-in-functions Functions
 
@@ -1313,7 +1339,6 @@ block content
                 li(data-target='#spread-into-list'): a(href='#spread-into-list') Spread Into List
                 li(data-target='#argument-spread'): a(href='#argument-spread') Argument Spread
                 li(data-target='#rest-parameter'): a(href='#rest-parameter') Rest Parameter
-            li(data-target='#comprehensions'): a(href='#comprehensions') Comprehensions
             li(data-target='#conditionals'): a(href='#conditionals') Conditionals
               ul.nav
                 li(data-target='#logic'): a(href='#logic') Logic
@@ -1326,6 +1351,7 @@ block content
                 li(data-target='#over'): a(href='#over') Over
                 li(data-target='#for'): a(href='#for') For
                 li(data-target='#while'): a(href='#while') While
+            li(data-target='#comprehensions'): a(href='#comprehensions') Comprehensions
             li(data-target='#macros'): a(href='#macros') Macros
               ul.nav
                 li(data-target='#templating'): a(href='#templating') Templating

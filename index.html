@@ -105,7 +105,7 @@ jisp&gt;
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">; list that compiles to a function call
-(console.log 'Fire in the house!')
+(prn 'Fire in the house!')
 
 ; quoted list — array literal
 `(1 NaN 'bison')
@@ -377,7 +377,7 @@ null undefined true
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(def elongate str
   (do (+= str str)
-      (console.log 'duplicated:' str)
+      (prn 'duplicated:' str)
       str))
 
                 </textarea>
@@ -396,7 +396,7 @@ null undefined true
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">; take last value
-(console.log (do (= bugs `())
+(prn (do (= bugs `())
   (bugs.push 'butterfree')
   (bugs.push 'beedrill')
   bugs))
@@ -455,7 +455,7 @@ bunny['fluffy']
               </div>
             </div>
           </isolated-code><p><strong>[NYI]</strong> You’ll be able to access properties of resolved forms:</p>
-<pre><code>(console.log (String 113).length)  ; 3
+<pre><code>(prn (String 113).length)  ; 3
 </code></pre><p>Until it’s implemented, use the <code>get</code> form, and <code>do</code> for methods (below).</p>
 
           <isolated-code>
@@ -542,7 +542,7 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= ringMyBell (fn bell (console.log bell)))
+                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= ringMyBell (fn bell (prn bell)))
 
 (ringMyBell '\x07')
 
@@ -564,7 +564,7 @@ bunny['fluffy']
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(def numerify x
   (if (isNaN (Number x))
-      (do (console.log 'not a number:' x)
+      (do (prn 'not a number:' x)
           NaN)
       (Number x)))
 
@@ -644,7 +644,7 @@ bunny['fluffy']
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
-  (console.log health))   ; logs 100
+  (prn health))   ; logs 100
 
 (? health)                ; logs false: out ot scope
 
@@ -664,7 +664,7 @@ bunny['fluffy']
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(let plus  110
      minus -12
-     (console.log (^ plus minus)))
+     (prn (^ plus minus)))
 
 (? plus minus)    ; false: out of scope
 
@@ -820,7 +820,7 @@ mid    ; (8 0)
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= pair `('dog' 'lizard'))
 
-(console.log 'cat' ...pair)
+(prn 'cat' ...pair)
 
 ; cat dog lizard
                 </textarea>
@@ -839,7 +839,7 @@ mid    ; (8 0)
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(def categorise quick ...moderate slow
-  (console.log (+ '(' (moderate.join ' ') ')')))
+  (prn (+ '(' (moderate.join ' ') ')')))
 
 (categorise 'hare' 'turtle' 'human' 'snail')
 
@@ -851,43 +851,6 @@ mid    ; (8 0)
                 <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
                 <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code>
-          <h2 id="comprehensions">Comprehensions</h2><p>Other languages typically devise special syntax for list comprehensions (a set builder notation). Jisp’s basic features serve as a limited version of list comprehension without any special notation.</p>
-<p><code>range</code> is a trivial built-in function that returns a list from N to M:</p>
-
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(range 0 5)
-
-; (0 1 2 3 4 5)
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code><p><code>for</code> and <code>while</code> (see <a href="#loops">Loops</a>) are list-building expressions and can be combined with <code>range</code>, and optionally <code>if</code>, to make a comprehension:</p>
-
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(for x (range 0 6) (* x x))
-
-; (0 1 4 9 16 25 36)
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1161,7 +1124,7 @@ switch  ; switch
                 <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">; ternary form: single expression per branch
 
 (if (is 'universe expanding')      ; test
-    (console.log 'flight normal')  ; then-branch
+    (prn 'flight normal')  ; then-branch
     (alert 'catastrophe'))         ; else-branch
 
 ; block form: more than one expression per branch
@@ -1248,7 +1211,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(console.log (switch Math.PI
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(prn (switch Math.PI
   (case 1 'welcome to Lineland')
   (case 2 'welcome to Flatland')
   (case 3 'welcome to ancient Egypt')
@@ -1276,11 +1239,11 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(console.log
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(prn
   (try (jump '10 meters high')))  ; implicit catch
 
 (try (eat 'a kilogram of sushi')
-  (catch err (console.log err))
+  (catch err (prn err))
   (finally 'But I’m happy anyway'))
 
                 </textarea>
@@ -1302,9 +1265,9 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
 
-(over val key animals (console.log key val))
+(over val key animals (prn key val))
 
 ''
 ; squirrel Eevee
@@ -1313,9 +1276,9 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 16em; min-height: 16em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 16em; min-height: 16em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1345,6 +1308,27 @@ switch  ; switch
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
+          </isolated-code><p>Iteration only collects results that are not <code>undefined</code>, so you can easily filter them:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(= cats (pink: 'Mew' yellow: 'Meowth' white: 'Absol'))
+
+(= mCats
+  (over cat cats
+    (if (is (car cat) 'M')
+        cat)))
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
           </isolated-code>
           <h3 id="for">For</h3><p>When iterating over arrays and strings, you usually want to hit all elements in order and don’t want extra properties tagging along. In those cases, use the <code>for</code> loop:</p>
 <pre><code>(for [&lt;value&gt; [&lt;index&gt;]] &lt;iterable&gt; &lt;body&gt;)
@@ -1352,40 +1336,42 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
-  (console.log index char))
+                <textarea type="text" style="height: 12em; min-height: 12em;" model-init="exampleCode" class="form-control form-code left">(for char index 'meow'
+  (prn index char))
 
 ''
-; 0 m
-; 1 e
-; 2 o
-; 3 w
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 12em; min-height: 12em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
-          </isolated-code><p>It resolves to a list of values from each iteration, if asked nicely:</p>
+          </isolated-code><p>It resolves to a list of values from each iteration. Just like <code>over</code>, it filters them by <code>undefined</code>:</p>
 
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(for char index 'winter'
-     (+ index ': ' char))
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(= array `(('drink' 'milk') ('sweet' 'icecream') ('drink' 'coffee')))
 
-; ('0: w' '1: i' '2: n' '3: t' '4: e' '5: r')
+(prn '-- all:')
+(prn (for x array x))
+
+(prn '')
+
+(prn '-- only drinks:')
+(for x array
+  (if (is (car x) 'drink') x))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1395,26 +1381,31 @@ switch  ; switch
 warcry
 ; waagh! waagh! waagh! waagh! waagh!
 </code></pre>
-          <h3 id="while">While</h3><p>For finer-grained control, use the <code>while</code> loop. It works like in JavaScript, but like everything in jisp, it’s an expression. By default, it resolves to a list of values from each iteration:</p>
+          <h3 id="while">While</h3><p>For finer-grained control, use the <code>while</code> loop. It works like in JavaScript, but like everything in jisp, it’s an expression. By default, it resolves to a list of values from each iteration. Like <code>for</code> and <code>over</code>, it filters them by <code>undefined</code>, allowing you to skip values:</p>
 <pre><code>(while &lt;test&gt; &lt;body&gt;)
 </code></pre>
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
 
-(while (&gt; bugs.length 0)
-       (+ (bugs.shift) ' avoided'))
+(prn
+  (while (&gt; bugs.length 0)
+         (+ (bugs.shift) ' avoided')))
 
-; ('missing comma avoided'
-;  'missing semicolon avoided')
+(= array `(0 1 2 3 4))
+
+(= even
+  (while (&gt; array.length 0)
+    (do (= x (array.pop))
+        (if (is (% x 2) 0) x))))
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1432,6 +1423,51 @@ warcry
                 (+ 'drunk after ' beers ' beers')))
 
 ; drunk after 10 beers
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code>
+          <h2 id="comprehensions">Comprehensions</h2><p>Other languages typically devise special syntax for list comprehensions (a set builder notation). In jisp, you get the same functionality just by combining its basic features.</p>
+<p><code>range</code> is a trivial built-in function that returns a list from N to M:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(range 0 5)
+
+; (0 1 2 3 4 5)
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 18em; min-height: 18em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 18em; min-height: 18em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code><p><code>for</code> and <code>while</code> (see <a href="#loops">Loops</a>) are list-building expressions and can be combined with <code>range</code>, and optionally <code>if</code>, to make a comprehension:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 18em; min-height: 18em;" model-init="exampleCode" class="form-control form-code left">(prn
+  (for x (range 0 6) (* x x)))
+
+; (0 1 4 9 16 25 36)
+
+(for x (range 0 6)
+     (if (is (% x 2) 0)
+         (* x x)))
+
+; (0 4 16 36)
 
                 </textarea>
               </div>
@@ -1562,7 +1598,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
   (rev form)))
 
 (reverse
-  (('world' 'hello ' (() quote) +) console.log))
+  (('world' 'hello ' (() quote) +) prn))
 
 ; try your own reverse code
 
@@ -1650,12 +1686,12 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <h2 id="built-ins">Built-ins and Embedding</h2><p>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</p>
 
-          <h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors.</p>
+          <h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors. <code>prn</code> is a syntax-level alias for <code>console.log</code>.</p>
 
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(car   x)
+                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">(car   x)
 (head  x)
 (cdr   x)
 (tail  x)
@@ -1667,13 +1703,14 @@ Unquote elements with , to resolve (transclude) them during macro call:
 (?     x.y)
 (?!    x.y)
 (any   x y)
+(prn   x y)
 
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1821,7 +1858,6 @@ sqr      ; function embed
                     <li data-target="#argument-spread"><a href="#argument-spread">Argument Spread</a></li>
                     <li data-target="#rest-parameter"><a href="#rest-parameter">Rest Parameter</a></li>
                   </ul></a></li>
-              <li data-target="#comprehensions"><a href="#comprehensions">Comprehensions</a></li>
               <li data-target="#conditionals"><a href="#conditionals">Conditionals
                   <ul class="nav">
                     <li data-target="#logic"><a href="#logic">Logic</a></li>
@@ -1836,6 +1872,7 @@ sqr      ; function embed
                     <li data-target="#for"><a href="#for">For</a></li>
                     <li data-target="#while"><a href="#while">While</a></li>
                   </ul></a></li>
+              <li data-target="#comprehensions"><a href="#comprehensions">Comprehensions</a></li>
               <li data-target="#macros"><a href="#macros">Macros
                   <ul class="nav">
                     <li data-target="#templating"><a href="#templating">Templating</a></li>
