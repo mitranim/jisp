@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.13")
+(= exports.version "0.2.14")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -920,8 +920,8 @@
      (= (name ...body) form)
      (if (?! name) (throw (Error "a macro requires a name")))
      (if (?! body) (throw (Error "a macro requires a body")))
-     (body.unshift "fn")
-     (= (compiled scope) (compileForm body (hoist:`() service:`()) (macro: yes)))
+     (= body `("do" ("fn" ,...body)))
+     (= (compiled scope) (compileForm body (hoist:`() service:`()) (macro: yes isTopLevel: yes)))
      (= rendered         (render compiled))
      (= macros[name]     (jispEval rendered))
      `()))

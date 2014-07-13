@@ -2,7 +2,7 @@
 ; The compiler embeds them into the compiled program
 
 ; Each function MUST NOT enclose any variables. It must be fully self-sufficient when printed with .toString
-; Meaning, all utilities in this file must be macros themselves, and nothing must be imported
+; Meaning, all utilities in this file must be macros, and nothing must be imported
 
 (= exports.concat (def concat …lists
    (do (= _res `())
