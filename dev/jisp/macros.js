@@ -1,4 +1,9 @@
 (function() {
+  var macPrn = function() {
+    var _i;
+    var x = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    return [].concat(["console.log"]).concat(x);
+  };
   var macCar = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -62,27 +67,27 @@
     return [].concat(args);
   }
   var macExist = function() {
-    var value, comp, elements, _i, _i0, _res, _ref;
+    var value, comp, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
       comp = compartmentaliseExist(value);
-      _res.push(((comp.length > 1) ? [].concat(["and"]).concat(comp) : comp[0]));
+      if (typeof(_ref0 = ((comp.length > 1) ? [].concat(["and"]).concat(comp) : comp[0])) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["or"]).concat(elements) : elements[0]);
   };
   var macNotExist = function() {
-    var value, comp, elements, _i, _i0, _res, _ref;
+    var value, comp, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
       comp = compartmentaliseNotExist(value);
-      _res.push(((comp.length > 1) ? [].concat(["or"]).concat(comp) : comp[0]));
+      if (typeof(_ref0 = ((comp.length > 1) ? [].concat(["or"]).concat(comp) : comp[0])) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["and"]).concat(elements) : elements[0]);
@@ -98,19 +103,20 @@
     return [].concat(["isnt", ["typeof", obj]]).concat(types);
   };
   var macAny = function() {
-    var value, elements, _i, _i0, _res, _ref;
+    var value, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
-      _res.push(["and", ["?", value], value]);
+      if (typeof(_ref0 = ["and", ["?", value], value]) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["or"]).concat(elements) : elements[0]);
   };
   var util;
   util = require("./util");
+  exports.prn = macPrn;
   exports.car = macCar;
   exports.head = macCar;
   exports.cdr = macCdr;
@@ -120,7 +126,7 @@
   exports.let = macLet;
 
   function compartmentaliseExist(form) {
-    var i, val, split, _ref, _res, _ref0;
+    var i, val, split, _ref, _res, _ref0, _ref1;
     if ((util.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseExist(form[1])).concat([
         ["isnta", form, "'undefined'"]
@@ -130,9 +136,9 @@
       _ref0 = (split = util.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
-        _res.push(["isnta", split.slice(0, i + 1)
+        if (typeof(_ref1 = ["isnta", split.slice(0, i + 1)
           .join(""), "'undefined'"
-        ]);
+        ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -146,7 +152,7 @@
   exports["?"] = macExist;
 
   function compartmentaliseNotExist(form) {
-    var i, val, split, _ref, _res, _ref0;
+    var i, val, split, _ref, _res, _ref0, _ref1;
     if ((util.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseNotExist(form[1])).concat([
         ["isa", form, "'undefined'"]
@@ -156,9 +162,9 @@
       _ref0 = (split = util.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
-        _res.push(["isa", split.slice(0, i + 1)
+        if (typeof(_ref1 = ["isa", split.slice(0, i + 1)
           .join(""), "'undefined'"
-        ]);
+        ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {

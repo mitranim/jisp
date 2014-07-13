@@ -4,12 +4,12 @@
   exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
 
   function kwtest(str) {
-    var kw, re, _i, _res, _ref;
+    var kw, re, _i, _res, _ref, _ref0;
     _res = [];
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw + " "));
+      if (typeof(_ref0 = ("^" + kw + " ")) !== 'undefined') _res.push(_ref0);
     }
     re = RegExp(_res
       .join("|"));

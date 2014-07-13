@@ -40,8 +40,7 @@
         _ref0 = printConditions(cond);
       } else {
         _ref0 = pr(cond);
-      }
-      _res.push(_ref0);
+      } if (typeof(_ref0) !== 'undefined') _res.push(_ref0);
     }
     return _res
       .join("  ");
@@ -73,8 +72,7 @@
             return _ref1 = false;
           } else {
             _ref1 = undefined;
-          }
-          _res.push(_ref1);
+          } if (typeof(_ref1) !== 'undefined') _res.push(_ref1);
         }
         return (_res ? true : undefined);
       });
@@ -136,8 +134,7 @@
         throw Error("unexpected " + pr(tokens[0]));
       } else {
         _ref0 = undefined;
-      }
-      _res.push(_ref0);
+      } if (typeof(_ref0) !== 'undefined') _res.push(_ref0);
     }
     return _res;
   }
@@ -152,13 +149,13 @@
   addProperties;
 
   function lex(tokens, mode) {
-    var lexed, prop, key, _ref, _res, _ref0;
+    var lexed, prop, key, _ref, _res, _ref0, _ref1;
     (typeof mode === 'undefined') ? mode = "default" : undefined;
     switch (mode) {
       case "default":
         _res = [];
         while (tokens.length > 0) {
-          _res.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop"));
+          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
         }
         _ref = _res;
         break;
@@ -192,16 +189,16 @@
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref0 = demand(tokens, isDotName, "drop").slice(1);
+          _ref1 = demand(tokens, isDotName, "drop").slice(1);
         } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
-          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
+          _ref1 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
         } else {
           demand(tokens, "[", "drop");
           prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom");
           demand(tokens, "]", "drop");
-          _ref0 = prop;
+          _ref1 = prop;
         }
-        _ref = _ref0;
+        _ref = _ref1;
         break;
       case "quote":
         demand(tokens, "`", "drop");

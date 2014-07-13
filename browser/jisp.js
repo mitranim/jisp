@@ -9,12 +9,12 @@
   exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
 
   function kwtest(str) {
-    var kw, re, _i, _res, _ref;
+    var kw, re, _i, _res, _ref, _ref0;
     _res = [];
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw + " "));
+      if (typeof(_ref0 = ("^" + kw + " ")) !== 'undefined') _res.push(_ref0);
     }
     re = RegExp(_res
       .join("|"));
@@ -399,8 +399,7 @@
       } else {
         _ref = undefined;
         break;
-      }
-      _res.push(_ref);
+      } if (typeof(_ref) !== 'undefined') _res.push(_ref);
     }
     return _res;
   }
@@ -415,12 +414,12 @@
   exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
 
   function kwtest(str) {
-    var kw, re, _i, _res, _ref;
+    var kw, re, _i, _res, _ref, _ref0;
     _res = [];
     _ref = keywords;
     for (_i = 0; _i < _ref.length; ++_i) {
       kw = _ref[_i];
-      _res.push(("^" + kw + " "));
+      if (typeof(_ref0 = ("^" + kw + " ")) !== 'undefined') _res.push(_ref0);
     }
     re = RegExp(_res
       .join("|"));
@@ -866,46 +865,46 @@
       return _ref0;
     }),
     "is": (function(args, innerType) {
-      var subj, arg, res, _i, _res, _ref, _ref0;
+      var subj, arg, res, _i, _res, _ref, _ref0, _ref1;
       if ((args.length === 0)) {
-        _ref0 = true;
+        _ref1 = true;
       } else if (args.length === 1) {
-        _ref0 = ("!!" + spr(args));
+        _ref1 = ("!!" + spr(args));
       } else {
         subj = args.shift();
         _res = [];
         _ref = args;
         for (_i = 0; _i < _ref.length; ++_i) {
           arg = _ref[_i];
-          _res.push((pr(subj) + " === " + pr(arg)));
+          if (typeof(_ref0 = (pr(subj) + " === " + pr(arg))) !== 'undefined') _res.push(_ref0);
         }
         res = _res
           .join(" || ");
         (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
-        _ref0 = res;
+        _ref1 = res;
       }
-      return _ref0;
+      return _ref1;
     }),
     "isnt": (function(args, innerType) {
-      var subj, arg, res, _i, _res, _ref, _ref0;
+      var subj, arg, res, _i, _res, _ref, _ref0, _ref1;
       if ((args.length === 0)) {
-        _ref0 = false;
+        _ref1 = false;
       } else if (args.length === 1) {
-        _ref0 = ("!" + spr(args));
+        _ref1 = ("!" + spr(args));
       } else {
         subj = args.shift();
         _res = [];
         _ref = args;
         for (_i = 0; _i < _ref.length; ++_i) {
           arg = _ref[_i];
-          _res.push((pr(subj) + " !== " + pr(arg)));
+          if (typeof(_ref0 = (pr(subj) + " !== " + pr(arg))) !== 'undefined') _res.push(_ref0);
         }
         res = _res
           .join(" && ");
         (innerType && (innerType !== "parens")) ? res = "(" + res + ")" : undefined;
-        _ref0 = res;
+        _ref1 = res;
       }
-      return _ref0;
+      return _ref1;
     }),
     "or": makeop("||", undefined, 1, Infinity, true),
     "and": makeop("&&", undefined, 1, Infinity, true),
@@ -1162,8 +1161,7 @@
         _ref0 = printConditions(cond);
       } else {
         _ref0 = pr(cond);
-      }
-      _res.push(_ref0);
+      } if (typeof(_ref0) !== 'undefined') _res.push(_ref0);
     }
     return _res
       .join("  ");
@@ -1195,8 +1193,7 @@
             return _ref1 = false;
           } else {
             _ref1 = undefined;
-          }
-          _res.push(_ref1);
+          } if (typeof(_ref1) !== 'undefined') _res.push(_ref1);
         }
         return (_res ? true : undefined);
       });
@@ -1258,8 +1255,7 @@
         throw Error("unexpected " + pr(tokens[0]));
       } else {
         _ref0 = undefined;
-      }
-      _res.push(_ref0);
+      } if (typeof(_ref0) !== 'undefined') _res.push(_ref0);
     }
     return _res;
   }
@@ -1274,13 +1270,13 @@
   addProperties;
 
   function lex(tokens, mode) {
-    var lexed, prop, key, _ref, _res, _ref0;
+    var lexed, prop, key, _ref, _res, _ref0, _ref1;
     (typeof mode === 'undefined') ? mode = "default" : undefined;
     switch (mode) {
       case "default":
         _res = [];
         while (tokens.length > 0) {
-          _res.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop"));
+          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
         }
         _ref = _res;
         break;
@@ -1314,16 +1310,16 @@
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref0 = demand(tokens, isDotName, "drop").slice(1);
+          _ref1 = demand(tokens, isDotName, "drop").slice(1);
         } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
-          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
+          _ref1 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
         } else {
           demand(tokens, "[", "drop");
           prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom");
           demand(tokens, "]", "drop");
-          _ref0 = prop;
+          _ref1 = prop;
         }
-        _ref = _ref0;
+        _ref = _ref1;
         break;
       case "quote":
         demand(tokens, "`", "drop");
@@ -1391,6 +1387,11 @@
     })();require['./macros'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
+  var macPrn = function() {
+    var _i;
+    var x = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    return [].concat(["console.log"]).concat(x);
+  };
   var macCar = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
@@ -1454,27 +1455,27 @@
     return [].concat(args);
   }
   var macExist = function() {
-    var value, comp, elements, _i, _i0, _res, _ref;
+    var value, comp, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
       comp = compartmentaliseExist(value);
-      _res.push(((comp.length > 1) ? [].concat(["and"]).concat(comp) : comp[0]));
+      if (typeof(_ref0 = ((comp.length > 1) ? [].concat(["and"]).concat(comp) : comp[0])) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["or"]).concat(elements) : elements[0]);
   };
   var macNotExist = function() {
-    var value, comp, elements, _i, _i0, _res, _ref;
+    var value, comp, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
       comp = compartmentaliseNotExist(value);
-      _res.push(((comp.length > 1) ? [].concat(["or"]).concat(comp) : comp[0]));
+      if (typeof(_ref0 = ((comp.length > 1) ? [].concat(["or"]).concat(comp) : comp[0])) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["and"]).concat(elements) : elements[0]);
@@ -1490,19 +1491,20 @@
     return [].concat(["isnt", ["typeof", obj]]).concat(types);
   };
   var macAny = function() {
-    var value, elements, _i, _i0, _res, _ref;
+    var value, elements, _i, _i0, _res, _ref, _ref0;
     var values = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
     _res = [];
     _ref = values;
     for (_i0 = 0; _i0 < _ref.length; ++_i0) {
       value = _ref[_i0];
-      _res.push(["and", ["?", value], value]);
+      if (typeof(_ref0 = ["and", ["?", value], value]) !== 'undefined') _res.push(_ref0);
     }
     elements = _res;
     return ((elements.length > 1) ? [].concat(["or"]).concat(elements) : elements[0]);
   };
   var util;
   util = require("./util");
+  exports.prn = macPrn;
   exports.car = macCar;
   exports.head = macCar;
   exports.cdr = macCdr;
@@ -1512,7 +1514,7 @@
   exports.let = macLet;
 
   function compartmentaliseExist(form) {
-    var i, val, split, _ref, _res, _ref0;
+    var i, val, split, _ref, _res, _ref0, _ref1;
     if ((util.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseExist(form[1])).concat([
         ["isnta", form, "'undefined'"]
@@ -1522,9 +1524,9 @@
       _ref0 = (split = util.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
-        _res.push(["isnta", split.slice(0, i + 1)
+        if (typeof(_ref1 = ["isnta", split.slice(0, i + 1)
           .join(""), "'undefined'"
-        ]);
+        ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -1538,7 +1540,7 @@
   exports["?"] = macExist;
 
   function compartmentaliseNotExist(form) {
-    var i, val, split, _ref, _res, _ref0;
+    var i, val, split, _ref, _res, _ref0, _ref1;
     if ((util.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseNotExist(form[1])).concat([
         ["isa", form, "'undefined'"]
@@ -1548,9 +1550,9 @@
       _ref0 = (split = util.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
-        _res.push(["isa", split.slice(0, i + 1)
+        if (typeof(_ref1 = ["isa", split.slice(0, i + 1)
           .join(""), "'undefined'"
-        ]);
+        ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -1591,13 +1593,12 @@
       } else {
         _ref = undefined;
         break;
-      }
-      _res.push(_ref);
+      } if (typeof(_ref) !== 'undefined') _res.push(_ref);
     }
     return _res;
   }
-  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, prn, specials, macros, functions;
-  exports.version = "0.2.10";
+  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  exports.version = "0.2.11";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1620,7 +1621,6 @@
   assertExp = util.assertExp;
   functionsRedeclare = [];
   functionsRedefine = [];
-  prn = console.log;
 
   function plusname(name) {
     return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0]))));
@@ -2652,7 +2652,7 @@
     return Array(buffer, scope);
   });
   specials.for = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6;
+    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -2722,13 +2722,25 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    (nestedLocal && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref7 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref7[0];
+        scope = _ref7[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("for (" + key + " = 0; " + key + " < " + ref + ".length; ++" + key + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }");
     nestedLocal ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.over = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6;
+    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -2793,13 +2805,25 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    (nestedLocal && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref7 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref7[0];
+        scope = _ref7[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("for (" + key + " in " + ref + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }");
     nestedLocal ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.while = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, test, body, rvalue, collector, comp, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3;
+    var buffer, formName, nestedLocal, test, body, rvalue, collector, comp, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -2835,15 +2859,27 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    (nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref3 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref3[0];
+        scope = _ref3[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("while (" + pr(test) + ") { " + render(body) + " }");
     if ((form.length === 2)) {
       nestedLocal ? buffer.push(collector) : buffer.push("");
     } else {
-      _ref3 = compileResolve(rvalue, buffer, scope, opts, nested);
-      rvalue = _ref3[0];
-      buffer = _ref3[1];
-      scope = _ref3[2];
+      _ref4 = compileResolve(rvalue, buffer, scope, opts, nested);
+      rvalue = _ref4[0];
+      buffer = _ref4[1];
+      scope = _ref4[2];
       buffer.push(render(rvalue));
     }
     return Array(buffer, scope);

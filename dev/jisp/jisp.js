@@ -20,13 +20,12 @@
       } else {
         _ref = undefined;
         break;
-      }
-      _res.push(_ref);
+      } if (typeof(_ref) !== 'undefined') _res.push(_ref);
     }
     return _res;
   }
-  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, prn, specials, macros, functions;
-  exports.version = "0.2.10";
+  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  exports.version = "0.2.11";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -49,7 +48,6 @@
   assertExp = util.assertExp;
   functionsRedeclare = [];
   functionsRedefine = [];
-  prn = console.log;
 
   function plusname(name) {
     return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0]))));
@@ -1081,7 +1079,7 @@
     return Array(buffer, scope);
   });
   specials.for = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6;
+    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -1151,13 +1149,25 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    (nestedLocal && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref7 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref7[0];
+        scope = _ref7[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("for (" + key + " = 0; " + key + " < " + ref + ".length; ++" + key + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }");
     nestedLocal ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.over = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6;
+    var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -1222,13 +1232,25 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    (nestedLocal && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref7 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref7[0];
+        scope = _ref7[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("for (" + key + " in " + ref + ") { " + value + " = " + ref + "[" + key + "]; " + render(body) + " }");
     nestedLocal ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.while = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, test, body, rvalue, collector, comp, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3;
+    var buffer, formName, nestedLocal, test, body, rvalue, collector, comp, rear, subst, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4;
     (typeof opts === 'undefined') ? opts = {} : undefined;
     buffer = [];
     form = form.slice();
@@ -1264,15 +1286,27 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    (nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0]))) ? body.push(collector + ".push(" + pr(body.pop()) + ")") : undefined;
+    if ((nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0])))) {
+      rear = body.pop();
+      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+        body.push(collector + ".push(" + pr(rear) + ")");
+      } else if (isIdentifier(rear)) {
+        body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
+      } else {
+        _ref3 = declareService("_ref", scope, (opts.function ? args : undefined));
+        subst = _ref3[0];
+        scope = _ref3[1];
+        body.push("if (typeof (" + subst + " = " + pr(rear) + ") !== 'undefined') " + collector + ".push(" + subst + ")");
+      }
+    }
     buffer.push("while (" + pr(test) + ") { " + render(body) + " }");
     if ((form.length === 2)) {
       nestedLocal ? buffer.push(collector) : buffer.push("");
     } else {
-      _ref3 = compileResolve(rvalue, buffer, scope, opts, nested);
-      rvalue = _ref3[0];
-      buffer = _ref3[1];
-      scope = _ref3[2];
+      _ref4 = compileResolve(rvalue, buffer, scope, opts, nested);
+      rvalue = _ref4[0];
+      buffer = _ref4[1];
+      scope = _ref4[2];
       buffer.push(render(rvalue));
     }
     return Array(buffer, scope);

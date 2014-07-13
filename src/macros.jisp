@@ -11,6 +11,12 @@
 
 (= util (require "./util"))
 
+; shorter logging; aren't you tired of typing `console.log`?
+(mac macPrn ...x
+  `(console.log ,...x))
+
+(= exports.prn macPrn)
+
 (mac macCheckVar exp
 ; a very approximate check if exp is an identifier
   (if (and (isa exp "string")

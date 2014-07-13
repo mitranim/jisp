@@ -34,8 +34,7 @@
       } else {
         _ref = undefined;
         break;
-      }
-      _res.push(_ref);
+      } if (typeof(_ref) !== 'undefined') _res.push(_ref);
     }
     return _res;
   }

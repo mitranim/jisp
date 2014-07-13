@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.10")
+(= exports.version "0.2.11")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -38,8 +38,6 @@
    functionsRedefine  `())
 
 ; # Helper functions
-
-(= prn console.log)
 
 ; Adds or increments number at end of string
 (def plusname name
@@ -691,6 +689,25 @@
       ; more than 1 element in buffer signals to caller that this is not an expression
       (buffer.push ""))))))
 
+; Shared collector code for all loops
+(mac macCollect
+  `(do
+    (= rear (body.pop))
+    (if (or (util.isPrimitive       rear)
+            (util.isString          rear)
+            (util.isSpecialValue    rear)
+            (util.isSpecialValueStr rear))
+        ; a literal; just push it
+        (body.push (+ collector ".push(" (pr rear) ")"))
+        ; identifier, can be safely repeated in code, test it and push it
+        (elif (isIdentifier rear)
+              (body.push (+ "if (typeof (" (pr rear) ") !== 'undefined') "
+                            collector ".push(" (pr rear) ")")))
+        ; might contain side effects, reference it, test it, and push it
+        (do (macDeclareService subst "_ref")
+            (body.push (+ "if (typeof (" subst " = " (pr rear) ") !== 'undefined') "
+                          collector ".push(" subst ")" ))))))
+
 ; Mostly the same code for `for` and `over`
 (mac macLoopDefinition (type "for") (ind `"_i")
   `(macCompileSpecial (argsMin: 2 argsMax: 4
@@ -742,8 +759,9 @@
       ; if this isn't nested, further compiled body should be aware of that
       (= nested nestedLocal)
       (macCompileResolve body body)
+      ; only collect if the form is nested, if the last expression isn't a keyword, and it's not undefined, unless it's a literal, in which case it's allowed to be undefined
       (if (and nestedLocal (not (util.kwtest (pr (last body)))))
-          (body.push (+ collector ".push(" (pr (body.pop)) ")")))
+        (macCollect))
       ,(if (is type "for")
         `(buffer.push (+ "for (" key " = 0; " key " < " ref ".length; ++" key ") { " value " = " ref "[" key "]; " (render body) " }"))
         (elif (is type "over")
@@ -778,7 +796,7 @@
     (= nested nestedLocal)
     (macCompileResolve body body)
     (if (and nestedLocal (is form.length 2) (not (util.kwtest (pr (last body)))))
-      (body.push (+ collector ".push(" (pr (body.pop)) ")")))
+      (macCollect))
     (buffer.push (+ "while (" (pr test) ") { " (render body) " }"))
     (if (is form.length 2)
       (if nestedLocal
