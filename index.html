@@ -1355,14 +1355,14 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(= array `(('drink' 'milk') ('sweet' 'icecream') ('drink' 'coffee')))
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(= array `(('drink' 'milk')
+           ('sweet' 'icecream')
+           ('drink' 'coffee')))
 
 (prn '-- all:')
 (prn (for x array x))
 
-(prn '')
-
-(prn '-- only drinks:')
+(prn '\n-- only drinks:')
 (for x array
   (if (is (car x) 'drink') x))
 

@@ -890,14 +890,14 @@ block content
           It resolves to a list of values from each iteration. Just like `over`, it filters them by `undefined`:
 
         +code(22)
-          = "(= array `(('drink' 'milk') ('sweet' 'icecream') ('drink' 'coffee')))\n"
+          = "(= array `(('drink' 'milk')\n"
+          = "           ('sweet' 'icecream')\n"
+          = "           ('drink' 'coffee')))\n"
           = "\n"
           = "(prn '-- all:')\n"
           = "(prn (for x array x))\n"
           = "\n"
-          = "(prn '')\n"
-          = "\n"
-          = "(prn '-- only drinks:')\n"
+          = "(prn '\\n-- only drinks:')\n"
           = "(for x array\n"
           = "  (if (is (car x) 'drink') x))\n"
 
