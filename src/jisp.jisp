@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.9")
+(= exports.version "0.2.10")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -8,8 +8,7 @@
    beautify    (require "js-beautify"))
 
 ; Jisp dependencies
-(= functions   (require "./functions")
-   util        (require "./util")
+(= util        (require "./util")
    ops         (require "./operators")
    operators   ops.operators
    opFuncs     ops.opFuncs
@@ -39,6 +38,8 @@
    functionsRedefine  `())
 
 ; # Helper functions
+
+(= prn console.log)
 
 ; Adds or increments number at end of string
 (def plusname name
@@ -152,7 +153,7 @@
   `(do (assertExp ,name isVarName "valid identifier")
     ,(if override
       `(if (and opts.topScope
-             (of ,name functions)
+             (in ,name (Object.keys functions))
              (not (in ,name scope.hoist))
              (notRedefined ,name))
         ,(if declare
@@ -182,13 +183,13 @@
     (for name scope.hoist
       (if (and (not (in name outerScope.hoist))
                (not (in name args)))
-        (if (of name functions)
+        (if (in name (Object.keys functions))
           (if (and opts.topScope (in name functionsRedeclare))
               (vars.push name)
             (if (notRedefined name)
               (funcs.push name)))
-          (elif (or (of name opFuncs)
-                    (of name macros))
+          (elif (or (in name (Object.keys opFuncs))
+                    (in name (Object.keys macros)))
             (funcs.push name))
           (vars.push name))))
     (for name scope.service
@@ -209,7 +210,7 @@
         (= func (funcs.pop))
         (if (in func funcs)
           (throw (Error (+ "compiler error: duplicate func in declarations:" func))))  ; no pr, expecting string
-        (if (of func functions)
+        (if (in func (Object.keys functions))
           ; embed only if not redeclared or redefined
           (if (notRedefined func)
               (if (and (? functions[func].name) (isnt functions[func].name ""))
@@ -217,10 +218,10 @@
                   (do ,dest (.unshift (functions[func].toString)))
                   ; embed like lambda
                   (do ,dest (.unshift (+ "var " func " = " (functions[func].toString) ";")))))
-          (elif (of func macros)
+          (elif (in func (Object.keys macros))
             (do ,dest (.unshift (+ "var " func " = " (macros[func].toString) ";"))))
             ; ToDo embedding of opFuncs with .toString and renaming of references in code when not first in list
-          (elif (of func opFuncs)
+          (elif (in func (Object.keys opFuncs))
             (do ,dest (.unshift (+ "var " opFuncs[func].name " = " (opFuncs[func].func.toString) ";"))))  ; no pr, expecting strings
           (throw (Error (+ "unrecognised func: " (pr func)))))))
         (for func funcs
@@ -266,12 +267,12 @@
       ; ToDo: check for reserved and forbidden words right here
       ; If name of toprange jisp func, hoist if not redefined earlier
       ; If name of operator, hoist appropriate func and replace atom with func name
-      (if (or (and (of form functions)
+      (if (or (and (in form (Object.keys functions))
                    (notRedefined form))
-              (of form macros))
+              (in form (Object.keys macros)))
         (macDeclareVar form no)
         ; ToDo only do this when not first element in list
-        (elif (of form opFuncs)
+        (elif (in form (Object.keys opFuncs))
           (do
             (macDeclareVar form no)
             (= form opFuncs[form].name))))
@@ -288,9 +289,9 @@
       (if (not (isList form)) (throw (Error (+ "expecting list, got: " (pr form)))))
       (= buffer `())
       (= form (form.slice))  ; duplicate object to avoid changing it for callers
-      (if (of (car form) specials)  ; special forms have their own rules
+      (if (in (car form) (Object.keys specials))  ; special forms have their own rules
         (= (buffer scope) (specials[(car form)] form scope opts nested))
-        (elif (of (car form) macros)
+        (elif (in (car form) (Object.keys macros))
               (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
         (do  ; Not a special form? -> function call
           ; Unset nested (callees assume true)
@@ -299,11 +300,11 @@
           ; Compile first element (compiles to itself if atom)
           (macCompileGetLast (form.shift) first)
           ; If jisp-top-level func, hoist it
-          (if (and (of first functions)
+          (if (and (in first (Object.keys functions))
                    (notRedefined first))
             (macDeclareVar first no))
           ; If operator, check if we're inside compile call to another operator; if not, put this into options
-          (if (of first operators)
+          (if (in first (Object.keys operators))
               (do (if (not opts.compilingOperator) (= isOuterOperator yes))
                   (= innerType              (or nestedLocal (is opts.compilingOperator))
                      opts.compilingOperator yes))
@@ -322,7 +323,7 @@
                      (= form[i] arg)))))
           ; Compile: simple or with spread
           (if (?! argsSpread)
-            (if (of first operators)
+            (if (in first (Object.keys operators))
                 (buffer.push (operators[first] form innerType))
                 (buffer.push (+ (pr first) "(" (spr form) ")")))
             (do  ; Compile as spread
@@ -331,9 +332,9 @@
               (macCompileGetLast form form)
               ; Embed as function and replace `first`
               ; Only operators that take multiple arguments allow spread; others give a compile error
-              (if (of first operators)
+              (if (in first (Object.keys operators))
                 ; ToDo implement embedding as .toString and renaming of references which are not first element in list
-                (if (and (of first opFuncs)
+                (if (and (in first (Object.keys opFuncs))
                          (spr opFuncs[first]))
                     (do (macDeclareVar first no)
                         (= first opFuncs[first].name))
@@ -905,7 +906,7 @@
     (elif (util.isList form)
       (if (is (car form) "mac")
         (= form (parseMacros form))
-        (elif (of (car form) macros) (do
+        (elif (in (car form) (Object.keys macros)) (do
           (= form (macros[(car form)] ...(cdr form)))
           (if (is (typeof form) "undefined") (= form `()))  ; no render
           (= form (expandMacros form))))  ; check if expanded form has new macro definitions or expansions, apply them
@@ -917,6 +918,9 @@
 
 ; # Functions import
 
+; Functions store
+(= functions (:))
+
 (= exports.importFunctions (def importFunctions ...stores
   (do (for store stores
         (over val key store
@@ -925,6 +929,9 @@
               (= functions[val.name] val)
               (= functions[key] val)))))
       functions)))
+
+; Import and merge functions
+(importFunctions (require "./functions"))
 
 ; # Export
 
