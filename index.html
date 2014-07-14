@@ -6,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Mitranim">
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
-    <script src="js/jisp.js" charset="utf-8"></script>
-    <script src="js/app.js" charset="utf-8"></script>
+    <script src="/js/jisp.js" charset="utf-8"></script>
+    <script src="/js/app.js" charset="utf-8"></script>
     <!--HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries
     -->
     <!--
@@ -1661,7 +1661,25 @@ Unquote elements with , to resolve (transclude) them during macro call:
   (.pipe (handle (gulp.dest &#39;public/js/tmp/&#39;))))))
 </code></pre><p>And it replaces the macro call before the code is compiled.</p>
 <p>We’ve just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See <code>jisp.jisp</code> for bigger examples.</p>
+<p>Finally, macros can self-expand on definition:</p>
 
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">((mac pr x `(process.stdout.write ,x)) 'hello world')
+
+((mac add ...x `(+ ,...x)) 99 44 11)
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 10em; min-height: 10em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 10em; min-height: 10em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code>
           <h3 id="macro-import-export">Macro Import and Export</h3><p>Macros can be imported in three ways:</p>
 <ul>
 <li>compile or <code>require</code> a macro-containing file before others within the same Node runtime or on the same browser page;</li>

@@ -1128,6 +1128,13 @@ block content
 
           We've just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See `jisp.jisp` for bigger examples.
 
+          Finally, macros can self-expand on definition:
+
+        +code(10)
+          = "((mac pr x `(process.stdout.write ,x)) 'hello world')\n"
+          = "\n"
+          = "((mac add ...x `(+ ,...x)) 99 44 11)\n"
+
         h3#macro-import-export Macro Import and Export
 
         :markdown
