@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.15")
+(= exports.version "0.2.16")
 
 ; External dependencies
 (= vm          (require "vm")
@@ -914,7 +914,7 @@
                    (if (is (car form) "mac")
                        (= form (makeMacro (cdr form)))
                        ; self-expanding definition: ((mac x)) -> (x)
-                       (elif (and (is form.length 1)
+                       (elif (and (>= form.length 1)
                                   (util.isList (car form))
                                   (is (car (car form)) "mac"))
                              (= (car form) (makeMacro (cdr (car form)) yes)))
