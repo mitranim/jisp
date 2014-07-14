@@ -25,7 +25,7 @@
     return _res;
   }
   var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.14";
+  exports.version = "0.2.15";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1446,6 +1446,8 @@
     } else if (util.isList(form)) {
       if ((form[0] === "mac")) {
         form = makeMacro(form.slice(1));
+      } else if ((form.length === 1) && util.isList(form[0]) && (form[0][0] === "mac")) {
+        form[0] = makeMacro(form[0].slice(1), true);
       } else {
         _ref0 = form;
         for (i = 0; i < _ref0.length; ++i) {
@@ -1458,7 +1460,7 @@
   }
   parseMacros;
 
-  function makeMacro(form) {
+  function makeMacro(form, selfExpand) {
     var name, body, compiled, scope, rendered, _ref, _i, _ref0, _i0;
     _ref = form;
     name = _ref[0];
@@ -1477,7 +1479,7 @@
     scope = _ref0[1];
     rendered = render(compiled);
     macros[name] = jispEval(rendered);
-    return [];
+    return (selfExpand ? name : []);
   }
   makeMacro;
 
