@@ -445,7 +445,7 @@ block content
           = "(let health 100\n"
           = "  (prn health))   ; logs 100\n"
           = "\n"
-          = "(? health)                ; logs false: out ot scope\n"
+          = "(? health)        ; false: out ot scope\n"
 
         :markdown
           Just like assignment, it takes variables in pairs:
@@ -469,10 +469,8 @@ block content
               (= var)
 
         +code(10)
-          = "; assign a literal\n"
           = "(= newvar 'some value')\n"
           = "\n"
-          = "; assign an expression\n"
           = "(= pi (if (is 2 3) NaN Math.PI))"
 
         :markdown
@@ -734,21 +732,22 @@ block content
         h3#if If
 
         :markdown
-          Like everything in jisp, `if` is a single form that resolves to a value. When possible, it compiles into the ternary form. You can assign an `if` to a variable or return it from a function.
+          Like everything in jisp, `if` is a single form that resolves to a value. When possible, it compiles into the ternary or binary form. You can assign an `if` to a variable or return it from a function.
 
               (if <test> <then> [<elif test then> ...] <else>)
               (if <test> <then> <else>)
               (if <test> <then>)
 
         +code(22)
-          = "; ternary form: single expression per branch\n"
+          = "; binary form: single statement\n"
+          = "(if true (prn 'breaking off'))\n"
           = "\n"
+          = "; ternary form: single expression per branch\n"
           = "(if (is 'universe expanding')      ; test\n"
-          = "    (prn 'flight normal')  ; then-branch\n"
+          = "    (prn 'flight normal')          ; then-branch\n"
           = "    (alert 'catastrophe'))         ; else-branch\n"
           = "\n"
           = "; block form: more than one expression per branch\n"
-          = "\n"
           = "(if hunting\n"
           = "    (do (= beast (randomBeast))\n"
           = "        (shoot beast))             ; then-branch\n"
@@ -758,19 +757,19 @@ block content
           Like everything else, the block form resolves to a value that can be assigned or returned:
 
         +code(20)
-          = "(def hashToArray form\n"
-          = "  (if (isa form 'object')\n"
-          = "    (over val key form\n"
-          = "      (+ key ': ' val))))\n"
+          = "((def truthiness x\n"
+          = "  (if x\n"
+          = "    (do (prn 'truthy') x)\n"
+          = "    (do (prn 'falsy')  false)))\n"
           = "\n"
-          = "; resolves to a value eventually returned by the function\n"
+          = "Infinity)\n"
 
         :markdown
           Else-ifs are special forms _inside_ the `if` expression. The last non-elif expression is taken as the else-branch (undefined if omitted).
 
               (elif <test> <branch>)
 
-        +code(14)
+        +code(16)
           = "(if hungry\n"
           = "    (eat)                   ; then-branch\n"
           = "    (elif thirsty (drink))\n"
@@ -784,7 +783,9 @@ block content
 
               (switch <predicate> [<case test body> ...] <default>)
 
-        +code(16)
+        +code(20)
+          = "(= x 0)\n"
+          = "\n"
           = "(switch x\n"
           = "  (case -1 'negative one')\n"
           = "  (case 0  'zero-ish')\n"
@@ -793,15 +794,12 @@ block content
         :markdown
           Quite naturally, `switch` is also an expression that resolves to a value:
 
-        +code(20)
+        +code(24)
           = "(prn (switch Math.PI\n"
           = "  (case 1 'welcome to Lineland')\n"
           = "  (case 2 'welcome to Flatland')\n"
           = "  (case 3 'welcome to ancient Egypt')\n"
           = "  'world still spinning'))\n"
-          = "\n"
-          = "; world still spinning\n"
-
 
         h3#try-catch Try / Catch
 
@@ -814,7 +812,7 @@ block content
               (try <try> <catch>)
               (try <try>)
 
-        +code(20)
+        +code(22)
           = "(prn\n"
           = "  (try (jump '10 meters high')))  ; implicit catch\n"
           = "\n"
@@ -828,7 +826,7 @@ block content
         h2#loops Loops
 
         :markdown
-          Jisp abstracts away the legacy details of JavaScript loops and makes them expressive. It comes with three loops: `for`, `over`, and `while`.
+          Jisp abstracts away the legacy details of JavaScript loops and makes them a lot more expressive. It comes with three loops: `for`, `over`, and `while`.
 
         h3#over Over
 
@@ -1320,52 +1318,52 @@ block content
       .col-lg-3
         .bs-sidebar.hidden-print(role='complementary' bs-affix bs-scrollspy-list)
           ul.nav.bs-sidenav
-            li(data-target='#installation'): a(href='#installation') Installation and Usage
-            li(data-target='#code-structure'): a(href='#code-structure') Code Structure
-            li(data-target='#everything-exp'): a(href='#everything-exp') Everything an Expression
-            li(data-target='#quoting'): a(href='#quoting') Quoting
-            li(data-target='#blocks'): a(href='#blocks') Blocks and Chaining
-            li(data-target='#object-props'): a(href='#object-props') Object Properties
-            li(data-target='#functions'): a(href='#functions') Functions
+            li(target='#installation'): a(href='#installation') Installation and Usage
+            li(target='#code-structure'): a(href='#code-structure') Code Structure
+            li(target='#everything-exp'): a(href='#everything-exp') Everything an Expression
+            li(target='#quoting'): a(href='#quoting') Quoting
+            li(target='#blocks'): a(href='#blocks') Blocks and Chaining
+            li(target='#object-props'): a(href='#object-props') Object Properties
+            li(target='#functions'): a(href='#functions') Functions
               ul.nav
-                li(data-target='#definition'): a(href='#definition') Definition
-                li(data-target='#call-return'): a(href='#call-return') Calling and Returning
-                li(data-target='#lambda'): a(href='#lambda') Lambda Syntax
-                li(data-target='#let'): a(href='#let') Let
-            li(data-target='#assignment'): a(href='#assignment') Assignment
-            li(data-target='#destructuring'): a(href='#destructuring') Destructuring Assignment
-            li(data-target='#spreading-rest'): a(href='#spreading-rest') Spreading and Rest Parameter
+                li(target='#definition'): a(href='#definition') Definition
+                li(target='#call-return'): a(href='#call-return') Calling and Returning
+                li(target='#lambda'): a(href='#lambda') Lambda Syntax
+                li(target='#let'): a(href='#let') Let
+            li(target='#assignment'): a(href='#assignment') Assignment
+            li(target='#destructuring'): a(href='#destructuring') Destructuring Assignment
+            li(target='#spreading-rest'): a(href='#spreading-rest') Spreading and Rest Parameter
               ul.nav
-                li(data-target='#spread-into-list'): a(href='#spread-into-list') Spread Into List
-                li(data-target='#argument-spread'): a(href='#argument-spread') Argument Spread
-                li(data-target='#rest-parameter'): a(href='#rest-parameter') Rest Parameter
-            li(data-target='#conditionals'): a(href='#conditionals') Conditionals
+                li(target='#spread-into-list'): a(href='#spread-into-list') Spread Into List
+                li(target='#argument-spread'): a(href='#argument-spread') Argument Spread
+                li(target='#rest-parameter'): a(href='#rest-parameter') Rest Parameter
+            li(target='#conditionals'): a(href='#conditionals') Conditionals
               ul.nav
-                li(data-target='#logic'): a(href='#logic') Logic
-                li(data-target='#existence'): a(href='#existence') Existence
-                li(data-target='#if'): a(href='#if') If
-                li(data-target='#switch'): a(href='#switch') Switch
-                li(data-target='#try-catch'): a(href='#try-catch') Try / Catch
-            li(data-target='#loops'): a(href='#loops') Loops
+                li(target='#logic'): a(href='#logic') Logic
+                li(target='#existence'): a(href='#existence') Existence
+                li(target='#if'): a(href='#if') If
+                li(target='#switch'): a(href='#switch') Switch
+                li(target='#try-catch'): a(href='#try-catch') Try / Catch
+            li(target='#loops'): a(href='#loops') Loops
               ul.nav
-                li(data-target='#over'): a(href='#over') Over
-                li(data-target='#for'): a(href='#for') For
-                li(data-target='#while'): a(href='#while') While
-            li(data-target='#comprehensions'): a(href='#comprehensions') Comprehensions
-            li(data-target='#macros'): a(href='#macros') Macros
+                li(target='#over'): a(href='#over') Over
+                li(target='#for'): a(href='#for') For
+                li(target='#while'): a(href='#while') While
+            li(target='#comprehensions'): a(href='#comprehensions') Comprehensions
+            li(target='#macros'): a(href='#macros') Macros
               ul.nav
-                li(data-target='#templating'): a(href='#templating') Templating
-                li(data-target='#code-construction'): a(href='#code-construction') Code Construction
-                li(data-target='#macro-import-export'): a(href='#macro-import-export') Macro Import and Export
-                li(data-target='#macro-notes'): a(href='#macro-notes') Notes
-            li(data-target='#built-ins'): a(href='#built-ins') Built-ins and Embedding
+                li(target='#templating'): a(href='#templating') Templating
+                li(target='#code-construction'): a(href='#code-construction') Code Construction
+                li(target='#macro-import-export'): a(href='#macro-import-export') Macro Import and Export
+                li(target='#macro-notes'): a(href='#macro-notes') Notes
+            li(target='#built-ins'): a(href='#built-ins') Built-ins and Embedding
               ul.nav
-                li(data-target='#built-in-macros'): a(href='#built-in-macros') Macros
-                li(data-target='#built-in-functions'): a(href='#built-in-functions') Functions
-                li(data-target='#function-import-export'): a(href='#function-import-export') Function Import and Export
-            li(data-target='#style'): a(href='#style') Style
-            li(data-target='#why'): a(href='#why') Why Use Jisp
+                li(target='#built-in-macros'): a(href='#built-in-macros') Macros
+                li(target='#built-in-functions'): a(href='#built-in-functions') Functions
+                li(target='#function-import-export'): a(href='#function-import-export') Function Import and Export
+            li(target='#style'): a(href='#style') Style
+            li(target='#why'): a(href='#why') Why Use Jisp
               ul.nav
-                li(data-target='#why-over'): a(href='#why-over') Why Jisp Over [insert dialect X]
-            li(data-target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements and Notes
+                li(target='#why-over'): a(href='#why-over') Why Jisp Over [insert dialect X]
+            li(target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements and Notes
             li: a(ng-click='gotoTop()') Top

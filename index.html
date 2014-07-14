@@ -646,7 +646,7 @@ bunny['fluffy']
                 <textarea type="text" style="height: 9em; min-height: 9em;" model-init="exampleCode" class="form-control form-code left">(let health 100
   (prn health))   ; logs 100
 
-(? health)                ; logs false: out ot scope
+(? health)        ; false: out ot scope
 
                 </textarea>
               </div>
@@ -686,10 +686,8 @@ bunny['fluffy']
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">; assign a literal
-(= newvar 'some value')
+                <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">(= newvar 'some value')
 
-; assign an expression
 (= pi (if (is 2 3) NaN Math.PI))
                 </textarea>
               </div>
@@ -1113,7 +1111,7 @@ switch  ; switch
             </div>
           </isolated-code><p>Single conditional and no runtime error.</p>
 
-          <h3 id="if">If</h3><p>Like everything in jisp, <code>if</code> is a single form that resolves to a value. When possible, it compiles into the ternary form. You can assign an <code>if</code> to a variable or return it from a function.</p>
+          <h3 id="if">If</h3><p>Like everything in jisp, <code>if</code> is a single form that resolves to a value. When possible, it compiles into the ternary or binary form. You can assign an <code>if</code> to a variable or return it from a function.</p>
 <pre><code>(if &lt;test&gt; &lt;then&gt; [&lt;elif test then&gt; ...] &lt;else&gt;)
 (if &lt;test&gt; &lt;then&gt; &lt;else&gt;)
 (if &lt;test&gt; &lt;then&gt;)
@@ -1121,14 +1119,15 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">; ternary form: single expression per branch
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">; binary form: single statement
+(if true (prn 'breaking off'))
 
+; ternary form: single expression per branch
 (if (is 'universe expanding')      ; test
-    (prn 'flight normal')  ; then-branch
+    (prn 'flight normal')          ; then-branch
     (alert 'catastrophe'))         ; else-branch
 
 ; block form: more than one expression per branch
-
 (if hunting
     (do (= beast (randomBeast))
         (shoot beast))             ; then-branch
@@ -1148,12 +1147,12 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(def hashToArray form
-  (if (isa form 'object')
-    (over val key form
-      (+ key ': ' val))))
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">((def truthiness x
+  (if x
+    (do (prn 'truthy') x)
+    (do (prn 'falsy')  false)))
 
-; resolves to a value eventually returned by the function
+Infinity)
 
                 </textarea>
               </div>
@@ -1170,32 +1169,11 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 14em; min-height: 14em;" model-init="exampleCode" class="form-control form-code left">(if hungry
+                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(if hungry
     (eat)                   ; then-branch
     (elif thirsty (drink))
     (elif tired (sleep))
     (write code))           ; else-branch
-
-                </textarea>
-              </div>
-              <div class="col-md-6 col-code right">
-                <pre style="height: 14em; min-height: 14em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
-                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 14em; min-height: 14em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
-                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
-              </div>
-            </div>
-          </isolated-code>
-          <h3 id="switch">Switch</h3><p>A <code>switch</code> form automatically inserts <code>break;</code> statements, protecting you from accidental fall-through:</p>
-<pre><code>(switch &lt;predicate&gt; [&lt;case test body&gt; ...] &lt;default&gt;)
-</code></pre>
-          <isolated-code>
-            <div class="row">
-              <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 16em; min-height: 16em;" model-init="exampleCode" class="form-control form-code left">(switch x
-  (case -1 'negative one')
-  (case 0  'zero-ish')
-  NaN)
 
                 </textarea>
               </div>
@@ -1206,18 +1184,19 @@ switch  ; switch
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
-          </isolated-code><p>Quite naturally, <code>switch</code> is also an expression that resolves to a value:</p>
-
+          </isolated-code>
+          <h3 id="switch">Switch</h3><p>A <code>switch</code> form automatically inserts <code>break;</code> statements, protecting you from accidental fall-through:</p>
+<pre><code>(switch &lt;predicate&gt; [&lt;case test body&gt; ...] &lt;default&gt;)
+</code></pre>
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(prn (switch Math.PI
-  (case 1 'welcome to Lineland')
-  (case 2 'welcome to Flatland')
-  (case 3 'welcome to ancient Egypt')
-  'world still spinning'))
+                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(= x 0)
 
-; world still spinning
+(switch x
+  (case -1 'negative one')
+  (case 0  'zero-ish')
+  NaN)
 
                 </textarea>
               </div>
@@ -1225,6 +1204,26 @@ switch  ; switch
                 <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
                 <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
+              </div>
+            </div>
+          </isolated-code><p>Quite naturally, <code>switch</code> is also an expression that resolves to a value:</p>
+
+          <isolated-code>
+            <div class="row">
+              <div class="col-md-6 col-code left">
+                <textarea type="text" style="height: 24em; min-height: 24em;" model-init="exampleCode" class="form-control form-code left">(prn (switch Math.PI
+  (case 1 'welcome to Lineland')
+  (case 2 'welcome to Flatland')
+  (case 3 'welcome to ancient Egypt')
+  'world still spinning'))
+
+                </textarea>
+              </div>
+              <div class="col-md-6 col-code right">
+                <pre style="height: 24em; min-height: 24em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
+                <pre style="height: 24em; min-height: 24em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
@@ -1239,7 +1238,7 @@ switch  ; switch
           <isolated-code>
             <div class="row">
               <div class="col-md-6 col-code left">
-                <textarea type="text" style="height: 20em; min-height: 20em;" model-init="exampleCode" class="form-control form-code left">(prn
+                <textarea type="text" style="height: 22em; min-height: 22em;" model-init="exampleCode" class="form-control form-code left">(prn
   (try (jump '10 meters high')))  ; implicit catch
 
 (try (eat 'a kilogram of sushi')
@@ -1249,15 +1248,15 @@ switch  ; switch
                 </textarea>
               </div>
               <div class="col-md-6 col-code right">
-                <pre style="height: 20em; min-height: 20em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="!showJSOutput" class="form-code right">{{compiledCode}}</pre>
                 <button role="button" ng-click="evalJS()" ng-show="!showJSOutput" class="btn btn-sm btn-default button-eval">eval</button>
-                <pre style="height: 20em; min-height: 20em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
+                <pre style="height: 22em; min-height: 22em;" ng-show="showJSOutput" class="form-code right output">{{evalJSOutput}}</pre>
                 <button role="button" ng-click="showJSOutput = false" ng-show="showJSOutput" class="btn btn-sm btn-warning button-eval">close</button>
               </div>
             </div>
           </isolated-code><p>More conditionals coming up. The <a href="#macros">macro</a> system also makes it trivial to define your own conditionals with arbitrary syntax.</p>
 
-          <h2 id="loops">Loops</h2><p>Jisp abstracts away the legacy details of JavaScript loops and makes them expressive. It comes with three loops: <code>for</code>, <code>over</code>, and <code>while</code>.</p>
+          <h2 id="loops">Loops</h2><p>Jisp abstracts away the legacy details of JavaScript loops and makes them a lot more expressive. It comes with three loops: <code>for</code>, <code>over</code>, and <code>while</code>.</p>
 
           <h3 id="over">Over</h3><p>The <code>over</code> loop iterates over values and keys of any object. It also accesses inherited properties and custom prototype methods.</p>
 <pre><code>(over [&lt;value&gt; [&lt;key&gt;]] &lt;iterable&gt; &lt;body&gt;)
@@ -1837,61 +1836,61 @@ sqr      ; function embed
         <div class="col-lg-3">
           <div role="complementary" bs-affix bs-scrollspy-list class="bs-sidebar hidden-print">
             <ul class="nav bs-sidenav">
-              <li data-target="#installation"><a href="#installation">Installation and Usage</a></li>
-              <li data-target="#code-structure"><a href="#code-structure">Code Structure</a></li>
-              <li data-target="#everything-exp"><a href="#everything-exp">Everything an Expression</a></li>
-              <li data-target="#quoting"><a href="#quoting">Quoting</a></li>
-              <li data-target="#blocks"><a href="#blocks">Blocks and Chaining</a></li>
-              <li data-target="#object-props"><a href="#object-props">Object Properties</a></li>
-              <li data-target="#functions"><a href="#functions">Functions
+              <li target="#installation"><a href="#installation">Installation and Usage</a></li>
+              <li target="#code-structure"><a href="#code-structure">Code Structure</a></li>
+              <li target="#everything-exp"><a href="#everything-exp">Everything an Expression</a></li>
+              <li target="#quoting"><a href="#quoting">Quoting</a></li>
+              <li target="#blocks"><a href="#blocks">Blocks and Chaining</a></li>
+              <li target="#object-props"><a href="#object-props">Object Properties</a></li>
+              <li target="#functions"><a href="#functions">Functions
                   <ul class="nav">
-                    <li data-target="#definition"><a href="#definition">Definition</a></li>
-                    <li data-target="#call-return"><a href="#call-return">Calling and Returning</a></li>
-                    <li data-target="#lambda"><a href="#lambda">Lambda Syntax</a></li>
-                    <li data-target="#let"><a href="#let">Let</a></li>
+                    <li target="#definition"><a href="#definition">Definition</a></li>
+                    <li target="#call-return"><a href="#call-return">Calling and Returning</a></li>
+                    <li target="#lambda"><a href="#lambda">Lambda Syntax</a></li>
+                    <li target="#let"><a href="#let">Let</a></li>
                   </ul></a></li>
-              <li data-target="#assignment"><a href="#assignment">Assignment</a></li>
-              <li data-target="#destructuring"><a href="#destructuring">Destructuring Assignment</a></li>
-              <li data-target="#spreading-rest"><a href="#spreading-rest">Spreading and Rest Parameter
+              <li target="#assignment"><a href="#assignment">Assignment</a></li>
+              <li target="#destructuring"><a href="#destructuring">Destructuring Assignment</a></li>
+              <li target="#spreading-rest"><a href="#spreading-rest">Spreading and Rest Parameter
                   <ul class="nav">
-                    <li data-target="#spread-into-list"><a href="#spread-into-list">Spread Into List</a></li>
-                    <li data-target="#argument-spread"><a href="#argument-spread">Argument Spread</a></li>
-                    <li data-target="#rest-parameter"><a href="#rest-parameter">Rest Parameter</a></li>
+                    <li target="#spread-into-list"><a href="#spread-into-list">Spread Into List</a></li>
+                    <li target="#argument-spread"><a href="#argument-spread">Argument Spread</a></li>
+                    <li target="#rest-parameter"><a href="#rest-parameter">Rest Parameter</a></li>
                   </ul></a></li>
-              <li data-target="#conditionals"><a href="#conditionals">Conditionals
+              <li target="#conditionals"><a href="#conditionals">Conditionals
                   <ul class="nav">
-                    <li data-target="#logic"><a href="#logic">Logic</a></li>
-                    <li data-target="#existence"><a href="#existence">Existence</a></li>
-                    <li data-target="#if"><a href="#if">If</a></li>
-                    <li data-target="#switch"><a href="#switch">Switch</a></li>
-                    <li data-target="#try-catch"><a href="#try-catch">Try / Catch</a></li>
+                    <li target="#logic"><a href="#logic">Logic</a></li>
+                    <li target="#existence"><a href="#existence">Existence</a></li>
+                    <li target="#if"><a href="#if">If</a></li>
+                    <li target="#switch"><a href="#switch">Switch</a></li>
+                    <li target="#try-catch"><a href="#try-catch">Try / Catch</a></li>
                   </ul></a></li>
-              <li data-target="#loops"><a href="#loops">Loops
+              <li target="#loops"><a href="#loops">Loops
                   <ul class="nav">
-                    <li data-target="#over"><a href="#over">Over</a></li>
-                    <li data-target="#for"><a href="#for">For</a></li>
-                    <li data-target="#while"><a href="#while">While</a></li>
+                    <li target="#over"><a href="#over">Over</a></li>
+                    <li target="#for"><a href="#for">For</a></li>
+                    <li target="#while"><a href="#while">While</a></li>
                   </ul></a></li>
-              <li data-target="#comprehensions"><a href="#comprehensions">Comprehensions</a></li>
-              <li data-target="#macros"><a href="#macros">Macros
+              <li target="#comprehensions"><a href="#comprehensions">Comprehensions</a></li>
+              <li target="#macros"><a href="#macros">Macros
                   <ul class="nav">
-                    <li data-target="#templating"><a href="#templating">Templating</a></li>
-                    <li data-target="#code-construction"><a href="#code-construction">Code Construction</a></li>
-                    <li data-target="#macro-import-export"><a href="#macro-import-export">Macro Import and Export</a></li>
-                    <li data-target="#macro-notes"><a href="#macro-notes">Notes</a></li>
+                    <li target="#templating"><a href="#templating">Templating</a></li>
+                    <li target="#code-construction"><a href="#code-construction">Code Construction</a></li>
+                    <li target="#macro-import-export"><a href="#macro-import-export">Macro Import and Export</a></li>
+                    <li target="#macro-notes"><a href="#macro-notes">Notes</a></li>
                   </ul></a></li>
-              <li data-target="#built-ins"><a href="#built-ins">Built-ins and Embedding
+              <li target="#built-ins"><a href="#built-ins">Built-ins and Embedding
                   <ul class="nav">
-                    <li data-target="#built-in-macros"><a href="#built-in-macros">Macros</a></li>
-                    <li data-target="#built-in-functions"><a href="#built-in-functions">Functions</a></li>
-                    <li data-target="#function-import-export"><a href="#function-import-export">Function Import and Export</a></li>
+                    <li target="#built-in-macros"><a href="#built-in-macros">Macros</a></li>
+                    <li target="#built-in-functions"><a href="#built-in-functions">Functions</a></li>
+                    <li target="#function-import-export"><a href="#function-import-export">Function Import and Export</a></li>
                   </ul></a></li>
-              <li data-target="#style"><a href="#style">Style</a></li>
-              <li data-target="#why"><a href="#why">Why Use Jisp
+              <li target="#style"><a href="#style">Style</a></li>
+              <li target="#why"><a href="#why">Why Use Jisp
                   <ul class="nav">
-                    <li data-target="#why-over"><a href="#why-over">Why Jisp Over [insert dialect X]</a></li>
+                    <li target="#why-over"><a href="#why-over">Why Jisp Over [insert dialect X]</a></li>
                   </ul></a></li>
-              <li data-target="#acknowledgements"><a href="#acknowledgements">Acknowledgements and Notes</a></li>
+              <li target="#acknowledgements"><a href="#acknowledgements">Acknowledgements and Notes</a></li>
               <li><a ng-click="gotoTop()">Top</a></li>
             </ul>
           </div>

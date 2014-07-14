@@ -9,6 +9,9 @@
   "author": "Mitranim",
   "license": "MIT",
   "homepage": "http://jisp.io",
+  "scripts": {
+    "start": "gulp"
+  },
   "devDependencies": {
     "gulp-concat": "latest",
     "gulp-jisp": "latest",
