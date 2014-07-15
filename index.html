@@ -1667,8 +1667,10 @@ Unquote elements with , to resolve (transclude) them during macro call:
             <div class="row">
               <div class="col-md-6 col-code left">
                 <textarea type="text" style="height: 10em; min-height: 10em;" model-init="exampleCode" class="form-control form-code left">((mac pr x `(process.stdout.write ,x)) 'hello world')
+(pr 'another call')
 
 ((mac add ...x `(+ ,...x)) 99 44 11)
+(add Infinity -Infinity)
 
                 </textarea>
               </div>

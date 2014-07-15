@@ -1132,8 +1132,10 @@ block content
 
         +code(10)
           = "((mac pr x `(process.stdout.write ,x)) 'hello world')\n"
+          = "(pr 'another call')\n"
           = "\n"
           = "((mac add ...x `(+ ,...x)) 99 44 11)\n"
+          = "(add Infinity -Infinity)\n"
 
         h3#macro-import-export Macro Import and Export
 
