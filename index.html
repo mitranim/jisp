@@ -44,7 +44,7 @@
           <h2>Interactive playground</h2>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 36em; min-height: 36em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' autofocus="" class="form-control form-code left">(mac task name ...args (do 
+              <textarea type="text" style="height: 36em; min-height: 36em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" autofocus="" class="form-control form-code left">(mac task name ...args (do 
   (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
   (while (&gt; args.length 0) (do
     (= left  (args.shift)
@@ -102,7 +102,7 @@ jisp&gt;
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; list that compiles to a function call
+              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; list that compiles to a function call
 (prn 'Fire in the house!')
 
 ; quoted list — array literal
@@ -131,7 +131,7 @@ jisp&gt;
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; object literal (hash table)
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; object literal (hash table)
 (place: 'tavern' drink: 'rum')
 
 ; empty object literal
@@ -149,7 +149,7 @@ jisp&gt;
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 28em; min-height: 28em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; number
+              <textarea type="text" style="height: 28em; min-height: 28em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; number
 Infinity
 
 ; string literal
@@ -183,7 +183,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; function call
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; function call
 (alert 'A dragon cometh!')
 
 ; nested call
@@ -201,7 +201,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; operator expression
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; operator expression
 (&amp; 2 3 4)
 (+ 'using jisp' 'you’re' 'awesome')
 
@@ -220,7 +220,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= x `(1 2 3 4))
+              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= x `(1 2 3 4))
 (x.sort &lt;)
 
               </textarea>
@@ -247,7 +247,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; name binding
+              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; name binding
 (= x 10)
 
 ; anonymous function (lambda)
@@ -273,7 +273,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; without quote
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; without quote
 (1 2 3)
 
 ; with quote
@@ -294,7 +294,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; name
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; name
 `myvar
 
 ; string
@@ -313,7 +313,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; without quote
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; without quote
 (+ (^ 2 1) (is 'π' 'Ω'))
 
 ; with quote, invalid javascript
@@ -331,7 +331,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; without unquote: invalid javascript
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; without unquote: invalid javascript
 `((* 2 3) (is true false))
 
 ; with unquote: valid javascript
@@ -351,7 +351,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(def elongate str
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(def elongate str
   (do (+= str str)
       (prn 'duplicated:' str)
       str))
@@ -369,7 +369,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; take last value
+              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; take last value
 (prn (do (= bugs `())
   (bugs.push 'butterfree')
   (bugs.push 'beedrill')
@@ -396,7 +396,7 @@ null undefined true
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= bunny (bouncy: true fluffy: false))
 bunny.bouncy
 bunny['fluffy']
 
@@ -412,7 +412,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(get bunny bouncy)
+              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(get bunny bouncy)
 (get bunny 'fluffy')
 
               </textarea>
@@ -429,7 +429,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 4em; min-height: 4em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(get (String 113) length)
+              <textarea type="text" style="height: 4em; min-height: 4em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(get (String 113) length)
 
               </textarea>
             </div>
@@ -443,7 +443,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(do cartoonSnake
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(do cartoonSnake
    (.crawlForward 10)
    (.turnLeft)
    (['crawlForward'] 5)
@@ -466,7 +466,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(def fact x
+              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(def fact x
   (if (is x 0) 1
       (* x (fact (- x 1)))))
 
@@ -483,7 +483,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(fn first second (+ first second))
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(fn first second (+ first second))
 
 (fn returnMe)
 
@@ -502,7 +502,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= ringMyBell (fn bell (prn bell)))
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= ringMyBell (fn bell (prn bell)))
 
 (ringMyBell '\x07')
 
@@ -520,7 +520,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(def numerify x
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(def numerify x
   (if (isNaN (Number x))
       (do (prn 'not a number:' x)
           NaN)
@@ -539,7 +539,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">((fn (* #0 #2)) 3 100 4)
+              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">((fn (* #0 #2)) 3 100 4)
 
               </textarea>
             </div>
@@ -556,7 +556,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">{alert 'It’s a dragon!'}
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">{alert 'It’s a dragon!'}
 
 {+ 3 4}
 
@@ -574,7 +574,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= array `(0 1 2 3))
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= array `(0 1 2 3))
 
 {* #0 #1}
 
@@ -593,7 +593,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 9em; min-height: 9em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(let health 100
+              <textarea type="text" style="height: 9em; min-height: 9em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(let health 100
   (prn health))   ; logs 100
 
 (? health)        ; false: out ot scope
@@ -610,7 +610,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(let plus  110
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(let plus  110
      minus -12
      (prn (^ plus minus)))
 
@@ -632,7 +632,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= newvar 'some value')
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= newvar 'some value')
 
 (= pi (if (is 2 3) NaN Math.PI))
               </textarea>
@@ -648,7 +648,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 9em; min-height: 9em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= lastest (= first  'Coffee'
+              <textarea type="text" style="height: 9em; min-height: 9em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= lastest (= first  'Coffee'
               second 'Beer'
               third  'Milk'))
 
@@ -664,7 +664,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= x (= shifty null
+              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= x (= shifty null
         picky  (if false 'nose up' 'smile')
         dodgy  (try (+ something) 'unsuccessful')))
               </textarea>
@@ -679,7 +679,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= emptyVar)
+              <textarea type="text" style="height: 6em; min-height: 6em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= emptyVar)
 
               </textarea>
             </div>
@@ -695,7 +695,7 @@ bunny['fluffy']
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
+              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= (smaller bigger) `(3 Infinity))
 
               </textarea>
             </div>
@@ -709,7 +709,7 @@ bunny['fluffy']
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= (first ...mid closing) `(4 8 0 3))
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= (first ...mid closing) `(4 8 0 3))
 
 mid    ; (8 0)
 
@@ -729,7 +729,7 @@ mid    ; (8 0)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">`(1 2 (3 4) (5 6))
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">`(1 2 (3 4) (5 6))
 
 `(1 2 ...`(3 4) ...`(5 6))
 
@@ -748,7 +748,7 @@ mid    ; (8 0)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= pair `('dog' 'lizard'))
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= pair `('dog' 'lizard'))
 
 (prn 'cat' ...pair)
 
@@ -766,7 +766,7 @@ mid    ; (8 0)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(def categorise quick ...moderate slow
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(def categorise quick ...moderate slow
   (prn (+ '(' (moderate.join ' ') ')')))
 
 (categorise 'hare' 'turtle' 'human' 'snail')
@@ -805,7 +805,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; truthiness check
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; truthiness check
 (is true)
 
 ; equality
@@ -829,7 +829,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; falsiness check (same as `not`)
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; falsiness check (same as `not`)
 (isnt false)
 
 ; inequality
@@ -852,7 +852,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(or NaN Infinity `myvar)
+              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(or NaN Infinity `myvar)
 
 (and true 'sun is hot' (&lt; 2 3))
 
@@ -869,7 +869,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= bush 'woods')
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= bush 'woods')
 
 (in bush `('forest' 'woods' 'thicket'))  ; true
 
@@ -888,7 +888,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= snake (venom:  yes
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= snake (venom:  yes
           fangs:  yes
           talons: no))
 
@@ -907,7 +907,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(isa Math.PI 'number')         ; true
+              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(isa Math.PI 'number')         ; true
 
 (isa null 'number' 'boolean')  ; false
 
@@ -924,7 +924,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(isnta null 'function')          ; true
+              <textarea type="text" style="height: 7em; min-height: 7em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(isnta null 'function')          ; true
 
 (isnta 'Sun' 'number' 'string')  ; false
 
@@ -945,7 +945,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= elephants 'exist')
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= elephants 'exist')
 
 (? dinosaurs)           ; false
 
@@ -963,7 +963,7 @@ switch  ; switch
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(? object.property[0]['method'])
+              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(? object.property[0]['method'])
 
 ; false because object not defined
 ; no runtime error
@@ -983,7 +983,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(?! myVar null)             ; false: null exists
+              <textarea type="text" style="height: 8em; min-height: 8em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(?! myVar null)             ; false: null exists
 
 (?! obj.prop[0]['method'])  ; true: not defined
 
@@ -1000,7 +1000,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(any NaN Infinity)
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(any NaN Infinity)
 
 ; Infinity: it's truthy
 
@@ -1025,7 +1025,7 @@ switch  ; switch
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; binary form: single statement
+              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; binary form: single statement
 (if true (prn 'breaking off'))
 
 ; ternary form: single expression per branch
@@ -1051,7 +1051,7 @@ switch  ; switch
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">((def truthiness x
+              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">((def truthiness x
   (if x
     (do (prn 'truthy') x)
     (do (prn 'falsy')  false)))
@@ -1071,7 +1071,7 @@ Infinity)
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(if hungry
+              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(if hungry
     (eat)                   ; then-branch
     (elif thirsty (drink))
     (elif tired (sleep))
@@ -1091,7 +1091,7 @@ Infinity)
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= x 0)
+              <textarea type="text" style="height: 20em; min-height: 20em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= x 0)
 
 (switch x
   (case -1 'negative one')
@@ -1110,7 +1110,7 @@ Infinity)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(prn (switch Math.PI
+              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(prn (switch Math.PI
   (case 1 'welcome to Lineland')
   (case 2 'welcome to Flatland')
   (case 3 'welcome to ancient Egypt')
@@ -1134,7 +1134,7 @@ Infinity)
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(prn
+              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(prn
   (try (jump '10 meters high')))  ; implicit catch
 
 (try (eat 'a kilogram of sushi')
@@ -1158,7 +1158,7 @@ Infinity)
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= animals (squirrel: 'Eevee' fox: 'Vulpix'))
 
 (over val key animals (prn key val))
 
@@ -1178,7 +1178,7 @@ Infinity)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= cats (pink: 'Persian' yellow: 'Skitty'))
 
 (= catnames
    (over name cats name))
@@ -1202,7 +1202,7 @@ Infinity)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= cats (pink: 'Mew' yellow: 'Meowth' white: 'Absol'))
+              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= cats (pink: 'Mew' yellow: 'Meowth' white: 'Absol'))
 
 (= mCats
   (over cat cats
@@ -1223,7 +1223,7 @@ Infinity)
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(for char index 'meow'
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(for char index 'meow'
   (prn index char))
 
 ''
@@ -1240,7 +1240,7 @@ Infinity)
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= array `(('drink' 'milk')
+              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= array `(('drink' 'milk')
            ('sweet' 'icecream')
            ('drink' 'coffee')))
 
@@ -1270,7 +1270,7 @@ warcry
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
+              <textarea type="text" style="height: 22em; min-height: 22em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= bugs `('missing comma' 'missing semicolon'))
 
 (prn
   (while (&gt; bugs.length 0)
@@ -1296,7 +1296,7 @@ warcry
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(= beers 0)
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(= beers 0)
 (def sober (&lt; beers 10))
 
 (= drunk (while (sober)
@@ -1319,7 +1319,7 @@ warcry
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(range 0 5)
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(range 0 5)
 
 ; (0 1 2 3 4 5)
 
@@ -1335,7 +1335,7 @@ warcry
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(prn
+              <textarea type="text" style="height: 18em; min-height: 18em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(prn
   (for x (range 0 6) (* x x)))
 
 ; (0 1 4 9 16 25 36)
@@ -1364,7 +1364,7 @@ Call:
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(mac firstDefinedTruthy ...values
+              <textarea type="text" style="height: 14em; min-height: 14em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac firstDefinedTruthy ...values
   `(or ,...(for value values
     `(and (? ,value) ,value))))
 
@@ -1396,7 +1396,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 28em; min-height: 28em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">; yanked at macro parse
+              <textarea type="text" style="height: 28em; min-height: 28em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; yanked at macro parse
 (mac makeReduce name operator
   `(def ,name ...args
     (if (isnt args.length 0)
@@ -1426,7 +1426,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 30em; min-height: 30em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(mac makeReduce name operator zeroValue
+              <textarea type="text" style="height: 30em; min-height: 30em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac makeReduce name operator zeroValue
   `(def ,name ...args (do
     ; included if zeroValue was passed
     ,(if (? zeroValue)
@@ -1457,7 +1457,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(mac reverse form (do
+              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac reverse form (do
   (def rev form
      (if (Array.isArray form)
          (do (for f form
@@ -1491,7 +1491,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 30em; min-height: 30em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(mac task name ...args (do
+              <textarea type="text" style="height: 30em; min-height: 30em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac task name ...args (do
   (= pipeline `(do (handle (,(args.shift)
                             ,(args.shift)))))
   (while (&gt; args.length 0) (do
@@ -1532,7 +1532,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">((mac pr x `(process.stdout.write ,x)) 'hello world')
+              <textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">((mac pr x `(process.stdout.write ,x)) 'hello world')
 (pr 'another call')
 
 ((mac add ...x `(+ ,...x)) 99 44 11)
@@ -1574,7 +1574,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(car   x)
+              <textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(car   x)
 (head  x)
 (cdr   x)
 (tail  x)
@@ -1603,7 +1603,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(list)
+              <textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(list)
 
 ; ()
 
@@ -1624,7 +1624,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
+              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(concat `(yes no) `(NaN) Infinity)
 
 ; (yes no NaN Infinity)
 
@@ -1641,7 +1641,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 </code></pre>
           <div isolated-code="isolated-code" class="row">
             <div class="col-md-6 col-code left">
-              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" data-animation='0' class="form-control form-code left">(range -1 6)
+              <textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(range -1 6)
 
 ; (-1 0 1 2 3 4 5 6)
 
