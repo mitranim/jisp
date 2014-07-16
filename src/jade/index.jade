@@ -3,7 +3,7 @@ extends layout
 mixin code(height)
   .row(isolated-code)
     .col-md-6.col-code.left
-      textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;" model-init bs-tooltip='title="Edit me!"' autofocus!=attributes.autofocus)
+      textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;" model-init bs-tooltip='title="Edit me!"' data-animation=0 autofocus!=attributes.autofocus)
         if block
           block
     .col-md-6.col-code.right
