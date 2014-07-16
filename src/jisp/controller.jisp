@@ -1,6 +1,6 @@
 (angular.module "jispApp.controller" `())
 
-(.controller "MainControl" (fn $scope $location $anchorScroll (do
+(.controller "MainControl" (ngFn $scope $location $anchorScroll (do
   (= $scope.gotoTop
   ; doesn't clear native anchor hash, todo fix
     {do ($location.hash "top")

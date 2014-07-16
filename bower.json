@@ -16,11 +16,8 @@
   "dependencies": {
     "bootstrap": "latest",
     "js-beautify": "latest",
-    "angular": "~1.3",
+    "angular": "latest",
     "angular-strap": "latest",
     "angular-motion": "latest"
-  },
-  "resolutions": {
-    "angular": "~1.3"
   }
 }

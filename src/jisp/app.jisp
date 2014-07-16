@@ -1,34 +1,44 @@
+; for shorter component declaration
+(mac ngFn ...deps code
+  (if (> deps.length 0)
+      ``(,...(for dep deps (JSON.stringify dep))
+          `,(fn ,...deps ,code))
+        `,(fn ,...deps ,code)))
+
 (angular.module "jispApp"
   `("ngAnimate"
     "mgcrea.ngStrap"
     "jispApp.controller"))
 
 ; disable angular # routing to enable native browser anchoring
-(.config (fn $provide
-  ($provide.decorator "$browser" (fn $delegate (do
+(.config (ngFn $provide
+  ($provide.decorator "$browser" (ngFn $delegate (do
     (= $delegate.onUrlChange {}
        $delegate.url (fn ""))
     $delegate)))))
 
-; (.directive "contentEditable" (fn
-;   (require: "ngModel"
-;    link:    (fn scope elem attrs ctrl (do
-;               (elem.on "blur" {scope.$apply {ctrl.$setViewValue (elem.html)}})
-;               (= ctrl.$render {elem.html ctrl.$viewValue})
-;               (ctrl.$setViewValue (elem.html)))))))
+(.directive "isolatedCode" (ngFn
+  (priority: 1020
+   restrict: "A"
+   scope:    true
+   ; init values for use in inner scopes
+   controller: (ngFn $scope
+    (= $scope.code      (:)
+       $scope.fn        (:)
+       $scope.fn.evalJS {})))))
 
-(.directive "modelInit" (fn $compile
+(.directive "modelInit" (ngFn $compile
 ; same as ngModel but assigns the initial text of the element to the corresponding model
   (restrict: "A"
    priority: 1010
    link: (fn scope elem attrs (do
-    (= (get scope attrs.modelInit) ((get (elem.text) trim)))
-    (elem.attr "ng-model" attrs.modelInit)
+    (= scope.code.example (do (elem.text) (.trim)))
+    (elem.attr "ng-model" "code.example")
     (elem.removeAttr "model-init")
     (($compile elem) scope)
-    (scope.$watch "exampleCode" (fn input
-      (= scope.compiledCode (jispCompile input))))
-    (= scope.evalJS (fn (do
+    (scope.$watch "code.example" (fn input
+      (= scope.code.compiled (jispCompile input))))
+    (= scope.fn.evalJS (fn (do
       (= res "")
       ; redirect console.log for eval output
       (= consoleLog  console.log
@@ -36,23 +46,17 @@
                        (do (for s str (+= res s " "))
                            (= res (init res))
                            (+= res "\n"))))
-      ; recompile src, wrapping it into (console.log (do ... )) for logging
-      (= src (+ "(prn (do " scope.exampleCode "\n))"))
+      ; recompile src, wrapping it into (prn (do ... )) for logging
+      (= src (+ "(prn (do " scope.code.example "\n))"))
       (= compiled (jispCompile src))
       ; run and log result
       (try (eval compiled)
         (catch err (console.log err.message)))
-      (= scope.evalJSOutput res)
+      (= scope.code.evalOutput res)
       ; restore console.log
       (= console.log consoleLog)
       ; toggle output panel
-      (= scope.showJSOutput true)))))))))
-
-(.directive "isolatedCode" (fn
-  (priority:   1020
-   restrict:   "E"
-   template:   "<div ng-transclude></div>"
-   transclude: yes)))
+      (= scope.code.showEvalOutput true)))))))))
 
 ; # Util
 

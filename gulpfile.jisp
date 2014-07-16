@@ -51,7 +51,7 @@
 (task         "js"
   gulp.src    jsFiles
   plug.concat "deps.js"
-  plug.uglify (mangle: no)  ; takes forever
+  plug.uglify (mangle: yes)  ; takes forever
   gulp.dest   "js/tmp/")
 
 ; jisp
@@ -59,7 +59,7 @@
   gulp.src    "src/jisp/*.jisp"
   plug.concat "app-jisp.jisp"
   plug.jisp   ()
-  plug.uglify (mangle: no)  ; takes forever
+  plug.uglify (mangle: yes)  ; takes forever
   gulp.dest   "js/tmp/")
 
 ; jisp-browser

@@ -1,17 +1,16 @@
 extends layout
 
 mixin code(height)
-  isolated-code
-    .row
-      .col-md-6.col-code.left
-        textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;" model-init='exampleCode' autofocus!=attributes.autofocus)
-          if block
-            block
-      .col-md-6.col-code.right
-        pre.form-code.right(style="height: #{height}em; min-height: #{height}em;" ng-show='!showJSOutput') {{compiledCode}}
-        button.btn.btn-sm.btn-default.button-eval(role='button' ng-click='evalJS()' ng-show='!showJSOutput') eval
-        pre.form-code.right.output(style="height: #{height}em; min-height: #{height}em;" ng-show='showJSOutput') {{evalJSOutput}}
-        button.btn.btn-sm.btn-warning.button-eval(role='button' ng-click='showJSOutput = false' ng-show='showJSOutput') close
+  .row(isolated-code)
+    .col-md-6.col-code.left
+      textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;" model-init bs-tooltip='title="Edit me!"' data-animation=0 autofocus!=attributes.autofocus)
+        if block
+          block
+    .col-md-6.col-code.right
+      pre.form-code.right(style="height: #{height}em; min-height: #{height}em;" ng-show='!code.showEvalOutput') {{code.compiled}}
+      button.btn.btn-sm.btn-default.button-eval(role='button' ng-click='fn.evalJS()' ng-show='!code.showEvalOutput') eval
+      pre.form-code.right.output(style="height: #{height}em; min-height: #{height}em;" ng-show='code.showEvalOutput') {{code.evalOutput}}
+      button.btn.btn-sm.btn-warning.button-eval(role='button' ng-click='code.showEvalOutput=false' ng-show='code.showEvalOutput') close
 
 block title
   title about:jisp
@@ -58,7 +57,7 @@ block content
           = "  uglify    (mangle: no)\n"
           = "  gulp.dest 'public/js/tmp/')\n"
           = "\n"
-          = "; try your own macro call here\n"
+          = "; try your own macro call (this is a comment)\n"
 
         :markdown
           Example of dynamically constructing code with a macro.
@@ -1327,52 +1326,52 @@ block content
       .col-lg-3
         .bs-sidebar.hidden-print(role='complementary' bs-affix bs-scrollspy-list)
           ul.nav.bs-sidenav
-            li(target='#installation'): a(href='#installation') Installation and Usage
-            li(target='#code-structure'): a(href='#code-structure') Code Structure
-            li(target='#everything-exp'): a(href='#everything-exp') Everything an Expression
-            li(target='#quoting'): a(href='#quoting') Quoting
-            li(target='#blocks'): a(href='#blocks') Blocks and Chaining
-            li(target='#object-props'): a(href='#object-props') Object Properties
-            li(target='#functions'): a(href='#functions') Functions
+            li: a(href='#installation') Installation and Usage
+            li: a(href='#code-structure') Code Structure
+            li: a(href='#everything-exp') Everything an Expression
+            li: a(href='#quoting') Quoting
+            li: a(href='#blocks') Blocks and Chaining
+            li: a(href='#object-props') Object Properties
+            li: a(href='#functions') Functions
               ul.nav
-                li(target='#definition'): a(href='#definition') Definition
-                li(target='#call-return'): a(href='#call-return') Calling and Returning
-                li(target='#lambda'): a(href='#lambda') Lambda Syntax
-                li(target='#let'): a(href='#let') Let
-            li(target='#assignment'): a(href='#assignment') Assignment
-            li(target='#destructuring'): a(href='#destructuring') Destructuring Assignment
-            li(target='#spreading-rest'): a(href='#spreading-rest') Spreading and Rest Parameter
+                li: a(href='#definition') Definition
+                li: a(href='#call-return') Calling and Returning
+                li: a(href='#lambda') Lambda Syntax
+                li: a(href='#let') Let
+            li: a(href='#assignment') Assignment
+            li: a(href='#destructuring') Destructuring Assignment
+            li: a(href='#spreading-rest') Spreading and Rest Parameter
               ul.nav
-                li(target='#spread-into-list'): a(href='#spread-into-list') Spread Into List
-                li(target='#argument-spread'): a(href='#argument-spread') Argument Spread
-                li(target='#rest-parameter'): a(href='#rest-parameter') Rest Parameter
-            li(target='#conditionals'): a(href='#conditionals') Conditionals
+                li: a(href='#spread-into-list') Spread Into List
+                li: a(href='#argument-spread') Argument Spread
+                li: a(href='#rest-parameter') Rest Parameter
+            li: a(href='#conditionals') Conditionals
               ul.nav
-                li(target='#logic'): a(href='#logic') Logic
-                li(target='#existence'): a(href='#existence') Existence
-                li(target='#if'): a(href='#if') If
-                li(target='#switch'): a(href='#switch') Switch
-                li(target='#try-catch'): a(href='#try-catch') Try / Catch
-            li(target='#loops'): a(href='#loops') Loops
+                li: a(href='#logic') Logic
+                li: a(href='#existence') Existence
+                li: a(href='#if') If
+                li: a(href='#switch') Switch
+                li: a(href='#try-catch') Try / Catch
+            li: a(href='#loops') Loops
               ul.nav
-                li(target='#over'): a(href='#over') Over
-                li(target='#for'): a(href='#for') For
-                li(target='#while'): a(href='#while') While
-            li(target='#comprehensions'): a(href='#comprehensions') Comprehensions
-            li(target='#macros'): a(href='#macros') Macros
+                li: a(href='#over') Over
+                li: a(href='#for') For
+                li: a(href='#while') While
+            li: a(href='#comprehensions') Comprehensions
+            li: a(href='#macros') Macros
               ul.nav
-                li(target='#templating'): a(href='#templating') Templating
-                li(target='#code-construction'): a(href='#code-construction') Code Construction
-                li(target='#macro-import-export'): a(href='#macro-import-export') Macro Import and Export
-                li(target='#macro-notes'): a(href='#macro-notes') Notes
-            li(target='#built-ins'): a(href='#built-ins') Built-ins and Embedding
+                li: a(href='#templating') Templating
+                li: a(href='#code-construction') Code Construction
+                li: a(href='#macro-import-export') Macro Import and Export
+                li: a(href='#macro-notes') Notes
+            li: a(href='#built-ins') Built-ins and Embedding
               ul.nav
-                li(target='#built-in-macros'): a(href='#built-in-macros') Macros
-                li(target='#built-in-functions'): a(href='#built-in-functions') Functions
-                li(target='#function-import-export'): a(href='#function-import-export') Function Import and Export
-            li(target='#style'): a(href='#style') Style
-            li(target='#why'): a(href='#why') Why Use Jisp
+                li: a(href='#built-in-macros') Macros
+                li: a(href='#built-in-functions') Functions
+                li: a(href='#function-import-export') Function Import and Export
+            li: a(href='#style') Style
+            li: a(href='#why') Why Use Jisp
               ul.nav
-                li(target='#why-over'): a(href='#why-over') Why Jisp Over [insert dialect X]
-            li(target='#acknowledgements'): a(href='#acknowledgements') Acknowledgements and Notes
+                li: a(href='#why-over') Why Jisp Over [insert dialect X]
+            li: a(href='#acknowledgements') Acknowledgements and Notes
             li: a(ng-click='gotoTop()') Top
