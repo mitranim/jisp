@@ -83,7 +83,7 @@
 ; jade
 (task         "jade"
   gulp.src    "src/jade/index.jade"
-  plug.jade   (pretty: yes)
+  plug.jade   (pretty: no)
   gulp.dest   "./"
   reload      (stream: yes))
 

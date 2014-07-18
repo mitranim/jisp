@@ -7182,7 +7182,7 @@ textarea.form-code {
   background-color: #faf8f9;
   cursor: text;
 }
-.form-code.output {
+.pre-output {
   background-color: #f6f2f4;
 }
 /* Eval buttons */
@@ -7290,4 +7290,11 @@ textarea.form-code {
   .bs-sidebar.affix {
     width: 263px;
   }
+}
+/*------------*/
+/* Animations */
+/*------------*/
+.error {
+  transition: 0.5s linear all;
+  background-color: #fad6d7;
 }

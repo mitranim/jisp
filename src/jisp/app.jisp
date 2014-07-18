@@ -37,7 +37,9 @@
     (elem.removeAttr "model-init")
     (($compile elem) scope)
     (scope.$watch "code.example" (fn input
-      (= scope.code.compiled (jispCompile input))))
+      (= res (jispCompile input)
+         scope.code.compiled (any res.message res)
+         scope.code.isError  (instanceof res Error))))
     (= scope.fn.evalJS (fn (do
       (= res "")
       ; redirect console.log for eval output
@@ -67,5 +69,5 @@
                ; ^ decode things like &gt; encoded by Jade
                (wrap: no))
              (indent_size: 2))
-        (catch err (do (console.log err.stack) err.message)))
+        (catch err err))
       ""))
