@@ -4,7 +4,7 @@ mixin code(height)
   .row(isolated-code)
     .col-md-6.col-code.left
       textarea.form-control.form-code.left(type='text' style="height: #{height}em; min-height: #{height}em;"
-                                           model-init bs-tooltip='title="Edit me!"' autofocus!=attributes.autofocus)
+                                           model-init bs-tooltip='title="Edit me!"')
         if block
           block
     .col-md-6.col-code.right
@@ -41,7 +41,7 @@ block content
 
         h2 Interactive playground
 
-        +code(36)(autofocus='').
+        +code(36).
           (mac task name ...args (do
             (= pipeline `(do (handle (,(args.shift) ,(args.shift)))))
             (while (> args.length 0) (do
