@@ -1133,6 +1133,20 @@ block content
 
           We've just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See `jisp.jisp` for bigger examples.
 
+          Macros can have arbitrary symbols and even literal strings as names. Suppose you're writing a lot of prototype extenders and want to shorten the definitions. In other languages, you're lucky if you have special syntax for that. In jisp, make the syntax yourself:
+
+        +code(16).
+          (mac @ obj method ...args body
+            `(= (get (get ,obj prototype) ,method)
+                (fn ,...args ,body)))
+
+          (@ Plant grow time speed
+            (+= this.length (* time speed)))
+
+          (@ Animal growl decibels
+            (= this.loudness decibels))
+
+        :markdown
           Finally, macros can self-expand on definition:
 
         +code(10).

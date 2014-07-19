@@ -4,8 +4,7 @@
       require['./util'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var symbolWhitelist, keywords, specialValues;
-  exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", "!!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]);
+  var keywords, specialValues;
   exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
 
   function kwtest(str) {
@@ -38,10 +37,10 @@
   }
   exports.isAtom = isAtom;
 
-  function isAtomString(form) {
-    return (!isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form)));
+  function isaString(form) {
+    return (typeof form === "string");
   }
-  exports.isAtomString = isAtomString;
+  exports.isaString = isaString;
 
   function isList(form) {
     return Array.isArray(form);
@@ -407,8 +406,7 @@
     })();require['./util'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var symbolWhitelist, keywords, specialValues;
-  exports.symbolWhitelist = (symbolWhitelist = ["+", "-", "*", "/", "%", "++", "--", "?", "?!", "==", "===", "!=", "!==", "&&", "||", "!", "!!", ">", "<", ">=", "<=", "&", "|", "^", "<<", ">>", ">>>", "~", "=", "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", ">>>=", "&=", "^=", "|="]);
+  var keywords, specialValues;
   exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
 
   function kwtest(str) {
@@ -441,10 +439,10 @@
   }
   exports.isAtom = isAtom;
 
-  function isAtomString(form) {
-    return (!isSpecialValue(form) && (isNum(form) || isRegex(form) || isIdentifier(form) || isString(form) || ([].indexOf.call(symbolWhitelist, form) >= 0) || /^#[\d]+$/.test(form) || /^#$/.test(form)));
+  function isaString(form) {
+    return (typeof form === "string");
   }
-  exports.isAtomString = isAtomString;
+  exports.isaString = isaString;
 
   function isList(form) {
     return Array.isArray(form);
@@ -1127,13 +1125,13 @@
     }
     return _res;
   }
-  var util, pr, spr, isList, isAtom, isAtomString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  var util, pr, spr, isList, isAtom, isaString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
   util = require("./util");
   pr = util.pr;
   spr = util.spr;
   isList = util.isList;
   isAtom = util.isAtom;
-  isAtomString = util.isAtomString;
+  isaString = util.isaString;
   isNum = util.isNum;
   isRegex = util.isRegex;
   isIdentifier = util.isIdentifier;
@@ -1270,7 +1268,7 @@
       case "default":
         _res = [];
         while (tokens.length > 0) {
-          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
+          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
         }
         _ref = _res;
         break;
@@ -1279,7 +1277,7 @@
         lexed = [];
         if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
         while (tokens[0] !== ")") {
-          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isAtomString, "atom"));
+          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
         }
         demand(tokens, ")", "drop");
         _ref = addProperties(tokens, lexed);
@@ -1296,7 +1294,7 @@
         while (tokens[0] !== ")") {
           key = demand(tokens, isKey, "key");
           demand(tokens, ":", "drop");
-          prop = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isAtomString, "atom");
+          prop = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isaString, "atom");
           lexed[key] = prop;
         }
         demand(tokens, ")", "drop");
@@ -1317,7 +1315,7 @@
         break;
       case "quote":
         demand(tokens, "`", "drop");
-        _ref = (lexed = ["quote", demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isAtomString, "atom")]);
+        _ref = (lexed = ["quote", demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isaString, "atom")]);
         break;
       case "unquote":
         demand(tokens, ",", "drop");
@@ -1333,7 +1331,7 @@
         _ref = key;
         break;
       case "atom":
-        _ref = addProperties(tokens, demand(tokens, isAtomString, "drop"));
+        _ref = addProperties(tokens, demand(tokens, isaString, "drop"));
         break;
       case "drop":
         _ref = tokens.shift();
@@ -1583,7 +1581,7 @@
     return _res;
   }
   var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.16";
+  exports.version = "0.2.17";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
