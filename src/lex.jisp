@@ -11,7 +11,7 @@
    spr             util.spr
    isList          util.isList
    isAtom          util.isAtom
-   isAtomString    util.isAtomString
+   isaString       util.isaString
    isNum           util.isNum
    isRegex         util.isRegex
    isIdentifier    util.isIdentifier
@@ -101,7 +101,7 @@
           ","              "unquote"
           "..."            "spread"
           "…"              "spread"
-          isAtomString     "atom"
+          isaString        "atom"
           undefined        "drop")))
     (case "list"
       (do (demand tokens "(" "drop")
@@ -120,7 +120,7 @@
                 ","              "unquote"
                 "..."            "spread"
                 "…"              "spread"
-                isAtomString     "atom")))
+                isaString        "atom")))
           (demand tokens ")" "drop")
           (addProperties tokens lexed)))
     (case "emptyhash"
@@ -140,7 +140,7 @@
                   "("              "list"
                   "`"              "quote"
                   ","              "unquote"
-                  isAtomString     "atom"))
+                  isaString        "atom"))
                 (= lexed[key] prop)))
           (demand tokens ")" "drop")
           (addProperties tokens lexed)))
@@ -169,7 +169,7 @@
             "("              "list"
             "`"              "quote"
             ","              "unquote"
-            isAtomString     "atom"))))
+            isaString        "atom"))))
           (addProperties tokens lexed))
     (case "unquote"
       (do (demand tokens "," "drop")
@@ -192,6 +192,6 @@
           (forbid "[" isPropSyntax)
           key))
     (case "atom"
-      (addProperties tokens (demand tokens isAtomString "drop")))
+      (addProperties tokens (demand tokens isaString "drop")))
     (case "drop" (tokens.shift))
     (throw (Error (+ "unspecified lex mode: " mode)))))

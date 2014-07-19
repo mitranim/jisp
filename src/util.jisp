@@ -4,20 +4,6 @@
 
 ; # For compiler
 
-(= exports.symbolWhitelist (= symbolWhitelist `(
-; List of non-\w 'words' for lexer to consider valid atoms
-   ; arithmetic
-   "+" "-" "*" "/" "%" "++" "--"
-   ; logical
-   "?" "?!" "==" "===" "!=" "!==" "&&" "||" "!" "!!"
-   ; comparison
-   ">" "<" ">=" "<="
-   ; bitwise
-   "&" "|" "^" "<<" ">>" ">>>" "~"
-   ; assignment
-   "=" "+=" "-=" "*=" "/=" "%=" "<<=" ">>=" ">>>=" "&=" "^=" "|="
-)))
-
 (= exports.keywords (= keywords `(
   "return" "break" "continue" "throw" "delete"
 )))
@@ -49,15 +35,8 @@
            (/^\/[^\s\/]+\/[\w]*$/.test form)
            (isa form "number" "string" "boolean"))))
 
-(= exports.isAtomString (def isAtomString form
-   (and (not (isSpecialValue form))
-        (or (isNum form)
-            (isRegex form)
-            (isIdentifier form)
-            (isString form)
-            (in form symbolWhitelist)
-            (/^#[\d]+$/.test form)  ; #n notation
-            (/^#$/.test form)))))   ; # notation
+(= exports.isaString (def isaString form
+  (isa form "string")))
 
 (= exports.isList (def isList form
    (Array.isArray form)))
