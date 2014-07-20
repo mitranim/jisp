@@ -1,7 +1,5 @@
 ; Parser
 
-; ToDo: inside quoted lists, treat unquoted names as strings and strings as '""' kinda strings
-
 (= util (require "./util"))
 
 (= module.exports (def parse form
@@ -12,6 +10,6 @@
             (do (over val key form (= form[key] (parse val)))
                 form))
       (do (= form (util.typify form))
-          (if (/^#[\d]+$/.test form)
-              (+ "arguments[" (form.slice 1) "]")
+          (if (/^#(\d+)/.test form)
+              (form.replace /^#(\d+)/ "arguments[$1]")
               form)))))

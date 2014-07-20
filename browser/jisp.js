@@ -1369,7 +1369,7 @@
       _ref0 = form;
     } else {
       form = util.typify(form);
-      _ref0 = (/^#[\d]+$/.test(form) ? ("arguments[" + form.slice(1) + "]") : form);
+      _ref0 = (/^#(\d+)/.test(form) ? form.replace(/^#(\d+)/, "arguments[$1]") : form);
     }
     return _ref0;
   }
@@ -1581,7 +1581,7 @@
     return _res;
   }
   var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.17";
+  exports.version = "0.2.19";
   vm = require("vm");
   fs = require("fs");
   path = require("path");

@@ -19,14 +19,14 @@
 )))
 
 (= exports.isSpecialValueStr (def isSpecialValueStr str
-  (in str specialValues)))
+   (in str specialValues)))
 
 (= exports.isSpecialValue (def isSpecialValue form
-  (or (isa form "undefined")
-      (is form null)
-      (and (isa form "number") (isNaN form))
-      (is form Infinity)
-      (isa form "boolean"))))
+   (or (isa form "undefined")
+       (is form null)
+       (and (isa form "number") (isNaN form))
+       (is form Infinity)
+       (isa form "boolean"))))
 
 ; Composite types
 
@@ -36,7 +36,7 @@
            (isa form "number" "string" "boolean"))))
 
 (= exports.isaString (def isaString form
-  (isa form "string")))
+   (isa form "string")))
 
 (= exports.isList (def isList form
    (Array.isArray form)))
@@ -132,56 +132,56 @@
       form)))
 
 (= exports.assertExp (def assertExp exp test (expect "valid expression")
-     (if (test exp) true
-         (throw (Error (+ "expecting " (pr expect) ", got " (pr exp)))))))
+   (if (test exp) true
+       (throw (Error (+ "expecting " (pr expect) ", got " (pr exp)))))))
 
 ; splits an identifier into a list of substrings, splitting off all property notations
 (= exports.splitName (def splitName name (do
-  (= re              /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/
-     reDot           /\.[$_\w]+$/    ; .dot notation on end
-     reBracket       /\[[^\[\]]+\]$/ ; [bracket] notation on end
-     reBracketGreedy /\[.+\]$/)      ; [bracket[stuff]] notation on end
-  (= res `())
-  (while (name.match re) (do
-    ; find matching regex
-    (= reg (or (and (name.match reDot) reDot)
-               (and (name.match reBracket) reBracket)
-               (and (name.match reBracketGreedy) reBracketGreedy)))
-    (res.unshift (car (name.match reg)))
-    (= name (name.replace reg ""))))
-  (res.unshift name)
-  res)))
+   (= re              /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/
+      reDot           /\.[$_\w]+$/    ; .dot notation on end
+      reBracket       /\[[^\[\]]+\]$/ ; [bracket] notation on end
+      reBracketGreedy /\[.+\]$/)      ; [bracket[stuff]] notation on end
+   (= res `())
+   (while (name.match re) (do
+     ; find matching regex
+     (= reg (or (and (name.match reDot) reDot)
+                (and (name.match reBracket) reBracket)
+                (and (name.match reBracketGreedy) reBracketGreedy)))
+     (res.unshift (car (name.match reg)))
+     (= name (name.replace reg ""))))
+   (res.unshift name)
+   res)))
 
 ; # For rendering
 
 ; Pretty-print
 ; Turns data objects into pretty-looking strings, with proper [ ] and { } delimiters for arrays and hash tables
 (= exports.pr (def pr item
-     (if (isAtom item)
-         (do (+ "" item)
-             (.replace /;$/ ""))  ; remove trailing semicolon, if any
-         (elif (isHash item)
-           (do (= res "")
-               (over val key item
-                     (+= res (+ key ": " (pr val) ", ")))
-               (+ "{ " (res.slice 0 -2) " }")))
-         (elif (isList item)
-               (do (= res "")
-                   (for val item
-                        (+= res (+ (pr val) ", ")))
-                   (+ "[ " (res.slice 0 -2) " ]")))
-         ; (throw (Error (+ "unrecognised kind of data object: " item))))))
-         (+ "" item))))
+   (if (isAtom item)
+       (do (+ "" item)
+           (.replace /;$/ ""))  ; remove trailing semicolon, if any
+       (elif (isHash item)
+         (do (= res "")
+             (over val key item
+                   (+= res (+ key ": " (pr val) ", ")))
+             (+ "{ " (res.slice 0 -2) " }")))
+       (elif (isList item)
+             (do (= res "")
+                 (for val item
+                      (+= res (+ (pr val) ", ")))
+                 (+ "[ " (res.slice 0 -2) " ]")))
+       ; (throw (Error (+ "unrecognised kind of data object: " item))))))
+       (+ "" item))))
 
 ; Turns an array into a string without [ ] delimiters: [1, 2, 3] -> 1, 2, 3
 ; For printing-spreading
 (= exports.spr (def spr item
-     (if (isList item)
-         (do (= res "")
-             (for val item
-                  (+= res (+ (pr val) ", ")))
-             (res.slice 0 (- res.length 2)))
-         (throw (Error "can only print-spread lists")))))
+   (if (isList item)
+       (do (= res "")
+           (for val item
+                (+= res (+ (pr val) ", ")))
+           (res.slice 0 (- res.length 2)))
+       (throw (Error "can only print-spread lists")))))
 
 ; Turns an array of strings into one rendered string
 (= exports.render (def render buffer
@@ -208,26 +208,26 @@
 ; Removes all pairs of parentheses around a string
 ; MUST NOT be applied to strings compiled from multiple expressions, only a SINGLE expression
 (= exports.deParenthesise (def deParenthesise str
-  (if (isa str "string")
-      (while (and (str.match /^\({1}/)
-                  (str.match /\){1}$/))
-        (= str (do str
-                   (.replace /^\({1}/ "")
-                   (.replace /\){1}$/ "")))
-        str)
-      str)))
+   (if (isa str "string")
+       (while (and (str.match /^\({1}/)
+                   (str.match /\){1}$/))
+         (= str (do str
+                    (.replace /^\({1}/ "")
+                    (.replace /\){1}$/ "")))
+         str)
+       str)))
 
 ; Removes extra pairs of parentheses around a string
 ; MUST NOT be applied to strings compiled from multiple expressions, only a SINGLE expression
 (= exports.dePairParenthesise (def dePairParenthesise str
-  (if (isa str "string")
-      (while (and (str.match /^\({2}/)
-                  (str.match /\){2}$/))
-        (= str (do str
-                   (.replace /^\({2}/ "(")
-                   (.replace /\){2}$/ ")")))
-        str)
-      str)))
+   (if (isa str "string")
+       (while (and (str.match /^\({2}/)
+                   (str.match /\){2}$/))
+         (= str (do str
+                    (.replace /^\({2}/ "(")
+                    (.replace /\){2}$/ ")")))
+         str)
+       str)))
 
 ; # For command line
 ; Mostly copied from CoffeeScript source
@@ -258,12 +258,12 @@
 
 ; Repeat string `n` times
 (= exports.repeat (def repeat str n
-  (do (= res "")
-      (while (> n 0)
-             (do (if (& n 1) (+= res str))
-                 (>>>= n 1)
-                 (+= str str)))
-      res)))
+   (do (= res "")
+       (while (> n 0)
+              (do (if (& n 1) (+= res str))
+                  (>>>= n 1)
+                  (+= str str)))
+       res)))
 
 (= exports.isJisp (def isJisp file
-  (/\.jisp$/.test file)))
+   (/\.jisp$/.test file)))
