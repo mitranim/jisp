@@ -66,12 +66,12 @@
 
 (= exports.isVarName (def isVarName form
 ; matches pure variable names without property notation
-   (and (isAtom form) (/^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test form))))
+   (and (isAtom form) (/^[$#_A-Za-z]{1}$|^[$#_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test form))))
 
 (= exports.isIdentifier (def isIdentifier form
 ; matches any identifier, including with .dot and [bracket] and ["string bracket"] notation, unless it has an expression in brackets
    (and (isAtom form)
-        (/^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test form))))
+        (/^[$#_A-Za-z]{1}[$_\w]*((\.[$#_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test form))))
 
 (= exports.isString (def isString form
    (and (isAtom form) (/^".*"$|^'.*'$/.test form))))
@@ -101,10 +101,10 @@
 ;----------------- Property Syntax — Dot and Bracket Notation -----------------
 
 (= exports.isDotName (def isDotName form
-   (and (isAtom form) (/^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test form))))
+   (and (isAtom form) (/^\.[$#_A-Za-z]{1}$|^\.[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test form))))
 
 (= exports.isBracketName (def isBracketName form
-   (and (isAtom form) (/^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test form))))
+   (and (isAtom form) (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test form))))
 
 (= exports.isBracketString (def isBracketString form
    (and (isAtom form) (/^\[".*"\]$|^\['.*'\]$/.test form))))

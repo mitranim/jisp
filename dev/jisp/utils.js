@@ -74,12 +74,12 @@
   exports.getServicePart = getServicePart;
 
   function isVarName(form) {
-    return (isAtom(form) && /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
+    return (isAtom(form) && /^[$#_A-Za-z]{1}$|^[$#_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
   }
   exports.isVarName = isVarName;
 
   function isIdentifier(form) {
-    return (isAtom(form) && /^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
+    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w]*((\.[$#_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
   }
   exports.isIdentifier = isIdentifier;
 
@@ -119,12 +119,12 @@
   exports.isArgHashNotation = isArgHashNotation;
 
   function isDotName(form) {
-    return (isAtom(form) && /^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
+    return (isAtom(form) && /^\.[$#_A-Za-z]{1}$|^\.[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
   }
   exports.isDotName = isDotName;
 
   function isBracketName(form) {
-    return (isAtom(form) && /^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
+    return (isAtom(form) && /^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
   }
   exports.isBracketName = isBracketName;
 

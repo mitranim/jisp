@@ -83,7 +83,7 @@
       (while (in newname scope.hoist)
         (= newname (plusname newname)))
       (= scope.service[i] newname
-         re (RegExp (+ "(?=(?:[^$_A-Za-z0-9]{1}|^)" name "(?:[^$_A-Za-z0-9]{1}|$))([^$A-Za-z0-9]|^)" name) "g")  ; matches old name; probably also inside strings and regexes, todo check and fix
+         re (RegExp (+ "(?=(?:[^$#_A-Za-z0-9]{1}|^)" name "(?:[^$#_A-Za-z0-9]{1}|$))([^$#_A-Za-z0-9]|^)" name) "g")  ; matches old name; probably also inside strings and regexes, todo check and fix
          subst (+ "$1" newname))
       (for str i buffer
            (if (and (? str) (is (typeof str) "string")) (= buffer[i] (str.replace re subst)))))))
@@ -98,7 +98,7 @@
 ; Compiles given form, modifying buffer and scope, and splits off last expression
 (def compileGetLast form buffer scope opts nested
      (do (= (buffer scope) (compileAdd form buffer scope opts nested)
-            lastItem        (buffer.pop))
+            lastItem       (buffer.pop))
          `(lastItem buffer scope)))
 
 ; Prepends `return` to expression or form
@@ -152,17 +152,19 @@
 
 ; Wrapper for declareVar with checks to override built-in functions where relevant
 (mac macDeclareVar name (override yes) (declare yes)
-  `(do (assertExp ,name isVarName "valid identifier")
-    ,(if override
-      `(if (and opts.topScope
-             (in ,name (Object.keys functions))
-             (not (in ,name scope.hoist))
-             (notRedefined ,name))
-        ,(if declare
-          `(functionsRedeclare.push ,name)
-          `(functionsRedefine.push  ,name))))
-    ,(if declare
-      `(= scope (declareVar ,name scope)))))
+  `(if (isService ,name)  ; if service name like #ref, compile it; this declares it in service scope
+    (macCompileGetLast ,name ,name)
+    (do (assertExp ,name isVarName "valid identifier")
+      ,(if override
+        `(if (and opts.topScope
+               (in ,name (Object.keys functions))
+               (not (in ,name scope.hoist))
+               (notRedefined ,name))
+          ,(if declare
+            `(functionsRedeclare.push ,name)
+            `(functionsRedefine.push  ,name))))
+      ,(if declare
+        `(= scope (declareVar ,name scope))))))
 
 ; Shorter version of declareService
 (mac macDeclareService name candidate

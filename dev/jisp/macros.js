@@ -1,12 +1,23 @@
 (function() {
   var macHash = function() {
-    var buffer, _i;
+    var buffer, _i, _ref;
     var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
-    buffer = {};
-    while (args.length > 0) {
-      buffer[args.shift()] = args.shift();
+    if ((args.length === 1)) {
+      _ref = ["do", ["=", "#_res", {}, "#_ref", args[0]],
+        ["while", [">", "#_ref.length", 0],
+          ["=", ["get", "#_res", ["#_ref.shift"]],
+            ["#_ref.shift"]
+          ]
+        ], "#_res"
+      ];
+    } else {
+      buffer = {};
+      while (args.length > 0) {
+        buffer[args.shift()] = args.shift();
+      }
+      _ref = buffer;
     }
-    return buffer;
+    return _ref;
   };
   var macPrn = function() {
     var _i;
