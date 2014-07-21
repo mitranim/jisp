@@ -141,7 +141,7 @@ block content
           (: using 'the' hash 'macro')
 
         :markdown
-          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list) and letting the language convert it into a hash for you.
+          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. For now, it's compile-time only (useable in hash table literals and macros). A planned feature is to let it compile to a runtime hash table builder where appropriate.
 
           Identifiers and literals without parentheses are called _atoms_:
 
@@ -1201,7 +1201,7 @@ block content
         h3#built-in-macros Macros
 
         :markdown
-          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a hash table builder.
+          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a compile-time hash table builder.
 
         +code(24).
           (car   x)
