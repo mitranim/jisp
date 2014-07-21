@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.22")
+(= exports.version "0.2.24")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -481,8 +481,8 @@
 ; (= <name>)
   code: (do
     (if (is form.length 1)
-      (do (macDeclareVar (car form))
-          (macCompileAdd (car form)))
+      (do (macDeclareVar form[0])
+          (macCompileAdd form[0]))
       (do
         (assertExp form {is (% #0.length 2) 0} "an even number of arguments")
         (while (> form.length 0) (do

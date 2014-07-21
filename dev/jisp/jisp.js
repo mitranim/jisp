@@ -25,7 +25,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.22";
+  exports.version = "0.2.24";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -592,7 +592,7 @@
     if ((form.length === 1)) {
       if (isService(form[0])) {
         _ref = compileGetLast(form[0], buffer, scope, opts, nested);
-        [get, form, 0] = _ref[0];
+        form[0] = _ref[0];
         buffer = _ref[1];
         scope = _ref[2];
       } else {
