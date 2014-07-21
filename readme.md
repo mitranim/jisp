@@ -46,9 +46,9 @@ Super basic Sublime Text build system (OS X):
 * `Tools > Build System > New Build System`
 * put lines:
 
-      {
-        "cmd": ["jisp", "$file"],
-        "path": "/usr/local/bin/"
-      }
+        {
+          "cmd": ["jisp", "$file"],
+          "path": "/usr/local/bin/"
+        }
 
 * save to: `~/Library/Application Support/Sublime Text 3/Packages/User`
