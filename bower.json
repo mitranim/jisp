@@ -1,6 +1,8 @@
 {
+  "name": "jisp-page",
   "version": "0.1.0",
   "description": "Interactive documentation for jisp",
+  "private": true,
   "authors": [
     "Mitranim <me@mitranim.com>"
   ],

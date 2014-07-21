@@ -48,9 +48,16 @@ jisp&gt;
 <p>While not recommended for production, jisp can be directly used in the browser. Include the <code>browser/jisp.js</code> file with your webpage. It registers the <code>text/jisp</code> script type to automatically compile and run jisp scripts loaded with <code>src</code> or included in script tags. It also exposes a global object with the <code>compile</code> and <code>eval</code> methods for jisp code. This is how this documentation is implemented.</p>
 <p>Super basic Sublime Text build system (OS X):</p>
 <ul>
-<li><em>Tools</em> &gt; <em>Build System</em> &gt; <em>New Build System</em></li>
-<li>put line: <code>&quot;cmd&quot;: [&quot;jisp&quot;, &quot;$file&quot;]</code></li>
-<li>save to: <code>~/Library/Application Support/Sublime Text 3/Packages/User</code></li>
+<li><code>sudo npm install -g jisp</code></li>
+<li><code>Tools &gt; Build System &gt; New Build System</code></li>
+<li><p>put lines:</p>
+<pre><code>{
+  &quot;cmd&quot;: [&quot;jisp&quot;, &quot;$file&quot;],
+  &quot;path&quot;: &quot;/usr/local/bin/&quot;
+}
+</code></pre></li>
+<li><p>save to: <code>~/Library/Application Support/Sublime Text 3/Packages/User</code></p>
+</li>
 </ul>
 <h2 id="code-structure">Code Structure</h2><p><em>Jisp code consists of nested arrays</em>. To be easier on the eyes, they’re delimited with parentheses <code>()</code> instead of brackets. Individual elements are separated by whitespace rather than commas. This documentation refers to them as <em>lists</em>, but it’s just arrays.</p>
 <div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; list that compiles to a function call
