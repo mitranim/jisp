@@ -130,7 +130,7 @@ block content
         :markdown
           Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as _hash tables_ to discern them from objects in general.
 
-        +code(16).
+        +code(24).
           ; object literal (hash table)
           (place: 'tavern' drink: 'rum')
 
@@ -140,8 +140,11 @@ block content
           ; alternate hash syntax
           (: using 'the' hash 'macro')
 
+          ; build at runtime
+          (: myList)
+
         :markdown
-          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. For now, it's compile-time only (useable in hash table literals and macros). A planned feature is to let it compile to a runtime hash table builder where appropriate.
+          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. When given multiple arguments, it builds a hash at compile time. When given one argument, it compiles to a runtime hash builder.
 
           Identifiers and literals without parentheses are called _atoms_:
 
@@ -1152,6 +1155,17 @@ block content
             (= this.loudness decibels))
 
         :markdown
+          Sometimes you want the code returned from a macro to contain new variable binginds. Prefix a name with `#` to make it a service name that is guaranteed to be unique in the current scope. If it clashes with any other variable, it will be renamed to avoid the conflict.
+
+        +code(12).
+          (mac myDefinition
+            `(= #uniq 'my unique variable'))
+
+          (= uniq 'declared outside macro')
+
+          (myDefinition)
+
+        :markdown
           Finally, macros can self-expand on definition:
 
         +code(10).
@@ -1201,7 +1215,7 @@ block content
         h3#built-in-macros Macros
 
         :markdown
-          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a compile-time hash table builder.
+          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a hash table builder.
 
         +code(24).
           (car   x)
@@ -1218,6 +1232,7 @@ block content
           (any   x y)
           (prn   x y)
           (: a x b y)
+          (: x)
 
         h3#built-in-functions Functions
 

@@ -70,7 +70,7 @@ jisp&gt;
 
 ; see other special forms below
 </textarea></div><div class="col-md-6 col-code right"><pre style="height: 24em; min-height: 24em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 24em; min-height: 24em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as <em>hash tables</em> to discern them from objects in general.</p>
-<div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; object literal (hash table)
+<div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; object literal (hash table)
 (place: 'tavern' drink: 'rum')
 
 ; empty object literal
@@ -78,7 +78,10 @@ jisp&gt;
 
 ; alternate hash syntax
 (: using 'the' hash 'macro')
-</textarea></div><div class="col-md-6 col-code right"><pre style="height: 16em; min-height: 16em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 16em; min-height: 16em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>The built-in hash <a href="#macros">macro</a> <code>:</code> gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. For now, it’s compile-time only (useable in hash table literals and macros). A planned feature is to let it compile to a runtime hash table builder where appropriate.</p>
+
+; build at runtime
+(: myList)
+</textarea></div><div class="col-md-6 col-code right"><pre style="height: 24em; min-height: 24em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 24em; min-height: 24em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>The built-in hash <a href="#macros">macro</a> <code>:</code> gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. When given multiple arguments, it builds a hash at compile time. When given one argument, it compiles to a runtime hash builder.</p>
 <p>Identifiers and literals without parentheses are called <em>atoms</em>:</p>
 <div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 28em; min-height: 28em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">; number
 Infinity
@@ -679,7 +682,14 @@ Unquote elements with , to resolve (transclude) them during macro call:
   
 (@ Animal growl decibels
   (= this.loudness decibels))
-  </textarea></div><div class="col-md-6 col-code right"><pre style="height: 16em; min-height: 16em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 16em; min-height: 16em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>Finally, macros can self-expand on definition:</p>
+  </textarea></div><div class="col-md-6 col-code right"><pre style="height: 16em; min-height: 16em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 16em; min-height: 16em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>Sometimes you want the code returned from a macro to contain new variable binginds. Prefix a name with <code>#</code> to make it a service name that is guaranteed to be unique in the current scope. If it clashes with any other variable, it will be renamed to avoid the conflict.</p>
+<div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 12em; min-height: 12em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac myDefinition
+  `(= #uniq 'my unique variable'))
+  
+(= uniq 'declared outside macro')
+
+(myDefinition)
+</textarea></div><div class="col-md-6 col-code right"><pre style="height: 12em; min-height: 12em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 12em; min-height: 12em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><p>Finally, macros can self-expand on definition:</p>
 <div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 10em; min-height: 10em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">((mac pr x `(process.stdout.write ,x)) 'hello world')
 (pr 'another call')
 
@@ -705,7 +715,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 <p>To avoid confusing macros for functions, it’s good style to begin their names with <code>mac</code>.</p>
 <p>It’s important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass <em>names</em>, or code in general. A macro doesn’t give a flying duck about scope or variable bindings. You aren’t constrained by scope or object reference issues, and don’t have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.</p>
 <h2 id="built-ins">Built-ins and Embedding</h2><p>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</p>
-<h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors. <code>prn</code> is a syntax-level alias for <code>console.log</code>, and <code>:</code> is a compile-time hash table builder.</p>
+<h3 id="built-in-macros">Macros</h3><p>Most built-in macros are conditionals. See the <a href="#conditionals">conditionals</a> section. Some are property accessors. <code>prn</code> is a syntax-level alias for <code>console.log</code>, and <code>:</code> is a hash table builder.</p>
 <div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 24em; min-height: 24em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(car   x)
 (head  x)
 (cdr   x)
@@ -720,6 +730,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 (any   x y)
 (prn   x y)
 (: a x b y)
+(: x)
 </textarea></div><div class="col-md-6 col-code right"><pre style="height: 24em; min-height: 24em;" ng-class="{error: code.isError}" ng-show="!code.showEvalOutput" class="form-code right">{{code.compiled}}</pre><button role="button" ng-click="fn.evalJS()" ng-show="!code.showEvalOutput" class="btn btn-sm btn-default button-eval">eval</button><pre style="height: 24em; min-height: 24em;" ng-show="code.showEvalOutput" class="form-code right pre-output">{{code.evalOutput}}</pre><button role="button" ng-click="code.showEvalOutput=false" ng-show="code.showEvalOutput" class="btn btn-sm btn-warning btn-output button-eval">close</button></div></div><h3 id="built-in-functions">Functions</h3><p>Jisp has a special faculty for adding global functions to the language. If any of them is referenced in code, it’s embedded at the top of your program on compile. No globals are leaked. If the function is reassigned before being referenced, it’s not embedded. Like with macros, jisp provides a way to import these functions, extending the language. It also comes with a few:</p>
 <p><code>list</code> is a list (array) builder. It’s roughly equivalent to <code>(Array x)</code>, but also accepts 0 or 1 arguments.</p>
 <pre><code>(list [&lt;args&gt; ...])
