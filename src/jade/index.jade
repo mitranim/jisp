@@ -130,7 +130,7 @@ block content
         :markdown
           Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as _hash tables_ to discern them from objects in general.
 
-        +code(24).
+        +code(16).
           ; object literal (hash table)
           (place: 'tavern' drink: 'rum')
 
@@ -139,10 +139,6 @@ block content
 
           ; alternate hash syntax
           (: using 'the' hash 'macro')
-
-          ; build at runtime
-          (:  myList)
-          (:: myList)
 
         :markdown
           The built-in hash [macros](#macros) `:` and `::` give you easy ways to build hash tables as lists. `:` with two or more arguments runs purely at compile time; other forms have runtime components. See the [built-ins](#built-in-macros) section for details.
@@ -1005,7 +1001,7 @@ block content
           ; add your own macro call here
 
         :markdown
-          Most of `jisp.jisp` is written with macros.
+          Most of [`jisp.jisp`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) is written with macros.
 
           The lifetime of your code without macros:
 
@@ -1140,7 +1136,7 @@ block content
 
           And it replaces the macro call before the code is compiled.
 
-          We've just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See `jisp.jisp` for bigger examples.
+          We've just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See [`jisp.jisp`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) for bigger examples.
 
           Macros can have arbitrary symbols and even literal strings as names. Suppose you're writing a lot of prototype extenders and want to shorten the definitions. In other languages, you're lucky if you have special syntax for that. In jisp, make the syntax yourself:
 
@@ -1197,12 +1193,12 @@ block content
         :markdown
           The `macros` object persists between compiler calls. If you're using a build script that compiles multiple jisp files within the same runtime, you can simply put macros in a file and require or compile it before others. This also works when running jisp scripts directly with `require`.
 
-          When a macro is referenced in code, it's embedded at the top of your program and can be assigned and exported from a module. See `macros.jisp` for an example.
+          When a macro is referenced in code, it's embedded at the top of your program and can be assigned and exported from a module. See [`macros.jisp`](https://github.com/Mitranim/jisp/blob/master/src/macros.jisp) for an example.
 
         h3#macro-notes Notes
 
         :markdown
-          After each macro expansion, the new code is recursively checked for macro definitions and calls. This allows macros to be nested, and even contain new macro definitions. See `jisp.jisp` for examples; most of it is written with nested macros.
+          After each macro expansion, the new code is recursively checked for macro definitions and calls. This allows macros to be nested, and even contain new macro definitions. See [`jisp.jisp`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) for examples; most of it is written with nested macros.
 
           To avoid confusing macros for functions, it's good style to begin their names with `mac`.
 
