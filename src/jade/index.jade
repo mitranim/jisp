@@ -141,10 +141,11 @@ block content
           (: using 'the' hash 'macro')
 
           ; build at runtime
-          (: myList)
+          (:  myList)
+          (:: myList)
 
         :markdown
-          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list), and letting the language convert it into a hash for you. When given multiple arguments, it builds a hash at compile time. When given one argument, it compiles to a runtime hash builder.
+          The built-in hash [macros](#macros) `:` and `::` give you easy ways to build hash tables as lists. `:` with two or more arguments runs purely at compile time; other forms have runtime components. See the [built-ins](#built-in-macros) section for details.
 
           Identifiers and literals without parentheses are called _atoms_:
 
@@ -1215,7 +1216,7 @@ block content
         h3#built-in-macros Macros
 
         :markdown
-          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a hash table builder.
+          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`.
 
         +code(24).
           (car   x)
@@ -1231,8 +1232,41 @@ block content
           (?!    x.y)
           (any   x y)
           (prn   x y)
-          (: a x b y)
-          (: x)
+
+        :markdown
+          `:` is a hash table builder. When given multiple arguments, it takes them as key-value pairs and compiles to an object literal:
+
+        +code(8).
+          (: basic 'hash' table 'syntax')
+
+        :markdown
+          This has its use in macros (at compile time). To use the hash builder at runtime, call it with a single argument:
+
+        +code(14).
+          (= calc `('number' Math.PI 'professor' 'Archimedes'))
+
+          (JSON.stringify
+            (: calc))
+
+        :markdown
+          `::` is a concatenating hash builder. It concatenates its arguments, flattening them if they're arrays, and passes the result to `:`.
+
+        +code(20).
+          (JSON.stringify
+            (:: `('first' 'pair') `('second' 'pair')))
+
+        :markdown
+          `::` is particularly useful for building hashes in loops.
+
+        +code(24).
+          (def duplicate ...args
+            (:: (for arg args `(arg arg))))
+
+          (JSON.stringify
+            (duplicate 'troubles' 'happiness'))
+
+        :markdown
+          Take note that both `:` and `::` are _destructive_. `(: ( .slice))` your lists if you want to keep copies.
 
         h3#built-in-functions Functions
 
