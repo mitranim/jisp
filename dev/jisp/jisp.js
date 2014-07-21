@@ -24,6 +24,18 @@
     }
     return _res;
   }
+
+  function concat() {
+    var _res, lst, _i, _i0, _ref;
+    var lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = lists;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      lst = _ref[_i0];
+      _res = _res.concat(lst);
+    }
+    return _res;
+  }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
   exports.version = "0.2.20";
   vm = require("vm");
@@ -1502,7 +1514,7 @@
   makeMacro;
 
   function expandMacros(form) {
-    var key, val, i, _ref, _ref0;
+    var key, val, i, element, args, _ref, _ref0, _i, _res, _ref1, _ref2, _ref3;
     if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
@@ -1513,7 +1525,26 @@
       if ((form[0] === "mac")) {
         form = parseMacros(form);
       } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
-        form = macros[form[0]].apply(macros, [].concat(form.slice(1)));
+        _res = [];
+        _ref1 = form.slice(1);
+        for (_i = 0; _i < _ref1.length; ++_i) {
+          element = _ref1[_i];
+          if ((isList(element) && (element[0] === "spread"))) {
+            if ((element.length !== 2)) {
+              _ref2 = undefined;
+              throw Error, ("expecting valid spread form, got:" + pr(element));
+            } else {
+              _ref2 = element[1];
+            }
+            _ref3 = _ref2;
+          } else {
+            _ref3 = [element];
+          } if (typeof(_ref3) !== 'undefined') _res.push(_ref3);
+        }
+        args = concat.apply(concat, [].concat(_res));
+        console.log("-- macro name:", form[0]);
+        console.log("-- macro args:", pr(args));
+        form = macros[form[0]].apply(macros, [].concat(args));
         if ((typeof form === "undefined")) form = [];
         form = expandMacros(form);
       } else {

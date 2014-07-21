@@ -944,7 +944,13 @@
       (if (is (car form) "mac")
         (= form (parseMacros form))
         (elif (in (car form) (Object.keys macros)) (do
-          (= form (macros[(car form)] ...(cdr form)))
+          (= args (concat ...(for element (cdr form)
+            (if (and (isList element) (is (car element) "spread"))
+                (if (isnt element.length 2)
+                    (throw Error (+ "expecting valid spread form, got:" (pr element)))
+                    element[1])
+                `(element)))))
+          (= form (macros[(car form)] ...args))
           (if (is (typeof form) "undefined") (= form `()))  ; no render
           (= form (expandMacros form))))  ; check if expanded form has new macro definitions or expansions, apply them
         (for val i form
