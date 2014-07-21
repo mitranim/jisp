@@ -130,14 +130,19 @@ block content
         :markdown
           Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as _hash tables_ to discern them from objects in general.
 
-        +code(10).
+        +code(16).
           ; object literal (hash table)
           (place: 'tavern' drink: 'rum')
 
           ; empty object literal
           (:)
 
+          ; alternate hash syntax
+          (: using 'the' hash 'macro')
+
         :markdown
+          The built-in hash [macro](#macros) `:` gives an easy way to build hash tables as lists (for instance, pushing key-value pairs to a list) and letting the language convert it into a hash for you.
+
           Identifiers and literals without parentheses are called _atoms_:
 
         +code(28).
@@ -1196,7 +1201,7 @@ block content
         h3#built-in-macros Macros
 
         :markdown
-          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`.
+          Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`, and `:` is a hash table builder.
 
         +code(24).
           (car   x)
@@ -1212,6 +1217,7 @@ block content
           (?!    x.y)
           (any   x y)
           (prn   x y)
+          (: a x b y)
 
         h3#built-in-functions Functions
 
@@ -1295,21 +1301,19 @@ block content
 
         :markdown
 
-          You should read this documentation to get a real idea of jisp's power. But here's a super short gist.
-
           #### Simple and Safe
 
-          Despite being more powerful, jisp is a lot simpler than JavaScript. Is has practically no syntax; there's no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.
+          Despite being more powerful, jisp is a lot [simpler](#code-structure) than JavaScript. Is has practically no syntax; there's no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.
 
-          It also absracts away legacy implementation details like `var`, `break` and the primitive `for` loop, eliminating entire classes of easy to make and hard to spot errors.
+          It also absracts away legacy implementation details like [`var`](#assignment), [`break`](#switch) and the primitive [`for`](#for) loop, eliminating entire classes of easy to make and hard to spot errors.
 
           #### Powerful
 
           At its heart, jisp is just JavaScript. But it's also much more.
 
-          On the surface level, it builds some coding patterns right into the language and provides powerful higher-level conditionals and loops, making your programs terser. Its expressive functional syntax and implicit value resolution lets you focus on your ideas and have the language take care of data returns.
+          On the surface level, it builds some coding patterns right into the language and provides powerful higher-level [conditionals](#conditionals) and [loops](#loops), making your programs terser. Its [expressive](#everything-exp) functional syntax and implicit value resolution lets you focus on your ideas and have the language take care of data returns.
 
-          More importantly, it lets you define syntactic abstractions and automatically generate code, reprogram and extend the language, implement embedded domain-specific languages on top of JS, deduplicate code in ways impossible with plain JavaScript.
+          More importantly, it lets you define syntactic abstractions and automatically [generate code](#macros), [reprogram](#macro-import-export) and [extend](#function-import-export) the language, implement embedded domain-specific languages on top of JS, deduplicate code in ways impossible with plain JavaScript.
 
         h3#why-over Why Jisp Over [insert dialect X]
 
@@ -1328,11 +1332,11 @@ block content
 
           #### Featureful
 
-          Jisp is full of features of immediate, practical use to a JavaScript developer. It's not different for difference sake: it enables a whole new level of abstraction and makes full use of it, coming prepackaged with powerful tools. It takes practical features from other modern languages and the future of JavaScript and gives them to you now. Built-in macros and functions, shortcuts to common patterns, import and embedding for macros and global functions, spreading, destructuring, and more.
+          Jisp is full of features of [immediate](#existence), practical use to a JavaScript developer. It's not different for difference sake: it enables a [whole new level](#macros) of abstraction and makes [full use](#built-ins) of it, coming prepackaged with powerful tools. It takes practical features from other modern languages and the future of JavaScript and gives them to you now. Built-in macros and functions, shortcuts to common patterns, import and embedding for macros and global functions, spreading, destructuring, and more.
 
           #### Axiomatic
 
-          Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn't try to imitate [language X] — or JavaScript, for that matter. It aims to be succinct and get out of your way.
+          Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn't try to imitate [language X] — or JavaScript, for that matter. It aims to be [succinct](#lambda) and get out of your way.
 
         h2#acknowledgements Acknowledgements and Notes
 
