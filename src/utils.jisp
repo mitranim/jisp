@@ -54,6 +54,14 @@
                           (isIdentifier form)
                           (isNum form)))))
 
+(= exports.isService (def isServiceName form
+  (and (isa form "string")
+       (/^#/.test form)
+       (not (/^#$|^#\d|^#\.|^#\[/.test form)))))
+
+(= exports.getServicePart (def getServicePart form
+  (car (form.match /^#[^.[]+/))))
+
 ;-------------------------------- Simple Types --------------------------------
 
 (= exports.isVarName (def isVarName form

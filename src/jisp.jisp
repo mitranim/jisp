@@ -4,30 +4,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; External dependencies
-(= vm          (require "vm")
-   fs          (require "fs")
-   path        (require "path")
-   beautify    (require "js-beautify"))
+(= vm             (require "vm")
+   fs             (require "fs")
+   path           (require "path")
+   beautify       (require "js-beautify"))
 
 ; Jisp dependencies
-(= utils       (require "./utils")
-   ops         (require "./operators")
-   operators   ops.operators
-   opFuncs     ops.opFuncs
-   tokenise    (require "./tokenise")
-   lex         (require "./lex")
-   parse       (require "./parse"))
+(= utils          (require "./utils")
+   ops            (require "./operators")
+   operators      ops.operators
+   opFuncs        ops.opFuncs
+   tokenise       (require "./tokenise")
+   lex            (require "./lex")
+   parse          (require "./parse"))
 
 ; Util
-(= pr           utils.pr   ; this must be applied to EVERY form we render or print to console
-   spr          utils.spr  ; or this, depending on task
-   render       utils.render
-   isAtom       utils.isAtom
-   isHash       utils.isHash
-   isList       utils.isList
-   isVarName    utils.isVarName
-   isIdentifier utils.isIdentifier
-   assertExp    utils.assertExp)
+(= pr             utils.pr   ; this must be applied to EVERY form we render or print to console
+   spr            utils.spr  ; or this, depending on task
+   render         utils.render
+   isAtom         utils.isAtom
+   isHash         utils.isHash
+   isList         utils.isList
+   isVarName      utils.isVarName
+   isIdentifier   utils.isIdentifier
+   isService      utils.isService
+   getServicePart utils.getServicePart
+   assertExp      utils.assertExp)
 
 ; This file has gotten insanely big and repetitive, todo rearchitect and deduplicate
 
@@ -169,7 +171,7 @@
 (mac macForkScope
 ; If this form declares variables, fork scope
   `(do (= outerScope scope
-          scope      (hoist: (outerScope.hoist.slice) service: (outerScope.service.slice)))
+          scope      (JSON.parse (JSON.stringify outerScope)))
        (delete opts.topScope)))
 
 (mac macDeclareOrHoist (dest "buffer") (do
@@ -276,6 +278,16 @@
           (do
             (macDeclareVar form no)
             (= form opFuncs[form].name))))
+      ; If name is a service name like #ref, declare it as a service var and replace the name
+      (if (isService form) (do
+        ; Get service part of name
+        (= serv (getServicePart form)
+           re   (RegExp (+ "^" serv)))
+        ; Define corresponding service var, get replacement name
+        (if (not (in serv (Object.keys scope.replace)))
+            (macDeclareService scope.replace[serv] (cdr serv)))
+        ; Replace service part of this name
+        (= form (form.replace re scope.replace[serv]))))
       `((form) scope)))
     (elif (isHash form) (do
       (= buffer `())
@@ -930,7 +942,7 @@
      (if (?! name) (throw (Error "a macro requires a name")))
      (if (?! body) (throw (Error "a macro requires a body")))
      (= body `("do" ("fn" ,...body)))
-     (= (compiled scope) (compileForm body (hoist:`() service:`()) (macro: yes isTopLevel: yes)))
+     (= (compiled scope) (compileForm body (hoist:`() service:`() replace:(:)) (macro: yes isTopLevel: yes)))
      (= rendered         (render compiled))
      (= macros[name]     (jispEval rendered))
      (if selfExpand name `())))
@@ -1005,7 +1017,7 @@
        (= functionsRedeclare `()
           functionsRedefine  `()))  ; reset functions override stores when compiling each new file
    (= expanded (macroexpand parsed))
-   (= (compiled scope) (compileForm expanded (hoist:`() service:`()) opts))
+   (= (compiled scope) (compileForm expanded (hoist:`() service:`() replace:(:)) opts))
    (if (and opts.pretty (? beautify))
        (beautify (render compiled) (indent_size: 2))
        (render compiled)))))

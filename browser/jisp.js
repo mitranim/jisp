@@ -68,6 +68,16 @@
   }
   exports.isKey = isKey;
 
+  function isServiceName(form) {
+    return ((typeof form === "string") && /^#/.test(form) && !/^#$|^#\d|^#\.|^#\[/.test(form));
+  }
+  exports.isService = isServiceName;
+
+  function getServicePart(form) {
+    return form.match(/^#[^.[]+/)[0];
+  }
+  exports.getServicePart = getServicePart;
+
   function isVarName(form) {
     return (isAtom(form) && /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
   }
@@ -1245,7 +1255,7 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
   exports.version = "0.2.20";
   vm = require("vm");
   fs = require("fs");
@@ -1266,6 +1276,8 @@
   isList = utils.isList;
   isVarName = utils.isVarName;
   isIdentifier = utils.isIdentifier;
+  isService = utils.isService;
+  getServicePart = utils.getServicePart;
   assertExp = utils.assertExp;
   functionsRedeclare = [];
   functionsRedefine = [];
@@ -1393,7 +1405,7 @@
   isPropertyExp;
 
   function compileForm(form, scope, opts, nested) {
-    var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, key, val, _ref, _i, _ref0, _i0, _ref1, _ref2, _i1, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _ref8, _ref9, _i6;
+    var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, serv, re, key, val, _ref, _i, _ref0, _i0, _ref1, _ref2, _i1, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _ref8, _i6, _ref9, _ref10, _i7;
     if ((typeof opts === 'undefined')) opts = {};
     if ((isList(form) && utils.isBlankObject(form))) {
       _ref7 = [
@@ -1408,19 +1420,29 @@
         scope = declareVar(form, scope);
         form = opFuncs[form].name;
       }
+      if (isService(form)) {
+        serv = getServicePart(form);
+        re = RegExp("^" + serv);
+        if (!([].indexOf.call(Object.keys(scope.replace), serv) >= 0)) {
+          _ref8 = declareService(serv.slice(1), scope, (opts.function ? args : undefined));
+          scope.replace[serv] = _ref8[0];
+          scope = _ref8[1];
+        }
+        form = form.replace(re, scope.replace[serv]);
+      }
       _ref7 = [
         [form], scope
       ];
     } else if (isHash(form)) {
       buffer = [];
       nested = undefined;
-      _ref8 = form;
-      for (key in _ref8) {
-        val = _ref8[key];
-        _ref9 = compileGetLast(val, buffer, scope, opts, nested);
-        form[key] = _ref9[0];
-        buffer = _ref9[1];
-        scope = _ref9[2];
+      _ref9 = form;
+      for (key in _ref9) {
+        val = _ref9[key];
+        _ref10 = compileGetLast(val, buffer, scope, opts, nested);
+        form[key] = _ref10[0];
+        buffer = _ref10[1];
+        scope = _ref10[2];
       }
       buffer.push(form);
       _ref7 = [buffer, scope];
@@ -1527,10 +1549,7 @@
     }
     if (isTopLevel) {
       outerScope = scope;
-      scope = {
-        hoist: outerScope.hoist.slice(),
-        service: outerScope.service.slice()
-      };
+      scope = JSON.parse(JSON.stringify(outerScope));
       delete opts.topScope;
     }
     _ref = form;
@@ -1865,10 +1884,7 @@
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     outerScope = scope;
-    scope = {
-      hoist: outerScope.hoist.slice(),
-      service: outerScope.service.slice()
-    };
+    scope = JSON.parse(JSON.stringify(outerScope));
     delete opts.topScope;
     _ref = form;
     var args = 2 <= _ref.length ? [].slice.call(_ref, 0, _i = _ref.length - 1) : (_i = 0, []);
@@ -1997,10 +2013,7 @@
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     outerScope = scope;
-    scope = {
-      hoist: outerScope.hoist.slice(),
-      service: outerScope.service.slice()
-    };
+    scope = JSON.parse(JSON.stringify(outerScope));
     delete opts.topScope;
     _ref = form;
     fname = _ref[0];
@@ -2709,7 +2722,8 @@
     body = ["do", [].concat(["fn"]).concat(body)];
     _ref0 = compileForm(body, {
       hoist: [],
-      service: []
+      service: [],
+      replace: {}
     }, {
       macro: true,
       isTopLevel: true
@@ -2751,8 +2765,6 @@
           } if (typeof(_ref3) !== 'undefined') _res.push(_ref3);
         }
         args = concat.apply(concat, [].concat(_res));
-        console.log("-- macro name:", form[0]);
-        console.log("-- macro args:", pr(args));
         form = macros[form[0]].apply(macros, [].concat(args));
         if ((typeof form === "undefined")) form = [];
         form = expandMacros(form);
@@ -2831,7 +2843,8 @@
     expanded = macroexpand(parsed);
     _ref = compileForm(expanded, {
       hoist: [],
-      service: []
+      service: [],
+      replace: {}
     }, opts);
     compiled = _ref[0];
     scope = _ref[1];
