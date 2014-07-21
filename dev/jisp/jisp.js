@@ -37,7 +37,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.20";
+  exports.version = "0.2.21";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
