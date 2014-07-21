@@ -1,8 +1,7 @@
 ; Utils for other modules
-
 ; Got bloated, todo refactor
 
-; # For compiler
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; For Compiler ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= exports.keywords (= keywords `(
   "return" "break" "continue" "throw" "delete"
@@ -28,7 +27,7 @@
        (is form Infinity)
        (isa form "boolean"))))
 
-; Composite types
+;------------------------------- Composite Types -------------------------------
 
 (= exports.isAtom (def isAtom form
    (or (is form undefined null)
@@ -55,7 +54,7 @@
                           (isIdentifier form)
                           (isNum form)))))
 
-; Simple types
+;-------------------------------- Simple Types --------------------------------
 
 (= exports.isVarName (def isVarName form
 ; matches pure variable names without property notation
@@ -91,7 +90,7 @@
    (or (isArgHash form)
        (isArgsHash form))))
 
-; Property syntax — dot and bracket notation
+;----------------- Property Syntax — Dot and Bracket Notation -----------------
 
 (= exports.isDotName (def isDotName form
    (and (isAtom form) (/^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test form))))
@@ -107,7 +106,7 @@
                           (isBracketName form)
                           (isBracketString form)))))
 
-; Other
+;----------------------------------- Other ------------------------------------
 
 (= exports.typify (def typify form
    (if (not (isAtom form))
@@ -152,7 +151,7 @@
    (res.unshift name)
    res)))
 
-; # For rendering
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; For Rendering ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Pretty-print
 ; Turns data objects into pretty-looking strings, with proper [ ] and { } delimiters for arrays and hash tables
@@ -229,7 +228,8 @@
          str)
        str)))
 
-; # For command line
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; For Command Line ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; Mostly copied from CoffeeScript source
 
 ; Merges objects, returning fresh copy with attributes from both sides

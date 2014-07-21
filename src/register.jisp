@@ -2,7 +2,7 @@
 
 (= child_process (require "child_process")
    path          (require "path")
-   util          (require "./util")
+   utils         (require "./utils")
    jisp          (require "./jisp"))
 
 ; Load and run a jisp file for Node, stripping `BOM`s
@@ -22,7 +22,7 @@
 ;        binary (require.resolve "../../bin/jisp")
 ;        child_process.fork
 ;          (fn path args options
-;              (do (if (util.isJisp path)
+;              (do (if (utils.isJisp path)
 ;                      (do (if (not (Array.isArray args))
 ;                              (= options (or args (:))
 ;                                 args    `()))

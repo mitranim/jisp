@@ -3,9 +3,13 @@
 ; ToDo add polyfill
 ; ToDo add source map support
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (= jisp         (require "./jisp")
    jisp.require require
    compile      jisp.compile)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Rest ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Use standard JS `eval` to eval code
 (= jisp.eval (fn code (options (:)) (do

@@ -1,10 +1,13 @@
-; Import
-(= util         (require "./util")
-   pr           util.pr
-   spr          util.spr
-   render       util.render
-   isIdentifier util.isIdentifier
-   assertForm   util.assertForm)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(= utils        (require "./utils")
+   pr           utils.pr
+   spr          utils.spr
+   render       utils.render
+   isIdentifier utils.isIdentifier
+   assertForm   utils.assertForm)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def makeop op zv (min 0) (max Infinity) (drop no)
 ; <operator> <zero value> <min args> <max args>
@@ -41,6 +44,8 @@
      (fn args innerType
          (if (assertForm args min max)
              (+ op " " (spr args)) "undefined")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Operator Generators ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= operators (
 ; Replacing jisp functions with JS operators and keywords
@@ -145,18 +150,19 @@
 
 (for op stateops (= operators[op[0]] (makestate op[0])))
 
-; Export operators
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (= exports.operators operators)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Operator Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; # Operator functions
 ; When operators like > are passed around, the compiler checks against
 ; the opFuncs store. If it has an element by that name, that function
 ; is hoisted and embedded in compiled JavaScript by calling .toString
 ; on it. References in compiled code are renamed into the .name
 ; property of the corresponding opFuncs element.
 
-; Unfinished. ToDo implement
+; This is unfinished. ToDo implement.
 
 (mac macMakeOp name operator zeroValue
 ; <func-name> <operator> <zero-value>
@@ -182,5 +188,6 @@
 ; (console.log (div 10))
 ; (console.log (add.toString))
 
-; Export
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (= exports.opFuncs opFuncs)

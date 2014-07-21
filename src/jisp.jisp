@@ -1,5 +1,7 @@
 ; Version
-(= exports.version "0.2.19")
+(= exports.version "0.2.20")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; External dependencies
 (= vm          (require "vm")
@@ -8,7 +10,7 @@
    beautify    (require "js-beautify"))
 
 ; Jisp dependencies
-(= util        (require "./util")
+(= utils       (require "./utils")
    ops         (require "./operators")
    operators   ops.operators
    opFuncs     ops.opFuncs
@@ -17,27 +19,27 @@
    parse       (require "./parse"))
 
 ; Util
-(= pr           util.pr   ; this must be applied to EVERY form we render or print to console
-   spr          util.spr  ; or this, depending on task
-   render       util.render
-   isAtom       util.isAtom
-   isHash       util.isHash
-   isList       util.isList
-   isVarName    util.isVarName
-   isIdentifier util.isIdentifier
-   assertExp    util.assertExp)
+(= pr           utils.pr   ; this must be applied to EVERY form we render or print to console
+   spr          utils.spr  ; or this, depending on task
+   render       utils.render
+   isAtom       utils.isAtom
+   isHash       utils.isHash
+   isList       utils.isList
+   isVarName    utils.isVarName
+   isIdentifier utils.isIdentifier
+   assertExp    utils.assertExp)
 
 ; This file has gotten insanely big and repetitive, todo rearchitect and deduplicate
 
 ; ToDo move exports to a `jisp` object and export just that object
 
-; # Globals
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Globals ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Lists of built-in functions whose names have been overridden by an early `=` or `def`
 (= functionsRedeclare `()
    functionsRedefine  `())
 
-; # Helper functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Helper Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Adds or increments number at end of string
 (def plusname name
@@ -101,9 +103,9 @@
 (def returnify form
      (if (or (isAtom form) (isHash form))
          `("return" form)
-         (elif (and (isList form) (util.isBlankObject form))  ; []
+         (elif (and (isList form) (utils.isBlankObject form))  ; []
                form)
-         (elif (and (isList form) (is form.length 1) (util.isBlankObject (car form)))  ; [[]]
+         (elif (and (isList form) (is form.length 1) (utils.isBlankObject (car form)))  ; [[]]
                (car form))
          (elif (and (isList form) (isnt (car form) "return"))
                `("return" form))
@@ -130,9 +132,9 @@
        (or (and (isList (car form))
                 (is (get (car form) length) 2)
                 (is (car (car form)) "get"))
-           (util.isPropSyntax (car form)))))
+           (utils.isPropSyntax (car form)))))
 
-; # Helper macros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Helper Macros ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Shorter version of compileAdd
 (mac macCompileAdd form (nested "nested")
@@ -215,11 +217,12 @@
                   ; embed like named function
                   (do ,dest (.unshift (functions[func].toString)))
                   ; embed like lambda
-                  (do ,dest (.unshift (+ "var " func " = " (functions[func].toString) ";")))))
-          (elif (in func (Object.keys macros))
+                  (if (isVarName func)
+                      (do ,dest (.unshift (+ "var " func " = " (functions[func].toString) ";"))))))
+          (elif (and (in func (Object.keys macros)) (isVarName func))
             (do ,dest (.unshift (+ "var " func " = " (macros[func].toString) ";"))))
             ; ToDo embedding of opFuncs with .toString and renaming of references in code when not first in list
-          (elif (in func (Object.keys opFuncs))
+          (elif (and (in func (Object.keys opFuncs)) (isVarName func))
             (do ,dest (.unshift (+ "var " opFuncs[func].name " = " (opFuncs[func].func.toString) ";"))))  ; no pr, expecting strings
           (throw (Error (+ "unrecognised func: " (pr func)))))))
         (for func funcs
@@ -251,15 +254,14 @@
   ))  ; /lambda
 ))  ; /macro
 
-
-; # Main compiler parts
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Main Compiler Parts ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Compiles form, switching between types
 ; Takes: <form to compile> <scope> <options>
 ; Returns: <array of compiled strings> <modified scope>
 (def compileForm form scope (opts (:)) nested (do
   ; Switch between form types and compile accordingly
-  (if (and (isList form) (util.isBlankObject form))
+  (if (and (isList form) (utils.isBlankObject form))
     `(("") scope)
     (elif (isAtom form) (do
       ; ToDo: check for reserved and forbidden words right here
@@ -338,7 +340,7 @@
                         (= first opFuncs[first].name))
                     (throw (Error (+ (pr first) " can't spread arguments (yet)")))))
               ; Split object name and method for applying
-              (= split (util.splitName first))
+              (= split (utils.splitName first))
               (if (> split.length 1)
                   (= method (split.pop)
                      name   (split.join ""))
@@ -355,7 +357,7 @@
           ; Return compiled
           `(buffer scope)))))
 
-; # Special logic for special forms
+;;;;;;;;;;;;;;;;;;;;;;; Special Logic For Special Forms ;;;;;;;;;;;;;;;;;;;;;;;
 
 (= specials (:))
 
@@ -386,7 +388,7 @@
 (= specials.quote (macCompileSpecial (argsMin: 1 argsMax: 1
   code: (do
     (= form (car form))
-    (if (and (isAtom form) (not (util.isPrimitive form)) (not (util.isSpecialValue form)))
+    (if (and (isAtom form) (not (utils.isPrimitive form)) (not (utils.isSpecialValue form)))
       (buffer.push (JSON.stringify form))  ; identifiers and strings get additional quotes that soak up the additional rendering done when expanding a macro
       (elif (isAtom form)
         (buffer.push form))
@@ -468,7 +470,7 @@
       (do (macDeclareVar (car form))
           (macCompileAdd (car form)))
       (do
-        (assertExp form {is (% (get #0 length) 2) 0} "an even number of arguments")
+        (assertExp form {is (% #0.length 2) 0} "an even number of arguments")
         (while (> form.length 0) (do
           (= left  (form.shift)
              right (form.shift))
@@ -526,7 +528,7 @@
       (for arg i args
         (if (isList arg)
           (do
-            (assertExp arg {is (get #0 length) 2} "optional or rest parameter")
+            (assertExp arg {is #0.length 2} "optional or rest parameter")
             (if (is (car arg) "spread")
               (do
                 (if (> (++ spreads) 1) (throw (Error "cannot define more than one rest parameter")))
@@ -583,7 +585,7 @@
     (if nestedLocal
         (if ((get /^return\s/ test) lastItem)
           (= lastItem (lastItem.replace /^return\s/ (+ "return " collector " = ")))
-          (elif (util.kwtest lastItem)
+          (elif (utils.kwtest lastItem)
             (= lastItem (+ collector " = undefined; " lastItem)))
           (= lastItem (+ collector " = " (pr lastItem)))))
     (compiled.push lastItem)
@@ -620,9 +622,9 @@
     ; binary
     (do (= res (+ "if (" (pr predicate) ")" (pr (car prebranch)) ";"))  ; print `undefined` if nothing
         (buffer.push res ""))  ; extra "" signals this is a multi-line statement
-    (elif (and (is prebranch.length 1) (not (util.kwtest (car prebranch)))
+    (elif (and (is prebranch.length 1) (not (utils.kwtest (car prebranch)))
                (is midcases.length 0)
-               (is postbranch.length 1) (not (util.kwtest (car postbranch))))
+               (is postbranch.length 1) (not (utils.kwtest (car postbranch))))
       ; ternary
       (do (= res (+ (pr predicate) " ? "
                     (or (pr (car prebranch)) undefined) " : "  ; print `undefined` if nothing
@@ -703,10 +705,10 @@
 (mac macCollect
   `(do
     (= rear (body.pop))
-    (if (or (util.isPrimitive       rear)
-            (util.isString          rear)
-            (util.isSpecialValue    rear)
-            (util.isSpecialValueStr rear))
+    (if (or (utils.isPrimitive       rear)
+            (utils.isString          rear)
+            (utils.isSpecialValue    rear)
+            (utils.isSpecialValueStr rear))
         ; a literal; just push it
         (body.push (+ collector ".push(" (pr rear) ")"))
         ; identifier, can be safely repeated in code, test it and push it
@@ -770,7 +772,7 @@
       (= nested nestedLocal)
       (macCompileResolve body body)
       ; only collect if the form is nested, if the last expression isn't a keyword, and it's not undefined, unless it's a literal, in which case it's allowed to be undefined
-      (if (and nestedLocal (not (util.kwtest (pr (last body)))))
+      (if (and nestedLocal (not (utils.kwtest (pr (last body)))))
         (macCollect))
       ,(if (is type "for")
         `(buffer.push (+ "for (" key " = 0; " key " < " ref ".length; ++" key ") { " value " = " ref "[" key "]; " (render body) " }"))
@@ -805,7 +807,7 @@
     ; if this isn't nested, further compiled body should be aware of that
     (= nested nestedLocal)
     (macCompileResolve body body)
-    (if (and nestedLocal (is form.length 2) (not (util.kwtest (pr (last body)))))
+    (if (and nestedLocal (is form.length 2) (not (utils.kwtest (pr (last body)))))
       (macCollect))
     (buffer.push (+ "while (" (pr test) ") { " (render body) " }"))
     (if (is form.length 2)
@@ -829,7 +831,7 @@
                         (tryForm.push (+ collector " = " (pr (tryForm.pop))))))
     (if (and (isList catchForm) (is (car catchForm) "catch"))
       (do
-        (assertExp catchForm {is (get #0 length) 2 3} "valid catch form")
+        (assertExp catchForm {is #0.length 2 3} "valid catch form")
         (= (catchForm err catchForm) catchForm)
         (assertExp err isVarName "valid identifier"))
       (macDeclareService err "_err"))  ; shouldn't be declared, it's like an argument, todo fix
@@ -837,15 +839,15 @@
     ; if this isn't nested, further compiled parts should be aware of that
     (= nested nestedLocal)
     (macCompileResolve catchForm catchForm)
-    (if (and nestedLocal (not (util.kwtest (pr (last catchForm)))))
+    (if (and nestedLocal (not (utils.kwtest (pr (last catchForm)))))
         (catchForm.push (+ collector " = " (pr (catchForm.pop)))))
     (if (? finalForm)
       (do
         (if (and (isList finalForm) (is (car finalForm) "finally"))
-          (do (assertExp finalForm {is (get #0 length) 2})
+          (do (assertExp finalForm {is #0.length 2})
               (= finalForm (last finalForm))))
         (macCompileResolve finalForm finalForm)
-        (if (and nestedLocal (not (util.kwtest (pr (last finalForm)))))
+        (if (and nestedLocal (not (utils.kwtest (pr (last finalForm)))))
             (finalForm.push (+ collector " = " (pr (finalForm.pop)))))))
     (= res (+ "try { " (render tryForm) " } catch (" (pr err) ") { " (render catchForm) " }"))
     (if (? finalForm) (+= res (+ " finally { " (render finalForm) " }")))
@@ -884,11 +886,11 @@
     (if (isnt form.length 0)
       (do
         (macCompileGetLast (car form) form yes)
-        (if (not (util.kwtest form))
+        (if (not (utils.kwtest form))
             (= form (+ "return " (pr form))))
         (buffer.push form)))))))
 
-; # Macros
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Macros ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Macro store
 (= macros (:))
@@ -906,16 +908,16 @@
 
 ; Parses form for macro definitions and makes macros, removing definitions from source
 (def parseMacros form
-     (do (if (util.isHash form)
+     (do (if (utils.isHash form)
              (over val key form
                    (= form[key] (parseMacros val)))
-             (elif (util.isList form)
+             (elif (utils.isList form)
                    ; standard definition: (mac x) -> ()
                    (if (is (car form) "mac")
                        (= form (makeMacro (cdr form)))
                        ; self-expanding definition: ((mac x)) -> (x)
                        (elif (and (>= form.length 1)
-                                  (util.isList (car form))
+                                  (utils.isList (car form))
                                   (is (car (car form)) "mac"))
                              (= (car form) (makeMacro (cdr (car form)) yes)))
                        ; other cases; check recursively
@@ -935,10 +937,10 @@
 
 ; Parses form for known macros to expand, replacing macro calls with macro results
 (def expandMacros form (do
-  (if (util.isHash form) (do
+  (if (utils.isHash form) (do
     (over val key form
       (= form[key] (expandMacros val))))
-    (elif (util.isList form)
+    (elif (utils.isList form)
       (if (is (car form) "mac")
         (= form (parseMacros form))
         (elif (in (car form) (Object.keys macros)) (do
@@ -951,7 +953,7 @@
 
 (def macroexpand src (expandMacros (parseMacros src)))
 
-; # Functions import
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Functions Import ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Functions store
 (= functions (:))
@@ -968,7 +970,10 @@
 ; Import and merge functions
 (importFunctions (require "./functions"))
 
-; # Export
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Export utilities
+(= exports.utils utils)
 
 (= exports.fileExtensions `(".jisp")
    exports.register       (fn (require "./register"))
@@ -983,8 +988,9 @@
 (= exports.compile (def compile src opts (do
    (= defaults (wrap:       yes
                 topScope:   yes   ; for built-in-func overrides
-                isTopLevel: yes)  ; for functions wrapping `do`
-      opts     (util.merge defaults opts))
+                isTopLevel: yes   ; for functions wrapping `do`
+                pretty:     yes)  ; enables beautifier
+      opts     (utils.merge defaults opts))
    (= parsed (parse (lex (tokenise src))))
    (parsed.unshift "do")  ; always put code into an implicit `do`
    (if opts.wrap
@@ -994,7 +1000,7 @@
           functionsRedefine  `()))  ; reset functions override stores when compiling each new file
    (= expanded (macroexpand parsed))
    (= (compiled scope) (compileForm expanded (hoist:`() service:`()) opts))
-   (if (? beautify)
+   (if (and opts.pretty (? beautify))
        (beautify (render compiled) (indent_size: 2))
        (render compiled)))))
 
@@ -1025,6 +1031,6 @@
               (path.dirname (fs.realpathSync options.filename))
               (fs.realpathSync ".")))
    (= mainModule.paths ((get (require "module") _nodeModulePaths) dir))
-   (if (or (not (util.isJisp mainModule.filename)) require.extensions)
+   (if (or (not (utils.isJisp mainModule.filename)) require.extensions)
        (= code (exports.compile code)))
    (mainModule._compile code mainModule.filename))))

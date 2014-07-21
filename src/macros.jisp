@@ -2,20 +2,15 @@
 
 ; Default macros to add:
   ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
-  ; (any) -> a sliding switch (or (if (? x) x) (if (? y) y) ...)
   ; ...
 
 ; For embedding purposes, macros should not enclose any objects. They must be fully self-sufficient when printed with .toString
 ; Meaning, all utilities in this file must be macros themselves, and nothing must be imported
 ; A possible exception is the macros that can't be referenced by name (like ?!)
 
-(= util (require "./util"))
+(= utils (require "./utils"))
 
-; shorter logging; aren't you tired of typing `console.log`?
-(mac macPrn ...x
-  `(console.log ,...x))
-
-(= exports.prn macPrn)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (mac macCheckVar exp
 ; a very approximate check if exp is an identifier
@@ -27,6 +22,23 @@
 (mac macOneArg name rest
   `(if (or (?! ,name) (> (get ,rest length) 0))
        (throw (Error (+ "expecting one argument, got: " ,name ", " ,rest)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Definitions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; `:` hash table macro
+(mac macHash ...args
+  (do (= buffer (:))
+      (while (> args.length 0)
+        (= buffer[(args.shift)] (args.shift)))
+      buffer))
+
+(= exports[":"] macHash)
+
+; `prn`: short alias for console.log
+(mac macPrn ...x
+  `(console.log ,...x))
+
+(= exports.prn macPrn)
 
 ; `car`: x[0]
 ; `head`: x[0]
@@ -80,10 +92,10 @@
 ; takes a form and makes an array of property references, starting with base object
 ; with existence check wrapped around each
 (def compartmentaliseExist form
-  (if (and (util.isList form) (is (car form) "get"))
+  (if (and (utils.isList form) (is (car form) "get"))
     (list ...(compartmentaliseExist form[1]) `("isnta" form "'undefined'"))
-    (elif (and (isa form "string") (util.isIdentifier form) (not (util.isSpecialValueStr form)))
-      (for val i (= split (util.splitName form))
+    (elif (and (isa form "string") (utils.isIdentifier form) (not (utils.isSpecialValueStr form)))
+      (for val i (= split (utils.splitName form))
         `("isnta" ,(do (split.slice 0 (+ i 1)) (.join "")) "'undefined'")))
     `(("isnta" form "'undefined'"))))
 
@@ -106,10 +118,10 @@
 ; takes a form and makes an array of property references, starting with base object
 ; with inexistence check wrapped around each
 (def compartmentaliseNotExist form
-  (if (and (util.isList form) (is (car form) "get"))
+  (if (and (utils.isList form) (is (car form) "get"))
     (list ...(compartmentaliseNotExist form[1]) `("isa" form "'undefined'"))
-    (elif (and (isa form "string") (util.isIdentifier form) (not (util.isSpecialValueStr form)))
-      (for val i (= split (util.splitName form))
+    (elif (and (isa form "string") (utils.isIdentifier form) (not (utils.isSpecialValueStr form)))
+      (for val i (= split (utils.splitName form))
         `("isa" ,(do (split.slice 0 (+ i 1)) (.join "")) "'undefined'")))
     `(("isa" form "'undefined'"))))
 

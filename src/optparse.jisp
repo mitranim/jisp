@@ -1,7 +1,11 @@
 ; Copied from CoffeeScript source
-; ToDo rewrite without classes
+; ToDo rewrite
 
-(= repeat (get (require "./util") repeat))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(= repeat (get (require "./utils") repeat))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Option Parser ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; OptionParser class to parse option flags from command line
 
@@ -62,7 +66,7 @@
 
 )))))
 
-; Helpers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= long_flag  /^(--\w[\w\-]*)/
    short_flag /^(-\w)$/

@@ -1,6 +1,5 @@
 (function() {
   var tokens, recode, recomment, redstring, resstring, rereg;
-  module.exports = tokenise;
   tokens = [];
   recode = /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/;
   recomment = /^;.*[\n\r]?/;
@@ -70,5 +69,6 @@
       return ((typeof x !== 'undefined') && (x !== "" && x !== undefined && x !== null));
     }));
   }
-  return tokenise;
+  tokenise;
+  return module.exports = tokenise;
 }).call(this);

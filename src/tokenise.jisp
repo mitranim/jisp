@@ -1,6 +1,8 @@
 ; Turns a string into a flat array of tokens, split by delimiters and whitespace
 
-(= module.exports tokenise)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Regexes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= tokens    `()  ;#`
    recode    /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/
@@ -9,6 +11,8 @@
    redstring /^""|^"[^]*?(?:[^\\]")[^\s):\]\}]*/   ; first " string + data until delimiter
    resstring /^''|^'[^]*?(?:[^\\]')[^\s):\]\}]*/   ; first ' string + data until delimiter
    rereg     /^\/[^\s]+\/[\w]*[^\s)]*/)        ; first regex + data until delimiter
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def grate str
      (do str
@@ -40,6 +44,8 @@
          mask[0]
          null))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Tokeniser ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def tokenise str
      (do (= tokens `())
          (while (> (get (= str (str.trim)) length) 0)
@@ -60,3 +66,7 @@
                     (do (tokens.push …(grate str))
                         (= str ""))))
          (tokens.filter (fn x (and (? x) (isnt x "" undefined null))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(= module.exports tokenise)

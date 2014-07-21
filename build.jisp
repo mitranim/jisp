@@ -8,7 +8,7 @@
 
 (= files `("index"
            "functions"
-           "util"
+           "utils"
            "operators"
            "tokenise"
            "lex"
@@ -21,9 +21,8 @@
            "jisp"
            "browser"))
 
-(= filesBrowser `("util"
+(= filesBrowser `("utils"
                   "functions"
-                  "util"
                   "operators"
                   "tokenise"
                   "lex"

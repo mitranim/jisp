@@ -1,7 +1,9 @@
 ; Command line utility
   ; Launches interactive REPL
   ; Compiles files
-; Mostly copied from CoffeeScript source, bow to Jeremy and team
+; Mostly copied from CoffeeScript source, bow to Jeremy and team, todo rewrite
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= fs           (require "fs")
    path         (require "path")
@@ -10,14 +12,16 @@
    exec         (get (require "child_process") exec)
    EventEmitter (get (require "events") EventEmitter)
    jisp         (require "./jisp")
-   util         (require "./util")
+   utils        (require "./utils")
    optparse     (require "./optparse"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Rest ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Putting more than one backslash directly before a quote breaks our tokeniser, todo fix
 (= useWinPathSep (is path.set ((get "\\ " slice) 0 1)))
 
 ; Allow jisp to emit Node.js events
-(util.extend jisp (new EventEmitter))
+(utils.extend jisp (new EventEmitter))
 
 (def printLine line
      (process.stdout.write (+ line "\n")))
@@ -86,7 +90,7 @@ When called without options, compiles your script and prints the output to stdou
                                       (throw err))))
                   (for file files
                        (compilePath (path.join source file) no base))))
-          (elif (or topLevel (util.isJisp source))
+          (elif (or topLevel (utils.isJisp source))
                 (do (sources.push source)
                     (sourceCode.push null)
                     (delete notSources[source])
@@ -149,7 +153,7 @@ When called without options, compiles your script and prints the output to stdou
 
 ; Get corresponding output JavaScript path for source file
 (def outputPath source base (extension ".js")
-     (do (= basename (util.baseFileName source yes useWinPathSep)
+     (do (= basename (utils.baseFileName source yes useWinPathSep)
             srcDir   (path.dirname source)
             dir      (if (not opts.output)
                          srcDir
@@ -192,15 +196,15 @@ When called without options, compiles your script and prints the output to stdou
               (= cwd    (process.cwd)
                  jsPath (outputPath filename base)
                  jsDir  (path.dirname jsPath)
-                 answer (util.merge answer
+                 answer (utils.merge answer
                    (jsPath:        jsPath
                     sourceRoot:    (path.relative jsDir cwd)
                     sourceFiles:   `(,(path.relative cwd, filename))
-                    generatedFile: (util.baseFileName jsPath no useWinPathSep))))
-              (= answer (util.merge answer
+                    generatedFile: (utils.baseFileName jsPath no useWinPathSep))))
+              (= answer (utils.merge answer
                 (sourceRoot:    ""
-                 sourceFiles:   `(,(util.baseFileName filename no useWinPathSep))
-                 generatedFile: (+ (util.baseFileName filename yes useWinPathSep) ".js"))))))))
+                 sourceFiles:   `(,(utils.baseFileName filename no useWinPathSep))
+                 generatedFile: (+ (utils.baseFileName filename yes useWinPathSep) ".js"))))))))
 
 (def version
      (printLine (+ "jisp version " jisp.version)))

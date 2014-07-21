@@ -1,7 +1,7 @@
 (function(root) {
     var jisp = function() {
       function require(path) { return require[path]; }
-      require['./util'] = (function() {
+      require['./utils'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
   var keywords, specialValues;
@@ -403,373 +403,16 @@
   return exports.range = range;
 }).call(this);
       return module.exports;
-    })();require['./util'] = (function() {
-      var exports = {}, module = {exports: exports};
-      (function() {
-  var keywords, specialValues;
-  exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
-
-  function kwtest(str) {
-    var kw, re, _i, _res, _ref, _ref0;
-    _res = [];
-    _ref = keywords;
-    for (_i = 0; _i < _ref.length; ++_i) {
-      kw = _ref[_i];
-      if (typeof(_ref0 = ("^" + kw + " |^" + kw + "$")) !== 'undefined') _res.push(_ref0);
-    }
-    re = RegExp(_res
-      .join("|"));
-    return re.test(str);
-  }
-  exports.kwtest = kwtest;
-  exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]);
-
-  function isSpecialValueStr(str) {
-    return ([].indexOf.call(specialValues, str) >= 0);
-  }
-  exports.isSpecialValueStr = isSpecialValueStr;
-
-  function isSpecialValue(form) {
-    return ((typeof form === "undefined") || (form === null) || ((typeof form === "number") && isNaN(form)) || (form === Infinity) || (typeof form === "boolean"));
-  }
-  exports.isSpecialValue = isSpecialValue;
-
-  function isAtom(form) {
-    return ((form === undefined || form === null) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (typeof form === "number" || typeof form === "string" || typeof form === "boolean"));
-  }
-  exports.isAtom = isAtom;
-
-  function isaString(form) {
-    return (typeof form === "string");
-  }
-  exports.isaString = isaString;
-
-  function isList(form) {
-    return Array.isArray(form);
-  }
-  exports.isList = isList;
-
-  function isHash(form) {
-    return (!isAtom(form) && !isList(form) && !(typeof form === "function"));
-  }
-  exports.isHash = isHash;
-
-  function isBlankObject(form) {
-    var _ref, _err;
-    try {
-      _ref = Object.keys(form).length === 0;
-    } catch (_err) {
-      _ref = false;
-    }
-    return _ref;
-  }
-  exports.isBlankObject = isBlankObject;
-
-  function isKey(form) {
-    return (isAtom(form) && (isString(form) || isIdentifier(form) || isNum(form)));
-  }
-  exports.isKey = isKey;
-
-  function isVarName(form) {
-    return (isAtom(form) && /^[$_A-Za-z]{1}$|^[$_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
-  }
-  exports.isVarName = isVarName;
-
-  function isIdentifier(form) {
-    return (isAtom(form) && /^[$_A-Za-z]{1}[$_\w]*((\.[$_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
-  }
-  exports.isIdentifier = isIdentifier;
-
-  function isString(form) {
-    return (isAtom(form) && /^".*"$|^'.*'$/.test(form));
-  }
-  exports.isString = isString;
-
-  function isRegex(form) {
-    return (isAtom(form) && /^\/[^\s]+\/[\w]*[^\s)]*/.test(form));
-  }
-  exports.isRegex = isRegex;
-
-  function isNum(form) {
-    return (isAtom(form) && (typeof typify(form) === "number"));
-  }
-  exports.isNum = isNum;
-
-  function isPrimitive(form) {
-    return (isRegex(form) || isNum(form) || (form === undefined || form === null || form === true || form === false));
-  }
-  exports.isPrimitive = isPrimitive;
-
-  function isArgHash(form) {
-    return (isAtom(form) && /^#[\d]+$/.test(form));
-  }
-  exports.isArgHash = isArgHash;
-
-  function isArgsHash(form) {
-    return (isAtom(form) && /^#$/.test(form));
-  }
-  exports.isArgsHash = isArgsHash;
-
-  function isArgHashNotation(form) {
-    return (isArgHash(form) || isArgsHash(form));
-  }
-  exports.isArgHashNotation = isArgHashNotation;
-
-  function isDotName(form) {
-    return (isAtom(form) && /^\.[$_A-Za-z]{1}$|^\.[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
-  }
-  exports.isDotName = isDotName;
-
-  function isBracketName(form) {
-    return (isAtom(form) && /^\[[$_A-Za-z]{1}\]$|^\[[$_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
-  }
-  exports.isBracketName = isBracketName;
-
-  function isBracketString(form) {
-    return (isAtom(form) && /^\[".*"\]$|^\['.*'\]$/.test(form));
-  }
-  exports.isBracketString = isBracketString;
-
-  function isPropSyntax(form) {
-    return (isAtom(form) && (isDotName(form) || isBracketName(form) || isBracketString(form)));
-  }
-  exports.isPropSyntax = isPropSyntax;
-
-  function typify(form) {
-    var _ref;
-    if (!isAtom(form)) {
-      _ref = undefined;
-      throw Error("expecting atom, got " + pr(form));
-    } else if (isBlankObject(form)) {
-      _ref = form;
-    } else if (typeof form === "undefined") {
-      _ref = undefined;
-    } else if (form === "null") {
-      _ref = null;
-    } else if (form === "true" || form === "yes") {
-      _ref = true;
-    } else if (form === "false" || form === "no") {
-      _ref = false;
-    } else if (!isNaN(Number(form))) {
-      _ref = Number(form);
-    } else if (isRegex(form)) {
-      _ref = form;
-    } else if (typeof form === "string") {
-      _ref = form;
-    } else {
-      _ref = undefined;
-      throw Error("syntax error: unrecognised type of " + pr(form));
-    }
-    return _ref;
-  }
-  exports.typify = typify;
-
-  function assertForm(form, min, max, first) {
-    var _ref;
-    if ((typeof min === 'undefined')) min = 0;
-    if ((typeof max === 'undefined')) max = Infinity;
-    if (!isList(form)) {
-      _ref = undefined;
-      throw Error("expecting list, got " + form);
-    } else if (!((form.length >= min) && (form.length <= max))) {
-      _ref = undefined;
-      throw Error("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form));
-    } else if ((typeof first !== 'undefined') && (form[0] !== first)) {
-      _ref = undefined;
-      throw Error("expecting " + pr(first) + " as first element, got " + pr(form[0]));
-    } else {
-      _ref = form;
-    }
-    return _ref;
-  }
-  exports.assertForm = assertForm;
-
-  function assertExp(exp, test, expect) {
-    var _ref;
-    if ((typeof expect === 'undefined')) expect = "valid expression";
-    if (test(exp)) {
-      _ref = true;
-    } else {
-      _ref = undefined;
-      throw Error("expecting " + pr(expect) + ", got " + pr(exp));
-    }
-    return _ref;
-  }
-  exports.assertExp = assertExp;
-
-  function splitName(name) {
-    var re, reDot, reBracket, reBracketGreedy, res, reg;
-    re = /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/;
-    reDot = /\.[$_\w]+$/;
-    reBracket = /\[[^\[\]]+\]$/;
-    reBracketGreedy = /\[.+\]$/;
-    res = [];
-    while (name.match(re)) {
-      reg = (name.match(reDot) && reDot) || (name.match(reBracket) && reBracket) || (name.match(reBracketGreedy) && reBracketGreedy);
-      res.unshift(name.match(reg)[0]);
-      name = name.replace(reg, "");
-    }
-    res.unshift(name);
-    return res;
-  }
-  exports.splitName = splitName;
-
-  function pr(item) {
-    var res, key, val, _ref, _ref0, _i, _ref1;
-    if (isAtom(item)) {
-      _ref = ("" + item)
-        .replace(/;$/, "");
-    } else if (isHash(item)) {
-      res = "";
-      _ref0 = item;
-      for (key in _ref0) {
-        val = _ref0[key];
-        res += (key + ": " + pr(val) + ", ");
-      }
-      _ref = ("{ " + res.slice(0, -2) + " }");
-    } else if (isList(item)) {
-      res = "";
-      _ref1 = item;
-      for (_i = 0; _i < _ref1.length; ++_i) {
-        val = _ref1[_i];
-        res += (pr(val) + ", ");
-      }
-      _ref = ("[ " + res.slice(0, -2) + " ]");
-    } else {
-      _ref = ("" + item);
-    }
-    return _ref;
-  }
-  exports.pr = pr;
-
-  function spr(item) {
-    var res, val, _i, _ref, _ref0;
-    if (isList(item)) {
-      res = "";
-      _ref = item;
-      for (_i = 0; _i < _ref.length; ++_i) {
-        val = _ref[_i];
-        res += (pr(val) + ", ");
-      }
-      _ref0 = res.slice(0, res.length - 2);
-    } else {
-      _ref0 = undefined;
-      throw Error("can only print-spread lists");
-    }
-    return _ref0;
-  }
-  exports.spr = spr;
-
-  function render(buffer) {
-    var i, exp, res, _ref;
-    _ref = buffer;
-    for (i = 0; i < _ref.length; ++i) {
-      exp = _ref[i];
-      if (((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === ""))) {
-        buffer[i] = undefined;
-      } else {
-        res = ((typeof exp === "string") ? exp.trim() : pr(exp));
-        if ((isHash(exp) || /^function\s*\(/.test(res))) res = "(" + res + ")";
-        if (!/:$|\}$|;$/.test(res.slice(-1))) res += ";";
-        buffer[i] = res;
-      }
-    }
-    return buffer.join(" ")
-      .trim();
-  }
-  exports.render = render;
-
-  function deParenthesise(str) {
-    var _ref;
-    if ((typeof str === "string")) {
-      while (str.match(/^\({1}/) && str.match(/\){1}$/)) {
-        (str = str
-          .replace(/^\({1}/, "")
-          .replace(/\){1}$/, ""));
-      }
-      _ref = str;
-    } else {
-      _ref = str;
-    }
-    return _ref;
-  }
-  exports.deParenthesise = deParenthesise;
-
-  function dePairParenthesise(str) {
-    var _ref;
-    if ((typeof str === "string")) {
-      while (str.match(/^\({2}/) && str.match(/\){2}$/)) {
-        (str = str
-          .replace(/^\({2}/, "(")
-          .replace(/\){2}$/, ")"));
-      }
-      _ref = str;
-    } else {
-      _ref = str;
-    }
-    return _ref;
-  }
-  exports.dePairParenthesise = dePairParenthesise;
-
-  function merge(options, overrides) {
-    return extend(extend({}, options), overrides);
-  }
-  exports.merge = merge;
-
-  function extend(object, properties) {
-    var key, val, _ref;
-    _ref = properties;
-    for (key in _ref) {
-      val = _ref[key];
-      object[key] = val;
-    }
-    return object;
-  }
-  exports.extend = extend;
-
-  function baseFileName(file, stripExt, useWinPathSep) {
-    var pathSep, parts;
-    if ((typeof stripExt === 'undefined')) stripExt = false;
-    if ((typeof useWinPathSep === 'undefined')) useWinPathSep = false;
-    pathSep = (useWinPathSep ? /\\|\// : /\//);
-    parts = file.split(pathSep);
-    file = parts.slice(-1)[0];
-    if (!(stripExt && (file.indexOf(".") >= 0))) return file;
-    parts = file.split(".");
-    parts.pop();
-    if (((parts.slice(-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
-    return parts.join(".");
-  }
-  exports.baseFileName = baseFileName;
-
-  function repeat(str, n) {
-    var res;
-    res = "";
-    while (n > 0) {
-      if ((n & 1)) res += str;
-      n >>>= 1;
-      str += str;
-    }
-    return res;
-  }
-  exports.repeat = repeat;
-
-  function isJisp(file) {
-    return /\.jisp$/.test(file);
-  }
-  return exports.isJisp = isJisp;
-}).call(this);
-      return module.exports;
     })();require['./operators'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var util, pr, spr, render, isIdentifier, assertForm, operators, singops, op, ops, stateops, opFuncs, _i, _ref, _i0, _ref0, _i1, _ref1;
-  util = require("./util");
-  pr = util.pr;
-  spr = util.spr;
-  render = util.render;
-  isIdentifier = util.isIdentifier;
-  assertForm = util.assertForm;
+  var utils, pr, spr, render, isIdentifier, assertForm, operators, singops, op, ops, stateops, opFuncs, _i, _ref, _i0, _ref0, _i1, _ref1;
+  utils = require("./utils");
+  pr = utils.pr;
+  spr = utils.spr;
+  render = utils.render;
+  isIdentifier = utils.isIdentifier;
+  assertForm = utils.assertForm;
 
   function makeop(op, zv, min, max, drop) {
     if ((typeof min === 'undefined')) min = 0;
@@ -1038,7 +681,6 @@
       var exports = {}, module = {exports: exports};
       (function() {
   var tokens, recode, recomment, redstring, resstring, rereg;
-  module.exports = tokenise;
   tokens = [];
   recode = /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/;
   recomment = /^;.*[\n\r]?/;
@@ -1108,7 +750,8 @@
       return ((typeof x !== 'undefined') && (x !== "" && x !== undefined && x !== null));
     }));
   }
-  return tokenise;
+  tokenise;
+  return module.exports = tokenise;
 }).call(this);
       return module.exports;
     })();require['./lex'] = (function() {
@@ -1125,23 +768,22 @@
     }
     return _res;
   }
-  var util, pr, spr, isList, isAtom, isaString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
-  util = require("./util");
-  pr = util.pr;
-  spr = util.spr;
-  isList = util.isList;
-  isAtom = util.isAtom;
-  isaString = util.isaString;
-  isNum = util.isNum;
-  isRegex = util.isRegex;
-  isIdentifier = util.isIdentifier;
-  isString = util.isString;
-  isKey = util.isKey;
-  isDotName = util.isDotName;
-  isBracketName = util.isBracketName;
-  isBracketString = util.isBracketString;
-  isPropSyntax = util.isPropSyntax;
-  module.exports = lex;
+  var utils, pr, spr, isList, isAtom, isaString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
+  utils = require("./utils");
+  pr = utils.pr;
+  spr = utils.spr;
+  isList = utils.isList;
+  isAtom = utils.isAtom;
+  isaString = utils.isaString;
+  isNum = utils.isNum;
+  isRegex = utils.isRegex;
+  isIdentifier = utils.isIdentifier;
+  isString = utils.isString;
+  isKey = utils.isKey;
+  isDotName = utils.isDotName;
+  isBracketName = utils.isBracketName;
+  isBracketString = utils.isBracketString;
+  isPropSyntax = utils.isPropSyntax;
 
   function printConditions(conditions) {
     var cond, _i, _res, _ref, _ref0;
@@ -1342,25 +984,26 @@
     }
     return _ref;
   }
-  return lex;
+  lex;
+  return module.exports = lex;
 }).call(this);
       return module.exports;
     })();require['./parse'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
-  var util;
-  util = require("./util");
+  var utils;
+  utils = require("./utils");
 
   function parse(form) {
     var i, val, key, _ref, _ref0, _ref1;
-    if (util.isList(form)) {
+    if (utils.isList(form)) {
       _ref = form;
       for (i = 0; i < _ref.length; ++i) {
         val = _ref[i];
         form[i] = parse(val);
       }
       _ref0 = form;
-    } else if (util.isHash(form)) {
+    } else if (utils.isHash(form)) {
       _ref1 = form;
       for (key in _ref1) {
         val = _ref1[key];
@@ -1368,7 +1011,7 @@
       }
       _ref0 = form;
     } else {
-      form = util.typify(form);
+      form = utils.typify(form);
       _ref0 = (/^#(\d+)/.test(form) ? form.replace(/^#(\d+)/, "arguments[$1]") : form);
     }
     return _ref0;
@@ -1379,6 +1022,15 @@
     })();require['./macros'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
+  var macHash = function() {
+    var buffer, _i;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    buffer = {};
+    while (args.length > 0) {
+      buffer[args.shift()] = args.shift();
+    }
+    return buffer;
+  };
   var macPrn = function() {
     var _i;
     var x = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
@@ -1485,8 +1137,9 @@
     elements = _res;
     return ((elements.length > 1) ? [].concat(["or"]).concat(elements) : elements[0]);
   };
-  var util;
-  util = require("./util");
+  var utils;
+  utils = require("./utils");
+  exports[":"] = macHash;
   exports.prn = macPrn;
   exports.car = macCar;
   exports.head = macCar;
@@ -1498,13 +1151,13 @@
 
   function compartmentaliseExist(form) {
     var i, val, split, _ref, _res, _ref0, _ref1;
-    if ((util.isList(form) && (form[0] === "get"))) {
+    if ((utils.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseExist(form[1])).concat([
         ["isnta", form, "'undefined'"]
       ]));
-    } else if ((typeof form === "string") && util.isIdentifier(form) && !util.isSpecialValueStr(form)) {
+    } else if ((typeof form === "string") && utils.isIdentifier(form) && !utils.isSpecialValueStr(form)) {
       _res = [];
-      _ref0 = (split = util.splitName(form));
+      _ref0 = (split = utils.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isnta", split.slice(0, i + 1)
@@ -1524,13 +1177,13 @@
 
   function compartmentaliseNotExist(form) {
     var i, val, split, _ref, _res, _ref0, _ref1;
-    if ((util.isList(form) && (form[0] === "get"))) {
+    if ((utils.isList(form) && (form[0] === "get"))) {
       _ref = list.apply(list, [].concat(compartmentaliseNotExist(form[1])).concat([
         ["isa", form, "'undefined'"]
       ]));
-    } else if ((typeof form === "string") && util.isIdentifier(form) && !util.isSpecialValueStr(form)) {
+    } else if ((typeof form === "string") && utils.isIdentifier(form) && !utils.isSpecialValueStr(form)) {
       _res = [];
-      _ref0 = (split = util.splitName(form));
+      _ref0 = (split = utils.splitName(form));
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isa", split.slice(0, i + 1)
@@ -1580,28 +1233,28 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.19";
+  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  exports.version = "0.2.20";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
   beautify = require("js-beautify");
-  util = require("./util");
+  utils = require("./utils");
   ops = require("./operators");
   operators = ops.operators;
   opFuncs = ops.opFuncs;
   tokenise = require("./tokenise");
   lex = require("./lex");
   parse = require("./parse");
-  pr = util.pr;
-  spr = util.spr;
-  render = util.render;
-  isAtom = util.isAtom;
-  isHash = util.isHash;
-  isList = util.isList;
-  isVarName = util.isVarName;
-  isIdentifier = util.isIdentifier;
-  assertExp = util.assertExp;
+  pr = utils.pr;
+  spr = utils.spr;
+  render = utils.render;
+  isAtom = utils.isAtom;
+  isHash = utils.isHash;
+  isList = utils.isList;
+  isVarName = utils.isVarName;
+  isIdentifier = utils.isIdentifier;
+  assertExp = utils.assertExp;
   functionsRedeclare = [];
   functionsRedefine = [];
 
@@ -1688,9 +1341,9 @@
     var _ref;
     if ((isAtom(form) || isHash(form))) {
       _ref = ["return", form];
-    } else if (isList(form) && util.isBlankObject(form)) {
+    } else if (isList(form) && utils.isBlankObject(form)) {
       _ref = form;
-    } else if (isList(form) && (form.length === 1) && util.isBlankObject(form[0])) {
+    } else if (isList(form) && (form.length === 1) && utils.isBlankObject(form[0])) {
       _ref = form[0];
     } else if (isList(form) && (form[0] !== "return")) {
       _ref = ["return", form];
@@ -1723,14 +1376,14 @@
   notRedefined;
 
   function isPropertyExp(form) {
-    return (isList(form) && ((isList(form[0]) && (form[0].length === 2) && (form[0][0] === "get")) || util.isPropSyntax(form[0])));
+    return (isList(form) && ((isList(form[0]) && (form[0].length === 2) && (form[0][0] === "get")) || utils.isPropSyntax(form[0])));
   }
   isPropertyExp;
 
   function compileForm(form, scope, opts, nested) {
     var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, key, val, _ref, _i, _ref0, _i0, _ref1, _ref2, _i1, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _ref8, _ref9, _i6;
     if ((typeof opts === 'undefined')) opts = {};
-    if ((isList(form) && util.isBlankObject(form))) {
+    if ((isList(form) && utils.isBlankObject(form))) {
       _ref7 = [
         [""], scope
       ];
@@ -1825,7 +1478,7 @@
               throw Error(pr(first) + " can't spread arguments (yet)");
             }
           }
-          split = util.splitName(first);
+          split = utils.splitName(first);
           if ((split.length > 1)) {
             method = split.pop();
             name = split.join("");
@@ -1931,13 +1584,19 @@
           func = funcs.pop();
           if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
           if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-            if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? buffer
-              .unshift(functions[func].toString()) : buffer
-              .unshift("var " + func + " = " + functions[func].toString() + ";");
-          } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+            if (notRedefined(func)) {
+              if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+                buffer
+                  .unshift(functions[func].toString());
+              } else {
+                if (isVarName(func)) buffer
+                  .unshift("var " + func + " = " + functions[func].toString() + ";");
+              }
+            }
+          } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
             buffer
               .unshift("var " + func + " = " + macros[func].toString() + ";");
-          } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+          } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
             buffer
               .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
           } else {
@@ -1966,7 +1625,7 @@
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     form = form[0];
-    if ((isAtom(form) && !util.isPrimitive(form) && !util.isSpecialValue(form))) {
+    if ((isAtom(form) && !utils.isPrimitive(form) && !utils.isSpecialValue(form))) {
       buffer.push(JSON.stringify(form));
     } else if (isAtom(form)) {
       buffer.push(form);
@@ -2287,13 +1946,19 @@
         func = funcs.pop();
         if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-          if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? body
-            .unshift(functions[func].toString()) : body
-            .unshift("var " + func + " = " + functions[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+          if (notRedefined(func)) {
+            if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+              body
+                .unshift(functions[func].toString());
+            } else {
+              if (isVarName(func)) body
+                .unshift("var " + func + " = " + functions[func].toString() + ";");
+            }
+          }
+        } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + func + " = " + macros[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+        } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
@@ -2416,13 +2081,19 @@
         func = funcs.pop();
         if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-          if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? body
-            .unshift(functions[func].toString()) : body
-            .unshift("var " + func + " = " + functions[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+          if (notRedefined(func)) {
+            if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+              body
+                .unshift(functions[func].toString());
+            } else {
+              if (isVarName(func)) body
+                .unshift("var " + func + " = " + functions[func].toString() + ";");
+            }
+          }
+        } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + func + " = " + macros[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+        } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
@@ -2455,7 +2126,7 @@
       if (nestedLocal) {
         if (/^return\s/.test(lastItem)) {
           lastItem = lastItem.replace(/^return\s/, "return " + collector + " = ");
-        } else if (util.kwtest(lastItem)) {
+        } else if (utils.kwtest(lastItem)) {
           lastItem = collector + " = undefined; " + lastItem;
         } else {
           lastItem = collector + " = " + pr(lastItem);
@@ -2503,7 +2174,7 @@
     if ((!nestedLocal && (prebranch.length <= 1) && (midcases.length === 0) && ((postbranch.length === 0) || (typeof postbranch[0] === 'undefined') || (postbranch[0] === "")))) {
       res = "if (" + pr(predicate) + ")" + pr(prebranch[0]) + ";";
       buffer.push(res, "");
-    } else if ((prebranch.length === 1) && !util.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !util.kwtest(postbranch[0])) {
+    } else if ((prebranch.length === 1) && !utils.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !utils.kwtest(postbranch[0])) {
       res = pr(predicate) + " ? " + (pr(prebranch[0]) || undefined) + " : " + (pr(postbranch[0]) || undefined);
       if ((nestedLocal && (nestedLocal !== "parens"))) res = "(" + res + ")";
       buffer.push(res);
@@ -2683,9 +2354,9 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -2762,9 +2433,9 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -2812,9 +2483,9 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    if ((nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && (form.length === 2) && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -2880,7 +2551,7 @@
     catchForm = _ref4[0];
     buffer = _ref4[1];
     scope = _ref4[2];
-    if ((nestedLocal && !util.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
+    if ((nestedLocal && !utils.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
     if ((typeof finalForm !== 'undefined')) {
       if ((isList(finalForm) && (finalForm[0] === "finally"))) {
         assertExp(finalForm, (function() {
@@ -2892,7 +2563,7 @@
       finalForm = _ref5[0];
       buffer = _ref5[1];
       scope = _ref5[2];
-      if ((nestedLocal && !util.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
+      if ((nestedLocal && !utils.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
     }
     res = "try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }";
     if ((typeof finalForm !== 'undefined')) res += (" finally { " + render(finalForm) + " }");
@@ -2967,7 +2638,7 @@
       form = _ref[0];
       buffer = _ref[1];
       scope = _ref[2];
-      if (!util.kwtest(form)) form = "return " + pr(form);
+      if (!utils.kwtest(form)) form = "return " + pr(form);
       buffer.push(form);
     }
     return Array(buffer, scope);
@@ -2993,16 +2664,16 @@
 
   function parseMacros(form) {
     var key, val, i, _ref, _ref0;
-    if (util.isHash(form)) {
+    if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
         val = _ref[key];
         form[key] = parseMacros(val);
       }
-    } else if (util.isList(form)) {
+    } else if (utils.isList(form)) {
       if ((form[0] === "mac")) {
         form = makeMacro(form.slice(1));
-      } else if ((form.length >= 1) && util.isList(form[0]) && (form[0][0] === "mac")) {
+      } else if ((form.length >= 1) && utils.isList(form[0]) && (form[0][0] === "mac")) {
         form[0] = makeMacro(form[0].slice(1), true);
       } else {
         _ref0 = form;
@@ -3041,13 +2712,13 @@
 
   function expandMacros(form) {
     var key, val, i, _ref, _ref0;
-    if (util.isHash(form)) {
+    if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
         val = _ref[key];
         form[key] = expandMacros(val);
       }
-    } else if (util.isList(form)) {
+    } else if (utils.isList(form)) {
       if ((form[0] === "mac")) {
         form = parseMacros(form);
       } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
@@ -3088,6 +2759,7 @@
   }
   exports.importFunctions = importFunctions;
   importFunctions(require("./functions"));
+  exports.utils = utils;
   exports.fileExtensions = [".jisp"];
   exports.register = (function() {
     return require("./register");
@@ -3112,9 +2784,10 @@
     defaults = {
       wrap: true,
       topScope: true,
-      isTopLevel: true
+      isTopLevel: true,
+      pretty: true
     };
-    opts = util.merge(defaults, opts);
+    opts = utils.merge(defaults, opts);
     parsed = parse(lex(tokenise(src)));
     parsed.unshift("do");
     if (opts.wrap) parsed = [
@@ -3131,7 +2804,7 @@
     }, opts);
     compiled = _ref[0];
     scope = _ref[1];
-    return ((typeof beautify !== 'undefined') ? beautify(render(compiled), {
+    return ((opts.pretty && (typeof beautify !== 'undefined')) ? beautify(render(compiled), {
       indent_size: 2
     }) : render(compiled));
   }
@@ -3163,7 +2836,7 @@
     if (mainModule.moduleCache) mainModule.moduleCache = {};
     dir = (options.filename ? path.dirname(fs.realpathSync(options.filename)) : fs.realpathSync("."));
     mainModule.paths = require("module")._nodeModulePaths(dir);
-    if ((!util.isJisp(mainModule.filename) || require.extensions)) code = exports.compile(code);
+    if ((!utils.isJisp(mainModule.filename) || require.extensions)) code = exports.compile(code);
     return mainModule._compile(code, mainModule.filename);
   }
   return exports.run = run;

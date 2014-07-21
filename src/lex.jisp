@@ -6,23 +6,25 @@
   ; get (.dot and ["bracket"] notation)
 ; Throws syntax errors
 
-(= util            (require "./util")
-   pr              util.pr
-   spr             util.spr
-   isList          util.isList
-   isAtom          util.isAtom
-   isaString       util.isaString
-   isNum           util.isNum
-   isRegex         util.isRegex
-   isIdentifier    util.isIdentifier
-   isString        util.isString
-   isKey           util.isKey
-   isDotName       util.isDotName
-   isBracketName   util.isBracketName
-   isBracketString util.isBracketString
-   isPropSyntax    util.isPropSyntax)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(= module.exports lex)
+(= utils           (require "./utils")
+   pr              utils.pr
+   spr             utils.spr
+   isList          utils.isList
+   isAtom          utils.isAtom
+   isaString       utils.isaString
+   isNum           utils.isNum
+   isRegex         utils.isRegex
+   isIdentifier    utils.isIdentifier
+   isString        utils.isString
+   isKey           utils.isKey
+   isDotName       utils.isDotName
+   isBracketName   utils.isBracketName
+   isBracketString utils.isBracketString
+   isPropSyntax    utils.isPropSyntax)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def printConditions conditions
   (do (for cond (concat conditions)
@@ -88,6 +90,8 @@
   (do (while (is (car tokens) "[")
              (= lexed `("get" ,lexed ,(lex tokens "property"))))
       lexed))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Main Lexer ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def lex tokens (mode "default")
   (switch mode
@@ -195,3 +199,7 @@
       (addProperties tokens (demand tokens isaString "drop")))
     (case "drop" (tokens.shift))
     (throw (Error (+ "unspecified lex mode: " mode)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(= module.exports lex)

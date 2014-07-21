@@ -11,7 +11,7 @@
     return _res;
   }
   var repeat, OptionParser, long_flag, short_flag, multi_flag, optional;
-  repeat = require("./util").repeat;
+  repeat = require("./utils").repeat;
   exports.OptionParser = (OptionParser = (function() {
     function OptionParser(rules, banner) {
       this.banner = banner;

@@ -24,28 +24,28 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, util, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.19";
+  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  exports.version = "0.2.20";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
   beautify = require("js-beautify");
-  util = require("./util");
+  utils = require("./utils");
   ops = require("./operators");
   operators = ops.operators;
   opFuncs = ops.opFuncs;
   tokenise = require("./tokenise");
   lex = require("./lex");
   parse = require("./parse");
-  pr = util.pr;
-  spr = util.spr;
-  render = util.render;
-  isAtom = util.isAtom;
-  isHash = util.isHash;
-  isList = util.isList;
-  isVarName = util.isVarName;
-  isIdentifier = util.isIdentifier;
-  assertExp = util.assertExp;
+  pr = utils.pr;
+  spr = utils.spr;
+  render = utils.render;
+  isAtom = utils.isAtom;
+  isHash = utils.isHash;
+  isList = utils.isList;
+  isVarName = utils.isVarName;
+  isIdentifier = utils.isIdentifier;
+  assertExp = utils.assertExp;
   functionsRedeclare = [];
   functionsRedefine = [];
 
@@ -132,9 +132,9 @@
     var _ref;
     if ((isAtom(form) || isHash(form))) {
       _ref = ["return", form];
-    } else if (isList(form) && util.isBlankObject(form)) {
+    } else if (isList(form) && utils.isBlankObject(form)) {
       _ref = form;
-    } else if (isList(form) && (form.length === 1) && util.isBlankObject(form[0])) {
+    } else if (isList(form) && (form.length === 1) && utils.isBlankObject(form[0])) {
       _ref = form[0];
     } else if (isList(form) && (form[0] !== "return")) {
       _ref = ["return", form];
@@ -167,14 +167,14 @@
   notRedefined;
 
   function isPropertyExp(form) {
-    return (isList(form) && ((isList(form[0]) && (form[0].length === 2) && (form[0][0] === "get")) || util.isPropSyntax(form[0])));
+    return (isList(form) && ((isList(form[0]) && (form[0].length === 2) && (form[0][0] === "get")) || utils.isPropSyntax(form[0])));
   }
   isPropertyExp;
 
   function compileForm(form, scope, opts, nested) {
     var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, key, val, _ref, _i, _ref0, _i0, _ref1, _ref2, _i1, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _ref8, _ref9, _i6;
     if ((typeof opts === 'undefined')) opts = {};
-    if ((isList(form) && util.isBlankObject(form))) {
+    if ((isList(form) && utils.isBlankObject(form))) {
       _ref7 = [
         [""], scope
       ];
@@ -269,7 +269,7 @@
               throw Error(pr(first) + " can't spread arguments (yet)");
             }
           }
-          split = util.splitName(first);
+          split = utils.splitName(first);
           if ((split.length > 1)) {
             method = split.pop();
             name = split.join("");
@@ -375,13 +375,19 @@
           func = funcs.pop();
           if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
           if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-            if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? buffer
-              .unshift(functions[func].toString()) : buffer
-              .unshift("var " + func + " = " + functions[func].toString() + ";");
-          } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+            if (notRedefined(func)) {
+              if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+                buffer
+                  .unshift(functions[func].toString());
+              } else {
+                if (isVarName(func)) buffer
+                  .unshift("var " + func + " = " + functions[func].toString() + ";");
+              }
+            }
+          } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
             buffer
               .unshift("var " + func + " = " + macros[func].toString() + ";");
-          } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+          } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
             buffer
               .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
           } else {
@@ -410,7 +416,7 @@
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     form = form[0];
-    if ((isAtom(form) && !util.isPrimitive(form) && !util.isSpecialValue(form))) {
+    if ((isAtom(form) && !utils.isPrimitive(form) && !utils.isSpecialValue(form))) {
       buffer.push(JSON.stringify(form));
     } else if (isAtom(form)) {
       buffer.push(form);
@@ -731,13 +737,19 @@
         func = funcs.pop();
         if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-          if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? body
-            .unshift(functions[func].toString()) : body
-            .unshift("var " + func + " = " + functions[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+          if (notRedefined(func)) {
+            if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+              body
+                .unshift(functions[func].toString());
+            } else {
+              if (isVarName(func)) body
+                .unshift("var " + func + " = " + functions[func].toString() + ";");
+            }
+          }
+        } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + func + " = " + macros[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+        } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
@@ -860,13 +872,19 @@
         func = funcs.pop();
         if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
-          if (notRedefined(func))(((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== "")) ? body
-            .unshift(functions[func].toString()) : body
-            .unshift("var " + func + " = " + functions[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(macros), func) >= 0) {
+          if (notRedefined(func)) {
+            if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
+              body
+                .unshift(functions[func].toString());
+            } else {
+              if (isVarName(func)) body
+                .unshift("var " + func + " = " + functions[func].toString() + ";");
+            }
+          }
+        } else if (([].indexOf.call(Object.keys(macros), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + func + " = " + macros[func].toString() + ";");
-        } else if ([].indexOf.call(Object.keys(opFuncs), func) >= 0) {
+        } else if (([].indexOf.call(Object.keys(opFuncs), func) >= 0) && isVarName(func)) {
           body
             .unshift("var " + opFuncs[func].name + " = " + opFuncs[func].func.toString() + ";");
         } else {
@@ -899,7 +917,7 @@
       if (nestedLocal) {
         if (/^return\s/.test(lastItem)) {
           lastItem = lastItem.replace(/^return\s/, "return " + collector + " = ");
-        } else if (util.kwtest(lastItem)) {
+        } else if (utils.kwtest(lastItem)) {
           lastItem = collector + " = undefined; " + lastItem;
         } else {
           lastItem = collector + " = " + pr(lastItem);
@@ -947,7 +965,7 @@
     if ((!nestedLocal && (prebranch.length <= 1) && (midcases.length === 0) && ((postbranch.length === 0) || (typeof postbranch[0] === 'undefined') || (postbranch[0] === "")))) {
       res = "if (" + pr(predicate) + ")" + pr(prebranch[0]) + ";";
       buffer.push(res, "");
-    } else if ((prebranch.length === 1) && !util.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !util.kwtest(postbranch[0])) {
+    } else if ((prebranch.length === 1) && !utils.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !utils.kwtest(postbranch[0])) {
       res = pr(predicate) + " ? " + (pr(prebranch[0]) || undefined) + " : " + (pr(postbranch[0]) || undefined);
       if ((nestedLocal && (nestedLocal !== "parens"))) res = "(" + res + ")";
       buffer.push(res);
@@ -1127,9 +1145,9 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -1206,9 +1224,9 @@
     body = _ref6[0];
     buffer = _ref6[1];
     scope = _ref6[2];
-    if ((nestedLocal && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -1256,9 +1274,9 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    if ((nestedLocal && (form.length === 2) && !util.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && (form.length === 2) && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
-      if ((util.isPrimitive(rear) || util.isString(rear) || util.isSpecialValue(rear) || util.isSpecialValueStr(rear))) {
+      if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
       } else if (isIdentifier(rear)) {
         body.push("if (typeof (" + pr(rear) + ") !== 'undefined') " + collector + ".push(" + pr(rear) + ")");
@@ -1324,7 +1342,7 @@
     catchForm = _ref4[0];
     buffer = _ref4[1];
     scope = _ref4[2];
-    if ((nestedLocal && !util.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
+    if ((nestedLocal && !utils.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
     if ((typeof finalForm !== 'undefined')) {
       if ((isList(finalForm) && (finalForm[0] === "finally"))) {
         assertExp(finalForm, (function() {
@@ -1336,7 +1354,7 @@
       finalForm = _ref5[0];
       buffer = _ref5[1];
       scope = _ref5[2];
-      if ((nestedLocal && !util.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
+      if ((nestedLocal && !utils.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
     }
     res = "try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }";
     if ((typeof finalForm !== 'undefined')) res += (" finally { " + render(finalForm) + " }");
@@ -1411,7 +1429,7 @@
       form = _ref[0];
       buffer = _ref[1];
       scope = _ref[2];
-      if (!util.kwtest(form)) form = "return " + pr(form);
+      if (!utils.kwtest(form)) form = "return " + pr(form);
       buffer.push(form);
     }
     return Array(buffer, scope);
@@ -1437,16 +1455,16 @@
 
   function parseMacros(form) {
     var key, val, i, _ref, _ref0;
-    if (util.isHash(form)) {
+    if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
         val = _ref[key];
         form[key] = parseMacros(val);
       }
-    } else if (util.isList(form)) {
+    } else if (utils.isList(form)) {
       if ((form[0] === "mac")) {
         form = makeMacro(form.slice(1));
-      } else if ((form.length >= 1) && util.isList(form[0]) && (form[0][0] === "mac")) {
+      } else if ((form.length >= 1) && utils.isList(form[0]) && (form[0][0] === "mac")) {
         form[0] = makeMacro(form[0].slice(1), true);
       } else {
         _ref0 = form;
@@ -1485,13 +1503,13 @@
 
   function expandMacros(form) {
     var key, val, i, _ref, _ref0;
-    if (util.isHash(form)) {
+    if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
         val = _ref[key];
         form[key] = expandMacros(val);
       }
-    } else if (util.isList(form)) {
+    } else if (utils.isList(form)) {
       if ((form[0] === "mac")) {
         form = parseMacros(form);
       } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
@@ -1532,6 +1550,7 @@
   }
   exports.importFunctions = importFunctions;
   importFunctions(require("./functions"));
+  exports.utils = utils;
   exports.fileExtensions = [".jisp"];
   exports.register = (function() {
     return require("./register");
@@ -1556,9 +1575,10 @@
     defaults = {
       wrap: true,
       topScope: true,
-      isTopLevel: true
+      isTopLevel: true,
+      pretty: true
     };
-    opts = util.merge(defaults, opts);
+    opts = utils.merge(defaults, opts);
     parsed = parse(lex(tokenise(src)));
     parsed.unshift("do");
     if (opts.wrap) parsed = [
@@ -1575,7 +1595,7 @@
     }, opts);
     compiled = _ref[0];
     scope = _ref[1];
-    return ((typeof beautify !== 'undefined') ? beautify(render(compiled), {
+    return ((opts.pretty && (typeof beautify !== 'undefined')) ? beautify(render(compiled), {
       indent_size: 2
     }) : render(compiled));
   }
@@ -1607,7 +1627,7 @@
     if (mainModule.moduleCache) mainModule.moduleCache = {};
     dir = (options.filename ? path.dirname(fs.realpathSync(options.filename)) : fs.realpathSync("."));
     mainModule.paths = require("module")._nodeModulePaths(dir);
-    if ((!util.isJisp(mainModule.filename) || require.extensions)) code = exports.compile(code);
+    if ((!utils.isJisp(mainModule.filename) || require.extensions)) code = exports.compile(code);
     return mainModule._compile(code, mainModule.filename);
   }
   return exports.run = run;

@@ -1,8 +1,12 @@
 ; Mostly borrowed from CoffeeScript source, multiline customised
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (= vm       (require "vm")
    nodeREPL (require "repl")
    jisp     (require "./jisp"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= replDefaults (
    useGlobal: yes
@@ -58,6 +62,8 @@
                            (rli.setPrompt multiline.prompt)
                            (rli.prompt true))
                        (lineListener cmd))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Export ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (= exports.start (= start (fn
    (do (= repl (nodeREPL.start replDefaults))

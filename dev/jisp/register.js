@@ -1,8 +1,8 @@
 (function() {
-  var child_process, path, util, jisp, ext, _i, _ref;
+  var child_process, path, utils, jisp, ext, _i, _ref;
   child_process = require("child_process");
   path = require("path");
-  util = require("./util");
+  utils = require("./utils");
   jisp = require("./jisp");
 
   function loadFile(module, filename) {
