@@ -42,6 +42,13 @@ When hacking at the compiler, use the following commands in the project dir:
     npm run build            -- recompiles lib with dev (prepublish)
 
 Super basic Sublime Text build system (OS X):
-* _Tools_ > _Build System_ > _New Build System_
-* put line: `"cmd": ["jisp", "$file"]`
+* `sudo npm install -g jisp`
+* `Tools > Build System > New Build System`
+* put lines:
+
+    {
+      "cmd": ["jisp", "$file"],
+      "path": "/usr/local/bin/"
+    }
+
 * save to: `~/Library/Application Support/Sublime Text 3/Packages/User`
