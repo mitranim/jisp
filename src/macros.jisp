@@ -30,10 +30,10 @@
   (if (is args.length 1)
     ; runtime hash
     `(do (= #_res (:)
-              #_ref ,(car args))
-           (while (> #_ref.length 0)
-             (= #_res[(#_ref.shift)] (#_ref.shift)))
-           #_res)
+            #_ref ,(car args))
+         (while (> #_ref.length 0)
+           (= #_res[(#_ref.shift)] (#_ref.shift)))
+         #_res)
     ; compile-time hash
     (do (= buffer (:))
         (while (> args.length 0)

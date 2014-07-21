@@ -24,8 +24,14 @@
     }
     return _res;
   }
+  var car = function(x) {
+    var _i;
+    var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
+    return ["get", x, 0];
+  };
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.25";
+  exports.version = "0.2.26";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -174,29 +180,29 @@
   isPropertyExp;
 
   function compileForm(form, scope, opts, nested) {
-    var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, serv, re, key, val, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _i6, _ref8, _i7, _ref9, _ref10, _i8, _ref11, _i9, _ref12, _i10, _ref13, _ref14, _i11;
+    var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, oldReplace, serv, re, key, val, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _i6, _ref8, _i7, _ref9, _i8, _ref10, _ref11, _i9, _ref12, _i10, _ref13, _i11, _ref14, _ref15, _i12;
     if ((typeof opts === 'undefined')) opts = {};
     if ((isList(form) && utils.isBlankObject(form))) {
-      _ref9 = [
+      _ref10 = [
         [""], scope
       ];
     } else if (isAtom(form)) {
       if (((([].indexOf.call(Object.keys(functions), form) >= 0) && notRedefined(form)) || ([].indexOf.call(Object.keys(macros), form) >= 0))) {
         if (isService(form)) {
-          _ref10 = compileGetLast(form, buffer, scope, opts, nested);
-          form = _ref10[0];
-          buffer = _ref10[1];
-          scope = _ref10[2];
+          _ref11 = compileGetLast(form, buffer, scope, opts, nested);
+          form = _ref11[0];
+          buffer = _ref11[1];
+          scope = _ref11[2];
         } else {
           assertExp(form, isVarName, "valid identifier");
           scope = declareVar(form, scope);
         }
       } else if ([].indexOf.call(Object.keys(opFuncs), form) >= 0) {
         if (isService(form)) {
-          _ref11 = compileGetLast(form, buffer, scope, opts, nested);
-          form = _ref11[0];
-          buffer = _ref11[1];
-          scope = _ref11[2];
+          _ref12 = compileGetLast(form, buffer, scope, opts, nested);
+          form = _ref12[0];
+          buffer = _ref12[1];
+          scope = _ref12[2];
         } else {
           assertExp(form, isVarName, "valid identifier");
           scope = declareVar(form, scope);
@@ -207,28 +213,28 @@
         serv = getServicePart(form);
         re = RegExp("^" + serv);
         if (!([].indexOf.call(Object.keys(scope.replace), serv) >= 0)) {
-          _ref12 = declareService(serv.slice(1), scope, (opts.function ? args : undefined));
-          scope.replace[serv] = _ref12[0];
-          scope = _ref12[1];
+          _ref13 = declareService(serv.slice(1), scope, (opts.function ? args : undefined));
+          scope.replace[serv] = _ref13[0];
+          scope = _ref13[1];
         }
         form = form.replace(re, scope.replace[serv]);
       }
-      _ref9 = [
+      _ref10 = [
         [form], scope
       ];
     } else if (isHash(form)) {
       buffer = [];
       nested = undefined;
-      _ref13 = form;
-      for (key in _ref13) {
-        val = _ref13[key];
-        _ref14 = compileGetLast(val, buffer, scope, opts, nested);
-        form[key] = _ref14[0];
-        buffer = _ref14[1];
-        scope = _ref14[2];
+      _ref14 = form;
+      for (key in _ref14) {
+        val = _ref14[key];
+        _ref15 = compileGetLast(val, buffer, scope, opts, nested);
+        form[key] = _ref15[0];
+        buffer = _ref15[1];
+        scope = _ref15[2];
       }
       buffer.push(form);
-      _ref9 = [buffer, scope];
+      _ref10 = [buffer, scope];
     } else {
       if (!isList(form)) throw Error("expecting list, got: " + pr(form));
       buffer = [];
@@ -237,10 +243,17 @@
         _ref = specials[form[0]](form, scope, opts, nested);
         buffer = _ref[0];
         scope = _ref[1];
-      } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
-        _ref8 = compileAdd(expandMacros(form), buffer, scope, opts, nested);
+      } else if (form[0] === "mac") {
+        _ref8 = compileAdd(parseMacros(form), buffer, scope, opts, nested);
         buffer = _ref8[0];
         scope = _ref8[1];
+      } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
+        oldReplace = scope.replace;
+        scope.replace = {};
+        _ref9 = compileAdd(expandMacros(form), buffer, scope, opts, nested);
+        buffer = _ref9[0];
+        scope = _ref9[1];
+        scope.replace = oldReplace;
       } else {
         nestedLocal = nested;
         nested = undefined;
@@ -326,9 +339,9 @@
           }
         }
       } if ((typeof isOuterOperator !== 'undefined')) delete opts.compilingOperator;
-      _ref9 = [buffer, scope];
+      _ref10 = [buffer, scope];
     }
-    return _ref9;
+    return _ref10;
   }
   compileForm;
   specials = {};
@@ -1567,7 +1580,7 @@
   importMacros(require("./macros"));
 
   function parseMacros(form) {
-    var key, val, i, _ref, _ref0;
+    var key, val, i, _ref, _ref0, _ref1, _i;
     if (utils.isHash(form)) {
       _ref = form;
       for (key in _ref) {
@@ -1578,7 +1591,9 @@
       if ((form[0] === "mac")) {
         form = makeMacro(form.slice(1));
       } else if ((form.length >= 1) && utils.isList(form[0]) && (form[0][0] === "mac")) {
-        form[0] = makeMacro(form[0].slice(1), true);
+        _ref1 = makeMacro(form[0].slice(1), true);
+        car = _ref1[0];
+        form = _ref1[1];
       } else {
         _ref0 = form;
         for (i = 0; i < _ref0.length; ++i) {
@@ -1630,7 +1645,6 @@
         args = form.slice(1);
         form = macros[form[0]].apply(macros, [].concat(args));
         if ((typeof form === "undefined")) form = [];
-        form = expandMacros(form);
       } else {
         _ref0 = form;
         for (i = 0; i < _ref0.length; ++i) {
@@ -1642,11 +1656,6 @@
     return form;
   }
   expandMacros;
-
-  function macroexpand(src) {
-    return expandMacros(parseMacros(src));
-  }
-  macroexpand;
   functions = {};
 
   function importFunctions() {
@@ -1679,14 +1688,11 @@
   exports.parse = (function(src) {
     return parse(lex(tokenise(src)));
   });
-  exports.macroexpand = (function(src) {
-    return macroexpand(parse(lex(tokenise(src))));
-  });
   exports.macros = macros;
   exports.functions = functions;
 
   function compile(src, opts) {
-    var defaults, parsed, expanded, compiled, scope, _ref, _i;
+    var defaults, parsed, compiled, scope, _ref, _i;
     defaults = {
       wrap: true,
       topScope: true,
@@ -1703,8 +1709,7 @@
       functionsRedeclare = [];
       functionsRedefine = [];
     }
-    expanded = macroexpand(parsed);
-    _ref = compileForm(expanded, {
+    _ref = compileForm(parseMacros(parsed), {
       hoist: [],
       service: [],
       replace: {}

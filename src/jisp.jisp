@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.25")
+(= exports.version "0.2.26")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -305,8 +305,19 @@
       (= form (form.slice))  ; duplicate object to avoid changing it for callers
       (if (in (car form) (Object.keys specials))  ; special forms have their own rules
         (= (buffer scope) (specials[(car form)] form scope opts nested))
+        ; if a macro definition, define it and revise the result
+        (elif (is (car form) "mac")
+          (macCompileAdd (parseMacros form)))
+        ; if a known macro, expand it and revise the result
         (elif (in (car form) (Object.keys macros))
-              (macCompileAdd (expandMacros form)))  ; if a known macro, expand it
+          (do
+            ; fork the `replace` part of the scope to trigger new service declarations
+            ; this ensures no overlaps in service names like #res between outer and inner code
+            (= oldReplace    scope.replace
+               scope.replace (:))
+            (macCompileAdd (expandMacros form))
+            ; revert to the outer `replace` store, dropping the inner store (which should be no longer relevant)
+            (= scope.replace oldReplace)))
         (do  ; Not a special form? -> function call
           ; Unset nested (callees assume true)
           (= nestedLocal nested
@@ -966,13 +977,10 @@
           ;           element[1])
           ;       `(element)))))
           (= form (macros[(car form)] ...args))
-          (if (is (typeof form) "undefined") (= form `()))  ; no render
-          (= form (expandMacros form))))  ; check if expanded form has new macro definitions or expansions, apply them
+          (if (is (typeof form) "undefined") (= form `()))))  ; no render
         (for val i form
           (= form[i] (expandMacros val))))))
   form))
-
-(def macroexpand src (expandMacros (parseMacros src)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Functions Import ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1000,8 +1008,7 @@
    exports.register       (fn (require "./register"))
    exports.tokenise       (fn src (tokenise src))
    exports.lex            (fn src (lex (tokenise src)))
-   exports.parse          (fn src (parse (lex (tokenise src))))
-   exports.macroexpand    (fn src (macroexpand (parse (lex (tokenise src))))))
+   exports.parse          (fn src (parse (lex (tokenise src)))))
 
 (= exports.macros macros)        ; expose macros object for override by user
 (= exports.functions functions)  ; expose functions object for override by user
@@ -1019,8 +1026,7 @@
    (if (not opts.repl)
        (= functionsRedeclare `()
           functionsRedefine  `()))  ; reset functions override stores when compiling each new file
-   (= expanded (macroexpand parsed))
-   (= (compiled scope) (compileForm expanded (hoist:`() service:`() replace:(:)) opts))
+   (= (compiled scope) (compileForm (parseMacros parsed) (hoist:`() service:`() replace:(:)) opts))
    (if (and opts.pretty (? beautify))
        (beautify (render compiled) (indent_size: 2))
        (render compiled)))))
