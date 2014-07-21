@@ -35,38 +35,38 @@
      (= srcPath   (+ srcDir filename ".jisp")
         destPath  (+ destDir filename ".js")
         src       (fs.readFileSync srcPath "utf8"))
-     (console.log (+ "-- compiling " filename "..."))
+     (prn (+ "-- compiling " filename "..."))
      (= js (compiler.compile src))
      (fs.writeFileSync destPath js "utf8")))
 
 (def build jisp srcDir destDir (do
-     (console.log "-- building...")
+     (prn "-- building...")
      (for filename files (buildFile jisp filename srcDir destDir))
-     (console.log "-- if you're reading this, compilation has succeeded!")))
+     (prn "-- if you're reading this, compilation has succeeded!")))
 
 (if args.r
   (do
     ; Load compiler
-    (console.log "-- trying to load stable compiler...")
+    (prn "-- trying to load stable compiler...")
     (= jisp      (require "./lib/jisp/jisp"))
     ; Build with stable
-    (console.log "-- rebuilding dev with stable...")
+    (prn "-- rebuilding dev with stable...")
     (build jisp "./src/" "./dev/jisp/"))
   (elif args.s (do
     ; Load compiler
-    (console.log "-- trying to load unstable compiler...")
+    (prn "-- trying to load unstable compiler...")
     (= jisp_unstable (require "./dev/jisp/jisp"))
     ; Build with unstable
-    (console.log "-- trying to build lib with unstable compiler...")
+    (prn "-- trying to build lib with unstable compiler...")
     (build jisp_unstable "./src/" "./lib/jisp/")))
   (do
     ; Load compiler
-    (console.log "-- trying to load unstable compiler...")
+    (prn "-- trying to load unstable compiler...")
     (= jisp_unstable (require "./dev/jisp/jisp"))
     ; Build with unstable
-    (console.log "-- trying to build dev with unstable compiler...")
+    (prn "-- trying to build dev with unstable compiler...")
     (build jisp_unstable "./src/" "./dev/jisp/")
-    (console.log "-- when testing the unstable version, recompile at least twice!")))
+    (prn "-- when testing the unstable version, recompile at least twice!")))
 
 ; Build the concatenated version for the browser
 ; Copied from the CoffeeScript cakefile
@@ -92,4 +92,7 @@
   }(this));"))
 
 (fs.writeFileSync "./browser/jisp.js" code)
-(console.log "-- if you're reading this, concat build has succeeded!")
+(prn "-- if you're reading this, concat build has succeeded!")
+
+(try (do (fs.writeFileSync "./node_modules/jisp/browser/jisp.js" code)
+         (prn "-- replaced the browser module in ./node_modules/jisp/browser/jisp.js for gh-pages testing")))

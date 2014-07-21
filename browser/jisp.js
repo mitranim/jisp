@@ -712,7 +712,7 @@
       .replace(/"\]/g, '" ] ')
       .replace(/\[[\s]*\(/g, " [ ( ")
       .replace(/\)[\s]*\]/g, " ) ] ")
-      .replace(/:/g, " : ")
+      .replace(/([^:]):(?!\:)/g, "$1 : ")
       .replace(/`/g, " ` ")
       .replace(/,/g, " , ")
       .replace(/\.\.\./g, " ... ")
@@ -1052,6 +1052,17 @@
     }
     return _ref;
   };
+  var macConcatHash = function() {
+    var arg, _i, _i0, _res, _ref, _ref0;
+    var args = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
+    _res = [];
+    _ref = args;
+    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
+      arg = _ref[_i0];
+      if (typeof(_ref0 = ["spread", arg]) !== 'undefined') _res.push(_ref0);
+    }
+    return [":", [].concat(["concat"]).concat(_res)];
+  };
   var macPrn = function() {
     var _i;
     var x = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
@@ -1161,6 +1172,7 @@
   var utils;
   utils = require("./utils");
   exports[":"] = macHash;
+  exports["::"] = macConcatHash;
   exports.prn = macPrn;
   exports.car = macCar;
   exports.head = macCar;
@@ -1255,7 +1267,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.24";
+  exports.version = "0.2.25";
   vm = require("vm");
   fs = require("fs");
   path = require("path");

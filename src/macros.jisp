@@ -42,6 +42,12 @@
 
 (= exports[":"] macHash)
 
+; `::` concat hash table macro
+(mac macConcatHash ...args
+  `(: (concat ,...(for arg args `(spread ,arg)))))
+
+(= exports["::"] macConcatHash)
+
 ; `prn`: short alias for console.log
 (mac macPrn ...x
   `(console.log ,...x))
