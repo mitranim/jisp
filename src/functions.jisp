@@ -15,7 +15,7 @@
 ; (range <start> <end>)
 ; (range <end>)  ; start is 0
 (= exports.range (def range start end
-   (do (if (not (? end)) (= end start start 0))
+   (do (if (?! end) (= end start start 0))
        (while true (if (<= start end)
                        (do (= a start) (++ start) a)
                        (break))))))

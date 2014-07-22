@@ -38,13 +38,13 @@
   var macCar = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
+    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", x, 0];
   };
   var macCdr = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
+    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
       ["get", x, "slice"], 1
     ];
@@ -52,7 +52,7 @@
   var macInit = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
+    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
       ["get", x, "slice"], 0, -1
     ];
@@ -60,7 +60,7 @@
   var macLast = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
+    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", [
       ["get", x, "slice"], -1
     ], 0];
@@ -69,8 +69,8 @@
     var body, names, callArgs, name, _i;
     var args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
     body = arguments[_i++];
-    if (((args.length % 2) !== 0)) throw Error, ("expecting an even number of arguments, got " + args.length);
-    if ((typeof body === 'undefined')) body = [];
+    if ((args.length % 2) !== 0) throw Error, ("expecting an even number of arguments, got " + args.length);
+    if (typeof body === 'undefined') body = [];
     names = [];
     callArgs = [];
     while (args.length > 0) {

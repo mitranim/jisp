@@ -1,12 +1,14 @@
-; Built-in macros
+; Built-in Macros Module
 
 ; Default macros to add:
-  ; (test x (case func0 body) (case func1 body)) -> applies func in each case, expands to series of elifs; tests for equality against literals and for type against undefined
+  ; (test x (case func0 body) (case func1 body)) -> applies func in each case,
+  ; expands to series of elifs; tests for equality against literals and for type against undefined.
   ; ...
 
-; For embedding purposes, macros should not enclose any objects. They must be fully self-sufficient when printed with .toString
-; Meaning, all utilities in this file must be macros themselves, and nothing must be imported
-; A possible exception is the macros that can't be referenced by name (like ?!)
+; For embedding purposes, macros should not enclose any objects.
+; They must be fully self-sufficient when printed with .toString.
+; Meaning, all utilities in this file must be macros themselves, and nothing must be imported.
+; A possible exception is the macros that can't be referenced by name (like ?!).
 
 (= utils (require "./utils"))
 

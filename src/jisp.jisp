@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.26")
+(= exports.version "0.2.27")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -630,8 +630,14 @@
       (do (midcases.push postbranch)
           (= postbranch undefined)))
   ; prepare forms
-  (= nested yes)  ; an absolute must for the ternary predicate: it can contain an operator with a lower precedence than the ternary `?`
-  (macCompileGetLast predicate predicate)
+  (if (and (is midcases.length 0)
+           (?! postbranch))        ; if both satisfied, guaranteed binary
+      (= nested "parens")
+      ; for ternary safety: compiled expressions could contain operators with a lower precedence than the ternary `?` or `:`
+      (= nested yes))
+  (macCompileGetLast predicate predicate nested)
+  ; similarly, for ternary safety
+  (= nested yes)
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
   ; if this isn't nested, further compiled branches should be aware of that
   (= nested nestedLocal)
@@ -736,10 +742,10 @@
             (utils.isSpecialValueStr rear))
         ; a literal; just push it
         (body.push (+ collector ".push(" (pr rear) ")"))
-        ; identifier, can be safely repeated in code, test it and push it
+        ; identifier, can be safely repeated in code, test it with the `?` macro, and push it
         (elif (isIdentifier rear)
-              (body.push (+ "if (typeof (" (pr rear) ") !== 'undefined') "
-                            collector ".push(" (pr rear) ")")))
+              (do (macCompileGetLast ``("?" rear) tested "parens")
+                  (body.push (+ "if (" tested ") " collector ".push(" (pr rear) ")"))))
         ; might contain side effects, reference it, test it, and push it
         (do (macDeclareService subst "_ref")
             (body.push (+ "if (typeof (" subst " = " (pr rear) ") !== 'undefined') "

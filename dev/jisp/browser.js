@@ -4,29 +4,29 @@
   jisp.require = require;
   compile = jisp.compile;
   jisp.eval = (function(code, options) {
-    if ((typeof options === 'undefined')) options = {};
+    if (typeof options === 'undefined') options = {};
     options.wrap = false;
     return eval(compile(code, options));
   });
   jisp.run = (function(code, options) {
     var compiled;
-    if ((typeof options === 'undefined')) options = {};
+    if (typeof options === 'undefined') options = {};
     options.wrap = false;
     compiled = compile(code, options);
     return Function(compile(code, options))();
   });
-  if ((typeof window === 'undefined')) return;
+  if (typeof window === 'undefined') return;
   jisp.load = (function(url, callback, options, hold) {
     var xhr;
-    if ((typeof options === 'undefined')) options = {};
-    if ((typeof hold === 'undefined')) hold = false;
+    if (typeof options === 'undefined') options = {};
+    if (typeof hold === 'undefined') hold = false;
     options.sourceFiles = [url];
     xhr = (window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest());
     xhr.open("GET", url, true);
-    if (("overrideMimeType" in xhr)) xhr.overrideMimeType("text/plain");
+    if ("overrideMimeType" in xhr) xhr.overrideMimeType("text/plain");
     xhr.onreadystatechange = (function() {
       var param;
-      if ((xhr.readyState === 4)) {
+      if (xhr.readyState === 4) {
         if ((xhr.status === 0 || xhr.status === 200)) {
           param = [xhr.responseText, options];
           if (!hold) jisp.run.apply(jisp, [].concat(param));
@@ -47,13 +47,13 @@
     _ref = scripts;
     for (_i = 0; _i < _ref.length; ++_i) {
       s = _ref[_i];
-      if ((s.type === "text/jisp")) jisps.push(s);
+      if (s.type === "text/jisp") jisps.push(s);
     }
 
     function execute() {
       var param, _ref0;
       param = jisps[index];
-      if ((param instanceof Array)) {
+      if (param instanceof Array) {
         jisp.run.apply(jisp, [].concat(param));
         ++index;
         _ref0 = execute();
