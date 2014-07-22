@@ -147,7 +147,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0, _ref1;
-    if (typeof mode === 'undefined') mode = "default";
+    if ((typeof mode === 'undefined')) mode = "default";
     switch (mode) {
       case "default":
         _res = [];
@@ -159,7 +159,7 @@
       case "list":
         demand(tokens, "(", "drop");
         lexed = [];
-        if (prop = expect(tokens, "[", "property", isPropSyntax, "property")) lexed.push(["get", prop]);
+        if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
         while (tokens[0] !== ")") {
           lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
         }

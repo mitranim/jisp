@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.27")
+(= exports.version "0.2.28")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -630,14 +630,9 @@
       (do (midcases.push postbranch)
           (= postbranch undefined)))
   ; prepare forms
-  (if (and (is midcases.length 0)
-           (?! postbranch))        ; if both satisfied, guaranteed binary
-      (= nested "parens")
-      ; for ternary safety: compiled expressions could contain operators with a lower precedence than the ternary `?` or `:`
-      (= nested yes))
-  (macCompileGetLast predicate predicate nested)
-  ; similarly, for ternary safety
+  ; for ternary safety: compiled expressions could contain operators with a lower precedence than the ternary `?` or `:`
   (= nested yes)
+  (macCompileGetLast predicate predicate)
   (if (?! predicate) (= predicate "false"))  ; JS requires something in that field
   ; if this isn't nested, further compiled branches should be aware of that
   (= nested nestedLocal)

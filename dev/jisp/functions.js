@@ -21,7 +21,7 @@
 
   function range(start, end) {
     var a, _res, _ref;
-    if (typeof end === 'undefined') {
+    if ((typeof end === 'undefined')) {
       end = start;
       start = 0;
     }

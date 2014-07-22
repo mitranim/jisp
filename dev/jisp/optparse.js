@@ -34,7 +34,7 @@
           skippingArgument = false;
           continue;
         }
-        if (arg === "--") {
+        if ((arg === "--")) {
           pos = originalArgs.indexOf("--");
           options.arguments = options.arguments.concat(originalArgs.slice(pos + 1));
           break;
@@ -46,7 +46,7 @@
           _ref0 = this.rules;
           for (_i = 0; _i < _ref0.length; ++_i) {
             rule = _ref0[_i];
-            if (arg === rule.shortFlag || arg === rule.longFlag) {
+            if ((arg === rule.shortFlag || arg === rule.longFlag)) {
               value = true;
               if (rule.hasArgument) {
                 skippingArgument = true;
@@ -57,9 +57,9 @@
               break;
             }
           }
-          if (isOption && !matchedRule) throw new Error(("unrecognised option: " + arg));
+          if ((isOption && !matchedRule)) throw new Error(("unrecognised option: " + arg));
         }
-        if (seenNonOptionArg || !isOption) options.arguments.push(arg);
+        if ((seenNonOptionArg || !isOption)) options.arguments.push(arg);
       }
       return options;
     });
@@ -90,7 +90,7 @@
     _ref = rules;
     for (_i = 0; _i < _ref.length; ++_i) {
       tuple = _ref[_i];
-      if (tuple.length < 3) tuple.unshift(null);
+      if ((tuple.length < 3)) tuple.unshift(null);
       if (typeof(_ref0 = buildRule.apply(buildRule, [].concat(tuple))) !== 'undefined') _res.push(_ref0);
     }
     return _res;
@@ -99,7 +99,7 @@
 
   function buildRule(shortFlag, longFlag, description, options) {
     var match;
-    if (typeof options === 'undefined') options = {};
+    if ((typeof options === 'undefined')) options = {};
     match = longFlag.match(optional);
     longFlag = longFlag.match(long_flag)[1];
     return {
