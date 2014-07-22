@@ -174,8 +174,8 @@
 
   function assertForm(form, min, max, first) {
     var _ref;
-    if (typeof min === 'undefined') min = 0;
-    if (typeof max === 'undefined') max = Infinity;
+    if ((typeof min === 'undefined')) min = 0;
+    if ((typeof max === 'undefined')) max = Infinity;
     if (!isList(form)) {
       _ref = undefined;
       throw Error("expecting list, got " + form);
@@ -194,7 +194,7 @@
 
   function assertExp(exp, test, expect) {
     var _ref;
-    if (typeof expect === 'undefined') expect = "valid expression";
+    if ((typeof expect === 'undefined')) expect = "valid expression";
     if (test(exp)) {
       _ref = true;
     } else {
@@ -277,7 +277,7 @@
         buffer[i] = undefined;
       } else {
         res = ((typeof exp === "string") ? exp.trim() : pr(exp));
-        if (isHash(exp) || /^function\s*\(/.test(res)) res = "(" + res + ")";
+        if ((isHash(exp) || /^function\s*\(/.test(res))) res = "(" + res + ")";
         if (!/:$|\}$|;$/.test(res.slice(-1))) res += ";";
         buffer[i] = res;
       }
@@ -337,15 +337,15 @@
 
   function baseFileName(file, stripExt, useWinPathSep) {
     var pathSep, parts;
-    if (typeof stripExt === 'undefined') stripExt = false;
-    if (typeof useWinPathSep === 'undefined') useWinPathSep = false;
+    if ((typeof stripExt === 'undefined')) stripExt = false;
+    if ((typeof useWinPathSep === 'undefined')) useWinPathSep = false;
     pathSep = (useWinPathSep ? /\\|\// : /\//);
     parts = file.split(pathSep);
     file = parts.slice(-1)[0];
     if (!(stripExt && (file.indexOf(".") >= 0))) return file;
     parts = file.split(".");
     parts.pop();
-    if ((parts.slice(-1)[0] === "jisp") && (parts.length > 1)) parts.pop();
+    if (((parts.slice(-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
     return parts.join(".");
   }
   exports.baseFileName = baseFileName;
@@ -354,7 +354,7 @@
     var res;
     res = "";
     while (n > 0) {
-      if (n & 1) res += str;
+      if ((n & 1)) res += str;
       n >>>= 1;
       str += str;
     }
@@ -393,7 +393,7 @@
 
   function range(start, end) {
     var a, _res, _ref;
-    if (typeof end === 'undefined') {
+    if ((typeof end === 'undefined')) {
       end = start;
       start = 0;
     }
@@ -425,9 +425,9 @@
   assertForm = utils.assertForm;
 
   function makeop(op, zv, min, max, drop) {
-    if (typeof min === 'undefined') min = 0;
-    if (typeof max === 'undefined') max = Infinity;
-    if (typeof drop === 'undefined') drop = false;
+    if ((typeof min === 'undefined')) min = 0;
+    if ((typeof max === 'undefined')) max = Infinity;
+    if ((typeof drop === 'undefined')) drop = false;
     return (function(args, innerType) {
       var i, arg, res, _ref, _ref0, _ref1;
       if (assertForm(args, min, max)) {
@@ -435,7 +435,7 @@
           _ref0 = pr(zv);
         } else if ((args.length === 1) && (typeof zv !== 'undefined')) {
           res = zv + op + spr(args);
-          if (innerType && (innerType !== "parens")) res = "(" + res + ")";
+          if ((innerType && (innerType !== "parens"))) res = "(" + res + ")";
           _ref0 = res;
         } else if ((args.length === 1) && drop) {
           _ref0 = spr(args);
@@ -448,7 +448,7 @@
             args[i] = pr(arg);
           }
           res = args.join(" " + op + " ");
-          if (innerType && (innerType !== "parens")) res = "(" + res + ")";
+          if ((innerType && (innerType !== "parens"))) res = "(" + res + ")";
           _ref0 = res;
         }
         _ref1 = _ref0;
@@ -473,8 +473,8 @@
   reserved;
 
   function makestate(op, min, max) {
-    if (typeof min === 'undefined') min = 0;
-    if (typeof max === 'undefined') max = Infinity;
+    if ((typeof min === 'undefined')) min = 0;
+    if ((typeof max === 'undefined')) max = Infinity;
     return (function(args, innerType) {
       return (assertForm(args, min, max) ? (op + " " + spr(args)) : "undefined");
     });
@@ -527,7 +527,7 @@
         }
         res = _res
           .join(" || ");
-        if (innerType && (innerType !== "parens")) res = "(" + res + ")";
+        if ((innerType && (innerType !== "parens"))) res = "(" + res + ")";
         _ref1 = res;
       }
       return _ref1;
@@ -548,7 +548,7 @@
         }
         res = _res
           .join(" && ");
-        if (innerType && (innerType !== "parens")) res = "(" + res + ")";
+        if ((innerType && (innerType !== "parens"))) res = "(" + res + ")";
         _ref1 = res;
       }
       return _ref1;
@@ -559,7 +559,7 @@
       var res, _ref;
       if (assertForm(args, 2, 2)) {
         res = "[].indexOf.call(" + pr(args[1]) + ", " + pr(args[0]) + ") >= 0";
-        if (innerType && (innerType !== "parens")) res = "(" + res + ")";
+        if ((innerType && (innerType !== "parens"))) res = "(" + res + ")";
         _ref = res;
       } else {
         _ref = undefined;
@@ -915,7 +915,7 @@
 
   function lex(tokens, mode) {
     var lexed, prop, key, _ref, _res, _ref0, _ref1;
-    if (typeof mode === 'undefined') mode = "default";
+    if ((typeof mode === 'undefined')) mode = "default";
     switch (mode) {
       case "default":
         _res = [];
@@ -927,7 +927,7 @@
       case "list":
         demand(tokens, "(", "drop");
         lexed = [];
-        if (prop = expect(tokens, "[", "property", isPropSyntax, "property")) lexed.push(["get", prop]);
+        if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
         while (tokens[0] !== ")") {
           lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
         }
@@ -1071,13 +1071,13 @@
   var macCar = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", x, 0];
   };
   var macCdr = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
       ["get", x, "slice"], 1
     ];
@@ -1085,7 +1085,7 @@
   var macInit = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
       ["get", x, "slice"], 0, -1
     ];
@@ -1093,7 +1093,7 @@
   var macLast = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", [
       ["get", x, "slice"], -1
     ], 0];
@@ -1102,8 +1102,8 @@
     var body, names, callArgs, name, _i;
     var args = 2 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []);
     body = arguments[_i++];
-    if ((args.length % 2) !== 0) throw Error, ("expecting an even number of arguments, got " + args.length);
-    if (typeof body === 'undefined') body = [];
+    if (((args.length % 2) !== 0)) throw Error, ("expecting an even number of arguments, got " + args.length);
+    if ((typeof body === 'undefined')) body = [];
     names = [];
     callArgs = [];
     while (args.length > 0) {
@@ -1249,7 +1249,7 @@
 
   function range(start, end) {
     var a, _res, _ref;
-    if (typeof end === 'undefined') {
+    if ((typeof end === 'undefined')) {
       end = start;
       start = 0;
     }
@@ -1269,11 +1269,11 @@
   var car = function(x) {
     var _i;
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    if ((typeof x === 'undefined') || (other.length > 0)) throw Error("expecting one argument, got: " + x + ", " + other);
+    if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", x, 0];
   };
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.27";
+  exports.version = "0.2.28";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1338,7 +1338,7 @@
     _ref0 = scope.service;
     for (i in _ref0) {
       name = _ref0[i];
-      if ([].indexOf.call(scope.hoist, name) >= 0) {
+      if (([].indexOf.call(scope.hoist, name) >= 0)) {
         newname = name;
         while ([].indexOf.call(scope.hoist, newname) >= 0) {
           newname = plusname(newname);
@@ -1349,7 +1349,7 @@
         _ref1 = buffer;
         for (i = 0; i < _ref1.length; ++i) {
           str = _ref1[i];
-          if ((typeof str !== 'undefined') && (typeof str === "string")) buffer[i] = str.replace(re, subst);
+          if (((typeof str !== 'undefined') && (typeof str === "string"))) buffer[i] = str.replace(re, subst);
         }
       }
     }
@@ -1423,7 +1423,7 @@
 
   function compileForm(form, scope, opts, nested) {
     var buffer, nestedLocal, first, isOuterOperator, innerType, i, arg, argsSpread, split, method, name, collector, oldReplace, serv, re, key, val, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _ref7, _i6, _ref8, _i7, _ref9, _i8, _ref10, _ref11, _i9, _ref12, _i10, _ref13, _i11, _ref14, _ref15, _i12;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     if ((isList(form) && utils.isBlankObject(form))) {
       _ref10 = [
         [""], scope
@@ -1503,7 +1503,7 @@
         first = _ref0[0];
         buffer = _ref0[1];
         scope = _ref0[2];
-        if (([].indexOf.call(Object.keys(functions), first) >= 0) && notRedefined(first)) {
+        if ((([].indexOf.call(Object.keys(functions), first) >= 0) && notRedefined(first))) {
           if (isService(first)) {
             _ref1 = compileGetLast(first, buffer, scope, opts, nested);
             first = _ref1[0];
@@ -1548,7 +1548,7 @@
           form = _ref5[0];
           buffer = _ref5[1];
           scope = _ref5[2];
-          if ([].indexOf.call(Object.keys(operators), first) >= 0) {
+          if (([].indexOf.call(Object.keys(operators), first) >= 0)) {
             if ((([].indexOf.call(Object.keys(opFuncs), first) >= 0) && spr(opFuncs[first]))) {
               if (isService(first)) {
                 _ref6 = compileGetLast(first, buffer, scope, opts, nested);
@@ -1580,7 +1580,7 @@
             buffer.push("(" + collector + " = " + name + ")" + method + ".apply(" + collector + ", " + pr(form) + ")");
           }
         }
-      } if (typeof isOuterOperator !== 'undefined') delete opts.compilingOperator;
+      } if ((typeof isOuterOperator !== 'undefined')) delete opts.compilingOperator;
       _ref10 = [buffer, scope];
     }
     return _ref10;
@@ -1589,7 +1589,7 @@
   specials = {};
   specials.do = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, isTopLevel, outerScope, i, exp, ref, vars, funcs, dec, args, name, func, _ref, _ref0, _i, _ref1, _i0, _i1, _ref2, _i2, _ref3, _i3, _ref4;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -1613,7 +1613,7 @@
       } else {
         if (isPropertyExp(exp)) {
           ref = buffer.pop();
-          if (typeof ref === 'undefined') ref = "";
+          if ((typeof ref === 'undefined')) ref = "";
           _ref0 = compileAdd(exp, buffer, scope, opts, nested);
           buffer = _ref0[0];
           scope = _ref0[1];
@@ -1629,11 +1629,11 @@
       vars = [];
       funcs = [];
       dec = "var ";
-      if (typeof args === 'undefined') args = [];
+      if ((typeof args === 'undefined')) args = [];
       _ref2 = scope.hoist;
       for (_i1 = 0; _i1 < _ref2.length; ++_i1) {
         name = _ref2[_i1];
-        if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+        if ((!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0))) {
           if (([].indexOf.call(Object.keys(functions), name) >= 0)) {
             if ((opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0))) {
               vars.push(name);
@@ -1654,10 +1654,10 @@
       }
       while (vars.length > 0) {
         name = vars.shift();
-        if ([].indexOf.call(vars, name) >= 0) throw Error("compiler error: duplicate var in declarations:" + name);
+        if (([].indexOf.call(vars, name) >= 0)) throw Error("compiler error: duplicate var in declarations:" + name);
         dec += (name + ", ");
       }
-      if (dec.length > 4) {
+      if ((dec.length > 4)) {
         dec = dec.slice(0, dec.length - 2);
         buffer
           .unshift(dec);
@@ -1665,7 +1665,7 @@
       if (((typeof isTopLevel !== 'undefined') && isTopLevel)) {
         while (funcs.length > 0) {
           func = funcs.pop();
-          if ([].indexOf.call(funcs, func) >= 0) throw Error("compiler error: duplicate func in declarations:" + func);
+          if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
           if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
             if (notRedefined(func)) {
               if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
@@ -1699,12 +1699,12 @@
   });
   specials.quote = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, arr, res, exp, i, item, key, newform, _i, _ref, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _ref6, _i5, _ref7, _i6, _ref8, _ref9, _i7, _ref10, _ref11, _i8;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
-    if (form.length > 1) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length > 1)) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     form = form[0];
@@ -1749,8 +1749,8 @@
           exp = _ref2[0];
           buffer = _ref2[1];
           scope = _ref2[2];
-          if (typeof exp !== 'undefined') {
-            if (arr.length > 0) {
+          if ((typeof exp !== 'undefined')) {
+            if ((arr.length > 0)) {
               res += (".concat(" + pr(arr) + ")");
               arr = [];
             }
@@ -1761,13 +1761,13 @@
           exp = _ref3[0];
           buffer = _ref3[1];
           scope = _ref3[2];
-          if (typeof exp !== 'undefined') arr.push(exp);
+          if ((typeof exp !== 'undefined')) arr.push(exp);
         } else if (isList(exp) && (exp[0] === "unquote")) {
           _ref4 = compileGetLast(exp, buffer, scope, opts, nested);
           exp = _ref4[0];
           buffer = _ref4[1];
           scope = _ref4[2];
-          if ((typeof exp !== 'undefined') && opts.macro) {
+          if (((typeof exp !== 'undefined') && opts.macro)) {
             if (isList(exp)) {
               _ref5 = exp;
               for (i = 0; i < _ref5.length; ++i) {
@@ -1781,14 +1781,14 @@
               }
             }
           }
-          if (typeof exp !== 'undefined') arr.push(exp);
+          if ((typeof exp !== 'undefined')) arr.push(exp);
         } else if (isList(exp) && (exp[0] === "spread") && !opts.macro) {
           _ref7 = compileGetLast(exp, buffer, scope, opts, nested);
           exp = _ref7[0];
           buffer = _ref7[1];
           scope = _ref7[2];
-          if (typeof exp !== 'undefined') {
-            if (arr.length > 0) {
+          if ((typeof exp !== 'undefined')) {
+            if ((arr.length > 0)) {
               res += (".concat(" + pr(arr) + ")");
               arr = [];
             }
@@ -1805,26 +1805,26 @@
             exp = _ref1[0];
             buffer = _ref1[1];
             scope = _ref1[2];
-          } if (typeof exp !== 'undefined') arr.push(exp);
+          } if ((typeof exp !== 'undefined')) arr.push(exp);
         }
       }
-      if (arr.length > 0)(res === "[]") ? res = pr(arr) : res += (".concat(" + pr(arr) + ")");
+      if ((arr.length > 0))(res === "[]") ? res = pr(arr) : res += (".concat(" + pr(arr) + ")");
       buffer.push(res);
     }
     return Array(buffer, scope);
   });
   specials.unquote = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, _ref, _i, _ref0, _i0;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
-    if (form.length > 1) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length > 1)) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     form = form[0];
-    if (isList(form) && (form[0] === "quote")) {
+    if ((isList(form) && (form[0] === "quote"))) {
       _ref = compileGetLast(form, buffer, scope, opts, nested);
       form = _ref[0];
       buffer = _ref[1];
@@ -1837,11 +1837,11 @@
   });
   specials["="] = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, left, right, lastAssign, res, ref, ind, spreads, i, name, spreadname, spreadind, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _ref7, _i6, _ref8, _i7, _ref9, _i8, _ref10, _i9;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     if ((form.length === 1)) {
@@ -1852,7 +1852,7 @@
         scope = _ref[2];
       } else {
         assertExp(form[0], isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), form[0]) >= 0) && !([].indexOf.call(scope.hoist, form[0]) >= 0) && notRedefined(form[0])) functionsRedeclare.push(form[0]);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), form[0]) >= 0) && !([].indexOf.call(scope.hoist, form[0]) >= 0) && notRedefined(form[0]))) functionsRedeclare.push(form[0]);
         scope = declareVar(form[0], scope);
       }
       _ref0 = compileAdd(form[0], buffer, scope, opts, nested);
@@ -1865,7 +1865,7 @@
       while (form.length > 0) {
         left = form.shift();
         right = form.shift();
-        lastAssign = (form.length === 0 ? true : undefined);
+        lastAssign = ((form.length === 0) ? true : undefined);
         _ref1 = compileGetLast(right, buffer, scope, opts, nested);
         right = _ref1[0];
         buffer = _ref1[1];
@@ -1876,7 +1876,7 @@
           buffer = _ref2[1];
           scope = _ref2[2];
           res = pr(left) + " = " + pr(right);
-          if (lastAssign && nestedLocal && (nestedLocal !== "parens")) res = "(" + res + ")";
+          if ((lastAssign && nestedLocal && (nestedLocal !== "parens"))) res = "(" + res + ")";
           buffer.push(res);
         } else if (isList(left)) {
           _ref4 = declareService("_ref", scope, (opts.function ? args : undefined));
@@ -1891,7 +1891,7 @@
           for (i = 0; i < _ref6.length; ++i) {
             name = _ref6[i];
             if ((name[0] === "spread")) {
-              if (++spreads > 1) throw Error("an assignment can only have one spread");
+              if ((++spreads > 1)) throw Error("an assignment can only have one spread");
               _ref7 = compileGetLast(name, buffer, scope, opts, nested);
               name = _ref7[0];
               buffer = _ref7[1];
@@ -1903,7 +1903,7 @@
                 scope = _ref8[2];
               } else {
                 assertExp(name, isVarName, "valid identifier");
-                if (opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name)) functionsRedeclare.push(name);
+                if ((opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name))) functionsRedeclare.push(name);
                 scope = declareVar(name, scope);
               }
               spreadname = name;
@@ -1918,7 +1918,7 @@
                   scope = _ref10[2];
                 } else {
                   assertExp(name, isVarName, "valid identifier");
-                  if (opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name)) functionsRedeclare.push(name);
+                  if ((opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name))) functionsRedeclare.push(name);
                   scope = declareVar(name, scope);
                 }
               }
@@ -1932,7 +1932,7 @@
                   scope = _ref9[2];
                 } else {
                   assertExp(name, isVarName, "valid identifier");
-                  if (opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name)) functionsRedeclare.push(name);
+                  if ((opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name))) functionsRedeclare.push(name);
                   scope = declareVar(name, scope);
                 }
               }
@@ -1948,14 +1948,14 @@
               scope = _ref3[2];
             } else {
               assertExp(left, isVarName, "valid identifier");
-              if (opts.topScope && ([].indexOf.call(Object.keys(functions), left) >= 0) && !([].indexOf.call(scope.hoist, left) >= 0) && notRedefined(left)) functionsRedeclare.push(left);
+              if ((opts.topScope && ([].indexOf.call(Object.keys(functions), left) >= 0) && !([].indexOf.call(scope.hoist, left) >= 0) && notRedefined(left))) functionsRedeclare.push(left);
               scope = declareVar(left, scope);
             }
           }
           assertExp(left, isIdentifier);
           res = pr(left) + " = " + pr(right);
-          if (isHash(right) && !nestedLocal) res += ";";
-          if (lastAssign && nestedLocal && (nestedLocal !== "parens")) res = "(" + res + ")";
+          if ((isHash(right) && !nestedLocal)) res += ";";
+          if ((lastAssign && nestedLocal && (nestedLocal !== "parens"))) res = "(" + res + ")";
           buffer.push(res);
         }
       }
@@ -1964,7 +1964,7 @@
   });
   specials.fn = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, outerScope, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _ref0, _ref1, _i0, _ref2, _i1, _ref3, _i2, _i3, _ref4, _i4, _ref5, _i5, _ref6;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -1977,7 +1977,7 @@
     var args = 2 <= _ref.length ? [].slice.call(_ref, 0, _i = _ref.length - 1) : (_i = 0, []);
     body = _ref[_i++];
     scope.hoist.push.apply(scope.hoist, [].concat(getArgNames(args)));
-    if (typeof body === 'undefined') body = [];
+    if ((typeof body === 'undefined')) body = [];
     optionals = [];
     spreads = 0;
     _ref0 = args;
@@ -1988,7 +1988,7 @@
           return (arguments[0].length === 2);
         }), "optional or rest parameter");
         if ((arg[0] === "spread")) {
-          if (++spreads > 1) throw Error("cannot define more than one rest parameter");
+          if ((++spreads > 1)) throw Error("cannot define more than one rest parameter");
           _ref1 = declareService("_i", scope, (opts.function ? args : undefined));
           ind = _ref1[0];
           scope = _ref1[1];
@@ -2012,8 +2012,8 @@
         rest.push(pr(arg) + " = arguments[" + ind + "++]");
       }
     }
-    if (typeof restind !== 'undefined') args = args.slice(0, restind);
-    if (optionals.length > 0) body = [].concat(["do"]).concat(optionals).concat([body]);
+    if ((typeof restind !== 'undefined')) args = args.slice(0, restind);
+    if ((optionals.length > 0)) body = [].concat(["do"]).concat(optionals).concat([body]);
     body = returnify(body);
     _ref3 = compileResolve(body, buffer, scope, opts, nested);
     body = _ref3[0];
@@ -2023,11 +2023,11 @@
     vars = [];
     funcs = [];
     dec = "var ";
-    if (typeof args === 'undefined') args = [];
+    if ((typeof args === 'undefined')) args = [];
     _ref4 = scope.hoist;
     for (_i3 = 0; _i3 < _ref4.length; ++_i3) {
       name = _ref4[_i3];
-      if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+      if ((!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0))) {
         if (([].indexOf.call(Object.keys(functions), name) >= 0)) {
           if ((opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0))) {
             vars.push(name);
@@ -2048,10 +2048,10 @@
     }
     while (vars.length > 0) {
       name = vars.shift();
-      if ([].indexOf.call(vars, name) >= 0) throw Error("compiler error: duplicate var in declarations:" + name);
+      if (([].indexOf.call(vars, name) >= 0)) throw Error("compiler error: duplicate var in declarations:" + name);
       dec += (name + ", ");
     }
-    if (dec.length > 4) {
+    if ((dec.length > 4)) {
       dec = dec.slice(0, dec.length - 2);
       body
         .unshift(dec);
@@ -2059,7 +2059,7 @@
     if (((typeof isTopLevel !== 'undefined') && isTopLevel)) {
       while (funcs.length > 0) {
         func = funcs.pop();
-        if ([].indexOf.call(funcs, func) >= 0) throw Error("compiler error: duplicate func in declarations:" + func);
+        if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
           if (notRedefined(func)) {
             if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
@@ -2093,7 +2093,7 @@
   });
   specials.def = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, outerScope, fname, args, body, optionals, spreads, i, arg, ind, name, restname, restind, rest, vars, funcs, dec, func, _ref, _i, _ref0, _i0, _ref1, _ref2, _i1, _ref3, _i2, _ref4, _i3, _i4, _ref5, _i5, _ref6, _i6, _ref7;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2113,10 +2113,10 @@
       scope = _ref0[2];
     } else {
       assertExp(fname, isVarName, "valid identifier");
-      if (opts.topScope && ([].indexOf.call(Object.keys(functions), fname) >= 0) && !([].indexOf.call(scope.hoist, fname) >= 0) && notRedefined(fname)) functionsRedefine.push(fname);
+      if ((opts.topScope && ([].indexOf.call(Object.keys(functions), fname) >= 0) && !([].indexOf.call(scope.hoist, fname) >= 0) && notRedefined(fname))) functionsRedefine.push(fname);
     }
     scope.hoist.push.apply(scope.hoist, [].concat(getArgNames(args)));
-    if (typeof body === 'undefined') body = [];
+    if ((typeof body === 'undefined')) body = [];
     optionals = [];
     spreads = 0;
     _ref1 = args;
@@ -2127,7 +2127,7 @@
           return (arguments[0].length === 2);
         }), "optional or rest parameter");
         if ((arg[0] === "spread")) {
-          if (++spreads > 1) throw Error("cannot define more than one rest parameter");
+          if ((++spreads > 1)) throw Error("cannot define more than one rest parameter");
           _ref2 = declareService("_i", scope, (opts.function ? args : undefined));
           ind = _ref2[0];
           scope = _ref2[1];
@@ -2151,8 +2151,8 @@
         rest.push(pr(arg) + " = arguments[" + ind + "++]");
       }
     }
-    if (typeof restind !== 'undefined') args = args.slice(0, restind);
-    if (optionals.length > 0) body = [].concat(["do"]).concat(optionals).concat([body]);
+    if ((typeof restind !== 'undefined')) args = args.slice(0, restind);
+    if ((optionals.length > 0)) body = [].concat(["do"]).concat(optionals).concat([body]);
     body = returnify(body);
     _ref4 = compileResolve(body, buffer, scope, opts, nested);
     body = _ref4[0];
@@ -2162,11 +2162,11 @@
     vars = [];
     funcs = [];
     dec = "var ";
-    if (typeof args === 'undefined') args = [];
+    if ((typeof args === 'undefined')) args = [];
     _ref5 = scope.hoist;
     for (_i4 = 0; _i4 < _ref5.length; ++_i4) {
       name = _ref5[_i4];
-      if (!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0)) {
+      if ((!([].indexOf.call(outerScope.hoist, name) >= 0) && !([].indexOf.call(args, name) >= 0))) {
         if (([].indexOf.call(Object.keys(functions), name) >= 0)) {
           if ((opts.topScope && ([].indexOf.call(functionsRedeclare, name) >= 0))) {
             vars.push(name);
@@ -2187,10 +2187,10 @@
     }
     while (vars.length > 0) {
       name = vars.shift();
-      if ([].indexOf.call(vars, name) >= 0) throw Error("compiler error: duplicate var in declarations:" + name);
+      if (([].indexOf.call(vars, name) >= 0)) throw Error("compiler error: duplicate var in declarations:" + name);
       dec += (name + ", ");
     }
-    if (dec.length > 4) {
+    if ((dec.length > 4)) {
       dec = dec.slice(0, dec.length - 2);
       body
         .unshift(dec);
@@ -2198,7 +2198,7 @@
     if (((typeof isTopLevel !== 'undefined') && isTopLevel)) {
       while (funcs.length > 0) {
         func = funcs.pop();
-        if ([].indexOf.call(funcs, func) >= 0) throw Error("compiler error: duplicate func in declarations:" + func);
+        if (([].indexOf.call(funcs, func) >= 0)) throw Error("compiler error: duplicate func in declarations:" + func);
         if (([].indexOf.call(Object.keys(functions), func) >= 0)) {
           if (notRedefined(func)) {
             if ((((typeof functions !== 'undefined') && (typeof functions[func] !== 'undefined') && (typeof functions[func].name !== 'undefined')) && (functions[func].name !== ""))) {
@@ -2237,9 +2237,9 @@
 
   function collect(compiled, collector, isCase, nestedLocal) {
     var plug, lastItem;
-    if (typeof isCase === 'undefined') isCase = false;
-    if (typeof nestedLocal === 'undefined') nestedLocal = true;
-    if (isList(compiled) && (compiled.length > 0)) {
+    if ((typeof isCase === 'undefined')) isCase = false;
+    if ((typeof nestedLocal === 'undefined')) nestedLocal = true;
+    if ((isList(compiled) && (compiled.length > 0))) {
       if (/\{$/.test(compiled.slice(-1)[0])) plug = compiled.pop();
       lastItem = compiled.pop();
       if (nestedLocal) {
@@ -2253,14 +2253,14 @@
       }
       compiled.push(lastItem);
       if (isCase) compiled.push("break");
-      if (typeof plug !== 'undefined') compiled.push(plug);
+      if ((typeof plug !== 'undefined')) compiled.push(plug);
     }
     return compiled;
   }
   collect;
   specials.if = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, predicate, prebranch, midcases, postbranch, res, collector, i, mid, midtest, midbranch, comp, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _ref5, _i4, _ref6, _i5, _ref7, _i6, _i7, _ref8;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2271,16 +2271,16 @@
     prebranch = _ref[1];
     var midcases = 4 <= _ref.length ? [].slice.call(_ref, 2, _i = _ref.length - 1) : (_i = 2, []);
     postbranch = _ref[_i++];
-    if (isList(postbranch) && (postbranch[0] === "elif")) {
+    if ((isList(postbranch) && (postbranch[0] === "elif"))) {
       midcases.push(postbranch);
       postbranch = undefined;
-    }((midcases.length === 0) && (typeof postbranch === 'undefined')) ? nested = "parens" : nested = true;
+    }
+    nested = true;
     _ref0 = compileGetLast(predicate, buffer, scope, opts, nested);
     predicate = _ref0[0];
     buffer = _ref0[1];
     scope = _ref0[2];
-    nested = true;
-    if (typeof predicate === 'undefined') predicate = "false";
+    if ((typeof predicate === 'undefined')) predicate = "false";
     nested = nestedLocal;
     _ref1 = compileResolve(prebranch, buffer, scope, opts, nested);
     prebranch = _ref1[0];
@@ -2295,7 +2295,7 @@
       buffer.push(res, "");
     } else if ((prebranch.length === 1) && !utils.kwtest(prebranch[0]) && (midcases.length === 0) && (postbranch.length === 1) && !utils.kwtest(postbranch[0])) {
       res = pr(predicate) + " ? " + (pr(prebranch[0]) || undefined) + " : " + (pr(postbranch[0]) || undefined);
-      if (nestedLocal && (nestedLocal !== "parens")) res = "(" + res + ")";
+      if ((nestedLocal && (nestedLocal !== "parens"))) res = "(" + res + ")";
       buffer.push(res);
     } else {
       if (nestedLocal) {
@@ -2318,8 +2318,8 @@
         midtest = _ref6[0];
         buffer = _ref6[1];
         scope = _ref6[2];
-        if (typeof midtest === 'undefined') midtest = "false";
-        if (midtest.length > 1) throw Error(pr("elif") + " must compile to single expression (todo fix later); got:" + pr(midtest));
+        if ((typeof midtest === 'undefined')) midtest = "false";
+        if ((midtest.length > 1)) throw Error(pr("elif") + " must compile to single expression (todo fix later); got:" + pr(midtest));
         _ref7 = compileResolve(midbranch, buffer, scope, opts, nested);
         midbranch = _ref7[0];
         buffer = _ref7[1];
@@ -2335,7 +2335,7 @@
         mid = _ref8[_i7];
         comp += (" else if (" + spr(mid.test) + ") { " + render(mid.branch) + " }");
       }
-      if ((typeof postbranch !== 'undefined') && ((postbranch.length > 1) || (typeof postbranch[0] !== 'undefined'))) comp += (" else { " + render(postbranch) + " }");
+      if (((typeof postbranch !== 'undefined') && ((postbranch.length > 1) || (typeof postbranch[0] !== 'undefined')))) comp += (" else { " + render(postbranch) + " }");
       buffer.push(comp);
       nestedLocal ? buffer.push(collector) : buffer.push("");
     }
@@ -2343,7 +2343,7 @@
   });
   specials.switch = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, predicate, midcases, postbranch, collector, i, mid, midtest, midbranch, comp, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _ref3, _i2, _ref4, _i3, _ref5, _i4, _ref6, _i5, _i6, _ref7;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
@@ -2353,7 +2353,7 @@
     predicate = _ref[0];
     var midcases = 3 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 1) : (_i = 1, []);
     postbranch = _ref[_i++];
-    if ((typeof postbranch !== 'undefined') && (postbranch[0] === "case")) {
+    if (((typeof postbranch !== 'undefined') && (postbranch[0] === "case"))) {
       midcases.push(postbranch);
       postbranch = undefined;
     }
@@ -2366,7 +2366,7 @@
     predicate = _ref1[0];
     buffer = _ref1[1];
     scope = _ref1[2];
-    if (typeof predicate === 'undefined') predicate = "false";
+    if ((typeof predicate === 'undefined')) predicate = "false";
     nested = nestedLocal;
     _ref2 = midcases;
     for (i = 0; i < _ref2.length; ++i) {
@@ -2381,8 +2381,8 @@
       midtest = _ref4[0];
       buffer = _ref4[1];
       scope = _ref4[2];
-      if (typeof midtest === 'undefined') midtest = "false";
-      if (midtest.length > 1) throw Error(pr("case") + " must compile to single expression (todo fix later); got: " + pr(midtest));
+      if ((typeof midtest === 'undefined')) midtest = "false";
+      if ((midtest.length > 1)) throw Error(pr("case") + " must compile to single expression (todo fix later); got: " + pr(midtest));
       _ref5 = compileResolve(midbranch, buffer, scope, opts, nested);
       midbranch = _ref5[0];
       buffer = _ref5[1];
@@ -2410,12 +2410,12 @@
   });
   specials.for = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, tested, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7, _ref8, _i8, _ref9, _i9, _ref10, _i10, _ref11, _i11;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 2) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
-    if (form.length > 4) throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
+    if ((form.length < 2)) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
+    if ((form.length > 4)) throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     _ref = form;
@@ -2425,7 +2425,7 @@
     body = _ref[3];
     if ((typeof body === 'undefined')) {
       if ((typeof iterable === 'undefined')) {
-        if (isNaN(Number(value)) || !(parseInt(value) > 0)) throw Error("expecting integer, got " + pr(value));
+        if ((isNaN(Number(value)) || !(parseInt(value) > 0))) throw Error("expecting integer, got " + pr(value));
         body = key;
         iterable = ["quote", [range, 1, [parseInt, value]]];
         _ref0 = declareService("_i", scope, (opts.function ? args : undefined));
@@ -2447,7 +2447,7 @@
           scope = _ref3[2];
         } else {
           assertExp(value, isVarName, "valid identifier");
-          if (opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value)) functionsRedeclare.push(value);
+          if ((opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value))) functionsRedeclare.push(value);
           scope = declareVar(value, scope);
         }
       }
@@ -2459,7 +2459,7 @@
         scope = _ref4[2];
       } else {
         assertExp(key, isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key)) functionsRedeclare.push(key);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key))) functionsRedeclare.push(key);
         scope = declareVar(key, scope);
       } if (isService(value)) {
         _ref5 = compileGetLast(value, buffer, scope, opts, nested);
@@ -2468,7 +2468,7 @@
         scope = _ref5[2];
       } else {
         assertExp(value, isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value)) functionsRedeclare.push(value);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value))) functionsRedeclare.push(value);
         scope = declareVar(value, scope);
       }
     }
@@ -2493,7 +2493,7 @@
     body = _ref9[0];
     buffer = _ref9[1];
     scope = _ref9[2];
-    if (nestedLocal && !utils.kwtest(pr(body.slice(-1)[0]))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -2516,12 +2516,12 @@
   });
   specials.over = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, value, key, iterable, body, collector, ref, rear, subst, tested, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _i7, _ref8, _i8, _ref9, _i9, _ref10, _i10, _ref11, _i11;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 2) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
-    if (form.length > 4) throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
+    if ((form.length < 2)) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
+    if ((form.length > 4)) throw Error(pr(formName) + " expects no more than " + pr(4) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     _ref = form;
@@ -2542,7 +2542,7 @@
         scope = _ref1[2];
       } else {
         assertExp(value, isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value)) functionsRedeclare.push(value);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value))) functionsRedeclare.push(value);
         scope = declareVar(value, scope);
       }
     } else if (typeof iterable === 'undefined') {
@@ -2562,7 +2562,7 @@
         scope = _ref2[2];
       } else {
         assertExp(key, isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key)) functionsRedeclare.push(key);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key))) functionsRedeclare.push(key);
         scope = declareVar(key, scope);
       } if (isService(value)) {
         _ref3 = compileGetLast(value, buffer, scope, opts, nested);
@@ -2571,7 +2571,7 @@
         scope = _ref3[2];
       } else {
         assertExp(value, isVarName, "valid identifier");
-        if (opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value)) functionsRedeclare.push(value);
+        if ((opts.topScope && ([].indexOf.call(Object.keys(functions), value) >= 0) && !([].indexOf.call(scope.hoist, value) >= 0) && notRedefined(value))) functionsRedeclare.push(value);
         scope = declareVar(value, scope);
       }
     }
@@ -2596,7 +2596,7 @@
     body = _ref9[0];
     buffer = _ref9[1];
     scope = _ref9[2];
-    if (nestedLocal && !utils.kwtest(pr(body.slice(-1)[0]))) {
+    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -2619,12 +2619,12 @@
   });
   specials.while = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, test, body, rvalue, collector, comp, rear, subst, tested, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 2) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
-    if (form.length > 3) throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
+    if ((form.length < 2)) throw Error(pr(formName) + " expects no less than " + pr(2) + " arguments");
+    if ((form.length > 3)) throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     _ref = form;
@@ -2650,7 +2650,7 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    if (nestedLocal && (form.length === 2) && !utils.kwtest(pr(body.slice(-1)[0]))) {
+    if ((nestedLocal && (form.length === 2) && !utils.kwtest(pr(body.slice(-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -2681,12 +2681,12 @@
   });
   specials.try = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, tryForm, catchForm, finalForm, collector, err, res, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
-    if (form.length > 3) throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length > 3)) throw Error(pr(formName) + " expects no more than " + pr(3) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     _ref = form;
@@ -2716,15 +2716,15 @@
       _ref3 = declareService("_err", scope, (opts.function ? args : undefined));
       err = _ref3[0];
       scope = _ref3[1];
-    } if (typeof catchForm === 'undefined') catchForm = undefined;
+    } if ((typeof catchForm === 'undefined')) catchForm = undefined;
     nested = nestedLocal;
     _ref4 = compileResolve(catchForm, buffer, scope, opts, nested);
     catchForm = _ref4[0];
     buffer = _ref4[1];
     scope = _ref4[2];
-    if (nestedLocal && !utils.kwtest(pr(catchForm.slice(-1)[0]))) catchForm.push(collector + " = " + pr(catchForm.pop()));
-    if (typeof finalForm !== 'undefined') {
-      if (isList(finalForm) && (finalForm[0] === "finally")) {
+    if ((nestedLocal && !utils.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
+    if ((typeof finalForm !== 'undefined')) {
+      if ((isList(finalForm) && (finalForm[0] === "finally"))) {
         assertExp(finalForm, (function() {
           return (arguments[0].length === 2);
         }));
@@ -2734,28 +2734,28 @@
       finalForm = _ref5[0];
       buffer = _ref5[1];
       scope = _ref5[2];
-      if (nestedLocal && !utils.kwtest(pr(finalForm.slice(-1)[0]))) finalForm.push(collector + " = " + pr(finalForm.pop()));
+      if ((nestedLocal && !utils.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
     }
     res = "try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }";
-    if (typeof finalForm !== 'undefined') res += (" finally { " + render(finalForm) + " }");
+    if ((typeof finalForm !== 'undefined')) res += (" finally { " + render(finalForm) + " }");
     buffer.push(res);
     nestedLocal ? buffer.push(collector) : buffer.push("");
     return Array(buffer, scope);
   });
   specials.get = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, object, property, _ref, _i, _ref0, _i0, _ref1, _i1;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
-    if (form.length > 2) throw Error(pr(formName) + " expects no more than " + pr(2) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length > 2)) throw Error(pr(formName) + " expects no more than " + pr(2) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     _ref = form;
     object = _ref[0];
     property = _ref[1];
-    if (typeof property === 'undefined') {
+    if ((typeof property === 'undefined')) {
       property = object;
       object = "";
     }
@@ -2775,12 +2775,12 @@
   });
   specials.spread = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, _ref, _i;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length < 1) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
-    if (form.length > 1) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
+    if ((form.length < 1)) throw Error(pr(formName) + " expects no less than " + pr(1) + " arguments");
+    if ((form.length > 1)) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
     form = form[0];
@@ -2797,14 +2797,14 @@
   });
   specials.return = (function(form, scope, opts, nested) {
     var buffer, formName, nestedLocal, _ref, _i;
-    if (typeof opts === 'undefined') opts = {};
+    if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
     formName = form.shift();
-    if (form.length > 1) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
+    if ((form.length > 1)) throw Error(pr(formName) + " expects no more than " + pr(1) + " arguments");
     nestedLocal = ((typeof nested !== 'undefined') ? nested : true);
     nested = undefined;
-    if (form.length !== 0) {
+    if ((form.length !== 0)) {
       _ref = compileGetLast(form[0], buffer, scope, opts, true);
       form = _ref[0];
       buffer = _ref[1];
@@ -2865,8 +2865,8 @@
     _ref = form;
     name = _ref[0];
     var body = 2 <= _ref.length ? [].slice.call(_ref, 1, _i = _ref.length - 0) : (_i = 1, []);
-    if (typeof name === 'undefined') throw Error("a macro requires a name");
-    if (typeof body === 'undefined') throw Error("a macro requires a body");
+    if ((typeof name === 'undefined')) throw Error("a macro requires a name");
+    if ((typeof body === 'undefined')) throw Error("a macro requires a body");
     body = ["do", [].concat(["fn"]).concat(body)];
     _ref0 = compileForm(body, {
       hoist: [],
@@ -2898,7 +2898,7 @@
       } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
         args = form.slice(1);
         form = macros[form[0]].apply(macros, [].concat(args));
-        if (typeof form === "undefined") form = [];
+        if ((typeof form === "undefined")) form = [];
       } else {
         _ref0 = form;
         for (i = 0; i < _ref0.length; ++i) {
@@ -2921,7 +2921,7 @@
       _ref0 = store;
       for (key in _ref0) {
         val = _ref0[key];
-        if (typeof val === "function")(((typeof val !== 'undefined') && (typeof val.name !== 'undefined')) && (val.name !== "")) ? functions[val.name] = val : functions[key] = val;
+        if ((typeof val === "function"))(((typeof val !== 'undefined') && (typeof val.name !== 'undefined')) && (val.name !== "")) ? functions[val.name] = val : functions[key] = val;
       }
     }
     return functions;
@@ -2996,13 +2996,13 @@
 
   function run(code, options) {
     var mainModule, dir;
-    if (typeof options === 'undefined') options = {};
+    if ((typeof options === 'undefined')) options = {};
     mainModule = require.main;
     mainModule.filename = (process.argv[1] = (options.filename ? fs.realpathSync(options.filename) : "."));
     if (mainModule.moduleCache) mainModule.moduleCache = {};
     dir = (options.filename ? path.dirname(fs.realpathSync(options.filename)) : fs.realpathSync("."));
     mainModule.paths = require("module")._nodeModulePaths(dir);
-    if (!utils.isJisp(mainModule.filename) || require.extensions) code = exports.compile(code);
+    if ((!utils.isJisp(mainModule.filename) || require.extensions)) code = exports.compile(code);
     return mainModule._compile(code, mainModule.filename);
   }
   return exports.run = run;
@@ -3016,29 +3016,29 @@
   jisp.require = require;
   compile = jisp.compile;
   jisp.eval = (function(code, options) {
-    if (typeof options === 'undefined') options = {};
+    if ((typeof options === 'undefined')) options = {};
     options.wrap = false;
     return eval(compile(code, options));
   });
   jisp.run = (function(code, options) {
     var compiled;
-    if (typeof options === 'undefined') options = {};
+    if ((typeof options === 'undefined')) options = {};
     options.wrap = false;
     compiled = compile(code, options);
     return Function(compile(code, options))();
   });
-  if (typeof window === 'undefined') return;
+  if ((typeof window === 'undefined')) return;
   jisp.load = (function(url, callback, options, hold) {
     var xhr;
-    if (typeof options === 'undefined') options = {};
-    if (typeof hold === 'undefined') hold = false;
+    if ((typeof options === 'undefined')) options = {};
+    if ((typeof hold === 'undefined')) hold = false;
     options.sourceFiles = [url];
     xhr = (window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest());
     xhr.open("GET", url, true);
-    if ("overrideMimeType" in xhr) xhr.overrideMimeType("text/plain");
+    if (("overrideMimeType" in xhr)) xhr.overrideMimeType("text/plain");
     xhr.onreadystatechange = (function() {
       var param;
-      if (xhr.readyState === 4) {
+      if ((xhr.readyState === 4)) {
         if ((xhr.status === 0 || xhr.status === 200)) {
           param = [xhr.responseText, options];
           if (!hold) jisp.run.apply(jisp, [].concat(param));
@@ -3059,13 +3059,13 @@
     _ref = scripts;
     for (_i = 0; _i < _ref.length; ++_i) {
       s = _ref[_i];
-      if (s.type === "text/jisp") jisps.push(s);
+      if ((s.type === "text/jisp")) jisps.push(s);
     }
 
     function execute() {
       var param, _ref0;
       param = jisps[index];
-      if (param instanceof Array) {
+      if ((param instanceof Array)) {
         jisp.run.apply(jisp, [].concat(param));
         ++index;
         _ref0 = execute();
