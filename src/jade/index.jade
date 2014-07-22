@@ -296,7 +296,7 @@ block content
         h2#blocks Blocks and Chaining
 
         :markdown
-          If everything is an expression and all forms are lists, how do you write consequtive commands? By wrapping them in the special form `do`:
+          Because jisp code consists of nested expressions, even a multi-line block must be a single expression. How to make one? By wrapping several forms in the special form `do`:
 
         +code(10).
           (def elongate str
@@ -912,7 +912,7 @@ block content
           (prn '-- all:')
           (prn (for x array x))
 
-          (prn '\\n-- only drinks:')
+          (prn '-- only drinks:')
           (for x array
             (if (is (car x) 'drink') x))
 
