@@ -119,7 +119,9 @@
          (if (and (isAtom arg) (isVarName arg))
              (arr.push arg)
              (elif (and (isList arg) (isVarName (car arg))
-                        (not (is (car arg) "spread")))
+                        (not (in (car arg) (Object.keys specials)))
+                        (not (in (car arg) (Object.keys macros)))
+                        (not (is (car arg) "mac")))
                    (arr.push (car arg)))))
       arr))
 
@@ -257,6 +259,11 @@
     (Array buffer scope)
   ))  ; /lambda
 ))  ; /macro
+
+(mac macMacroCheck form
+; Check if a form is a macro call and expand it
+  `(if (and (isList ,form) (in (car ,form) (Object.keys macros)))
+    (macCompileGetLast ,form ,form)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Main Compiler Parts ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -501,6 +508,8 @@
              right (form.shift))
           (= lastAssign (if (is form.length 0) true))
           (macCompileGetLast right right)
+          ; Check and expand if macro
+          (macMacroCheck left)
           (if (and (isList left) (is (car left) "get"))  ; property access
             (do (macCompileGetLast left left)
                 (= res (+ (pr left) " = " (pr right)))
@@ -550,7 +559,9 @@
       (if (?! body) (= body ``()))
       (= optionals ``()
          spreads   0)
-      (for arg i args
+      (for arg i args (do
+        ; Expand if macro
+        (macMacroCheck arg)
         (if (isList arg)
           (do
             (assertExp arg {is #0.length 2} "optional or rest parameter")
@@ -569,7 +580,7 @@
                 (= args[i] name)
                 (optionals.push ``("if" ("?!" name) ("=" name arg[1]))))))
           (elif restname
-            (rest.push (+ (pr arg) " = arguments[" ind "++]")))))  ; when there's a restname, `ind` is defined
+            (rest.push (+ (pr arg) " = arguments[" ind "++]"))))))  ; when there's a restname, `ind` is defined
       (if (? restind) (= args (args.slice 0 restind)))  ; drop restarg and all following args from arg list; prevents bug with empty rest
       (if (> optionals.length 0) (= body ``("do" ...optionals body)))
       (= body (returnify body))  ; put form into `("return" ...) special form
