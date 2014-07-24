@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.28")
+(= exports.version "0.2.29")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -16,7 +16,8 @@
    opFuncs        ops.opFuncs
    tokenise       (require "./tokenise")
    lex            (require "./lex")
-   parse          (require "./parse"))
+   parse          (require "./parse")
+   Uniq           (require "./uniq"))
 
 ; Util
 (= pr             utils.pr   ; this must be applied to EVERY form we render or print to console
@@ -29,7 +30,8 @@
    isIdentifier   utils.isIdentifier
    isService      utils.isService
    getServicePart utils.getServicePart
-   assertExp      utils.assertExp)
+   assertExp      utils.assertExp
+   plusname       utils.plusname)
 
 ; This file has gotten insanely big and repetitive, todo rearchitect and deduplicate
 
@@ -43,11 +45,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Helper Functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Adds or increments number at end of string
-(def plusname name
-     (if (isNaN (Number (last name)))
-         (+ name 0)
-         (+ (init name) (+ 1 (Number (last name))))))
 
 ; Checks if user-defined name in scope, puts name in declaration if not, otherwise drops it
 (def declareVar name scope
@@ -197,7 +194,8 @@
           (elif (or (in name (Object.keys opFuncs))
                     (in name (Object.keys macros)))
             (funcs.push name))
-          (vars.push name))))
+          (if (not (is name "this"))
+              (vars.push name)))))
     (for name scope.service
       (if (not (in name outerScope.service))
         (vars.push name)))
@@ -445,7 +443,7 @@
                    (isList exp[1]) (is exp[1].length 0))
             (arr.push `())  ; quoted empty list becomes empty array literal
             (elif (and (isList exp) (is (car exp) "unquote")
-                       (isList exp[1]) (is exp[1][0] "spread"))
+                       (isList exp[1]) (is (car exp[1]) "spread"))
               (do  ; explicit unquote
                 ; if someone puts more than a single element into a spread list, all but the first will be lost; todo assert number
                 (macCompileGetLast (car (cdr exp)) exp)
@@ -499,8 +497,8 @@
 ; (= <name>)
   code: (do
     (if (is form.length 1)
-      (do (macDeclareVar form[0])
-          (macCompileAdd form[0]))
+      (do (macDeclareVar (car form))
+          (macCompileAdd (car form)))
       (do
         (assertExp form {is (% #0.length 2) 0} "an even number of arguments")
         (while (> form.length 0) (do
@@ -508,7 +506,7 @@
              right (form.shift))
           (= lastAssign (if (is form.length 0) true))
           (macCompileGetLast right right)
-          ; Check and expand if macro
+          ; Check and expand if has macros
           (macMacroCheck left)
           (if (and (isList left) (is (car left) "get"))  ; property access
             (do (macCompileGetLast left left)
@@ -531,9 +529,11 @@
                        spreadind  i)
                     (buffer.push (+ "var " spreadname " = " left.length " <= " ref ".length ? [].slice.call(" ref ", " spreadind ", " ind " = " ref ".length - " (- left.length spreadind 1) ") : (" ind " = " spreadind ", [])")))
                   (elif (?! spreadname)
-                    (do (if (isVarName name) (macDeclareVar name))
+                    (do (macCompileGetLast name name)
+                        (if (isVarName name) (macDeclareVar name))
                         (buffer.push (+ (pr name) " = " ref "[" i "]"))))
-                  (do (if (isVarName name) (macDeclareVar name))
+                  (do (macCompileGetLast name name)
+                      (if (isVarName name) (macDeclareVar name))
                       (buffer.push (+ (pr name) " = " ref "[" ind "++]")))))))
             (do (if (isVarName left) (macDeclareVar left))  ; normal assignment
                 (assertExp left isIdentifier)
@@ -973,6 +973,7 @@
      (if selfExpand name `())))
 
 ; Parses form for known macros to expand, replacing macro calls with macro results
+; Doesn't reparse after expansion
 (def expandMacros form (do
   (if (utils.isHash form) (do
     (over val key form
@@ -992,6 +993,27 @@
           (if (is (typeof form) "undefined") (= form `()))))  ; no render
         (for val i form
           (= form[i] (expandMacros val))))))
+  form))
+
+; Recursively travels code and expands all macros, resolving uniq name conflicts
+(def macroexpand form (uniq (new Uniq undefined)) (do
+  (if (isAtom form)
+    (if (isService form) (do
+      (= form (uniq.checkAndReplace form))))
+    (elif (isList form)
+      (if (is (car form) "mac")
+        ; recursively define
+        (= form (macroexpand (parseMacros form) uniq))
+        ; recursively expand
+        (elif (in (car form) (Object.keys macros))
+          (= form (macroexpand (expandMacros form) (new Uniq uniq))))
+        ; parse remaining non-macro list
+        (for elem i form
+          (= form[i] (macroexpand elem uniq)))))
+    (elif (isHash form)
+      (over val key form
+        (= form[key] (macroexpand val uniq))))
+    (throw Error (+ "unexpected form: " (pr form))))
   form))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Functions Import ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1020,7 +1042,8 @@
    exports.register       (fn (require "./register"))
    exports.tokenise       (fn src (tokenise src))
    exports.lex            (fn src (lex (tokenise src)))
-   exports.parse          (fn src (parse (lex (tokenise src)))))
+   exports.parse          (fn src (parse (lex (tokenise src))))
+   exports.macroexpand    (fn src (macroexpand (parse (lex (tokenise src))))))
 
 (= exports.macros macros)        ; expose macros object for override by user
 (= exports.functions functions)  ; expose functions object for override by user
@@ -1038,7 +1061,7 @@
    (if (not opts.repl)
        (= functionsRedeclare `()
           functionsRedefine  `()))  ; reset functions override stores when compiling each new file
-   (= (compiled scope) (compileForm (parseMacros parsed) (hoist:`() service:`() replace:(:)) opts))
+   (= (compiled scope) (compileForm (macroexpand (parseMacros parsed)) (hoist:`() service:`() replace:(:)) opts))
    (if (and opts.pretty (? beautify))
        (beautify (render compiled) (indent_size: 2))
        (render compiled)))))

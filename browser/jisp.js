@@ -20,7 +20,7 @@
     return re.test(str);
   }
   exports.kwtest = kwtest;
-  exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN"]);
+  exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN", "this"]);
 
   function isSpecialValueStr(str) {
     return ([].indexOf.call(specialValues, str) >= 0);
@@ -221,6 +221,11 @@
     return res;
   }
   exports.splitName = splitName;
+
+  function plusname(name) {
+    return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0]))));
+  }
+  exports.plusname = plusname;
 
   function pr(item) {
     var res, key, val, _ref, _ref0, _i, _ref1;
@@ -1238,6 +1243,70 @@
   return exports.any = macAny;
 }).call(this);
       return module.exports;
+    })();require['./uniq'] = (function() {
+      var exports = {}, module = {exports: exports};
+      (function() {
+  var utils;
+  utils = require("./utils");
+
+  function Uniq(uniq, store) {
+    var of, name, _ref;
+    this.parent = uniq;
+    this.store = {};
+    if (store) {
+      _ref = store;
+      for (of in _ref) {
+        name = _ref[of];
+        this.store[of] = name;
+      }
+    }
+    return this;
+  }
+  Uniq;
+  Uniq.prototype.find = (function(func) {
+    var uniq, ref, _ref;
+    uniq = this;
+    while (typeof uniq !== 'undefined') {
+      if ((ref = func.call(uniq))) {
+        _ref = undefined;
+        break;
+      } else {
+        _ref = (uniq = uniq.parent);
+      }
+      _ref;
+    }
+    return ref;
+  });
+  Uniq.prototype.findOut = (function(func) {
+    return (((typeof this !== 'undefined') && (typeof this.parent !== 'undefined')) ? this.parent.find(func) : undefined);
+  });
+  Uniq.prototype.has = (function(key) {
+    return ([].indexOf.call(Object.keys(this.store), key) >= 0);
+  });
+  Uniq.prototype.conflict = (function(key) {
+    return this.findOut((function() {
+      return this.has(key);
+    }));
+  });
+  Uniq.prototype.resolve = (function(key) {
+    var oldkey;
+    oldkey = key;
+    while (this.conflict(key)) {
+      key = utils.plusname(key);
+    }
+    return (this.store[key] = (this.store[oldkey] = (function(name) {
+      return name.replace(RegExp("^" + oldkey), key);
+    })));
+  });
+  Uniq.prototype.checkAndReplace = (function(name) {
+    var key;
+    key = utils.getServicePart(name);
+    if (!this.has(key)) this.resolve(key);
+    return this.store[key](name);
+  });
+  return module.exports = Uniq;
+}).call(this);
+      return module.exports;
     })();require['./jisp'] = (function() {
       var exports = {}, module = {exports: exports};
       (function() {
@@ -1266,8 +1335,8 @@
     }
     return _res;
   }
-  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.28";
+  var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, Uniq, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, plusname, functionsRedeclare, functionsRedefine, specials, macros, functions;
+  exports.version = "0.2.29";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1279,6 +1348,7 @@
   tokenise = require("./tokenise");
   lex = require("./lex");
   parse = require("./parse");
+  Uniq = require("./uniq");
   pr = utils.pr;
   spr = utils.spr;
   render = utils.render;
@@ -1290,13 +1360,9 @@
   isService = utils.isService;
   getServicePart = utils.getServicePart;
   assertExp = utils.assertExp;
+  plusname = utils.plusname;
   functionsRedeclare = [];
   functionsRedefine = [];
-
-  function plusname(name) {
-    return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0]))));
-  }
-  plusname;
 
   function declareVar(name, scope) {
     var _ref;
@@ -1637,7 +1703,7 @@
           } else if (([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) {
             funcs.push(name);
           } else {
-            vars.push(name);
+            if (!(name === "this")) vars.push(name);
           }
         }
       }
@@ -1830,7 +1896,7 @@
     return Array(buffer, scope);
   });
   specials["="] = (function(form, scope, opts, nested) {
-    var buffer, formName, nestedLocal, left, right, lastAssign, res, ref, ind, spreads, i, name, spreadname, spreadind, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _ref8, _i7, _ref9, _i8, _ref10, _i9, _ref11, _i10;
+    var buffer, formName, nestedLocal, left, right, lastAssign, res, ref, ind, spreads, i, name, spreadname, spreadind, _ref, _i, _ref0, _i0, _ref1, _i1, _ref2, _i2, _ref3, _i3, _ref4, _i4, _ref5, _i5, _ref6, _i6, _ref7, _ref8, _i7, _ref9, _i8, _ref10, _i9, _ref11, _i10, _ref12, _i11, _ref13, _i12;
     if ((typeof opts === 'undefined')) opts = {};
     buffer = [];
     form = form.slice();
@@ -1910,12 +1976,16 @@
               spreadind = i;
               buffer.push("var " + spreadname + " = " + left.length + " <= " + ref + ".length ? [].slice.call(" + ref + ", " + spreadind + ", " + ind + " = " + ref + ".length - " + (left.length - spreadind - 1) + ") : (" + ind + " = " + spreadind + ", [])");
             } else if (typeof spreadname === 'undefined') {
+              _ref12 = compileGetLast(name, buffer, scope, opts, nested);
+              name = _ref12[0];
+              buffer = _ref12[1];
+              scope = _ref12[2];
               if (isVarName(name)) {
                 if (isService(name)) {
-                  _ref11 = compileGetLast(name, buffer, scope, opts, nested);
-                  name = _ref11[0];
-                  buffer = _ref11[1];
-                  scope = _ref11[2];
+                  _ref13 = compileGetLast(name, buffer, scope, opts, nested);
+                  name = _ref13[0];
+                  buffer = _ref13[1];
+                  scope = _ref13[2];
                 } else {
                   assertExp(name, isVarName, "valid identifier");
                   if ((opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name))) functionsRedeclare.push(name);
@@ -1924,12 +1994,16 @@
               }
               buffer.push(pr(name) + " = " + ref + "[" + i + "]");
             } else {
+              _ref10 = compileGetLast(name, buffer, scope, opts, nested);
+              name = _ref10[0];
+              buffer = _ref10[1];
+              scope = _ref10[2];
               if (isVarName(name)) {
                 if (isService(name)) {
-                  _ref10 = compileGetLast(name, buffer, scope, opts, nested);
-                  name = _ref10[0];
-                  buffer = _ref10[1];
-                  scope = _ref10[2];
+                  _ref11 = compileGetLast(name, buffer, scope, opts, nested);
+                  name = _ref11[0];
+                  buffer = _ref11[1];
+                  scope = _ref11[2];
                 } else {
                   assertExp(name, isVarName, "valid identifier");
                   if ((opts.topScope && ([].indexOf.call(Object.keys(functions), name) >= 0) && !([].indexOf.call(scope.hoist, name) >= 0) && notRedefined(name))) functionsRedeclare.push(name);
@@ -2043,7 +2117,7 @@
         } else if (([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) {
           funcs.push(name);
         } else {
-          vars.push(name);
+          if (!(name === "this")) vars.push(name);
         }
       }
     }
@@ -2188,7 +2262,7 @@
         } else if (([].indexOf.call(Object.keys(opFuncs), name) >= 0) || ([].indexOf.call(Object.keys(macros), name) >= 0)) {
           funcs.push(name);
         } else {
-          vars.push(name);
+          if (!(name === "this")) vars.push(name);
         }
       }
     }
@@ -2920,6 +2994,36 @@
     return form;
   }
   expandMacros;
+
+  function macroexpand(form, uniq) {
+    var i, elem, key, val, _ref, _ref0;
+    if ((typeof uniq === 'undefined')) uniq = new Uniq(undefined);
+    if (isAtom(form)) {
+      if (isService(form)) form = uniq.checkAndReplace(form);
+    } else if (isList(form)) {
+      if ((form[0] === "mac")) {
+        form = macroexpand(parseMacros(form), uniq);
+      } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
+        form = macroexpand(expandMacros(form), new Uniq(uniq));
+      } else {
+        _ref = form;
+        for (i = 0; i < _ref.length; ++i) {
+          elem = _ref[i];
+          form[i] = macroexpand(elem, uniq);
+        }
+      }
+    } else if (isHash(form)) {
+      _ref0 = form;
+      for (key in _ref0) {
+        val = _ref0[key];
+        form[key] = macroexpand(val, uniq);
+      }
+    } else {
+      throw Error, ("unexpected form: " + pr(form));
+    }
+    return form;
+  }
+  macroexpand;
   functions = {};
 
   function importFunctions() {
@@ -2952,6 +3056,9 @@
   exports.parse = (function(src) {
     return parse(lex(tokenise(src)));
   });
+  exports.macroexpand = (function(src) {
+    return macroexpand(parse(lex(tokenise(src))));
+  });
   exports.macros = macros;
   exports.functions = functions;
 
@@ -2973,7 +3080,7 @@
       functionsRedeclare = [];
       functionsRedefine = [];
     }
-    _ref = compileForm(parseMacros(parsed), {
+    _ref = compileForm(macroexpand(parseMacros(parsed)), {
       hoist: [],
       service: [],
       replace: {}

@@ -18,6 +18,7 @@
            "optparse"
            "command"
            "macros"
+           "uniq"
            "jisp"
            "browser"))
 
@@ -28,6 +29,7 @@
                   "lex"
                   "parse"
                   "macros"
+                  "uniq"
                   "jisp"
                   "browser"))
 

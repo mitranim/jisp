@@ -14,7 +14,7 @@
    (re.test str))))
 
 (= exports.specialValues (= specialValues `(
-  "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN"
+  "undefined" "null" "true" "false" "yes" "no" "Infinity" "NaN" "this"
 )))
 
 (= exports.isSpecialValueStr (def isSpecialValueStr str
@@ -158,6 +158,12 @@
      (= name (name.replace reg ""))))
    (res.unshift name)
    res)))
+
+; Adds or increments number at end of string
+(= exports.plusname (def plusname name
+  (if (isNaN (Number (last name)))
+      (+ name 0)
+      (+ (init name) (+ 1 (Number (last name)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; For Rendering ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
