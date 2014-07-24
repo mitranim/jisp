@@ -1165,9 +1165,9 @@ block content
           (mac myDefinition
             `(= #uniq 'my unique variable'))
 
-          (= uniq 'declared outside macro')
-
           (myDefinition)
+
+          (= uniq 'declared outside macro')
 
         :markdown
           Finally, macros can self-expand on definition:
@@ -1252,6 +1252,8 @@ block content
             (: calc))
 
         :markdown
+          Take note that `:` is _destructive_. `(: ( .slice))` your lists if you want to keep originals.
+
           `::` is a concatenating hash builder. It concatenates its arguments, flattening them if they're arrays, and passes the result to `:`.
 
         +code(20).
@@ -1267,9 +1269,6 @@ block content
 
           (JSON.stringify
             (duplicate 'troubles' 'happiness'))
-
-        :markdown
-          Take note that `:` is _destructive_. `(: ( .slice))` your lists if you want to keep copies.
 
         h3#built-in-functions Functions
 
