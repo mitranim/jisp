@@ -79,7 +79,7 @@
   exports.isVarName = isVarName;
 
   function isIdentifier(form) {
-    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w]*((\.[$#_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
+    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w()]*((\.[$#_A-Za-z]{1}[$_\w()]*)|(\[[$_.\w()\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
   }
   exports.isIdentifier = isIdentifier;
 
@@ -124,7 +124,7 @@
   exports.isDotName = isDotName;
 
   function isBracketName(form) {
-    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
+    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w()]*(?:[$_\w()](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
   }
   exports.isBracketName = isBracketName;
 

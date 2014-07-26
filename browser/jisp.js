@@ -84,7 +84,7 @@
   exports.isVarName = isVarName;
 
   function isIdentifier(form) {
-    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w]*((\.[$#_A-Za-z]{1}[$_\w]*)|(\[[$_.\w\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
+    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w()]*((\.[$#_A-Za-z]{1}[$_\w()]*)|(\[[$_.\w()\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
   }
   exports.isIdentifier = isIdentifier;
 
@@ -129,7 +129,7 @@
   exports.isDotName = isDotName;
 
   function isBracketName(form) {
-    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
+    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w()]*(?:[$_\w()](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
   }
   exports.isBracketName = isBracketName;
 
@@ -1344,7 +1344,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, Uniq, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, plusname, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.3.0";
+  exports.version = "0.3.1";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
