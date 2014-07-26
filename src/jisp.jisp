@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.3.1")
+(= exports.version "0.3.2")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -905,8 +905,8 @@
     (macCompileGetLast object object)
     (macCompileGetLast property property)
     (assertExp object {? #0} "valid object")
-    (if (and (utils.isString property) (isVarName (property.slice 1 -1)))
-      (buffer.push (+ (pr object) "." (property.slice 1 -1)))
+    (if (utils.isDotName property)
+      (buffer.push (+ (pr object) property))
       (buffer.push (+ (pr object) "[" (pr property) "]")))))))
 
 (= specials.spread (macCompileSpecial (argsMin: 1 argsMax: 1

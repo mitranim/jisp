@@ -193,7 +193,7 @@
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref0 = JSON.stringify(demand(tokens, isDotName, "drop").slice(1));
+          _ref0 = demand(tokens, isDotName, "drop");
         } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
           _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop")
             .slice(1, -1);
@@ -236,4 +236,4 @@
   }
   lex;
   return module.exports = lex;
-}).call(this);
+})['call'](this);

@@ -58,4 +58,4 @@
     return this.store[key](name);
   });
   return module.exports = Uniq;
-}).call(this);
+})['call'](this);

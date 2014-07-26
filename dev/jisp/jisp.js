@@ -25,7 +25,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, Uniq, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, plusname, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.3.1";
+  exports.version = "0.3.2";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -204,7 +204,7 @@
         serv = getServicePart(form);
         re = RegExp("^" + serv);
         if (!([].indexOf.call(Object.keys(scope.replace), serv) >= 0)) {
-          _ref13 = declareService(serv.slice(1), scope, (opts.function ? args : undefined));
+          _ref13 = declareService(serv["slice"](1), scope, (opts.function ? args : undefined));
           scope.replace[serv] = _ref13[0];
           scope = _ref13[1];
         }
@@ -494,7 +494,7 @@
         if ((isList(exp) && (exp[0] === "quote") && isList(exp[1]) && (exp[1].length === 0))) {
           arr.push([]);
         } else if (isList(exp) && (exp[0] === "unquote") && isList(exp[1]) && (exp[1][0] === "spread")) {
-          _ref2 = compileGetLast(exp.slice(1)[0], buffer, scope, opts, nested);
+          _ref2 = compileGetLast(exp["slice"](1)[0], buffer, scope, opts, nested);
           exp = _ref2[0];
           buffer = _ref2[1];
           scope = _ref2[2];
@@ -1015,7 +1015,7 @@
     if ((typeof isCase === 'undefined')) isCase = false;
     if ((typeof nestedLocal === 'undefined')) nestedLocal = true;
     if ((isList(compiled) && (compiled.length > 0))) {
-      if (/\{$/.test(compiled.slice(-1)[0])) plug = compiled.pop();
+      if (/\{$/.test(compiled["slice"](-1)[0])) plug = compiled.pop();
       lastItem = compiled.pop();
       if (nestedLocal) {
         if (/^return\s/.test(lastItem)) {
@@ -1268,7 +1268,7 @@
     body = _ref9[0];
     buffer = _ref9[1];
     scope = _ref9[2];
-    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body["slice"](-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -1371,7 +1371,7 @@
     body = _ref9[0];
     buffer = _ref9[1];
     scope = _ref9[2];
-    if ((nestedLocal && !utils.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && !utils.kwtest(pr(body["slice"](-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -1425,7 +1425,7 @@
     body = _ref2[0];
     buffer = _ref2[1];
     scope = _ref2[2];
-    if ((nestedLocal && (form.length === 2) && !utils.kwtest(pr(body.slice(-1)[0])))) {
+    if ((nestedLocal && (form.length === 2) && !utils.kwtest(pr(body["slice"](-1)[0])))) {
       rear = body.pop();
       if ((utils.isPrimitive(rear) || utils.isString(rear) || utils.isSpecialValue(rear) || utils.isSpecialValueStr(rear))) {
         body.push(collector + ".push(" + pr(rear) + ")");
@@ -1497,19 +1497,19 @@
     catchForm = _ref4[0];
     buffer = _ref4[1];
     scope = _ref4[2];
-    if ((nestedLocal && !utils.kwtest(pr(catchForm.slice(-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
+    if ((nestedLocal && !utils.kwtest(pr(catchForm["slice"](-1)[0])))) catchForm.push(collector + " = " + pr(catchForm.pop()));
     if ((typeof finalForm !== 'undefined')) {
       if ((isList(finalForm) && (finalForm[0] === "finally"))) {
         assertExp(finalForm, (function() {
           return (arguments[0].length === 2);
         }));
-        finalForm = finalForm.slice(-1)[0];
+        finalForm = finalForm["slice"](-1)[0];
       }
       _ref5 = compileResolve(finalForm, buffer, scope, opts, nested);
       finalForm = _ref5[0];
       buffer = _ref5[1];
       scope = _ref5[2];
-      if ((nestedLocal && !utils.kwtest(pr(finalForm.slice(-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
+      if ((nestedLocal && !utils.kwtest(pr(finalForm["slice"](-1)[0])))) finalForm.push(collector + " = " + pr(finalForm.pop()));
     }
     res = "try { " + render(tryForm) + " } catch (" + pr(err) + ") { " + render(catchForm) + " }";
     if ((typeof finalForm !== 'undefined')) res += (" finally { " + render(finalForm) + " }");
@@ -1545,7 +1545,7 @@
     assertExp(object, (function() {
       return ((typeof arguments !== 'undefined') && (typeof arguments[0] !== 'undefined'));
     }), "valid object");
-    (utils.isString(property) && isVarName(property.slice(1, -1))) ? buffer.push(pr(object) + "." + property.slice(1, -1)) : buffer.push(pr(object) + "[" + pr(property) + "]");
+    utils.isDotName(property) ? buffer.push(pr(object) + property) : buffer.push(pr(object) + "[" + pr(property) + "]");
     return Array(buffer, scope);
   });
   specials.spread = (function(form, scope, opts, nested) {
@@ -1618,9 +1618,9 @@
       }
     } else if (utils.isList(form)) {
       if ((form[0] === "mac")) {
-        form = makeMacro(form.slice(1));
+        form = makeMacro(form["slice"](1));
       } else if ((form.length >= 1) && utils.isList(form[0]) && (form[0][0] === "mac")) {
-        form[0] = makeMacro(form[0].slice(1), true);
+        form[0] = makeMacro(form[0]["slice"](1), true);
       } else {
         _ref0 = form;
         for (i = 0; i < _ref0.length; ++i) {
@@ -1669,7 +1669,7 @@
       if ((form[0] === "mac")) {
         form = parseMacros(form);
       } else if ([].indexOf.call(Object.keys(macros), form[0]) >= 0) {
-        args = form.slice(1);
+        args = form["slice"](1);
         form = macros[form[0]].apply(macros, [].concat(args));
         if ((typeof form === "undefined")) form = [];
       } else {
@@ -1812,4 +1812,4 @@
     return mainModule._compile(code, mainModule.filename);
   }
   return exports.run = run;
-}).call(this);
+})['call'](this);

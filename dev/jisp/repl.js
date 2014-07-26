@@ -86,4 +86,4 @@
     enableMultiline(repl);
     return repl;
   }));
-}).call(this);
+})['call'](this);

@@ -158,7 +158,8 @@
           (grabProperties tokens lexed)))
     (case "property"
       (if (isDotName (car tokens))
-          (JSON.stringify ((demand tokens isDotName "drop").slice 1))
+          ; don't modify the .dot part whatsoever
+          (demand tokens isDotName "drop")
           (elif (or (isBracketName   (car tokens))
                     (isBracketString (car tokens)))
                 (do (demand tokens

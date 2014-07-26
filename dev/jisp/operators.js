@@ -268,4 +268,4 @@
   }
   div;
   return exports.opFuncs = opFuncs;
-}).call(this);
+})['call'](this);

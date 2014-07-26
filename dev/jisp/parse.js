@@ -25,4 +25,4 @@
     return _ref0;
   }
   return module.exports = parse;
-}).call(this);
+})['call'](this);

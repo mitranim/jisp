@@ -291,4 +291,4 @@
     return printLine("jisp version " + jisp.version);
   }
   return version;
-}).call(this);
+})['call'](this);

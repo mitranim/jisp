@@ -218,7 +218,7 @@
   exports.splitName = splitName;
 
   function plusname(name) {
-    return (isNaN(Number(name.slice(-1)[0])) ? (name + 0) : (name.slice(0, -1) + (1 + Number(name.slice(-1)[0]))));
+    return (isNaN(Number(name["slice"](-1)[0])) ? (name + 0) : (name["slice"](0, -1) + (1 + Number(name["slice"](-1)[0]))));
   }
   exports.plusname = plusname;
 
@@ -341,11 +341,11 @@
     if ((typeof useWinPathSep === 'undefined')) useWinPathSep = false;
     pathSep = (useWinPathSep ? /\\|\// : /\//);
     parts = file.split(pathSep);
-    file = parts.slice(-1)[0];
+    file = parts["slice"](-1)[0];
     if (!(stripExt && (file.indexOf(".") >= 0))) return file;
     parts = file.split(".");
     parts.pop();
-    if (((parts.slice(-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
+    if (((parts["slice"](-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
     return parts.join(".");
   }
   exports.baseFileName = baseFileName;
@@ -366,4 +366,4 @@
     return /\.jisp$/.test(file);
   }
   return exports.isJisp = isJisp;
-}).call(this);
+})['call'](this);
