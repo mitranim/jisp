@@ -3,7 +3,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(= repeat (get (require "./utils") repeat))
+(= repeat (require "./utils").repeat)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Option Parser ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -39,9 +39,9 @@
             (= value true)
             (if rule.hasArgument
               (= skippingArgument yes
-                 value            (get args (+ i 1))))
+                 value            args[(+ i 1)]))
             (= options[rule.name] (if rule.isList
-              ((get (or options[rule.name] `()) concat) value)
+              ((or options[rule.name] `()).concat value)
               value))
             (= matchedRule yes)
             break)))
@@ -93,7 +93,7 @@
 ; Build rule from `-o` short flag, `--output [dir]` long flag, and option description
 (def buildRule shortFlag longFlag description (options (:))
   (do (= match    (longFlag.match optional)
-         longFlag (get (longFlag.match long_flag) 1))
+         longFlag (longFlag.match long_flag)[1])
       (name:        (longFlag.substr 2)
        shortFlag:   shortFlag
        longFlag:    longFlag

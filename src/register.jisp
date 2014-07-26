@@ -26,6 +26,6 @@
 ;                      (do (if (not (Array.isArray args))
 ;                              (= options (or args (:))
 ;                                 args    `()))
-;                          (= args ((get `(path) concat) args)
+;                          (= args (`(path).concat args)
 ;                             path binary)))
 ;                  (fork path args options)))))

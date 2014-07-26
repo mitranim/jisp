@@ -137,40 +137,47 @@
   }
   forbid;
 
-  function addProperties(tokens, lexed) {
-    while (tokens[0] === "[") {
-      lexed = ["get", lexed, lex(tokens, "property")];
+  function nextProp(tokens) {
+    return expect(tokens, "[", "property", isPropSyntax, "property");
+  }
+  nextProp;
+
+  function grabProperties(tokens, lexed) {
+    var prop;
+    while (prop = nextProp(tokens)) {
+      ((typeof lexed === 'undefined') ? (lexed = ["get", prop]) : (lexed = ["get", lexed, prop]));
     }
     return lexed;
   }
-  addProperties;
+  grabProperties;
 
   function lex(tokens, mode) {
-    var lexed, prop, key, _ref, _res, _ref0, _ref1;
+    var lexed, prop, key, _ref, _ref0;
     if ((typeof mode === 'undefined')) mode = "default";
     switch (mode) {
       case "default":
-        _res = [];
+        lexed = [];
+        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
         while (tokens.length > 0) {
-          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
+          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop"));
         }
-        _ref = _res;
+        _ref = grabProperties(tokens, lexed);
         break;
       case "list":
         demand(tokens, "(", "drop");
         lexed = [];
-        if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
+        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
         while (tokens[0] !== ")") {
           lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
         }
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, lexed);
+        _ref = grabProperties(tokens, lexed);
         break;
       case "emptyhash":
         demand(tokens, "(", "drop");
         demand(tokens, ":", "drop");
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, {});
+        _ref = grabProperties(tokens, {});
         break;
       case "hash":
         lexed = {};
@@ -182,20 +189,21 @@
           lexed[key] = prop;
         }
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, lexed);
+        _ref = grabProperties(tokens, lexed);
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref1 = demand(tokens, isDotName, "drop").slice(1);
+          _ref0 = JSON.stringify(demand(tokens, isDotName, "drop").slice(1));
         } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
-          _ref1 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
+          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop")
+            .slice(1, -1);
         } else {
           demand(tokens, "[", "drop");
           prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom");
           demand(tokens, "]", "drop");
-          _ref1 = prop;
+          _ref0 = prop;
         }
-        _ref = _ref1;
+        _ref = _ref0;
         break;
       case "quote":
         demand(tokens, "`", "drop");
@@ -203,11 +211,11 @@
         break;
       case "unquote":
         demand(tokens, ",", "drop");
-        _ref = ["unquote", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
+        _ref = ["unquote", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
         break;
       case "spread":
         demand(tokens, "...", "drop", "…", "drop");
-        _ref = ["spread", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
+        _ref = ["spread", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
         break;
       case "key":
         key = demand(tokens, isKey, "drop");
@@ -215,7 +223,7 @@
         _ref = key;
         break;
       case "atom":
-        _ref = addProperties(tokens, demand(tokens, isaString, "drop"));
+        _ref = grabProperties(tokens, demand(tokens, isaString, "drop"));
         break;
       case "drop":
         _ref = tokens.shift();

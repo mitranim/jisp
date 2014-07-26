@@ -86,34 +86,42 @@
        (if ((maketest condition) tokens)
            (throw (Error (+ "unexpected " (pr (car tokens))))))))
 
-(def addProperties tokens lexed
-  (do (while (is (car tokens) "[")
-             (= lexed `("get" ,lexed ,(lex tokens "property"))))
-      lexed))
+(def nextProp tokens
+  (expect tokens
+    "["          "property"
+    isPropSyntax "property"))
+
+(def grabProperties tokens lexed
+  (while (= prop (nextProp tokens))
+    (if (?! lexed)
+      (= lexed `("get" prop))
+      (= lexed `("get" lexed prop)))
+    lexed))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Main Lexer ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def lex tokens (mode "default")
   (switch mode
     (case "default"  ; should only happen once
-      (while (> tokens.length 0)
-        (demand tokens
-          `("("  ":"  ")") "emptyhash"
-          `("(" isKey ":") "hash"
-          "("              "list"
-          "`"              "quote"
-          ","              "unquote"
-          "..."            "spread"
-          "…"              "spread"
-          isaString        "atom"
-          undefined        "drop")))
+      (do (= lexed `())
+          (if (? (= prop (grabProperties tokens))) (lexed.push prop))
+          (while (> tokens.length 0)
+            (lexed.push
+              (demand tokens
+                `("("  ":"  ")") "emptyhash"
+                `("(" isKey ":") "hash"
+                "("              "list"
+                "`"              "quote"
+                ","              "unquote"
+                "..."            "spread"
+                "…"              "spread"
+                isaString        "atom"
+                undefined        "drop")))
+          (grabProperties tokens lexed)))
     (case "list"
       (do (demand tokens "(" "drop")
           (= lexed `())
-          (if (= prop (expect tokens
-                "["          "property"
-                isPropSyntax "property"))
-              (lexed.push `("get" prop)))
+          (if (? (= prop (grabProperties tokens))) (lexed.push prop))
           (while (isnt (car tokens) ")")  ; EOF will be caught by demand
             (lexed.push
               (demand tokens
@@ -126,12 +134,12 @@
                 "…"              "spread"
                 isaString        "atom")))
           (demand tokens ")" "drop")
-          (addProperties tokens lexed)))
+          (grabProperties tokens lexed)))
     (case "emptyhash"
       (do (demand tokens "(" "drop")
           (demand tokens ":" "drop")
           (demand tokens ")" "drop")
-          (addProperties tokens (:))))
+          (grabProperties tokens (:))))
     (case "hash"
       (do (= lexed (:))
           (demand tokens "(" "drop")
@@ -139,45 +147,46 @@
             (do (= key  (demand tokens isKey "key"))
                 (demand tokens ":" "drop")
                 (= prop (demand tokens
-                  `("("  ":"  ")") "emptyhash"
-                  `("(" isKey ":") "hash"
-                  "("              "list"
-                  "`"              "quote"
-                  ","              "unquote"
-                  isaString        "atom"))
+                   `("("  ":"  ")") "emptyhash"
+                   `("(" isKey ":") "hash"
+                   "("              "list"
+                   "`"              "quote"
+                   ","              "unquote"
+                   isaString        "atom"))
                 (= lexed[key] prop)))
-          (demand tokens ")" "drop")
-          (addProperties tokens lexed)))
+          (demand tokens ")"  "drop")
+          (grabProperties tokens lexed)))
     (case "property"
       (if (isDotName (car tokens))
-          ((get (demand tokens isDotName "drop") slice) 1)
-          (elif (or (isBracketName (car tokens))
+          (JSON.stringify ((demand tokens isDotName "drop").slice 1))
+          (elif (or (isBracketName   (car tokens))
                     (isBracketString (car tokens)))
-                (demand tokens
-                  isBracketName   "drop"
-                  isBracketString "drop"))
+                (do (demand tokens
+                      isBracketName   "drop"
+                      isBracketString "drop")
+                    (.slice 1 -1)))
           (do (demand tokens "[" "drop")
               (= prop (demand tokens
-                "("          "list"
-                ","          "quote"
-                isIdentifier "atom"
-                isNum        "atom"
-                isString     "atom"))
-              (demand tokens "]" "drop")
+                 "("          "list"
+                 ","          "quote"
+                 isIdentifier "atom"
+                 isNum        "atom"
+                 isString     "atom"))
+              (demand tokens  "]" "drop")
               prop)))
     (case "quote"
       (do (demand tokens "`" "drop")
           (= lexed `("quote" ,(demand tokens
-            `("("  ":"  ")") "emptyhash"
-            `("(" isKey ":") "hash"
-            "("              "list"
-            "`"              "quote"
-            ","              "unquote"
-            isaString        "atom"))))
-          (addProperties tokens lexed))
+             `("("  ":"  ")") "emptyhash"
+             `("(" isKey ":") "hash"
+             "("              "list"
+             "`"              "quote"
+             ","              "unquote"
+             isaString        "atom"))))
+          (grabProperties tokens lexed))
     (case "unquote"
       (do (demand tokens "," "drop")
-          `("unquote" ,(addProperties tokens (demand tokens
+          `("unquote" ,(grabProperties tokens (demand tokens
             "("          "list"
             "`"          "quote"
             "..."        "spread"
@@ -187,7 +196,7 @@
       (do (demand tokens
             "..." "drop"
             "…"   "drop")
-          `("spread" ,(addProperties tokens (demand tokens
+          `("spread" ,(grabProperties tokens (demand tokens
             "("          "list"
             "`"          "quote"
             isIdentifier "atom")))))
@@ -196,7 +205,7 @@
           (forbid "[" isPropSyntax)
           key))
     (case "atom"
-      (addProperties tokens (demand tokens isaString "drop")))
+      (grabProperties tokens (demand tokens isaString "drop")))
     (case "drop" (tokens.shift))
     (throw (Error (+ "unspecified lex mode: " mode)))))
 

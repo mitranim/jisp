@@ -129,7 +129,7 @@
   exports.isDotName = isDotName;
 
   function isBracketName(form) {
-    return (isAtom(form) && /^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
+    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
   }
   exports.isBracketName = isBracketName;
 
@@ -699,8 +699,8 @@
   tokens = [];
   recode = /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/;
   recomment = /^;.*[\n\r]?/;
-  redstring = /^""|^"[^]*?(?:[^\\]")[^\s):\]\}]*/;
-  resstring = /^''|^'[^]*?(?:[^\\]')[^\s):\]\}]*/;
+  redstring = /^""|^"[^]*?(?:[^\\]")[^\s):\[\]\{\}]*/;
+  resstring = /^''|^'[^]*?(?:[^\\]')[^\s):\[\]\{\}]*/;
   rereg = /^\/[^\s]+\/[\w]*[^\s)]*/;
 
   function grate(str) {
@@ -910,40 +910,47 @@
   }
   forbid;
 
-  function addProperties(tokens, lexed) {
-    while (tokens[0] === "[") {
-      lexed = ["get", lexed, lex(tokens, "property")];
+  function nextProp(tokens) {
+    return expect(tokens, "[", "property", isPropSyntax, "property");
+  }
+  nextProp;
+
+  function grabProperties(tokens, lexed) {
+    var prop;
+    while (prop = nextProp(tokens)) {
+      ((typeof lexed === 'undefined') ? (lexed = ["get", prop]) : (lexed = ["get", lexed, prop]));
     }
     return lexed;
   }
-  addProperties;
+  grabProperties;
 
   function lex(tokens, mode) {
-    var lexed, prop, key, _ref, _res, _ref0, _ref1;
+    var lexed, prop, key, _ref, _ref0;
     if ((typeof mode === 'undefined')) mode = "default";
     switch (mode) {
       case "default":
-        _res = [];
+        lexed = [];
+        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
         while (tokens.length > 0) {
-          if (typeof(_ref0 = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop")) !== 'undefined') _res.push(_ref0);
+          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop"));
         }
-        _ref = _res;
+        _ref = grabProperties(tokens, lexed);
         break;
       case "list":
         demand(tokens, "(", "drop");
         lexed = [];
-        if ((prop = expect(tokens, "[", "property", isPropSyntax, "property"))) lexed.push(["get", prop]);
+        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
         while (tokens[0] !== ")") {
           lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
         }
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, lexed);
+        _ref = grabProperties(tokens, lexed);
         break;
       case "emptyhash":
         demand(tokens, "(", "drop");
         demand(tokens, ":", "drop");
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, {});
+        _ref = grabProperties(tokens, {});
         break;
       case "hash":
         lexed = {};
@@ -955,20 +962,21 @@
           lexed[key] = prop;
         }
         demand(tokens, ")", "drop");
-        _ref = addProperties(tokens, lexed);
+        _ref = grabProperties(tokens, lexed);
         break;
       case "property":
         if (isDotName(tokens[0])) {
-          _ref1 = demand(tokens, isDotName, "drop").slice(1);
+          _ref0 = JSON.stringify(demand(tokens, isDotName, "drop").slice(1));
         } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
-          _ref1 = demand(tokens, isBracketName, "drop", isBracketString, "drop");
+          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop")
+            .slice(1, -1);
         } else {
           demand(tokens, "[", "drop");
           prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom");
           demand(tokens, "]", "drop");
-          _ref1 = prop;
+          _ref0 = prop;
         }
-        _ref = _ref1;
+        _ref = _ref0;
         break;
       case "quote":
         demand(tokens, "`", "drop");
@@ -976,11 +984,11 @@
         break;
       case "unquote":
         demand(tokens, ",", "drop");
-        _ref = ["unquote", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
+        _ref = ["unquote", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
         break;
       case "spread":
         demand(tokens, "...", "drop", "…", "drop");
-        _ref = ["spread", addProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
+        _ref = ["spread", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
         break;
       case "key":
         key = demand(tokens, isKey, "drop");
@@ -988,7 +996,7 @@
         _ref = key;
         break;
       case "atom":
-        _ref = addProperties(tokens, demand(tokens, isaString, "drop"));
+        _ref = grabProperties(tokens, demand(tokens, isaString, "drop"));
         break;
       case "drop":
         _ref = tokens.shift();
@@ -1084,7 +1092,7 @@
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
-      ["get", x, "slice"], 1
+      ["get", x, "\"slice\""], 1
     ];
   };
   var macInit = function(x) {
@@ -1092,7 +1100,7 @@
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return [
-      ["get", x, "slice"], 0, -1
+      ["get", x, "\"slice\""], 0, -1
     ];
   };
   var macLast = function(x) {
@@ -1100,7 +1108,7 @@
     var other = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
     if (((typeof x === 'undefined') || (other.length > 0))) throw Error("expecting one argument, got: " + x + ", " + other);
     return ["get", [
-      ["get", x, "slice"], -1
+      ["get", x, "\"slice\""], -1
     ], 0];
   };
   var macLet = function() {
@@ -1336,7 +1344,7 @@
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, Uniq, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, plusname, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.2.29";
+  exports.version = "0.3.0";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -2856,7 +2864,7 @@
     assertExp(object, (function() {
       return ((typeof arguments !== 'undefined') && (typeof arguments[0] !== 'undefined'));
     }), "valid object");
-    isVarName(property) ? buffer.push(pr(object) + "." + property) : buffer.push(pr(object) + "[" + pr(property) + "]");
+    (utils.isString(property) && isVarName(property.slice(1, -1))) ? buffer.push(pr(object) + "." + property.slice(1, -1)) : buffer.push(pr(object) + "[" + pr(property) + "]");
     return Array(buffer, scope);
   });
   specials.spread = (function(form, scope, opts, nested) {
@@ -3074,7 +3082,7 @@
     parsed = parse(lex(tokenise(src)));
     parsed.unshift("do");
     if (opts.wrap) parsed = [
-      ["get", ["fn", parsed], "call"], "this"
+      ["get", ["fn", parsed], "'call'"], "this"
     ];
     if (!opts.repl) {
       functionsRedeclare = [];

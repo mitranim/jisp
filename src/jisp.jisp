@@ -1,5 +1,5 @@
 ; Version
-(= exports.version "0.2.29")
+(= exports.version "0.3.0")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -131,7 +131,7 @@
 (def isPropertyExp form
   (and (isList form)
        (or (and (isList (car form))
-                (is (get (car form) length) 2)
+                (is (car form).length 2)
                 (is (car (car form)) "get"))
            (utils.isPropSyntax (car form)))))
 
@@ -614,12 +614,12 @@
   (if (and (isList compiled) (> compiled.length 0)) (do
     ; when I wrote this, only God and I knew what this /\{$/ logic was for
     ; now, God only knows
-    (if ((get /\{$/ test) (last compiled))
+    (if (/\{$/.test (last compiled))
       (= plug (compiled.pop)))
     (= lastItem (compiled.pop))
     ; collectify if we're nested
     (if nestedLocal
-        (if ((get /^return\s/ test) lastItem)
+        (if (/^return\s/.test lastItem)
           (= lastItem (lastItem.replace /^return\s/ (+ "return " collector " = ")))
           (elif (utils.kwtest lastItem)
             (= lastItem (+ collector " = undefined; " lastItem)))
@@ -905,8 +905,8 @@
     (macCompileGetLast object object)
     (macCompileGetLast property property)
     (assertExp object {? #0} "valid object")
-    (if (isVarName property)
-      (buffer.push (+ (pr object) "." property))
+    (if (and (utils.isString property) (isVarName (property.slice 1 -1)))
+      (buffer.push (+ (pr object) "." (property.slice 1 -1)))
       (buffer.push (+ (pr object) "[" (pr property) "]")))))))
 
 (= specials.spread (macCompileSpecial (argsMin: 1 argsMax: 1
@@ -1057,7 +1057,7 @@
    (= parsed (parse (lex (tokenise src))))
    (parsed.unshift "do")  ; always put code into an implicit `do`
    (if opts.wrap
-       (= parsed `(("get" ("fn" parsed) "call") "this")))
+       (= parsed `(("get" ("fn" parsed) "'call'") "this")))
    (if (not opts.repl)
        (= functionsRedeclare `()
           functionsRedefine  `()))  ; reset functions override stores when compiling each new file
@@ -1092,7 +1092,7 @@
    (= dir (if options.filename
               (path.dirname (fs.realpathSync options.filename))
               (fs.realpathSync ".")))
-   (= mainModule.paths ((get (require "module") _nodeModulePaths) dir))
+   (= mainModule.paths ((require "module")._nodeModulePaths dir))
    (if (or (not (utils.isJisp mainModule.filename)) require.extensions)
        (= code (exports.compile code)))
    (mainModule._compile code mainModule.filename))))

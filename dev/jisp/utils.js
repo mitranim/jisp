@@ -124,7 +124,7 @@
   exports.isDotName = isDotName;
 
   function isBracketName(form) {
-    return (isAtom(form) && /^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form));
+    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
   }
   exports.isBracketName = isBracketName;
 

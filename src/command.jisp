@@ -8,9 +8,9 @@
 (= fs           (require "fs")
    path         (require "path")
    mkdirp       (require "mkdirp")
-   spawn        (get (require "child_process") spawn)
-   exec         (get (require "child_process") exec)
-   EventEmitter (get (require "events") EventEmitter)
+   spawn        (require "child_process").spawn
+   exec         (require "child_process").exec
+   EventEmitter (require "events").EventEmitter
    jisp         (require "./jisp")
    utils        (require "./utils")
    optparse     (require "./optparse"))
@@ -18,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Rest ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Putting more than one backslash directly before a quote breaks our tokeniser, todo fix
-(= useWinPathSep (is path.set ((get "\\ " slice) 0 1)))
+(= useWinPathSep (is path.set ("\\ ".slice 0 1)))
 
 ; Allow jisp to emit Node.js events
 (utils.extend jisp (new EventEmitter))
@@ -59,9 +59,9 @@ When called without options, compiles your script and prints the output to stdou
       (= replCliOpts   (useGlobal: yes))
       (if opts.version (return (version)))
       (if (or opts.interactive (not opts.arguments.length))
-          (return ((get (require "./repl") start) replCliOpts)))
+          (return ((require "./repl").start replCliOpts)))
       (= literals         (if opts.run (opts.arguments.splice 1) `())
-         process.argv     ((get (process.argv.slice 0 1) concat) literals)
+         process.argv     ((process.argv.slice 0 1).concat literals)
          process.argv[0] 'jisp')
       (if opts.output (= opts.output (path.resolve opts.output)))
       (for source opts.arguments
@@ -104,7 +104,7 @@ When called without options, compiles your script and prints the output to stdou
 (def findDirectoryIndex source
      (do (for ext jisp.fileExtensions
               (do (= index (path.join source (+ "index" ext)))
-                  (try (if ((get (fs.statSync index) isFile)))
+                  (try (if ((fs.statSync index).isFile) (return index))
                        (catch err (if (not (is err.code "ENOENT"))
                                       (throw err))))))
          (console.error (+ "Missing index.jisp in " source))
@@ -130,7 +130,7 @@ When called without options, compiles your script and prints the output to stdou
                         (printLine (t.output.trim))))))
         (catch err
           (do (jisp.emit "failure" err task)
-              (if (get (jisp.listeners "failure") length) (return))
+              (if (jisp.listeners "failure").length (return))
               (= message (or err.stack (err.toString)))
               (printWarn message)
               (process.exit 1))))))

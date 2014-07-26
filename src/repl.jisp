@@ -36,7 +36,7 @@
                           prompt:  (origPrompt.replace /^[^>\s]*>?/ (fn x (x.replace /./g ".")))
                           buffer:  "")
             ; proxy line listener
-            lineListener (get (rli.listeners "line") 0))
+            lineListener (car (rli.listeners "line")))
          (rli.removeListener "line" lineListener)
          (rli.on "line" (fn cmd
            (if multiline.enabled

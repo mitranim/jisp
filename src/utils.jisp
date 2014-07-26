@@ -46,7 +46,7 @@
         (not (isa form "function")))))
 
 (= exports.isBlankObject (def isBlankObject form
-   (try (is (get (Object.keys form) length) 0)
+   (try (is (Object.keys form).length 0)
         false)))
 
 (= exports.isKey (def isKey form
@@ -104,7 +104,8 @@
    (and (isAtom form) (/^\.[$#_A-Za-z]{1}$|^\.[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test form))))
 
 (= exports.isBracketName (def isBracketName form
-   (and (isAtom form) (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test form))))
+   (and (isAtom form) (or (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+\]$/.test form)
+                          (/^\[[\d]+\]/.test form)))))
 
 (= exports.isBracketString (def isBracketString form
    (and (isAtom form) (/^\[".*"\]$|^\['.*'\]$/.test form))))

@@ -8,8 +8,8 @@
    recode    /^[^]*?(?=;.*[\n\r]?|""|"[^]*?(?:[^\\]")|''|'[^]*?(?:[^\\]')|\/[^\s]+\/[\w]*)/
              ;# ^ matches until first comment, '-string, "-string, or regex
    recomment /^;.*[\n\r]?/                     ; first comment
-   redstring /^""|^"[^]*?(?:[^\\]")[^\s):\]\}]*/   ; first " string + data until delimiter
-   resstring /^''|^'[^]*?(?:[^\\]')[^\s):\]\}]*/   ; first ' string + data until delimiter
+   redstring /^""|^"[^]*?(?:[^\\]")[^\s):\[\]\{\}]*/   ; first " string + data until delimiter
+   resstring /^''|^'[^]*?(?:[^\\]')[^\s):\[\]\{\}]*/   ; first ' string + data until delimiter
    rereg     /^\/[^\s]+\/[\w]*[^\s)]*/)        ; first regex + data until delimiter
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,15 +40,15 @@
 
 (def match str re
      (if (and (= mask (str.match re))
-              (> (get mask[0] length) 0))
-         mask[0]
+              (> (car mask).length 0))
+         (car mask)
          null))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Tokeniser ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def tokenise str
      (do (= tokens `())
-         (while (> (get (= str (str.trim)) length) 0)
+         (while (> (= str (str.trim)).length 0)
                 (if (= mask          (match str recode))
                     (do (tokens.push …(grate mask))
                         (= str       (str.replace recode "")))
