@@ -686,7 +686,7 @@ Unquote elements with , to resolve (transclude) them during macro call:
 <p>We’ve just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See <a href="https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp"><code>jisp.jisp</code></a> for bigger examples.</p>
 <p>Macros can have arbitrary symbols and even literal strings as names. Suppose you’re writing a lot of prototype extenders and want to shorten the definitions. In other languages, you’re lucky if you have special syntax for that. In jisp, make the syntax yourself:</p>
 <div isolated-code="isolated-code" class="row"><div class="col-md-6 col-code left"><textarea type="text" style="height: 16em; min-height: 16em;" model-init="model-init" bs-tooltip="title=&quot;Edit me!&quot;" class="form-control form-code left">(mac @ obj method ...args body
-  `(= (get (get ,obj prototype) ,method)
+  `(= (get (get ,obj "prototype") ,(JSON.stringify method))
       (fn ,...args ,body)))
       
 (@ Plant grow time speed

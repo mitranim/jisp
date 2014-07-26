@@ -1165,7 +1165,7 @@ block content
 
         +code(16).
           (mac @ obj method ...args body
-            `(= (get (get ,obj prototype) ,method)
+            `(= (get (get ,obj "prototype") ,(JSON.stringify method))
                 (fn ,...args ,body)))
 
           (@ Plant grow time speed
