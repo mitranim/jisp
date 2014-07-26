@@ -39,6 +39,8 @@ block content
 
           > All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don't see them, make sure JS is enabled and refresh the page.
 
+        blockquote.bg-warning Warning! Version 0.3.0 breaks the old way <code>(get obj prop)</code> worked. Now <code>prop</code> is taken as an identifier, not as a string. The existing code may need to be updated to work.
+
         h2 Interactive playground
 
         +code(36).
@@ -344,14 +346,18 @@ block content
           (get bunny 'fluffy')
 
         :markdown
-          **[NYI]** You'll be able to access properties of resolved forms:
+          Quite naturally, you can access properties of resolved forms:
 
-              (prn (String 113).length)  ; 3
+        +code(6).
+          (String 113) .length
+          (String 113) [(+ 1 1)]
 
-          Until it's implemented, use the `get` form, and `do` for methods (below).
+        :markdown
+          But you can also access it with the `get` form, and `do` for chaining (below). This is useful in macros when you pass around names of objects and properties individually.
 
-        +code(4).
-          (get (String 113) length)
+        +code(6).
+          (get (String 113) 'length')
+          (get (String 113) (+ 1 1))
 
         :markdown
           To chain methods, wrap them in a `do` form:
@@ -363,6 +369,16 @@ block content
              (['crawlForward'] 5)
              (.eat 'bunny')
              (.elongate food.weight))
+
+        :markdown
+          Alternatively (even though it's kinda gross), you can do it like this:
+
+        +code(12).
+          (((((cartoonSnake.crawlForward 10)
+           .turnLeft)
+           ['crawlForward'] 5)
+           .eat 'bunny')
+           .elongate food.weight)
 
         h2#functions Functions
 
