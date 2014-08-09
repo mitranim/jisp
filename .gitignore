@@ -23,6 +23,7 @@ nbproject
 *.sublime-project
 *.sublime-workspace
 .idea
+js/.app.js
 
 # grunt-html-validation
 validation-status.json
@@ -31,3 +32,4 @@ validation-report.json
 # Folders to ignore
 node_modules
 bower_components
+js/tmp
