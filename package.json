@@ -1,29 +1,40 @@
 {
   "name": "jisp-page",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Interactive documentation for jisp",
   "private": true,
   "keywords": [
-    "jisp"
+    "jisp",
+    "gulp"
   ],
   "author": "Mitranim",
   "license": "MIT",
   "homepage": "http://jisp.io",
   "scripts": {
-    "start": "gulp"
+    "watchify": "watchify src/tmp/js/* -o js/app.js -v",
+    "watchify-min": "watchify src/tmp/js/* -o js/app.js -v -g uglifyify",
+    "dev": "gulp & npm run watchify",
+    "dev-min": "gulp & npm run watchify-min"
   },
   "devDependencies": {
-    "gulp-concat": "latest",
-    "gulp-jisp": "latest",
-    "gulp-util": "latest",
-    "gulp-uglify": "latest",
-    "gulp": "latest",
     "bower": "latest",
+    "browser-sync": "latest",
+    "browserify": "latest",
+    "gulp": "latest",
+    "gulp-concat": "latest",
     "gulp-less": "latest",
-    "gulp-jade": "latest",
-    "marked": "latest",
-    "jisp": "latest",
     "gulp-load-plugins": "latest",
-    "browser-sync": "latest"
-  }
+    "gulp-react": "latest",
+    "gulp-uglify": "latest",
+    "gulp-util": "latest",
+    "jisp": "latest",
+    "js-beautify": "latest",
+    "marked": "latest",
+    "react": "latest",
+    "react-bootstrap": "latest",
+    "react-router": "latest",
+    "uglifyify": "latest",
+    "watchify": "latest"
+  },
+  "dependencies": {}
 }
