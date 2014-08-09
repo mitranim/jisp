@@ -1,0 +1,115 @@
+/*==================*/
+/* Code Field Setup */
+/*==================*/
+
+/*--------*/
+/* Basics */
+/*--------*/
+
+.form-code {
+  resize: none;
+}
+
+/*-------*/
+/* Fonts */
+/*-------*/
+
+pre, code {
+  font-size: @font-size-small;
+  color: @gray-darker;
+}
+.row-code {
+  font-family: @font-family-monospace;
+  font-size: @font-size-small;
+  .form-code, .btn-eval {
+    color: @gray-darker;
+    font-family: @font-family-monospace;
+    font-size: @font-size-small;
+  }
+}
+.row-code {
+  .form-code {
+    padding: 0.5em 0.8em;
+  }
+}
+
+/*---------*/
+/* Colours */
+/*---------*/
+
+@input-color: black;
+@input-border-focus: darken(@gray-lighter, 10%);
+@form-bg: #faf8f9;
+
+.form-code, .btn-eval {
+  background-color: @form-bg;
+  border-color: lighten(@gray-light, 30%);
+}
+.form-code, .btn-eval {
+  &.error {
+    transition-property: background-color, border-color;
+    transition-duration: 2.5s;
+    transition-timing-function: ease;
+    background-color: negation(@form-bg, #044);
+  }
+}
+.btn-eval.error {
+  border-color: @gray-light;
+}
+.btn-eval.evaled {
+  background-color: negation(@form-bg, #315);
+}
+
+/*-------------*/
+/* Positioning */
+/*-------------*/
+
+.row-code {
+  width: 100%;
+  position: relative;
+}
+.form-code {
+  border-radius: 0;
+  margin: 0;
+  display: block;
+}
+@media(max-width: @screen-sm) {
+  .row-code {
+    height: auto !important;
+  }
+  .form-code {
+    width: 100%;
+  }
+  textarea.form-code {
+    border-bottom: 0;
+  }
+}
+@media(min-width: @screen-sm) {
+  .form-code {
+    position: absolute;
+    width: 50%;
+    top: 0;
+    bottom: 0;
+  }
+  textarea.form-code {
+    left: 0;
+    border-right: 0;
+  }
+  pre.form-code {
+    right: 0;
+  }
+}
+
+/*-------------*/
+/* Eval Button */
+/*-------------*/
+
+.btn-eval {
+  position: absolute;
+  opacity: 0.5;
+  top: 0;
+  right: 0;
+  @media (max-width: @screen-sm) {
+    top: 50%;
+  }
+}

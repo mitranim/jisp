@@ -1,6 +1,6 @@
 {
   "name": "jisp-page",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Interactive documentation for jisp",
   "private": true,
   "authors": [
@@ -15,10 +15,6 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "latest",
-    "js-beautify": "latest",
-    "angular": "latest",
-    "angular-strap": "latest",
-    "angular-motion": "latest"
+    "bootstrap": "latest"
   }
 }

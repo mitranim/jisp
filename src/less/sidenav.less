@@ -1,0 +1,98 @@
+/*----------*/
+/* Side Nav */
+/*----------*/
+
+.bs-sidebar.affix {
+  position: static;
+  margin-top: 3em;
+}
+
+@media (min-width:@screen-sm) {
+  .bs-sidebar {
+    padding-left: 20px
+  }
+}
+
+.bs-sidenav {
+  margin-top: 20px;
+  margin-bottom: 20px
+}
+
+.bs-sidebar .nav>li>a {
+  display: block;
+  padding: 4px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #999
+}
+
+.bs-sidebar .nav>li>a:hover, .bs-sidebar .nav>li>a:focus {
+  padding-left: 19px;
+  color: @gray;
+  text-decoration: none;
+  background-color: transparent;
+  border-left: 1px solid @gray-lighter
+}
+
+.bs-sidebar .nav>.active>a, .bs-sidebar .nav>.active:hover>a, .bs-sidebar .nav>.active:focus>a {
+  padding-left: 18px;
+  font-weight: 700;
+  color: @gray;
+  background-color: transparent;
+  border-left: 2px solid @gray-lighter
+}
+
+.bs-sidebar .nav .nav {
+  display: none;
+  padding-bottom: 10px
+}
+
+.bs-sidebar .nav .nav>li>a {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 30px;
+  font-size: 12px;
+  font-weight: 400
+}
+
+.bs-sidebar .nav .nav>li>a:hover, .bs-sidebar .nav .nav>li>a:focus {
+  padding-left: 29px
+}
+
+.bs-sidebar .nav .nav>.active>a,
+.bs-sidebar .nav .nav>.active:hover>a,
+.bs-sidebar .nav .nav>.active:focus>a {
+  padding-left: 28px;
+  font-weight: 500
+}
+
+@media (min-width:@screen-md) {
+  .bs-sidebar .nav>.active>ul {
+    display: block
+  }
+
+  .bs-sidebar.affix, .bs-sidebar.affix-bottom {
+    width: 213px
+  }
+
+  .bs-sidebar.affix {
+    position: fixed;
+    top: 20px
+  }
+
+  .bs-sidebar.affix-bottom {
+    position: absolute
+  }
+
+  .bs-sidebar.affix-bottom .bs-sidenav,
+  .bs-sidebar.affix .bs-sidenav {
+    margin-top: 0;
+    margin-bottom: 0
+  }
+}
+
+@media (min-width:@screen-lg) {
+  .bs-sidebar.affix-bottom, .bs-sidebar.affix {
+    width: 263px
+  }
+}

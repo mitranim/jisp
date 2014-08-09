@@ -1,25 +1,11 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Dependencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (= gulp   (require "gulp")
    plug   ((require "gulp-load-plugins"))
    brsync (require "browser-sync")
-   reload brsync.reload
-   marked (require "marked"))
+   reload brsync.reload)
 
-(= jsFiles `(
-  "bower_components/angular/angular.js"
-  "bower_components/angular-strap/dist/angular-strap.js"
-  "bower_components/angular-strap/dist/angular-strap.tpl.js"
-  "bower_components/angular-animate/angular-animate.js"
-  "bower_components/js-beautify/js/lib/beautify.js"
-  "bower_components/jquery/dist/jquery.min.js"
-))
-
-; configure markdown converter
-(marked.setOptions
-  (gfm:         yes
-   tables:      yes
-   breaks:      yes
-   sanitize:    no
-   smartypants: yes))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def handle stream
   (stream.on "error" (fn err (do
@@ -40,62 +26,35 @@
           (pipeline.push `(.pipe (handle (,left ,right))))))))
   `(gulp.task ,name ,pre (fn ,pipeline))))
 
-; less
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Tasks ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; Less
 (task         "less"
   gulp.src    "src/less/app.less"
   plug.less   ()
   gulp.dest   "css/"
   reload      (stream: yes))
 
-; js
-(task         "js"
-  gulp.src    jsFiles
-  plug.concat "deps.js"
-  plug.uglify (mangle: yes)  ; takes forever
-  gulp.dest   "js/tmp/")
-
-; jisp
-(task         "jisp"
-  gulp.src    "src/jisp/*.jisp"
-  plug.concat "app-jisp.jisp"
-  plug.jisp   ()
-  plug.uglify (mangle: yes)  ; takes forever
-  gulp.dest   "js/tmp/")
-
-; jisp-browser
+; Jisp-browser
 (task         "jisp-browser"
   gulp.src    "node_modules/jisp/browser/jisp.js"
   gulp.dest   "js/")
 
-; scripts
-(task         "scripts" `("js" "jisp" "jisp-browser")
-  gulp.src    `("js/tmp/deps.js" "js/tmp/app-jisp.js")
-  plug.concat "app.js"
-  gulp.dest   "js/")
+; JSX
+(task        "jsx"
+  gulp.src   "src/jsx/*.jsx"
+  plug.react (harmony: yes)
+  gulp.dest  "src/tmp/js/")
 
-; scripts-mini
-(task         "scripts-mini" `("jisp")
-  gulp.src    `("js/tmp/deps.js" "js/tmp/app-jisp.js")
-  plug.concat "app.js"
-  gulp.dest   "js/"
-  reload      (stream: yes))
-
-; jade
-(task         "jade"
-  gulp.src    "src/jade/index.jade"
-  plug.jade   (pretty: no)
-  gulp.dest   "./"
-  reload      (stream: yes))
-
-; static server
+; Static server
 (gulp.task "browser-sync" (fn
   (brsync (server: (baseDir: "./") port: 3400 online: no))))
 
-; watch files for changes
+; Watch
 (gulp.task "watch" (fn (do
-  (gulp.watch "src/jisp/*.jisp"      `("scripts-mini"))
-  (gulp.watch "src/less/*.less"      `("less"))
-  (gulp.watch "src/jade/*.jade"      `("jade")))))
+  (gulp.watch "src/less/*.less" `("less"))
+  (gulp.watch "src/jsx/*.jsx"   `("jsx"))
+  (gulp.watch "js/*.js"         {reload}))))
 
-; default
-(task "default" `("less" "scripts" "jade" "watch" "browser-sync"))
+; Default
+(task "default" `("less" "jisp-browser" "jsx" "watch" "browser-sync"))
