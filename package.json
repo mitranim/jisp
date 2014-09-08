@@ -17,6 +17,7 @@
     "dev-min": "gulp & npm run watchify-min"
   },
   "devDependencies": {
+    "bootstrap": "latest",
     "bower": "latest",
     "browser-sync": "latest",
     "browserify": "latest",
@@ -32,7 +33,7 @@
     "marked": "latest",
     "react": "latest",
     "react-bootstrap": "latest",
-    "react-router": "latest",
+    "react-router": "^0.5.0",
     "uglifyify": "latest",
     "watchify": "latest"
   },
