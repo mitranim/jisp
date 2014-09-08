@@ -1066,19 +1066,20 @@ h6 .small,
 }
 h1,
 .h1 {
-  font-size: 30px;
+  font-size: 34px;
 }
 h2,
 .h2 {
-  font-size: 26px;
+  font-size: 28px;
+  border-bottom: 1px solid #dddddd;
 }
 h3,
 .h3 {
-  font-size: 24px;
+  font-size: 23px;
 }
 h4,
 .h4 {
-  font-size: 19px;
+  font-size: 18px;
 }
 h5,
 .h5 {
