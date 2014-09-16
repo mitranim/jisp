@@ -1,369 +1,375 @@
-(function() {
-  var keywords, specialValues;
-  exports.keywords = (keywords = ["return", "break", "continue", "throw", "delete"]);
+'use strict'
 
-  function kwtest(str) {
-    var kw, re, _i, _res, _ref, _ref0;
-    _res = [];
-    _ref = keywords;
-    for (_i = 0; _i < _ref.length; ++_i) {
-      kw = _ref[_i];
-      if (typeof(_ref0 = ("^" + kw + " |^" + kw + "$")) !== 'undefined') _res.push(_ref0);
-    }
-    re = RegExp(_res
-      .join("|"));
-    return re.test(str);
-  }
-  exports.kwtest = kwtest;
-  exports.specialValues = (specialValues = ["undefined", "null", "true", "false", "yes", "no", "Infinity", "NaN", "this"]);
+/**
+* Utilities shared between modules
+*/
 
-  function isSpecialValueStr(str) {
-    return ([].indexOf.call(specialValues, str) >= 0);
-  }
-  exports.isSpecialValueStr = isSpecialValueStr;
+/******************************* Dependencies ********************************/
 
-  function isSpecialValue(form) {
-    return ((typeof form === "undefined") || (form === null) || ((typeof form === "number") && isNaN(form)) || (form === Infinity) || (typeof form === "boolean"));
-  }
-  exports.isSpecialValue = isSpecialValue;
+// Third party
+var _       = require('lodash'),
+    inspect = require('util').inspect
 
-  function isAtom(form) {
-    return ((form === undefined || form === null) || /^\/[^\s\/]+\/[\w]*$/.test(form) || (typeof form === "number" || typeof form === "string" || typeof form === "boolean"));
-  }
-  exports.isAtom = isAtom;
+/******************************* Special Words *******************************/
 
-  function isaString(form) {
-    return (typeof form === "string");
-  }
-  exports.isaString = isaString;
+var statementKeywords = [
+  'return', 'break', 'continue', 'throw', 'yield', 'var'
+]
+exports.statementKeywords = statementKeywords
 
-  function isList(form) {
-    return Array.isArray(form);
-  }
-  exports.isList = isList;
+var regStKw = RegExp(statementKeywords.map(function (kw) {
+  return '^' + kw + ' |^' + kw + '$'
+}).join('|'))
+exports.regStKw = regStKw
 
-  function isHash(form) {
-    return (!isAtom(form) && !isList(form) && !(typeof form === "function"));
-  }
-  exports.isHash = isHash;
+var specialValues = [
+  'undefined', 'null', 'Infinity', 'NaN', 'true', 'false'
+]
+var regSpecialValue = RegExp(_.map(specialValues, function (word) {
+  return '^' + word + '$'
+}).join('|'))
 
-  function isBlankObject(form) {
-    var _ref, _err;
-    try {
-      _ref = Object.keys(form).length === 0;
-    } catch (_err) {
-      _ref = false;
-    }
-    return _ref;
-  }
-  exports.isBlankObject = isBlankObject;
+function isSpecialValue (str) {
+  return regSpecialValue.test(str)
+}
+exports.isSpecialValue = isSpecialValue
 
-  function isKey(form) {
-    return (isAtom(form) && (isString(form) || isIdentifier(form) || isNum(form)));
-  }
-  exports.isKey = isKey;
+/**************************** Operator Precedence ****************************/
 
-  function isServiceName(form) {
-    return ((typeof form === "string") && /^#/.test(form) && !/^#$|^#\d|^#\.|^#\[/.test(form));
-  }
-  exports.isService = isServiceName;
+var precedence = {
+  unary: {
+    'new'      : 1,
+    '+++'      : 3,
+    '---'      : 3,
+    '!'        : 4,
+    '~'        : 4,
+    '+'        : 4,
+    '-'        : 4,
+    '++'       : 4,
+    '--'       : 4,
+    'typeof'   : 4,
+    'void'     : 4,
+    'delete'   : 4,
+    'yield'    : 16
+  },
+  '*'          : 5,
+  '/'          : 5,
+  '%'          : 5,
+  '+'          : 6,
+  '-'          : 6,
+  '<<'         : 7,
+  '>>'         : 7,
+  '>>>'        : 7,
+  '<'          : 8,
+  '<='         : 8,
+  '>'          : 8,
+  '>='         : 8,
+  'in'         : 8,
+  'instanceof' : 8,
+  '==='        : 9,
+  '!=='        : 9,
+  '&'          : 10,
+  '^'          : 11,
+  '|'          : 12,
+  '&&'         : 13,
+  '||'         : 14,
+  'ternary'    : 15,
+  '='          : 17,
+  '+='         : 17,
+  '-='         : 17,
+  '*='         : 17,
+  '/='         : 17,
+  '%='         : 17,
+  '<<='        : 17,
+  '>>='        : 17,
+  '>>>='       : 17,
+  '&='         : 17,
+  '^='         : 17,
+  '|='         : 17,
+  '...'        : 18,
+  '…'          : 18,
+  ','          : 19
+}
+exports.precedence = precedence
 
-  function getServicePart(form) {
-    return form.match(/^#[^.[]+/)[0];
-  }
-  exports.getServicePart = getServicePart;
+/*********************************** Types ***********************************/
 
-  function isVarName(form) {
-    return (isAtom(form) && /^[$#_A-Za-z]{1}$|^[$#_A-Za-z]+[$_\w]*(?:[$_\w](?!\.))+$/.test(form));
-  }
-  exports.isVarName = isVarName;
+function isAtom (form) {
+  return _.isString(form)
+}
+exports.isAtom = isAtom
 
-  function isIdentifier(form) {
-    return (isAtom(form) && /^[$#_A-Za-z]{1}[$_\w()]*((\.[$#_A-Za-z]{1}[$_\w()]*)|(\[[$_.\w()\[\]]+\])|(\['.*'\])|(\[".*"\]))*$/.test(form));
-  }
-  exports.isIdentifier = isIdentifier;
+function isList (form) {
+  return _.isArray(form)
+}
+exports.isList = isList
 
-  function isString(form) {
-    return (isAtom(form) && /^".*"$|^'.*'$/.test(form));
-  }
-  exports.isString = isString;
+function isHash (form) {
+  return _.isPlainObject(form)
+}
+exports.isHash = isHash
 
-  function isRegex(form) {
-    return (isAtom(form) && /^\/[^\s]+\/[\w]*[^\s)]*/.test(form));
-  }
-  exports.isRegex = isRegex;
+/****************************** Abstract Types *******************************/
 
-  function isNum(form) {
-    return (isAtom(form) && (typeof typify(form) === "number"));
-  }
-  exports.isNum = isNum;
+// Util for identifier testing
+var reservedWords = [
+  'break', 'case', 'class', 'catch', 'const', 'continue',
+  'debugger', 'default', 'delete', 'do', 'else', 'export',
+  'extends', 'finally', 'for', 'function', 'if', 'import',
+  'in', 'instanceof', 'let', 'new', 'return', 'super',
+  'switch', 'this', 'throw', 'try', 'typeof', 'var',
+  'void', 'while', 'with', 'yield', 'enum', 'await',
+  'implements', 'package', 'protected', 'static', 'interface',
+  'private', 'public',
+  // jisp-specific words
+  'elif'
+]
+var regReservedWord = RegExp(_.map(reservedWords, function (word) {
+  return '^' + word + '$'
+}).join('|'))
 
-  function isPrimitive(form) {
-    return (isRegex(form) || isNum(form) || (form === undefined || form === null || form === true || form === false));
-  }
-  exports.isPrimitive = isPrimitive;
+/**
+* Passes valid JavaScript identifiers, as of ES5-6
+* Also passes uniq names (starting with #)
+*/
+function isIdentifier (form) {
+  return isAtom(form) &&
+         !regReservedWord.test(form) &&
+         !isSpecialValue(form) &&
+         /^[#$_A-Za-z]{1}[$\w]*$/.test(form)
+}
+exports.isIdentifier = isIdentifier
 
-  function isArgHash(form) {
-    return (isAtom(form) && /^#[\d]+$/.test(form));
-  }
-  exports.isArgHash = isArgHash;
+/**
+* Same as isIdentifier but also passes reserved words
+*/
+function isName (form) {
+  return isAtom(form) &&
+         !isSpecialValue(form) &&
+         /^[#$_A-Za-z]{1}[$\w]*$/.test(form)
+}
+exports.isName = isName
 
-  function isArgsHash(form) {
-    return (isAtom(form) && /^#$/.test(form));
-  }
-  exports.isArgsHash = isArgsHash;
+function isUniq (form) {
+  return isAtom(form) && /^#/.test(form) && isIdentifier(form.slice(1))
+}
+exports.isUniq = isUniq
 
-  function isArgHashNotation(form) {
-    return (isArgHash(form) || isArgsHash(form));
-  }
-  exports.isArgHashNotation = isArgHashNotation;
+function getUniqPart (form) {
+  return form.match(/^#[^.[]+/)[0]
+}
+exports.getUniqPart = getUniqPart
 
-  function isDotName(form) {
-    return (isAtom(form) && /^\.[$#_A-Za-z]{1}$|^\.[$#_A-Za-z]+[$_.\w]*(?:[$_\w](?!\.))+$/.test(form));
-  }
-  exports.isDotName = isDotName;
+/**
+* Passes stringified strings (like '"blah"')
+* Doesn't account for backslashes, todo fix
+*/
+function isString (form) {
+  return isAtom(form) && /^'[^']*'$|^"[^"]*"$/.test(form)
+}
+exports.isString = isString
 
-  function isBracketName(form) {
-    return (isAtom(form) && (/^\[[$#_A-Za-z]{1}\]$|^\[[$#_A-Za-z]+[$_.\w()]*(?:[$_\w()](?!\.))+\]$/.test(form) || /^\[[\d]+\]/.test(form)));
-  }
-  exports.isBracketName = isBracketName;
+/**
+* Passes regexes and trailing word symbols (regex options)
+*/
+function isRegex (form) {
+  return isAtom(form) && /^\/.+\/\w*$/.test(form)
+}
+exports.isRegex = isRegex
 
-  function isBracketString(form) {
-    return (isAtom(form) && /^\[".*"\]$|^\['.*'\]$/.test(form));
-  }
-  exports.isBracketString = isBracketString;
+/**
+* Passes stringified numbers
+*/
+function isNum (form) {
+  return isAtom(form) && !isNaN(Number(form))
+}
+exports.isNum = isNum
 
-  function isPropSyntax(form) {
-    return (isAtom(form) && (isDotName(form) || isBracketName(form) || isBracketString(form)));
-  }
-  exports.isPropSyntax = isPropSyntax;
+var primitives = [
+  'undefined', 'null',
+]
+var regPrimitive = RegExp(primitives.join('|'))
 
-  function typify(form) {
-    var _ref;
-    if (!isAtom(form)) {
-      _ref = undefined;
-      throw Error("expecting atom, got " + pr(form));
-    } else if (isBlankObject(form)) {
-      _ref = form;
-    } else if (typeof form === "undefined") {
-      _ref = undefined;
-    } else if (form === "null") {
-      _ref = null;
-    } else if (form === "true" || form === "yes") {
-      _ref = true;
-    } else if (form === "false" || form === "no") {
-      _ref = false;
-    } else if (!isNaN(Number(form))) {
-      _ref = Number(form);
-    } else if (isRegex(form)) {
-      _ref = form;
-    } else if (typeof form === "string") {
-      _ref = form;
-    } else {
-      _ref = undefined;
-      throw Error("syntax error: unrecognised type of " + pr(form));
-    }
-    return _ref;
-  }
-  exports.typify = typify;
+/**
+* Passes all kinds of primitive values
+*/
+function isPrimitive (form) {
+  return isString(form) || isRegex(form) || isNum(form) || isSpecialValue(form)
+}
+exports.isPrimitive = isPrimitive
 
-  function assertForm(form, min, max, first) {
-    var _ref;
-    if ((typeof min === 'undefined')) min = 0;
-    if ((typeof max === 'undefined')) max = Infinity;
-    if (!isList(form)) {
-      _ref = undefined;
-      throw Error("expecting list, got " + form);
-    } else if (!((form.length >= min) && (form.length <= max))) {
-      _ref = undefined;
-      throw Error("expecting between " + min + " and " + max + " arguments, got " + form.length + ": " + pr(form));
-    } else if ((typeof first !== 'undefined') && (form[0] !== first)) {
-      _ref = undefined;
-      throw Error("expecting " + pr(first) + " as first element, got " + pr(form[0]));
-    } else {
-      _ref = form;
-    }
-    return _ref;
-  }
-  exports.assertForm = assertForm;
+/**
+* Passes argument shorthands like #0
+*/
+function isArgHash (form) {
+  return /^#\d+$/.test(form)
+}
+exports.isArgHash = isArgHash
 
-  function assertExp(exp, test, expect) {
-    var _ref;
-    if ((typeof expect === 'undefined')) expect = "valid expression";
-    if (test(exp)) {
-      _ref = true;
-    } else {
-      _ref = undefined;
-      throw Error("expecting " + pr(expect) + ", got " + pr(exp));
-    }
-    return _ref;
-  }
-  exports.assertExp = assertExp;
+/****************************** Property Syntax ******************************/
 
-  function splitName(name) {
-    var re, reDot, reBracket, reBracketGreedy, res, reg;
-    re = /\.[$_\w]+$|\[[^\[\]]+\]$|\[.+\]$/;
-    reDot = /\.[$_\w]+$/;
-    reBracket = /\[[^\[\]]+\]$/;
-    reBracketGreedy = /\[.+\]$/;
-    res = [];
-    while (name.match(re)) {
-      reg = (name.match(reDot) && reDot) || (name.match(reBracket) && reBracket) || (name.match(reBracketGreedy) && reBracketGreedy);
-      res.unshift(name.match(reg)[0]);
-      name = name.replace(reg, "");
-    }
-    res.unshift(name);
-    return res;
-  }
-  exports.splitName = splitName;
+function isDotName (form) {
+  return /^\./.test(form) && isIdentifier(form.slice(1))
+}
+exports.isDotName = isDotName
 
-  function plusname(name) {
-    return (isNaN(Number(name["slice"](-1)[0])) ? (name + 0) : (name["slice"](0, -1) + (1 + Number(name["slice"](-1)[0]))));
-  }
-  exports.plusname = plusname;
+function isBracketName (form) {
+  return /^\[.+\]$/.test(form) &&
+         (isBracketName(form.slice(1, -1)) || isString(form.slice(1, -1)))
+}
+exports.isBracketName = isBracketName
 
-  function pr(item) {
-    var res, key, val, _ref, _ref0, _i, _ref1;
-    if (isAtom(item)) {
-      _ref = ("" + item)
-        .replace(/;$/, "");
-    } else if (isHash(item)) {
-      res = "";
-      _ref0 = item;
-      for (key in _ref0) {
-        val = _ref0[key];
-        res += (key + ": " + pr(val) + ", ");
-      }
-      _ref = ("{ " + res.slice(0, -2) + " }");
-    } else if (isList(item)) {
-      res = "";
-      _ref1 = item;
-      for (_i = 0; _i < _ref1.length; ++_i) {
-        val = _ref1[_i];
-        res += (pr(val) + ", ");
-      }
-      _ref = ("[ " + res.slice(0, -2) + " ]");
-    } else {
-      _ref = ("" + item);
-    }
-    return _ref;
-  }
-  exports.pr = pr;
+function isPropSyntax (form) {
+  return isDotName(form) || isBracketName(form)
+}
+exports.isPropSyntax = isPropSyntax
 
-  function spr(item) {
-    var res, val, _i, _ref, _ref0;
-    if (isList(item)) {
-      res = "";
-      _ref = item;
-      for (_i = 0; _i < _ref.length; ++_i) {
-        val = _ref[_i];
-        res += (pr(val) + ", ");
-      }
-      _ref0 = res.slice(0, res.length - 2);
-    } else {
-      _ref0 = undefined;
-      throw Error("can only print-spread lists");
-    }
-    return _ref0;
-  }
-  exports.spr = spr;
+/******************************** Prototyping ********************************/
 
-  function render(buffer) {
-    var i, exp, res, _ref;
-    _ref = buffer;
-    for (i = 0; i < _ref.length; ++i) {
-      exp = _ref[i];
-      if (((isList(exp) && (exp.length === 0)) || (typeof exp === "undefined") || (exp === ""))) {
-        buffer[i] = undefined;
-      } else {
-        res = ((typeof exp === "string") ? exp.trim() : pr(exp));
-        if ((isHash(exp) || /^function\s*\(/.test(res))) res = "(" + res + ")";
-        if (!/:$|\}$|;$/.test(res.slice(-1))) res += ";";
-        buffer[i] = res;
-      }
-    }
-    return buffer.join(" ")
-      .trim();
-  }
-  exports.render = render;
+function flatArgs (args) {
+  return _.reduce(args, function (result, arg) {
+    if (_.isArguments(arg)) return result.concat(flatArgs(arg))
+    else return result.concat(arg)
+  }, [])
+}
+exports.flatArgs = flatArgs
 
-  function deParenthesise(str) {
-    var _ref;
-    if ((typeof str === "string")) {
-      while (str.match(/^\({1}/) && str.match(/\){1}$/)) {
-        (str = str
-          .replace(/^\({1}/, "")
-          .replace(/\){1}$/, ""));
-      }
-      _ref = str;
-    } else {
-      _ref = str;
-    }
-    return _ref;
-  }
-  exports.deParenthesise = deParenthesise;
+function inherit (child, parent) {
+  function proto() {}
+  proto.prototype = parent.prototype
+  child.prototype = new proto()
+}
+exports.inherit = inherit
 
-  function dePairParenthesise(str) {
-    var _ref;
-    if ((typeof str === "string")) {
-      while (str.match(/^\({2}/) && str.match(/\){2}$/)) {
-        (str = str
-          .replace(/^\({2}/, "(")
-          .replace(/\){2}$/, ")"));
-      }
-      _ref = str;
-    } else {
-      _ref = str;
-    }
-    return _ref;
-  }
-  exports.dePairParenthesise = dePairParenthesise;
+/**
+* Usage in constructors:
+* construct.apply(this, arguments)
+*/
+function construct() {
+  var args = flatArgs(arguments)
+  _.each(args, function (arg) {
+    _.assign(this, arg)
+  }.bind(this))
+  return this
+}
+exports.construct = construct
 
-  function merge(options, overrides) {
-    return extend(extend({}, options), overrides);
-  }
-  exports.merge = merge;
+/*********************************** Other ***********************************/
 
-  function extend(object, properties) {
-    var key, val, _ref;
-    _ref = properties;
-    for (key in _ref) {
-      val = _ref[key];
-      object[key] = val;
-    }
-    return object;
+function assertForm (form, min, max, first) {
+  if (max == null) max = Infinity
+  if (min == null) min = 0
+  if (!isList(form)) throw new Error('expecting list, got ' + inspect(form))
+  else if (!(form.length >= min && form.length <= max)) {
+    throw new Error('expecting between ' + min + ' and ' + max +
+                ' arguments, got ' + form.length + ': ' + inspect(form))
+  } else if (first && form[0] !== first) {
+    throw new Error('expecting ' + inspect(first) +
+                ' as first element, got ' + inspect(form[0]))
   }
-  exports.extend = extend;
+  return form
+}
+exports.assertForm = assertForm
 
-  function baseFileName(file, stripExt, useWinPathSep) {
-    var pathSep, parts;
-    if ((typeof stripExt === 'undefined')) stripExt = false;
-    if ((typeof useWinPathSep === 'undefined')) useWinPathSep = false;
-    pathSep = (useWinPathSep ? /\\|\// : /\//);
-    parts = file.split(pathSep);
-    file = parts["slice"](-1)[0];
-    if (!(stripExt && (file.indexOf(".") >= 0))) return file;
-    parts = file.split(".");
-    parts.pop();
-    if (((parts["slice"](-1)[0] === "jisp") && (parts.length > 1))) parts.pop();
-    return parts.join(".");
-  }
-  exports.baseFileName = baseFileName;
+function assertExp (exp, test, expect) {
+  if (test(exp)) return true
+  else throw new Error((expect ?
+                       'expecting ' + expect + ', got: '
+                       : 'unexpected ') + inspect(exp))
+}
+exports.assertExp = assertExp
 
-  function repeat(str, n) {
-    var res;
-    res = "";
-    while (n > 0) {
-      if ((n & 1)) res += str;
-      n >>>= 1;
-      str += str;
-    }
-    return res;
-  }
-  exports.repeat = repeat;
+var splitReg = /\.[$\w]+$|\[[^\[\]]+\]$|\[.+\]$/,
+    splitRegs = [
+      /\.[$\w]+$/,     // .dot notation at the end
+      /\[[^\[\]]+\]$/,  // [bracket] notation at the end
+      /\[.+\]$/         // [bracket[stuff]] notation at the end
+    ]
 
-  function isJisp(file) {
-    return /\.jisp$/.test(file);
+/**
+* Splits an identifier into a list of substrings,
+* splitting off all property notations
+*/
+function splitName (name) {
+  var res = []
+  while (splitReg.test(name)) {
+    var reg = _.find(splitRegs, function (reg) {return reg.test(name)})
+    res.unshift(name.match(reg)[0])
+    name = name.replace(reg, '')
   }
-  return exports.isJisp = isJisp;
-})['call'](this);
+  if (name) res.unshift(name)
+  return res
+}
+exports.splitName = splitName
+
+/**
+* Adds or increments a number at the end of a string
+*/
+function plusname (name) {
+  var lastNum = Number(name[name.length-1])
+  if (isNaN(lastNum)) return name + '0'
+  else return name.slice(0, -1) + (lastNum + 1)
+}
+exports.plusname = plusname
+
+/**
+* Generates a random GUID
+*/
+function rndId () {
+  return Math.floor(Math.random() * Math.pow(10, 16)).toString(16)
+}
+exports.rndId = rndId
+
+/**
+* Hardcoded truth
+*/
+function True() {return true}
+exports.True = True
+
+/**
+* Hardcoded lie
+*/
+function False() {return false}
+exports.False = False
+
+/**
+* Repeats a string N times.
+* Using a clever logarithmic algorithm for low memory usage
+* when repeating a crazy high number of times
+*/
+function repeat (string, times) {
+  var result = ''
+  while (times > 0) {
+    if (times & 1) result += string
+    times >>= 1
+    string += string
+  }
+  return result
+}
+exports.repeat = repeat
+
+/********************************** For CLI **********************************/
+
+// Mostly copied from CoffeeScript source
+
+// Return filename without extension
+function baseFileName (file, stripExt, useWinPathSep) {
+  if (useWinPathSep == null) useWinPathSep = false
+  if (stripExt == null) stripExt = false
+  var pathSep = useWinPathSep ? /\\|\// : /\//,
+      parts   = file.split(pathSep),
+      file    = _.last(parts)
+  if (!stripExt || !~file.indexOf('.')) return file
+  else {
+    var parts = file.split('.')
+    parts.pop()
+    if (_.last(parts) === 'jisp' && parts.length) parts.pop()
+    return parts.join('.')
+  }
+}
+exports.baseFileName = baseFileName
+
+function isJisp (file) {
+  return /\.jisp$/.test(file)
+}
+exports.isJisp = isJisp

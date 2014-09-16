@@ -1,7 +1,7 @@
 {
   "name": "jisp",
-  "version": "0.3.2",
-  "description": "The modern JavaScript: a programmable language",
+  "version": "0.0.0",
+  "description": "Programmable JavaScript preprocessor",
   "keywords": [
     "javascript",
     "language",
@@ -14,15 +14,11 @@
   "directories": {
     "lib": "./lib/jisp"
   },
-  "main": "./lib/jisp/jisp",
+  "main": "./lib/jisp/index",
   "bin": {
     "jisp": "./bin/jisp"
   },
   "scripts": {
-    "test": "./bin/build && ./bin/build",
-    "reset": "./bin/build -r",
-    "build": "./bin/build -s",
-    "prepublish": "./bin/build -s"
   },
   "repository": {
     "type": "git",
@@ -32,10 +28,11 @@
   "author": "Mitranim",
   "license": "MIT",
   "dependencies": {
-    "mkdirp": "latest",
-    "js-beautify": "latest"
+    "mkdirp": "latest"
   },
   "devDependencies": {
+    "browserify": "latest",
+    "lodash": "latest",
     "yargs": "latest"
   }
 }

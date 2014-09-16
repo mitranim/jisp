@@ -1,239 +1,233 @@
-(function() {
-  function concat() {
-    var _res, lst, _i, _i0, _ref;
-    var lists = 1 <= arguments.length ? [].slice.call(arguments, 0, _i = arguments.length - 0) : (_i = 0, []);
-    _res = [];
-    _ref = lists;
-    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
-      lst = _ref[_i0];
-      _res = _res.concat(lst);
-    }
-    return _res;
-  }
-  var utils, pr, spr, isList, isAtom, isaString, isNum, isRegex, isIdentifier, isString, isKey, isDotName, isBracketName, isBracketString, isPropSyntax;
-  utils = require("./utils");
-  pr = utils.pr;
-  spr = utils.spr;
-  isList = utils.isList;
-  isAtom = utils.isAtom;
-  isaString = utils.isaString;
-  isNum = utils.isNum;
-  isRegex = utils.isRegex;
-  isIdentifier = utils.isIdentifier;
-  isString = utils.isString;
-  isKey = utils.isKey;
-  isDotName = utils.isDotName;
-  isBracketName = utils.isBracketName;
-  isBracketString = utils.isBracketString;
-  isPropSyntax = utils.isPropSyntax;
+'use strict'
 
-  function printConditions(conditions) {
-    var cond, _i, _res, _ref, _ref0;
-    _res = [];
-    _ref = concat(conditions);
-    for (_i = 0; _i < _ref.length; ++_i) {
-      cond = _ref[_i];
-      if (((typeof cond === "function") && ((typeof cond !== 'undefined') && (typeof cond.name !== 'undefined')))) {
-        _ref0 = cond.name;
-      } else if (isList(cond)) {
-        _ref0 = printConditions(cond);
-      } else {
-        _ref0 = pr(cond);
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
-    }
-    return _res
-      .join("  ");
-  }
-  printConditions;
+/**
+* Takes an array of tokens and converts it into native data structures,
+* expanding things like quotes, unquotes, properties, and so on
+*
+* Text -> Tokens ** -> Data Structures ** -> Form -> Plan -> Code -> Output
+*/
 
-  function maketest(condition) {
-    var _ref;
-    if ((typeof condition === "function")) {
-      _ref = (function(tokens) {
-        return condition(tokens[0]);
-      });
-    } else if (isRegex(condition)) {
-      _ref = (function(tokens) {
-        return condition.test(tokens[0]);
-      });
-    } else if (isAtom(condition)) {
-      _ref = (function(tokens) {
-        return (tokens[0] === condition);
-      });
-    } else if (isList(condition)) {
-      _ref = (function(tokens) {
-        var i, cond, _res, _ref0, _ref1;
-        _res = [];
-        _ref0 = condition;
-        for (i = 0; i < _ref0.length; ++i) {
-          cond = _ref0[i];
-          if (!maketest(cond)(tokens.slice(i))) {
-            return _ref1 = false;
-          } else {
-            _ref1 = undefined;
-          } if (typeof _ref1 !== 'undefined') _res.push(_ref1);
-        }
-        return (_res ? true : undefined);
-      });
-    } else {
-      _ref = undefined;
-      throw Error("can't test against " + pr(condition));
-    }
-    return _ref;
-  }
-  maketest;
+/******************************* Dependencies ********************************/
 
-  function demand(tokens) {
-    var conditions, modes, condition, mode, test, err, _i;
-    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    conditions = [];
-    modes = [];
-    while (args.length > 0) {
-      condition = args.shift();
-      mode = args.shift();
-      conditions.push(condition);
-      modes.push(mode);
-      test = maketest(condition);
-      if (test(tokens)) return lex(tokens, mode);
-    }
-    err = ((typeof tokens[0] === 'undefined') ? Error("unexpected end of input, probably missing ) ] }") : Error("unexpected " + pr(tokens[0]) + " in possible modes: " + modes.join(" | ") + "\n\nTested against: " + printConditions(conditions) + "\n\nTokens: " + spr(tokens.slice(0, 10)) + ((tokens.length > 10) ? " ..." : " ")));
-    throw err;
-  }
-  demand;
+// Third party
+var _       = require('lodash'),
+    inspect = require('util').inspect
 
-  function expect(tokens) {
-    var condition, mode, test, _i, _ref;
-    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    while (args.length > 0) {
-      condition = args.shift();
-      mode = args.shift();
-      test = maketest(condition);
-      if (test(tokens)) {
-        return _ref = lex(tokens, mode);
-      } else {
-        _ref = undefined;
+// Custom components
+var utils   = require('./utils')
+
+// Shortcuts
+var spr          = utils.spr,
+    isNum        = utils.isNum,
+    isList       = utils.isList,
+    isHash       = utils.isHash,
+    isAtom       = utils.isAtom,
+    isName       = utils.isName,
+    isString     = utils.isString,
+    isIdentifier = utils.isIdentifier
+
+/********************************* Utilities *********************************/
+
+function printConditions (conditions) {
+  return _.map(conditions, function (condition) {
+    return isList(condition) ?
+           '< ' + printConditions(condition) + ' >'
+           : (typeof condition === 'function' && condition.name) ?
+           condition.name
+           : condition
+  }).join(' ')
+}
+
+function testBy (tokens, condition) {
+  return typeof condition === 'function' ?
+         condition(tokens[0])
+         : _.isRegExp(condition) ?
+         condition.test(tokens[0])
+         : isAtom(condition) || condition == null ?
+         condition === tokens[0]
+         : isList(condition) ?
+         _.every(condition, function (cond, i) {
+           return testBy(i ? tokens.slice(i) : tokens, cond)
+         })
+         : undefined
+}
+
+/**
+* Takes an array of tokens and pairs of conditions and modes.
+* If any of the conditions is met, returns the result of the (destructive)
+* lexing of this tokens array in the corresponding mode,
+* otherwise throws an error
+*/
+function demand (tokens, lexed /*, ...args */) {
+  var args       = [].slice.call(arguments, 2),
+      conditions = [], modes = []
+  while (args.length) {
+    conditions.push(args.shift())
+    modes.push(args.shift())
+  }
+  var index = -1
+  while (++index < conditions.length) {
+    if (testBy(tokens, conditions[index])) return lex(tokens, lexed, modes[index])
+  }
+  var err = tokens[0] == null ?
+            new Error('unexpected end of input, probably missing one of ) ] }')
+            : new Error('unexpected ' + inspect(tokens[0]) +
+              ' in possible modes: ' + modes.join(' | ') + '\n\n' +
+              'Tokens: ' + spr(tokens.slice(0, 10)) +
+              (tokens.length > 10 ? '   <...>' : '') + '\n\n' +
+              'Tested against conditions: ' + printConditions(conditions))
+  throw err
+}
+
+/**
+* Same as demand, but doesn't throw an error if no conditions are met
+*/
+function expect (tokens, lexed /*, ...args */) {
+  var args       = [].slice.call(arguments, 2),
+      conditions = [], modes = []
+  while (args.length) {
+    conditions.push(args.shift())
+    modes.push(args.shift())
+  }
+  var index = -1
+  while (++index < conditions.length) {
+    if (testBy(tokens, conditions[index])) return lex(tokens, lexed, modes[index])
+  }
+}
+
+/**
+* Opposite of expect: throws an error if any of the conditions is met
+*/
+function forbid (tokens, conditions) {
+  _.each(conditions, function (condition) {
+    if (testBy(tokens, condition)) {
+      throw new Error ('unexpected ' + inspect(tokens[0]))
+    }
+  })
+}
+
+/*********************************** Lexer ***********************************/
+
+function lex (tokens, outerLexed, mode) {
+  if (mode == null) mode = 'default'
+  switch (mode) {
+    case 'default':
+      var lexed = []
+      while (tokens.length) {
+        lexed.push(demand(tokens, lexed,
+          ['(', ':', ')'],      'emptyhash',
+          ['(', isString, ':'], 'hash',
+          ['(', isName, ':'],   'hash',
+          '(',                  'list',
+          '.',                  'property',
+          '[',                  'property',
+          '`',                  'quote',
+          ',',                  'unquote',
+          '...',                'spread',
+          '…',                  'spread',
+          isAtom,               'atom',
+          undefined,            'drop'))
       }
-      _ref;
-    }
-    return undefined;
+      return lexed
+    case 'list':
+      var lexed = []
+      demand(tokens, lexed, '(', 'drop')
+      while (tokens[0] !== ')') {
+        lexed.push(demand(tokens, lexed,
+          ['(', ':', ')'],      'emptyhash',
+          ['(', isString, ':'], 'hash',
+          ['(', isName, ':'],   'hash',
+          '(',                  'list',
+          '.',                  'property',
+          '[',                  'property',
+          '`',                  'quote',
+          ',',                  'unquote',
+          '...',                'spread',
+          '…',                  'spread',
+          isAtom,               'atom'))
+      }
+      demand(tokens, lexed, ')', 'drop')
+      return lexed
+    case 'emptyhash':
+      demand(tokens, null, '(', 'drop')
+      demand(tokens, null, ':', 'drop')
+      demand(tokens, null, ')', 'drop')
+      return {}
+    case 'hash':
+      var lexed = {}
+      demand(tokens, null, '(', 'drop')
+      while (tokens[0] !== ')') {
+        var key = demand(tokens, null,
+          isString,             'drop',
+          isName,               'drop')
+        demand(tokens, null, ':', 'drop')
+        var prop = demand(tokens, null,
+          ['(', ':', ')'],      'emptyhash',
+          ['(', isString, ':'], 'hash',
+          ['(', isName, ':'],   'hash',
+          '(',                  'list',
+          '.',                  'property',
+          '[',                  'property',
+          '`',                  'quote',
+          ',',                  'unquote',
+          isAtom,               'atom')
+        lexed[key] = prop
+      }
+      demand(tokens, null, ')', 'drop')
+      return lexed
+    case 'property':
+      var bracket = tokens[0] === '['
+      demand(tokens, null,
+        '.',                    'drop',
+        '[',                    'drop')
+      var lexed = demand(tokens, null,
+        '(',                    'list',
+        isAtom,                 'atom')
+      if (!bracket && isName(lexed)) lexed = "'" + lexed + "'"
+      if (bracket) demand(tokens, null, ']', 'drop')
+      return (outerLexed && outerLexed.length) ?
+             ['get', outerLexed.pop(), lexed]
+             : ['get', lexed]
+    case 'quote':
+      demand(tokens, null, '`', 'drop')
+      return ['quote', demand(tokens, null,
+        ['(', ':', ')'],        'emptyhash',
+        ['(', isString, ':'],   'hash',
+        ['(', isName, ':'],     'hash',
+        '(',                    'list',
+        '`',                    'quote',
+        ',',                    'unquote',
+        '...',                  'spread',
+        '…',                    'spread',
+        isAtom,                 'atom')]
+    case 'unquote':
+      demand(tokens, null, ',', 'drop')
+      return ['unquote', demand(tokens, null,
+        ['(', ':', ')'],        'emptyhash',
+        ['(', isString, ':'],   'hash',
+        ['(', isName, ':'],     'hash',
+        '(',                    'list',
+        '`',                    'quote',
+        ',',                    'unquote',
+        '...',                  'spread',
+        '…',                    'spread',
+        isAtom,                 'atom')]
+    case 'spread':
+      demand(tokens, null, '...', 'drop', '…', 'drop')
+      return ['spread', demand(tokens, null,
+        '(',                    'list',
+        '`',                    'quote',
+        ',',                    'unquote',
+        isAtom,                 'atom')]
+    case 'atom':
+      return demand(tokens, null, isAtom, 'drop')
+    case 'drop':
+      return tokens.shift()
+    default:
+      throw new Error('unspecified lex mode: ' + mode)
   }
-  expect;
+}
 
-  function forbid(tokens) {
-    var condition, _i, _i0, _res, _ref, _ref0;
-    var args = 2 <= arguments.length ? [].slice.call(arguments, 1, _i = arguments.length - 0) : (_i = 1, []);
-    _res = [];
-    _ref = args;
-    for (_i0 = 0; _i0 < _ref.length; ++_i0) {
-      condition = _ref[_i0];
-      if (maketest(condition)(tokens)) {
-        _ref0 = undefined;
-        throw Error("unexpected " + pr(tokens[0]));
-      } else {
-        _ref0 = undefined;
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
-    }
-    return _res;
-  }
-  forbid;
+/********************************** Export ***********************************/
 
-  function nextProp(tokens) {
-    return expect(tokens, "[", "property", isPropSyntax, "property");
-  }
-  nextProp;
-
-  function grabProperties(tokens, lexed) {
-    var prop;
-    while (prop = nextProp(tokens)) {
-      ((typeof lexed === 'undefined') ? (lexed = ["get", prop]) : (lexed = ["get", lexed, prop]));
-    }
-    return lexed;
-  }
-  grabProperties;
-
-  function lex(tokens, mode) {
-    var lexed, prop, key, _ref, _ref0;
-    if ((typeof mode === 'undefined')) mode = "default";
-    switch (mode) {
-      case "default":
-        lexed = [];
-        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
-        while (tokens.length > 0) {
-          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom", undefined, "drop"));
-        }
-        _ref = grabProperties(tokens, lexed);
-        break;
-      case "list":
-        demand(tokens, "(", "drop");
-        lexed = [];
-        if ((typeof(prop = grabProperties(tokens)) !== 'undefined')) lexed.push(prop);
-        while (tokens[0] !== ")") {
-          lexed.push(demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", "...", "spread", "…", "spread", isaString, "atom"));
-        }
-        demand(tokens, ")", "drop");
-        _ref = grabProperties(tokens, lexed);
-        break;
-      case "emptyhash":
-        demand(tokens, "(", "drop");
-        demand(tokens, ":", "drop");
-        demand(tokens, ")", "drop");
-        _ref = grabProperties(tokens, {});
-        break;
-      case "hash":
-        lexed = {};
-        demand(tokens, "(", "drop");
-        while (tokens[0] !== ")") {
-          key = demand(tokens, isKey, "key");
-          demand(tokens, ":", "drop");
-          prop = demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isaString, "atom");
-          lexed[key] = prop;
-        }
-        demand(tokens, ")", "drop");
-        _ref = grabProperties(tokens, lexed);
-        break;
-      case "property":
-        if (isDotName(tokens[0])) {
-          _ref0 = demand(tokens, isDotName, "drop");
-        } else if (isBracketName(tokens[0]) || isBracketString(tokens[0])) {
-          _ref0 = demand(tokens, isBracketName, "drop", isBracketString, "drop")
-            .slice(1, -1);
-        } else {
-          demand(tokens, "[", "drop");
-          prop = demand(tokens, "(", "list", ",", "quote", isIdentifier, "atom", isNum, "atom", isString, "atom");
-          demand(tokens, "]", "drop");
-          _ref0 = prop;
-        }
-        _ref = _ref0;
-        break;
-      case "quote":
-        demand(tokens, "`", "drop");
-        _ref = (lexed = ["quote", demand(tokens, ["(", ":", ")"], "emptyhash", ["(", isKey, ":"], "hash", "(", "list", "`", "quote", ",", "unquote", isaString, "atom")]);
-        break;
-      case "unquote":
-        demand(tokens, ",", "drop");
-        _ref = ["unquote", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", "...", "spread", "…", "spread", isIdentifier, "atom"))];
-        break;
-      case "spread":
-        demand(tokens, "...", "drop", "…", "drop");
-        _ref = ["spread", grabProperties(tokens, demand(tokens, "(", "list", "`", "quote", isIdentifier, "atom"))];
-        break;
-      case "key":
-        key = demand(tokens, isKey, "drop");
-        forbid("[", isPropSyntax);
-        _ref = key;
-        break;
-      case "atom":
-        _ref = grabProperties(tokens, demand(tokens, isaString, "drop"));
-        break;
-      case "drop":
-        _ref = tokens.shift();
-        break;
-      default:
-        _ref = undefined;
-        throw Error("unspecified lex mode: " + mode);
-    }
-    return _ref;
-  }
-  lex;
-  return module.exports = lex;
-})['call'](this);
+module.exports = lex

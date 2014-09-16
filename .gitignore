@@ -24,6 +24,8 @@ nbproject
 *.sublime-workspace
 .idea
 
+js/.app.js
+
 # grunt-html-validation
 validation-status.json
 validation-report.json

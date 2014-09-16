@@ -1,4 +1,0 @@
-; Loader for jisp as Node.js library
-
-(over val key (require "./jisp")
-      (= exports[key] val))

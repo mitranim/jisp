@@ -1,0 +1,138 @@
+; Data types
+
+"I'm a string"
+"I'm a
+multiline string!"
+373390
+true false
+NaN Infinity null undefined
+; `()
+`("array" "with" "things")
+(:)
+(hash: "with stuff")
+()
+
+; Quoting
+
+; `("string" ,`(func "call"))
+
+; Functions
+
+(alert "A dragon cometh!" "(probably)")
+{}
+{+ 1 2}
+(fn)
+(fn (return "do stuff"))
+
+(def namedFunction arg
+  (do (+ arg #0)
+      this))
+
+; Blocks
+
+(do "doing one thing")
+
+(= myvar (do "doing one thing" "and then another"))
+
+(do ("mystring".trim) (.toString 1 2))
+
+; Let
+
+(let x "be pathetic" (x.speech))
+
+; Assignment
+
+(= simpleVar "simpleString"
+   #uniqVar  "you'll never catch me")
+
+; ToDo destructuring assignment (maybe)
+
+; ToDo spreading into list
+
+; ToDo spreading into function call
+
+; ToDo rest parameter
+
+; Operators
+;
+(+ 1)
+(- 2)
+(+ 3 4)
+(- 5 6)
+(/ 7)
+(% 3 2)
+(++ x)
+(-- y)
+(+++ z)
+(--- i)
+(~ -1)
+(<< 5 9)
+(>>> 4 5)
+(< 2 4)
+(| 12 54)
+(in "prop" x)
+(instanceof x Object)
+(and 8)
+(&& 9 10)
+(|| 11 12)
+(not null)
+(! 0)
+(is true)
+(== true false)
+(isnt false)
+(isnt false true)
+(myfunc)
+(typeof "mystring")
+(void (++ i))
+(delete x.prop)
+(new (Class "with stuff"))
+(isa null "object" "number")
+(isnta NaN "boolean" "number")
+(? true false)
+(?! true false)
+(any NaN null)
+(in "toString" (:))
+
+; If
+
+(if false true null)
+(= x (if false true null))
+(if false true (elif false true))
+(if false
+  (do ("write" "stuff")
+      ("for fun" "and profit"))
+  (elif false
+    (do (+ 1 2)
+        "something"))
+   null)
+
+; Switch
+
+(= x (switch false
+  (case true)
+  (case false "something")
+  null))
+
+; Try/Catch
+(= x (try (do 1/0 (+ 2 3))
+  (catch err (do (stuff)
+                 (more stuff)))
+  (finally (do blah blah))))
+
+; While
+
+(while false (do stuff (and more stuff)))
+
+(= x (while false (do stuff (and more stuff))))
+
+; For
+
+(for value index array
+  (do stuff
+      (moar stuff)))
+
+(for value array
+  moar stuff)
+
+(for 6
+  (do stuff))

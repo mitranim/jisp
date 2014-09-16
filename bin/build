@@ -1,6 +1,0 @@
-#!/usr/bin/env node
-
-// lib
-require('../register');
-
-require('../build.jisp');
