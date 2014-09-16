@@ -1,3 +1,5 @@
+> Note: The upcoming 0.4.0 is going to introduce a bunch of breaking changes. It's a complete from-scratch rewrite of the compiler, and I'm revising some parts of the language, dropping dead end ideas and focusing on the core stuff. Initially it's going to have fewer features than the current version.
+
 ## Description
 
 Jisp is [the modern JavaScript for the modern developer](http://jisp.io). Its macro system lets you treat code as data and write functions that write code for you. Reuse code without runtime limitations, make your code more abstract and shorter, reprogram the language itself.
