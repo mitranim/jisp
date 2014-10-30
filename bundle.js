@@ -21,3 +21,5 @@ var sourceFile = path.join(__dirname, './dev/jisp/compile.js'),
 
 brw.add(sourceFile)
 brw.bundle().pipe(fs.createWriteStream(outputFile))
+
+console.log('-- writing bundle to', outputFile)

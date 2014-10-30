@@ -25,8 +25,8 @@ var operators = {}
 
 /********************************* Utilities *********************************/
 
-function plan (/*...*/ variants) {
-  variants = _.compact(arguments)
+function plan (/* ... variants */) {
+  var variants = _.compact(arguments)
   return function() {
     this.value.shift()
     return new Plan(this, variants)

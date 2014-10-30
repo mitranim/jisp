@@ -15,15 +15,15 @@ var _       = require('lodash'),
     inspect = require('util').inspect
 
 // Custom components
-var True    = require('./utils').True,
-    Plan    = require('./plan'),
+var Plan    = require('./plan'),
     Atom    = require('./atom'),
     Hash    = require('./hash'),
     List    = require('./list'),
     Code    = require('./code')
 
 // Shortcuts
-var isString      = require('./utils').isString,
+var True          = require('./utils').True,
+    isString      = require('./utils').isString,
     isIdentifier  = require('./utils').isIdentifier,
     isName        = require('./utils').isName,
     Inline        = Code.Inline,
@@ -45,8 +45,8 @@ var special = {}
 
 /********************************* Utilities *********************************/
 
-function plan (/*...*/ variants) {
-  variants = [].slice.call(arguments, 0)
+function plan (/* ... variants */) {
+  var variants = [].slice.call(arguments, 0)
   return function() {
     this.value.shift()
     return new Plan(this, variants)
@@ -122,7 +122,7 @@ special['get'] = plan({
 
 special['quote'] = plan({
   test: function() {
-    return this.value.length === 1 && this.value[0].instanceof === 'Atom'
+    return this.value.length === 1 && this.value[0] instanceof Atom
   },
   code: function() {
     return this.value[0].plan(this.context.child({quote: true})).code()
@@ -130,7 +130,7 @@ special['quote'] = plan({
 },
 {
   test: function() {
-    return this.value.length === 1 && this.value[0].instanceof === 'List'
+    return this.value.length === 1 && this.value[0] instanceof List
   },
   code: function() {
     return this.value[0].plan(this.context.child({quote: true})).code()
@@ -453,11 +453,11 @@ special['while'] = plan({
                : Block(),
         last = body.last(),
         funcBody  = Statement(Inline('while (', test, ')'), body).enveil(Block),
-        reference = this.scope.makeShadowName('_ref'),
-        collector = this.scope.makeShadowName('_res')
+        reference = this.scope.makeShadowName('ref'),
+        collector = this.scope.makeShadowName('res')
     funcBody.value.unshift(Statement(Inline('var ', Expression(reference, Infix('=', collector, '[]')))))
 
-    // Here's where we should check if the loop contains a `return` statement
+    // ToDo: here's we should check if the loop contains a `return` statement
     // and throw an error if it does
 
     if (last && last.beginsWithStatementKeyword()) {
@@ -475,6 +475,10 @@ special['while'] = plan({
 })
 
 special['for'] = plan({
+  /**
+  * (for [<index>] <integer> <body>)
+  * Repeat <body> an <integer> number of times, statement version
+  */
   test: function() {
     var iterable = this.value[this.value.length - 2]
     return this.context.statement && iterable instanceof Atom && !isNaN(parseInt(iterable.value))
@@ -493,6 +497,10 @@ special['for'] = plan({
   }
 },
 {
+  /**
+  * (for [<index>] <integer> <body>)
+  * Repeat <body> an <integer> number of times, expression version
+  */
   test: function() {
     var iterable = this.value[this.value.length - 2]
     return this.context.expression && iterable instanceof Atom && !isNaN(parseInt(iterable.value))

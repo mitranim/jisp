@@ -11,6 +11,7 @@ var _          = require('lodash')
 
 // Custom components
 var Form       = require('./form'),
+    Atom       = require('./atom'),
     Plan       = require('./plan'),
     Code       = require('./code'),
     Context    = require('./context')
@@ -26,8 +27,7 @@ var inherit    = require('./utils').inherit,
 
 function List (list) {
   this.value = list || []
-  this.word = this.value.length && this.value[0].instanceof === 'Atom' && this.value[0].value || undefined
-  this.instanceof = 'List'
+  this.word = this.value.length && this.value[0] instanceof Atom && this.value[0].value || undefined
 }
 inherit(List, Form)
 

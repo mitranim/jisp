@@ -20,7 +20,7 @@ NaN Infinity null undefined
 
 (alert "A dragon cometh!" "(probably)")
 {}
-{+ 1 2}
+{+ #9 2}
 (fn)
 (fn (return "do stuff"))
 

@@ -25,7 +25,6 @@ var inherit = require('./utils').inherit,
 
 function Atom (atom) {
   this.value = atom || ''
-  this.instanceof = 'Atom'
 }
 inherit(Atom, Form)
 

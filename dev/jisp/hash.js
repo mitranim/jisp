@@ -24,7 +24,6 @@ var inherit  = require('./utils').inherit,
 
 function Hash (hash) {
   this.value = hash || {}
-  this.instanceof = 'Hash'
 }
 inherit(Hash, Form)
 

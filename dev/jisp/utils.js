@@ -25,7 +25,7 @@ exports.regStKw = regStKw
 var specialValues = [
   'undefined', 'null', 'Infinity', 'NaN', 'true', 'false'
 ]
-var regSpecialValue = RegExp(_.map(specialValues, function (word) {
+var regSpecialValue = RegExp(specialValues.map(function (word) {
   return '^' + word + '$'
 }).join('|'))
 
@@ -234,10 +234,9 @@ function flatArgs (args) {
 }
 exports.flatArgs = flatArgs
 
-function inherit (child, parent) {
-  function proto() {}
-  proto.prototype = parent.prototype
-  child.prototype = new proto()
+function inherit (childClass, superClass) {
+  childClass.prototype = Object.create(superClass.prototype)
+  childClass.prototype.constructor = childClass
 }
 exports.inherit = inherit
 

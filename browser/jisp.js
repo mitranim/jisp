@@ -26,7 +26,6 @@ var inherit = require('./utils').inherit,
 
 function Atom (atom) {
   this.value = atom || ''
-  this.instanceof = 'Atom'
 }
 inherit(Atom, Form)
 
@@ -877,7 +876,6 @@ var inherit  = require('./utils').inherit,
 
 function Hash (hash) {
   this.value = hash || {}
-  this.instanceof = 'Hash'
 }
 inherit(Hash, Form)
 
@@ -1189,6 +1187,7 @@ var _          = require('lodash')
 
 // Custom components
 var Form       = require('./form'),
+    Atom       = require('./atom'),
     Plan       = require('./plan'),
     Code       = require('./code'),
     Context    = require('./context')
@@ -1204,8 +1203,7 @@ var inherit    = require('./utils').inherit,
 
 function List (list) {
   this.value = list || []
-  this.word = this.value.length && this.value[0].instanceof === 'Atom' && this.value[0].value || undefined
-  this.instanceof = 'List'
+  this.word = this.value.length && this.value[0] instanceof Atom && this.value[0].value || undefined
 }
 inherit(List, Form)
 
@@ -1314,7 +1312,7 @@ console.log(list.plan(context).code())
 console.log(list.plan(context).code().print())
 */
 
-},{"./code":3,"./context":5,"./form":6,"./plan":13,"./utils":17,"lodash":22}],10:[function(require,module,exports){
+},{"./atom":1,"./code":3,"./context":5,"./form":6,"./plan":13,"./utils":17,"lodash":22}],10:[function(require,module,exports){
 'use strict'
 
 /******************************* Dependencies ********************************/
@@ -1410,8 +1408,8 @@ var operators = {}
 
 /********************************* Utilities *********************************/
 
-function plan (/*...*/ variants) {
-  variants = _.compact(arguments)
+function plan (/* ... variants */) {
+  var variants = _.compact(arguments)
   return function() {
     this.value.shift()
     return new Plan(this, variants)
@@ -1834,15 +1832,15 @@ var _       = require('lodash'),
     inspect = require('util').inspect
 
 // Custom components
-var True    = require('./utils').True,
-    Plan    = require('./plan'),
+var Plan    = require('./plan'),
     Atom    = require('./atom'),
     Hash    = require('./hash'),
     List    = require('./list'),
     Code    = require('./code')
 
 // Shortcuts
-var isString      = require('./utils').isString,
+var True          = require('./utils').True,
+    isString      = require('./utils').isString,
     isIdentifier  = require('./utils').isIdentifier,
     isName        = require('./utils').isName,
     Inline        = Code.Inline,
@@ -1864,8 +1862,8 @@ var special = {}
 
 /********************************* Utilities *********************************/
 
-function plan (/*...*/ variants) {
-  variants = [].slice.call(arguments, 0)
+function plan (/* ... variants */) {
+  var variants = [].slice.call(arguments, 0)
   return function() {
     this.value.shift()
     return new Plan(this, variants)
@@ -1941,7 +1939,7 @@ special['get'] = plan({
 
 special['quote'] = plan({
   test: function() {
-    return this.value.length === 1 && this.value[0].instanceof === 'Atom'
+    return this.value.length === 1 && this.value[0] instanceof Atom
   },
   code: function() {
     return this.value[0].plan(this.context.child({quote: true})).code()
@@ -1949,7 +1947,7 @@ special['quote'] = plan({
 },
 {
   test: function() {
-    return this.value.length === 1 && this.value[0].instanceof === 'List'
+    return this.value.length === 1 && this.value[0] instanceof List
   },
   code: function() {
     return this.value[0].plan(this.context.child({quote: true})).code()
@@ -2272,11 +2270,11 @@ special['while'] = plan({
                : Block(),
         last = body.last(),
         funcBody  = Statement(Inline('while (', test, ')'), body).enveil(Block),
-        reference = this.scope.makeShadowName('_ref'),
-        collector = this.scope.makeShadowName('_res')
+        reference = this.scope.makeShadowName('ref'),
+        collector = this.scope.makeShadowName('res')
     funcBody.value.unshift(Statement(Inline('var ', Expression(reference, Infix('=', collector, '[]')))))
 
-    // Here's where we should check if the loop contains a `return` statement
+    // ToDo: here's we should check if the loop contains a `return` statement
     // and throw an error if it does
 
     if (last && last.beginsWithStatementKeyword()) {
@@ -2294,6 +2292,10 @@ special['while'] = plan({
 })
 
 special['for'] = plan({
+  /**
+  * (for [<index>] <integer> <body>)
+  * Repeat <body> an <integer> number of times, statement version
+  */
   test: function() {
     var iterable = this.value[this.value.length - 2]
     return this.context.statement && iterable instanceof Atom && !isNaN(parseInt(iterable.value))
@@ -2312,6 +2314,10 @@ special['for'] = plan({
   }
 },
 {
+  /**
+  * (for [<index>] <integer> <body>)
+  * Repeat <body> an <integer> number of times, expression version
+  */
   test: function() {
     var iterable = this.value[this.value.length - 2]
     return this.context.expression && iterable instanceof Atom && !isNaN(parseInt(iterable.value))
@@ -2501,7 +2507,7 @@ exports.regStKw = regStKw
 var specialValues = [
   'undefined', 'null', 'Infinity', 'NaN', 'true', 'false'
 ]
-var regSpecialValue = RegExp(_.map(specialValues, function (word) {
+var regSpecialValue = RegExp(specialValues.map(function (word) {
   return '^' + word + '$'
 }).join('|'))
 
@@ -2710,10 +2716,9 @@ function flatArgs (args) {
 }
 exports.flatArgs = flatArgs
 
-function inherit (child, parent) {
-  function proto() {}
-  proto.prototype = parent.prototype
-  child.prototype = new proto()
+function inherit (childClass, superClass) {
+  childClass.prototype = Object.create(superClass.prototype)
+  childClass.prototype.constructor = childClass
 }
 exports.inherit = inherit
 
