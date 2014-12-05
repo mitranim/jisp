@@ -1,3 +1,5 @@
+> Note: I apologise for the lack of updates. I've been preparing [0.4.0](https://github.com/Mitranim/jisp/tree/0.4.0), which is a complete rewrite of the compiler with a bunch of breaking changes. It revises some parts of the language, dropping dead end ideas and focusing on the core features. Unfortunately I'm busy with some other projects right now.
+
 ## Description
 
 Jisp is [the modern JavaScript for the modern developer](http://jisp.io). Its macro system lets you treat code as data and write functions that write code for you. Reuse code without runtime limitations, make your code more abstract and shorter, reprogram the language itself.
