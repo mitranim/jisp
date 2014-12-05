@@ -1,19 +1,16 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React = require('react/addons'),
-    Link  = require('react-router').Link;
+var React = require('react')
 
 // Custom components
 
 /******************************** Components *********************************/
 
 var Navbar = React.createClass({
-  render: function() {
-    return (
+  render: function() {return (
 
 <div className='navbar navbar-default'>
   <div className='container'>
@@ -25,10 +22,9 @@ var Navbar = React.createClass({
   </div>
 </div>
 
-    );
-  }
-});
+  )}
+})
 
 /********************************** Export ***********************************/
 
-module.exports = Navbar;
+module.exports = Navbar

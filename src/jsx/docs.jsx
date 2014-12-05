@@ -1,23 +1,18 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React = require('react/addons'),
-    rb    = require('react-bootstrap'),
-    Link  = require('react-router').Link;
+var React = require('react')
 
 // Custom components
-var id    = require('./utils').rndId,
-    md    = require('./markdown').md,
-    Code  = require('./code');
+var Md    = require('./markdown')
+var Code  = require('./code')
 
 /******************************** Components *********************************/
 
 var Docs = React.createClass({
-  render: function() {
-    return (
+  render: function() {return (
 
 <div className={this.props.className}>
 
@@ -25,19 +20,40 @@ var Docs = React.createClass({
   Jisp is a programmable language that compiles to JavaScript.
 </p>
 
-<md>{`
-It's simpler, terser, and more powerful than JS. Its macro system lets you treat code as data and write functions that write code for you. Jisp's extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.
+<Md>{`
+It's simpler and terser than JS, and has some additional powers. Its macro system lets you treat code as data and write functions that write code for you. Jisp's extremely simple syntax protects against common JS pitfalls, and it abstracts away some legacy details, helping avoid errors and keep your code short.
 
-See [Why Jisp](#why) for a gist of why you should use it.
+See [Why Jisp](#why) for a gist of why you may want to use it.
 
-The jisp compiler is itself written in jisp. See the [sourcecode on GitHub](https://github.com/Mitranim/jisp). See the [issues](https://github.com/Mitranim/jisp/issues) section for known problems, upcoming enhancements, and ideas how to contribute to the language.
+The current version of the jisp compiler is written in jisp. See the [sourcecode on GitHub](https://github.com/Mitranim/jisp). See the [issues](https://github.com/Mitranim/jisp/issues) section for known problems.
 
 You can improve this documentation by sending pull requests to the [gh-pages](https://github.com/Mitranim/jisp/tree/gh-pages) branch of the project repository.
+`}</Md>
 
-> All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don't see them, make sure JS is enabled and refresh the page.
-`}</md>
+<div className='panel panel-warning'>
+  <div className='panel-heading'>Notes.</div>
+  <div className='panel-body'>
+    <p>
+      There's been a hiatus in updates. Mostly it's because I'm busy with other projects. Another part of the reason is that my views on JS have underwent a complete 180°. (Please mentally apply a vintage filter to everything else you read in this documentation.) JS doesn't need lispy features or macros because of its polymorphism and flexibility. Problems solved with macros are usually <em>better</em> solved with apt program architecture and using the language to its fullest. Preprocessors tend to be detrimental to the latter part.
+    </p>
+
+    <p>
+      When I finally get back to it, expect breaking changes. The next version (see the <a href='https://github.com/Mitranim/jisp/tree/0.4.0'>branch</a> on Github) is a complete rewrite. It drops dead-end features and Ruby influences, and focuses on the core ideas. It's almost complete, so if you're interested in taking over, let me know.
+    </p>
+  </div>
+</div>
+
+<blockquote className='info'>
+  <p>
+    All examples on this page are interactive: edit the jisp to see changes. The JavaScript snippets are compiled in your browser. If you don't see them, make sure JS is enabled and refresh the page.
+  </p>
+</blockquote>
 
 <h2>Interactive Playground</h2>
+
+<Md>{`
+This example defines a macro (an instruction for the compiler) and uses it to simplify the subsequent gulp task definitions.
+`}</Md>
 
 <Code>{`
 (mac task name ...args (do
@@ -64,11 +80,11 @@ You can improve this documentation by sending pull requests to the [gh-pages](ht
 ; try your own macro call (this is a comment)
 `}</Code>
 
-<md>Example of dynamically constructing code with a macro.</md>
+<Md>Example of dynamically constructing code with a macro.</Md>
 
 <h2 id='installation'>Installation and Usage</h2>
 
-<md>{`
+<Md>{`
 Get [Node.js](http://nodejs.org). This will give you the local \`node\` runtime and the \`npm\` package manager. Install jisp with \`npm\`:
 
     $ npm install -g jisp
@@ -107,13 +123,13 @@ Super basic Sublime Text build system (OS X):
       }
 
 * save to: \`~/Library/Application Support/Sublime Text 3/Packages/User\`
-`}</md>
+`}</Md>
 
 <h2 id='code-structure'>Code Structure</h2>
 
-<md>{`
+<Md>{`
 _Jisp code consists of nested arrays_. To be easier on the eyes, they're delimited with parentheses \`()\` instead of brackets. Individual elements are separated by whitespace rather than commas. This documentation refers to them as _lists_, but it's just arrays.
-`}</md>
+`}</Md>
 
 <Code>{`
 ; list that compiles to a function call
@@ -134,9 +150,9 @@ _Jisp code consists of nested arrays_. To be easier on the eyes, they're delimit
 ; see other special forms below
 `}</Code>
 
-<md>
+<Md>
 Object literals are also delimited with parentheses, elements separated by whitespace rather than commas. This documentation often refers to object literals as _hash tables_ to discern them from objects in general.
-</md>
+</Md>
 
 <Code>{`
 ; object literal (hash table)
@@ -149,11 +165,11 @@ Object literals are also delimited with parentheses, elements separated by white
 (: using 'the' hash 'macro')
 `}</Code>
 
-<md>{`
+<Md>{`
 The built-in hash [macros](#macros) \`:\` and \`::\` give you easy ways to build hash tables as lists. \`:\` with two or more arguments runs purely at compile time; other forms have runtime components. See the [built-ins](#built-in-macros) section for details.
 
 Identifiers and literals without parentheses are called _atoms_:
-`}</md>
+`}</Md>
 
 <Code>{`
 ; number
@@ -176,7 +192,7 @@ parseInt
 null undefined true
 `}</Code>
 
-<md>{`
+<Md>{`
 Strings in jisp are multiline.
 
 Parentheses in the jisp code are **not cosmetic**. Your code _consists_ of arrays. This allows to easily deconstruct and construct it when using macros. We'll get to this in the [Macros](#macros) section.
@@ -184,7 +200,7 @@ Parentheses in the jisp code are **not cosmetic**. Your code _consists_ of array
 Jisp is mostly whitespace-agnostic. Elements in lists and hash tables are separated by whitespace, but other than that, jisp is completely insensitive to whitespace and indentation, relying on parentheses as delimiters. Forms can contain linebreaks.
 
 In a non-quoted list, the first element is considered a function, and the list compiles as a function call:
-`}</md>
+`}</Md>
 
 <Code>{`
 ; function call
@@ -194,7 +210,7 @@ In a non-quoted list, the first element is considered a function, and the list c
 (isNaN (parseInt Infinity))
 `}</Code>
 
-<md>In fact, even operators are considered functions and use the prefix notation. This allows them to take multiple arguments:</md>
+<Md>In fact, even operators are considered functions and use the prefix notation. This allows them to take multiple arguments:</Md>
 
 <Code>{`
 ; operator expression
@@ -205,18 +221,18 @@ In a non-quoted list, the first element is considered a function, and the list c
 (* 4 5 (- 3 6 10) (^ 1 5))
 `}</Code>
 
-<md>**[NYI]** Planned feature: you'll be able to pass operators around like any other function:</md>
+<Md>**[NYI]** Planned feature: you'll be able to pass operators around like any other function:</Md>
 
 <Code>{`
 (= x \`(1 2 3 4))
 (x.sort <)
 `}</Code>
 
-<md>Not all lists are function calls. Some are _special forms_ with their own resolution rules. This includes assignment, quoting, function definitions, conditionals, loops, and JS keywords.</md>
+<Md>Not all lists are function calls. Some are _special forms_ with their own resolution rules. This includes assignment, quoting, function definitions, conditionals, loops, and JS keywords.</Md>
 
 <h2 id='everything-exp'>Everything an Expression</h2>
 
-<md>{`
+<Md>{`
 Most languages distinguish statements and expressions. An expression is a piece of code with a value, something you can assign or return from a function. Statements have side effects but no value. In jisp, everything is an expression. It helps you write [functional](http://en.wikipedia.org/wiki/Functional_programming#Coding_styles) code, avoiding unnecessary data fiddling.
 
 An atom such as a number literal, a string literal, or identifier, resolves to itself.
@@ -230,7 +246,7 @@ Lists resolve by special rules:
 * Everything else resolves as a function call.
 
 Examples:
-`}</md>
+`}</Md>
 
 <Code>{`
 ; name binding
@@ -246,11 +262,11 @@ Examples:
 ((fn y (+ 10 y)) 13)
 `}</Code>
 
-<md>Inside a nested form, forms are resolved left-to-right, inner-to-outer, just like you'd expect.</md>
+<Md>Inside a nested form, forms are resolved left-to-right, inner-to-outer, just like you'd expect.</Md>
 
 <h2 id='quoting'>Quoting</h2>
 
-<md>If lists resolve as function calls, how do you write array literals? The answer is quoting. The special form `(quote x)` prevents the list `x` from being resolved, letting it remain an array. Prepending a list with `` ` `` is shorthand syntax:</md>
+<Md>If lists resolve as function calls, how do you write array literals? The answer is quoting. The special form `(quote x)` prevents the list `x` from being resolved, letting it remain an array. Prepending a list with `` ` `` is shorthand syntax:</Md>
 
 <Code>{`
 ; without quote
@@ -263,7 +279,7 @@ Examples:
 \`(1 2 3)
 `}</Code>
 
-<md>Directly quoting a non-primitive atom (name or string) stringifies it:</md>
+<Md>Directly quoting a non-primitive atom (name or string) stringifies it:</Md>
 
 <Code>{`
 ; name
@@ -273,11 +289,11 @@ Examples:
 \`'mystring'
 `}</Code>
 
-<md>{`
+<Md>{`
 Which is convenient for macros. Atoms in macro call arguments are quoted implicitly.
 
 Quoting implicitly propagates to inner lists:
-`}</md>
+`}</Md>
 
 <Code>{`
 ; without quote
@@ -287,7 +303,7 @@ Quoting implicitly propagates to inner lists:
 \`(+ (^ 2 1) (is 'π' 'Ω'))
 `}</Code>
 
-<md>To let an element resolve, _unquote_ it with a comma `,`:</md>
+<Md>To let an element resolve, _unquote_ it with a comma `,`:</Md>
 
 <Code>{`
 ; without unquote: invalid javascript
@@ -297,11 +313,11 @@ Quoting implicitly propagates to inner lists:
 \`(,(* 2 3) ,(is true false))
 `}</Code>
 
-<md>Aside from writing array literals, quoting and unquoting is primarily used in macros. See the [Macros](#macros) section below.</md>
+<Md>Aside from writing array literals, quoting and unquoting is primarily used in macros. See the [Macros](#macros) section below.</Md>
 
 <h2 id='blocks'>Blocks and Chaining</h2>
 
-<md>Because jisp code consists of nested expressions, even a multi-line block must be a single expression. How to make one? By wrapping several forms in the special form `do`:</md>
+<Md>Because jisp code consists of nested expressions, even a multi-line block must be a single expression. How to make one? By wrapping several forms in the special form `do`:</Md>
 
 <Code>{`
 (def elongate str
@@ -310,11 +326,11 @@ Quoting implicitly propagates to inner lists:
       str))
 `}</Code>
 
-<md>{`
+<Md>{`
 On compile, a jisp file is implicitly wrapped in a top-level \`do\` form.
 
 \`do\` resolves to the value of its last form. It's a requirement for chaining methods:
-`}</md>
+`}</Md>
 
 <Code>{`
 ; take last value
@@ -333,11 +349,11 @@ On compile, a jisp file is implicitly wrapped in a top-level \`do\` form.
 `}</Code>
 
 
-<md>**Note**: `do` is the **only** jisp expression that can consist of multiple forms. The body of each function, loop, etc. is always a single form, and requires a `do` to include multiple expressions.</md>
+<Md>**Note**: `do` is the **only** jisp expression that can consist of multiple forms. The body of each function, loop, etc. is always a single form, and requires a `do` to include multiple expressions.</Md>
 
 <h2 id='object-props'>Object Properties</h2>
 
-<md>As you'd expect, object properties are referenced with the `.dot` or `[bracket]` notation:</md>
+<Md>As you'd expect, object properties are referenced with the `.dot` or `[bracket]` notation:</Md>
 
 <Code>{`
 (= bunny (bouncy: true fluffy: false))
@@ -345,28 +361,28 @@ bunny.bouncy
 bunny['fluffy']
 `}</Code>
 
-<md>Dot and bracket notation is a syntax shortcut to getting a property of an object. Internally, jisp uses the `(get obj prop)` special form:</md>
+<Md>Dot and bracket notation is a syntax shortcut to getting a property of an object. Internally, jisp uses the `(get obj prop)` special form:</Md>
 
 <Code>{`
 (get bunny bouncy)
 (get bunny 'fluffy')
 `}</Code>
 
-<md>Quite naturally, you can access properties of resolved forms:</md>
+<Md>Quite naturally, you can access properties of resolved forms:</Md>
 
 <Code>{`
 (String 113) .length
 (String 113) [(+ 1 1)]
 `}</Code>
 
-<md>But you can also access it with the `get` form, and `do` for chaining (below). This is useful in macros when you pass around names of objects and properties individually.</md>
+<Md>But you can also access it with the `get` form, and `do` for chaining (below). This is useful in macros when you pass around names of objects and properties individually.</Md>
 
 <Code>{`
 (get (String 113) 'length')
 (get (String 113) (+ 1 1))
 `}</Code>
 
-<md>To chain methods, wrap them in a `do` form:</md>
+<Md>To chain methods, wrap them in a `do` form:</Md>
 
 <Code>{`
 (do cartoonSnake
@@ -377,7 +393,7 @@ bunny['fluffy']
    (.elongate food.weight))
 `}</Code>
 
-<md>Alternatively (even though it's kinda gross), you can do it like this:</md>
+<Md>Alternatively (even though it's kinda gross), you can do it like this:</Md>
 
 <Code>{`
 (((((cartoonSnake.crawlForward 10)
@@ -389,15 +405,15 @@ bunny['fluffy']
 
 <h2 id='functions'>Functions</h2>
 
-<md>Jisp mirrors JavaScript function facilities 1-1 and adds some more.</md>
+<Md>Jisp mirrors JavaScript function facilities 1-1 and adds some more.</Md>
 
 <h3 id='definition'>Definition</h3>
 
-<md>{`
+<Md>{`
 Named function:
 
     (def <name> [<... params>] [<body>])
-`}</md>
+`}</Md>
 
 <Code>{`
 (def fact x
@@ -405,11 +421,11 @@ Named function:
       (* x (fact (- x 1)))))
 `}</Code>
 
-<md>{`
+<Md>{`
 Anonymous function (sometimes called _lambda_):
 
     (fn [<... params>] [<body>])
-`}</md>
+`}</Md>
 
 <Code>{`
 (fn first second (+ first second))
@@ -421,7 +437,7 @@ Anonymous function (sometimes called _lambda_):
 
 <h3 id='call-return'>Calling and Returning</h3>
 
-<md>A function call is a list starting with the function's name or with a form that resolves to a function:</md>
+<Md>A function call is a list starting with the function's name or with a form that resolves to a function:</Md>
 
 <Code>{`
 (= ringMyBell (fn bell (prn bell)))
@@ -431,7 +447,7 @@ Anonymous function (sometimes called _lambda_):
 ((fn x (+ 'Hello ' x)) 'World!')
 `}</Code>
 
-<md>A function returns the resolved value of its body. You almost never need to return values manually:</md>
+<Md>A function returns the resolved value of its body. You almost never need to return values manually:</Md>
 
 <Code>{`
 (def numerify x
@@ -441,23 +457,23 @@ Anonymous function (sometimes called _lambda_):
       (Number x)))
 `}</Code>
 
-<md>{`
+<Md>{`
 It's often best to keep each function's body a single conditional tree with branches ending in return values.
 
 Inside a function's body, \`#\` (**NYI**) is an array of the arguments passed to it, and \`#n\` refers to an individual argument by order.
-`}</md>
+`}</Md>
 
 <Code>((fn (* #0 #2)) 3 100 4)</Code>
 
-<md>As a side effect of implicit returns, when making a prototype constructor, you need to end it with `this` as the return value to make the `new` declarations work.</md>
+<Md>As a side effect of implicit returns, when making a prototype constructor, you need to end it with `this` as the return value to make the `new` declarations work.</Md>
 
 <h3 id='lambda'>Lambda Syntax</h3>
 
-<md>{`
+<Md>{`
 Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax for anonymous functions:
 
     {<body>}
-`}</md>
+`}</Md>
 
 <Code>{`
 {alert 'It’s a dragon!'}
@@ -467,7 +483,7 @@ Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax
 {}
 `}</Code>
 
-<md>This goes hand in hand with the `#` notation:</md>
+<Md>This goes hand in hand with the `#` notation:</Md>
 
 <Code>{`
 (= array \`(0 1 2 3))
@@ -479,11 +495,11 @@ Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax
 
 <h3 id='let'>Let</h3>
 
-<md>{`
+<Md>{`
 \`let\` is a short way to declare variables in an isolated scope and run that scope. It resolves to the value returned by its body.
 
     (let [var value [var value ...]] [<body>])
-`}</md>
+`}</Md>
 
 <Code>{`
 (let health 100
@@ -492,7 +508,7 @@ Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax
 (? health)        ; false: out ot scope
 `}</Code>
 
-<md>Just like assignment, it takes variables in pairs:</md>
+<Md>Just like assignment, it takes variables in pairs:</Md>
 
 <Code>{`
 (let plus  110
@@ -502,16 +518,16 @@ Because functions are so cheap in JavaScript, jisp comes with a shorthand syntax
 (? plus minus)    ; false: out of scope
 `}</Code>
 
-<md>`let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.</md>
+<Md>`let` is currently implemented as a self-executing anonymous function. In the future editions of EcmaScript, it will be changed to use the native `let` statement with a block.</Md>
 
 <h2 id='assignment'>Assignment</h2>
 
-<md>{`
+<Md>{`
 Like all other forms, assignment uses the prefix notation:
 
     (= var value [... var value])
     (= var)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= newvar 'some value')
@@ -519,11 +535,11 @@ Like all other forms, assignment uses the prefix notation:
 (= pi (if (is 2 3) NaN Math.PI))
 `}</Code>
 
-<md>{`
+<Md>{`
 All assignments in jisp (not just \`=\`) automatically hoist \`var\` declarations, saving you keystrokes and safeguarding against leaking globals. Variables are only declared if not already in scope. To shadow an outer variable on purpose, use \`let\`.
 
 Like many other forms, \`=\` takes multiple arguments. It assigns them in pairs. Its resolved value is the last assignment:
-`}</md>
+`}</Md>
 
 <Code>{`
 (= lastest (= first  'Coffee'
@@ -531,7 +547,7 @@ Like many other forms, \`=\` takes multiple arguments. It assigns them in pairs.
               third  'Milk'))
 `}</Code>
 
-<md>The right hand of an assignment can be an arbitrary form, even a block:</md>
+<Md>The right hand of an assignment can be an arbitrary form, even a block:</Md>
 
 <Code>{`
 (= x (= shifty null
@@ -539,21 +555,21 @@ Like many other forms, \`=\` takes multiple arguments. It assigns them in pairs.
         dodgy  (try (+ something) 'unsuccessful')))
 `}</Code>
 
-<md>Calling `=` with a single argument merely declares that name if not already in scope:</md>
+<Md>Calling `=` with a single argument merely declares that name if not already in scope:</Md>
 
 <Code>(= emptyVar)</Code>
 
 <h2 id='destructuring'>Destructuring Assignment</h2>
 
-<md>{`
+<Md>{`
 Assign to a list of identifiers to take apart the right hand side of the assignment and bind its parts:
 
     (= (var0 [... varN]) value)
-`}</md>
+`}</Md>
 
 <Code>(= (smaller bigger) `(3 Infinity))</Code>
 
-<md>This assignment is positional: `[0]` `[1]` and so on. To collect all remaining parts into an element, prefix it with `...` or `…`:</md>
+<Md>This assignment is positional: `[0]` `[1]` and so on. To collect all remaining parts into an element, prefix it with `...` or `…`:</Md>
 
 <Code>{`
 (= (first ...mid closing) \`(4 8 0 3))
@@ -561,15 +577,15 @@ Assign to a list of identifiers to take apart the right hand side of the assignm
 mid    ; (8 0)
 `}</Code>
 
-<md>`...x` and `…x` is a shortcut to the `(spread x)` special form, which you can, and sometimes need to, use directly. Spreading is moderately greedy: it takes as many elements as possible, but has lower priority than non-spread identifiers.</md>
+<Md>`...x` and `…x` is a shortcut to the `(spread x)` special form, which you can, and sometimes need to, use directly. Spreading is moderately greedy: it takes as many elements as possible, but has lower priority than non-spread identifiers.</Md>
 
 <h2 id='spreading-rest'>Spreading and Rest Parameter</h2>
 
-<md>Borrowed straight from the upcoming EcmaScript 6 specification.</md>
+<Md>Borrowed straight from the upcoming EcmaScript 6 specification.</Md>
 
 <h3 id='spread-into-list'>Spread Into List</h3>
 
-<md>In a list, prefix elements with `...` or `…` to spread their elements into the list, flattening it:</md>
+<Md>In a list, prefix elements with `...` or `…` to spread their elements into the list, flattening it:</Md>
 
 <Code>{`
 \`(1 2 (3 4) (5 6))
@@ -581,7 +597,7 @@ mid    ; (8 0)
 
 <h3 id='argument-spread'>Argument Spread</h3>
 
-<md>Spread a list into a function call to pass its elements as individual arguments:</md>
+<Md>Spread a list into a function call to pass its elements as individual arguments:</Md>
 
 <Code>{`
 (= pair \`('dog' 'lizard'))
@@ -593,7 +609,7 @@ mid    ; (8 0)
 
 <h3 id='rest-parameter'>Rest Parameter</h3>
 
-<md>Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collects the remaining arguments into a list. This works the same way as destructuring assignment:</md>
+<Md>Prefix a parameter with `...` or `…` to make it a _rest parameter_ that collects the remaining arguments into a list. This works the same way as destructuring assignment:</Md>
 
 <Code>{`
 (def categorise quick ...moderate slow
@@ -606,7 +622,7 @@ mid    ; (8 0)
 
 <h2 id='conditionals'>Conditionals</h2>
 
-<md>{`
+<Md>{`
 Jisp improves the JavaScript conditionals and gives you some new ones. It's also trivial to define your own conditionals with [macros](#macros).
 
     is      ; equality test
@@ -623,17 +639,17 @@ Jisp improves the JavaScript conditionals and gives you some new ones. It's also
     any     ; picks first existing value, if any
     if      ; if
     switch  ; switch
-`}</md>
+`}</Md>
 
 <h3 id='logic'>Logic</h3>
 
-<md>{`
+<Md>{`
 \`is\` is the equality test. With a single argument, it checks its truthiness by double negation. With two or more arguments, it checks if the first equals any of the others by a combination of \`===\` and \`||\`:
 
     (is <name>)
     (is <name> <something>)
     (is <name> <something> [<other> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 ; truthiness check
@@ -646,13 +662,13 @@ Jisp improves the JavaScript conditionals and gives you some new ones. It's also
 (is she 'smart' 'beautiful' 'artistic')
 `}</Code>
 
-<md>{`
+<Md>{`
 \`isnt\` is the inverted form of \`is\` which also takes multiple arguments:
 
     (isnt <name>)
     (isnt <name> <something>)
     (isnt <name> <something> [<other> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 ; falsiness check (same as \`not\`)
@@ -665,12 +681,12 @@ Jisp improves the JavaScript conditionals and gives you some new ones. It's also
 (isnt she 'grumpy' 'magpie' 'far away')
 `}</Code>
 
-<md>{`
+<Md>{`
 Logical or is \`or\` and logical and is \`and\`. Like many other forms, they take multiple arguments:
 
     (or  [<a> [<b> ...]])
     (and [<a> [<b> ...]])
-`}</md>
+`}</Md>
 
 <Code>{`
 (or NaN Infinity \`myvar)
@@ -678,11 +694,11 @@ Logical or is \`or\` and logical and is \`and\`. Like many other forms, they tak
 (and true 'sun is hot' (< 2 3))
 `}</Code>
 
-<md>{`
+<Md>{`
 Check if a value is in an iterable (array or string) with \`in\`:
 
     (in <value> <iterable>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= bush 'woods')
@@ -692,11 +708,11 @@ Check if a value is in an iterable (array or string) with \`in\`:
 (in 's' 'mystring')  ; true
 `}</Code>
 
-<md>{`
+<Md>{`
 Check if an object has a property with \`of\`:
 
     (of <property> <object>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= snake (venom:  yes
@@ -706,11 +722,11 @@ Check if an object has a property with \`of\`:
 (of 'venom' snake)  ; true
 `}</Code>
 
-<md>{`
+<Md>{`
 \`isa\` is a short way to test an object's type. It takes multiple arguments and returns true if any match:
 
     (isa <name> <type> [<type> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (isa Math.PI 'number')         ; true
@@ -718,11 +734,11 @@ Check if an object has a property with \`of\`:
 (isa null 'number' 'boolean')  ; false
 `}</Code>
 
-<md>{`
+<Md>{`
 \`isnta\` is the negated version of \`isa\`. It takes multiple arguments and returns true if none match:
 
     (isnta <name> <type> [<type> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (isnta null 'function')          ; true
@@ -732,7 +748,7 @@ Check if an object has a property with \`of\`:
 
 <h3 id='existence'>Existence</h3>
 
-<md>{`
+<Md>{`
 Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
 
 \`?\` is the ultimate existence checker. This macro takes any number of arguments and resolves to \`true\` if any of them exist (are defined) and to \`false\` otherwise.
@@ -740,7 +756,7 @@ Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
     (? <name>)
     (? <name> [<name> ...])
     (? <object.property> [<name> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (= elephants 'exist')
@@ -750,7 +766,7 @@ Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
 (? mammoths elephants)  ; true
 `}</Code>
 
-<md>It's smart about properties: it takes property references apart and checks them in order, starting with the base object, letting you pinpoint the existence of a property with just one conditional:</md>
+<Md>It's smart about properties: it takes property references apart and checks them in order, starting with the base object, letting you pinpoint the existence of a property with just one conditional:</Md>
 
 <Code>{`
 (? object.property[0]['method'])
@@ -759,13 +775,13 @@ Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
 ; no runtime error
 `}</Code>
 
-<md>{`
+<Md>{`
 \`?!\` is the negated version of \`?\` with the exact same qualities:
 
     (?! <name>)
     (?! <name> [<name> ...])
     (?! <object.property> [<name> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (?! myVar null)             ; false: null exists
@@ -773,11 +789,11 @@ Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
 (?! obj.prop[0]['method'])  ; true: not defined
 `}</Code>
 
-<md>{`
+<Md>{`
 \`any\` is a sliding switch that combines \`or\` and \`?\`: it resolves to the first value that exists and is truthy, or just the last value that exists:
 
     (any <name> [<name> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (any NaN Infinity)
@@ -789,17 +805,17 @@ Jisp provides three powerful existence macros: \`?\`, \`?!\`, and \`any\`.
 ; Math.PI
 `}</Code>
 
-<md>Single conditional and no runtime error.</md>
+<Md>Single conditional and no runtime error.</Md>
 
 <h3 id='if'>If</h3>
 
-<md>{`
+<Md>{`
 Like everything in jisp, \`if\` is a single form that resolves to a value. When possible, it compiles into the ternary or binary form. You can assign an \`if\` to a variable or return it from a function.
 
     (if <test> <then> [<elif test then> ...] <else>)
     (if <test> <then> <else>)
     (if <test> <then>)
-`}</md>
+`}</Md>
 
 <Code>{`
 ; binary form: single statement
@@ -817,7 +833,7 @@ Like everything in jisp, \`if\` is a single form that resolves to a value. When 
     (cook 'meat'))                 ; else-branch
 `}</Code>
 
-<md>Like everything else, the block form resolves to a value that can be assigned or returned:</md>
+<Md>Like everything else, the block form resolves to a value that can be assigned or returned:</Md>
 
 <Code>{`
 ((def truthiness x
@@ -827,11 +843,11 @@ Like everything in jisp, \`if\` is a single form that resolves to a value. When 
 Infinity)
 `}</Code>
 
-<md>{`
+<Md>{`
 Else-ifs are special forms _inside_ the \`if\` expression. The last non-elif expression is taken as the else-branch (undefined if omitted).
 
     (elif <test> <branch>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (if hungry
@@ -843,11 +859,11 @@ Else-ifs are special forms _inside_ the \`if\` expression. The last non-elif exp
 
 <h3 id='switch'>Switch</h3>
 
-<md>{`
+<Md>{`
 A \`switch\` form automatically inserts \`break;\` statements, protecting you from accidental fall-through:
 
     (switch <predicate> [<case test body> ...] <default>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= x 0)
@@ -858,7 +874,7 @@ A \`switch\` form automatically inserts \`break;\` statements, protecting you fr
   NaN)
 `}</Code>
 
-<md>Quite naturally, `switch` is also an expression that resolves to a value:</md>
+<Md>Quite naturally, `switch` is also an expression that resolves to a value:</Md>
 
 <Code>{`
 (prn (switch Math.PI
@@ -870,7 +886,7 @@ A \`switch\` form automatically inserts \`break;\` statements, protecting you fr
 
 <h3 id='try-catch'>Try / Catch</h3>
 
-<md>{`
+<Md>{`
 In jisp, even \`try\` is an expression. Use it like so:
 
     (try <try> (catch err <catch>) <finally>)
@@ -878,7 +894,7 @@ In jisp, even \`try\` is an expression. Use it like so:
     (try <try> <catch> <finally>)
     (try <try> <catch>)
     (try <try>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (prn
@@ -889,19 +905,19 @@ In jisp, even \`try\` is an expression. Use it like so:
   (finally 'But I’m happy anyway'))
 `}</Code>
 
-<md>More conditionals coming up. The [macro](#macros) system also makes it trivial to define your own conditionals with arbitrary syntax.</md>
+<Md>More conditionals coming up. The [macro](#macros) system also makes it trivial to define your own conditionals with arbitrary syntax.</Md>
 
 <h2 id='loops'>Loops</h2>
 
-<md>Jisp abstracts away the legacy details of JavaScript loops and makes them a lot more expressive. It comes with three loops: `for`, `over`, and `while`.</md>
+<Md>Jisp abstracts away the legacy details of JavaScript loops and makes them a lot more expressive. It comes with three loops: `for`, `over`, and `while`.</Md>
 
 <h3 id='over'>Over</h3>
 
-<md>{`
+<Md>{`
 The \`over\` loop iterates over values and keys of any object. It also accesses inherited properties and custom prototype methods.
 
     (over [<value> [<key>]] <iterable> <body>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= animals (squirrel: 'Eevee' fox: 'Vulpix'))
@@ -913,7 +929,7 @@ The \`over\` loop iterates over values and keys of any object. It also accesses 
 ; fox Vulpix
 `}</Code>
 
-<md>`over` automatically builds a list of values from each iteration. This list is its resolved value:</md>
+<Md>`over` automatically builds a list of values from each iteration. This list is its resolved value:</Md>
 
 <Code>{`
 (= cats (pink: 'Persian' yellow: 'Skitty'))
@@ -929,7 +945,7 @@ The \`over\` loop iterates over values and keys of any object. It also accesses 
 ; ('PINK' 'YELLOW')
 `}</Code>
 
-<md>Iteration only collects results that are not `undefined`, so you can easily filter them:</md>
+<Md>Iteration only collects results that are not `undefined`, so you can easily filter them:</Md>
 
 <Code>{`
 (= cats (pink: 'Mew' yellow: 'Meowth' white: 'Absol'))
@@ -942,11 +958,11 @@ The \`over\` loop iterates over values and keys of any object. It also accesses 
 
 <h3 id='for'>For</h3>
 
-<md>{`
+<Md>{`
 When iterating over arrays and strings, you usually want to hit all elements in order and don't want extra properties tagging along. In those cases, use the \`for\` loop:
 
     (for [<value> [<index>]] <iterable> <body>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (for char index 'meow'
@@ -955,7 +971,7 @@ When iterating over arrays and strings, you usually want to hit all elements in 
 ''
 `}</Code>
 
-<md>It resolves to a list of values from each iteration. Just like `over`, it filters them by `undefined`:</md>
+<Md>It resolves to a list of values from each iteration. Just like `over`, it filters them by `undefined`:</Md>
 
 <Code>{`
 (= array \`(('drink' 'milk')
@@ -970,22 +986,22 @@ When iterating over arrays and strings, you usually want to hit all elements in 
   (if (is (car x) 'drink') x))
 `}</Code>
 
-<md>{`
+<Md>{`
 **[NYI]**: planned feature. If the iterable is an integer larger than 0, jisp will substitute it for a range starting at 1, making for a repeat-N loop:
 
     (= warcry '')
     (for 5 (+= warcry 'waagh! '))
     warcry
     ; waagh! waagh! waagh! waagh! waagh!
-`}</md>
+`}</Md>
 
 <h3 id='while'>While</h3>
 
-<md>{`
+<Md>{`
 For finer-grained control, use the \`while\` loop. It works like in JavaScript, but like everything in jisp, it's an expression. By default, it resolves to a list of values from each iteration. Like \`for\` and \`over\`, it filters them by \`undefined\`, allowing you to skip values:
 
     (while <test> <body>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= bugs \`('missing comma' 'missing semicolon'))
@@ -1002,11 +1018,11 @@ For finer-grained control, use the \`while\` loop. It works like in JavaScript, 
         (if (is (% x 2) 0) x))))
 `}</Code>
 
-<md>{`
+<Md>{`
 You can also order a final resolved value:
 
     (while <test> <body> <return-value>)
-`}</md>
+`}</Md>
 
 <Code>{`
 (= beers 0)
@@ -1021,11 +1037,11 @@ You can also order a final resolved value:
 
 <h2 id='comprehensions'>Comprehensions</h2>
 
-<md>{`
+<Md>{`
 Other languages typically devise special syntax for list comprehensions (a set builder notation). In jisp, you get the same functionality just by combining its basic features.
 
 \`range\` is a trivial built-in function that returns a list from N to M:
-`}</md>
+`}</Md>
 
 <Code>{`
 (range 0 5)
@@ -1033,7 +1049,7 @@ Other languages typically devise special syntax for list comprehensions (a set b
 ; (0 1 2 3 4 5)
 `}</Code>
 
-<md>`for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:</md>
+<Md>`for` and `while` (see [Loops](#loops)) are list-building expressions and can be combined with `range`, and optionally `if`, to make a comprehension:</Md>
 
 <Code>{`
 (prn
@@ -1050,7 +1066,7 @@ Other languages typically devise special syntax for list comprehensions (a set b
 
 <h2 id='macros'>Macros</h2>
 
-<md>{`
+<Md>{`
 Macros are compile-time functions that generate code. A macro takes code as input and returns code that's put in its place. At compile, macro definitions are yanked from your code, then macros are recursively expanded. After all macros are expanded, jisp is compiled to JS:
 
     Definition:
@@ -1058,7 +1074,7 @@ Macros are compile-time functions that generate code. A macro takes code as inpu
 
     Call:
     (<name> [<code>])
-`}</md>
+`}</Md>
 
 <Code>{`
 (mac firstDefinedTruthy ...values
@@ -1070,7 +1086,7 @@ Macros are compile-time functions that generate code. A macro takes code as inpu
 ; add your own macro call here
 `}</Code>
 
-<md>{`
+<Md>{`
 Most of [\`jisp.jisp\`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) is written with macros.
 
 The lifetime of your code without macros:
@@ -1082,11 +1098,11 @@ The lifetime with macros:
     code => parse macros <-> expand macros -> compile into JS => execute
 
 It seems to be a trend among modern languages to introduce limited macro support in form of templates. Jisp brings macros to JavaScript but it's **not** limited to templating. Macros are complete, real, custom functions using the full power of the language to run arbitrary logic and transform code in arbitrary ways.
-`}</md>
+`}</Md>
 
 <h3 id='templating'>Templating</h3>
 
-<md>{`
+<Md>{`
 Templating is the most basic use. Let's make a macro that generates named function definitions:
 
     Prefix code to return with \`:
@@ -1094,7 +1110,7 @@ Templating is the most basic use. Let's make a macro that generates named functi
 
     Unquote elements with , to resolve (transclude) them during macro call:
     \`(<code> ,<elem> <code>)
-`}</md>
+`}</Md>
 
 <Code>{`
 ; yanked at macro parse
@@ -1115,11 +1131,11 @@ Templating is the most basic use. Let's make a macro that generates named functi
 ; try a non-operator
 `}</Code>
 
-<md>{`
+<Md>{`
 In this example, the macro returns the form starting with \`def\`. Quoting with \`\` \` \`\` prevents this form from resolving during the macro call and lets the macro return it as code. Unquoting the macro arguments \`name\` and \`operator\` by prepending them with \`,\` transcludes them into the template. Try adding your own macro calls to generate new definitions.
 
 Because macros are real functions, you can edit the return code in arbitrary ways. For instance, based on the arguments passed. Let's make our operator macro slightly more versatile:
-`}</md>
+`}</Md>
 
 <Code>{`
 (mac makeReduce name operator zeroValue
@@ -1139,15 +1155,15 @@ Because macros are real functions, you can edit the return code in arbitrary way
 ; try your own macro call
 `}</Code>
 
-<md>In this example, the logic `(args.unshift ,zeroValue)` is only included if a `zeroValue` was passed to the macro. Run the resulting functions with none and one argument to see the difference.</md>
+<Md>In this example, the logic `(args.unshift ,zeroValue)` is only included if a `zeroValue` was passed to the macro. Run the resulting functions with none and one argument to see the difference.</Md>
 
 <h3 id='code-construction'>Code Construction</h3>
 
-<md>{`
+<Md>{`
 Because jisp code is a series of nested arrays, macros can deconstruct and construct it on the fly. This is why we have those parentheses.
 
 As a silly example, you could enable reverse syntax by reversing the code passed to a macro:
-`}</md>
+`}</Md>
 
 <Code>{`
 (mac reverse form (do
@@ -1165,7 +1181,7 @@ As a silly example, you could enable reverse syntax by reversing the code passed
 ; try your own reverse code
 `}</Code>
 
-<md>{`
+<Md>{`
 But let's get more serious. Getting back to the example at the top of the page. Suppose you're writing a gulp config file full of repetitive blocks like these:
 
     gulp.task('jisp', function() {
@@ -1177,7 +1193,7 @@ But let's get more serious. Getting back to the example at the top of the page. 
     });
 
 You can't deduplicate this with functional abstractions alone, and are forced to write this repetitive code by hand. But you can abstract it away with a macro:
-`}</md>
+`}</Md>
 
 <Code>{`
 (mac task name ...args (do
@@ -1201,7 +1217,7 @@ You can't deduplicate this with functional abstractions alone, and are forced to
 ; try adding your own task
 `}</Code>
 
-<md>{`
+<Md>{`
 What happened? The macro takes its arguments as an array, takes it apart in pairs, and constructs a new array of the resulting code, filling in the repetitive blocks we wanted to dedup. The constructed code in this example is:
 
     (gulp.task 'jisp' (fn (do
@@ -1216,7 +1232,7 @@ And it replaces the macro call before the code is compiled.
 We've just enabled a new shorter, cleaner syntax for the rest of our configuration file, and deduplicated our code in a way not possible with plain JavaScript. It should be noted that macros take any kind of input; it could be hash tables or bigger blocks of code. See [\`jisp.jisp\`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) for bigger examples.
 
 Macros can have arbitrary symbols and even literal strings as names. Suppose you're writing a lot of prototype extenders and want to shorten the definitions. In other languages, you're lucky if you have special syntax for that. In jisp, make the syntax yourself:
-`}</md>
+`}</Md>
 
 <Code>{`
 (mac @ obj method ...args body
@@ -1230,7 +1246,7 @@ Macros can have arbitrary symbols and even literal strings as names. Suppose you
   (= this.loudness decibels))
 `}</Code>
 
-<md>Sometimes you want the code returned from a macro to contain new variable binginds. Prefix a name with `#` to make it a service name that is guaranteed to be unique in the current scope. If it clashes with any other variable, it will be renamed to avoid the conflict.</md>
+<Md>Sometimes you want the code returned from a macro to contain new variable binginds. Prefix a name with `#` to make it a service name that is guaranteed to be unique in the current scope. If it clashes with any other variable, it will be renamed to avoid the conflict.</Md>
 
 <Code>{`
 (mac myDefinition
@@ -1241,7 +1257,7 @@ Macros can have arbitrary symbols and even literal strings as names. Suppose you
 (= uniq 'declared outside macro')
 `}</Code>
 
-<md>Finally, macros can self-expand on definition:</md>
+<Md>Finally, macros can self-expand on definition:</Md>
 
 <Code>{`
 ((mac pr x \`(process.stdout.write ,x)) 'hello world')
@@ -1253,7 +1269,7 @@ Macros can have arbitrary symbols and even literal strings as names. Suppose you
 
 <h3 id='macro-import-export'>Macro Import and Export</h3>
 
-<md>{`
+<Md>{`
 Macros can be imported in three ways:
 * compile or \`require\` a macro-containing file before others within the same Node runtime or on the same browser page;
 * use the \`importMacros\` method of the object exported by the compiler or the global \`jisp\` object in the browser;
@@ -1272,25 +1288,25 @@ Macros are kept in the \`macros\` object that exists during the compiler runtime
 The \`macros\` object persists between compiler calls. If you're using a build script that compiles multiple jisp files within the same runtime, you can simply put macros in a file and require or compile it before others. This also works when running jisp scripts directly with \`require\`.
 
 When a macro is referenced in code, it's embedded at the top of your program and can be assigned and exported from a module. See [\`macros.jisp\`](https://github.com/Mitranim/jisp/blob/master/src/macros.jisp) for an example.
-`}</md>
+`}</Md>
 
 <h3 id='macro-notes'>Notes</h3>
 
-<md>{`
+<Md>{`
 After each macro expansion, the new code is recursively checked for macro definitions and calls. This allows macros to be nested, and even contain new macro definitions. See [\`jisp.jisp\`](https://github.com/Mitranim/jisp/blob/master/src/jisp.jisp) for examples; most of it is written with nested macros.
 
 To avoid confusing macros for functions, it's good style to begin their names with \`mac\`.
 
 It's important to realise that macros are compile-time, not run-time. They live in the land of names, not in the land of values like functions. Rather than passing values by names to macros, you pass _names_, or code in general. A macro doesn't give a flying duck about scope or variable bindings. You aren't constrained by scope or object reference issues, and don't have to pass around objects you want to access. You just construct the code you want, where you want it, at compile time.
-`}</md>
+`}</Md>
 
 <h2 id='built-ins'>Built-ins and Embedding</h2>
 
-<md>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</md>
+<Md>Jisp comes with some built-in macros and functions, and faculties for importing them and embedding into compiled programs.</Md>
 
 <h3 id='built-in-macros'>Macros</h3>
 
-<md>Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`.</md>
+<Md>Most built-in macros are conditionals. See the [conditionals](#conditionals) section. Some are property accessors. `prn` is a syntax-level alias for `console.log`.</Md>
 
 <Code>{`
 (car   x)
@@ -1308,11 +1324,11 @@ It's important to realise that macros are compile-time, not run-time. They live 
 (prn   x y)
 `}</Code>
 
-<md>`:` is a hash table builder. When given multiple arguments, it takes them as key-value pairs and compiles to an object literal:</md>
+<Md>`:` is a hash table builder. When given multiple arguments, it takes them as key-value pairs and compiles to an object literal:</Md>
 
 <Code>(: basic 'hash' table 'syntax')</Code>
 
-<md>This has its use in macros (at compile time). To use the hash builder at runtime, call it with a single argument:</md>
+<Md>This has its use in macros (at compile time). To use the hash builder at runtime, call it with a single argument:</Md>
 
 <Code>{`
 (= calc \`('number' Math.PI 'professor' 'Archimedes'))
@@ -1321,18 +1337,18 @@ It's important to realise that macros are compile-time, not run-time. They live 
   (: calc))
 `}</Code>
 
-<md>{`
+<Md>{`
 Take note that \`:\` is _destructive_. \`(: ( .slice))\` your lists if you want to keep originals.
 
 \`::\` is a concatenating hash builder. It concatenates its arguments, flattening them if they're arrays, and passes the result to \`:\`.
-`}</md>
+`}</Md>
 
 <Code>{`
 (JSON.stringify
   (:: \`('first' 'pair') \`('second' 'pair')))
 `}</Code>
 
-<md>`::` is particularly useful for building hashes in loops.</md>
+<Md>`::` is particularly useful for building hashes in loops.</Md>
 
 <Code>{`
 (def duplicate ...args
@@ -1344,13 +1360,13 @@ Take note that \`:\` is _destructive_. \`(: ( .slice))\` your lists if you want 
 
 <h3 id='built-in-functions'>Functions</h3>
 
-<md>{`
+<Md>{`
 Jisp has a special faculty for adding global functions to the language. If any of them is referenced in code, it's embedded at the top of your program on compile. No globals are leaked. If the function is reassigned before being referenced, it's not embedded. Like with macros, jisp provides a way to import these functions, extending the language. It also comes with a few:
 
 \`list\` is a list (array) builder. It's roughly equivalent to \`(Array x)\`, but also accepts 0 or 1 arguments.
 
     (list [<args> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (list)
@@ -1362,11 +1378,11 @@ Jisp has a special faculty for adding global functions to the language. If any o
 ; ('wizard' 'hat' 'staff')
 `}</Code>
 
-<md>{`
+<Md>{`
 \`concat\` is like \`list\` except it flattens lists passed as arguments, concatenating them:
 
     (concat [<args> ...])
-`}</md>
+`}</Md>
 
 <Code>{`
 (concat \`(yes no) \`(NaN) Infinity)
@@ -1374,11 +1390,11 @@ Jisp has a special faculty for adding global functions to the language. If any o
 ; (yes no NaN Infinity)
 `}</Code>
 
-<md>{`
+<Md>{`
 \`range\` is a function that builds a list from N to M. It's used in comprehensions:
 
     (range [start] end)  ; default start 0
-`}</md>
+`}</Md>
 
 <Code>{`
 (range -1 6)
@@ -1388,7 +1404,7 @@ Jisp has a special faculty for adding global functions to the language. If any o
 
 <h3 id='function-import-export'>Function Import and Export</h3>
 
-<md>{`
+<Md>{`
 Similarly to macros, functions can be imported in two ways:
 * use the \`importFunctions\` method of the object imported with \`require\` or the global \`jisp\` object in the browser;
 * directly access and modify the function store exposed by the module.
@@ -1406,11 +1422,11 @@ The global functions are stored in the \`functions\` object that exists during t
     (cube 3) ; function embed, 27
 
 Try this in a REPL or a file to see how functions are embedded after importing. This faculty makes it easy to extend the language in a modular way with zero global leaks and zero global dependency.
-`}</md>
+`}</Md>
 
 <h2 id='style'>Style</h2>
 
-<md>{`
+<Md>{`
 Jisp is insensitive to whitespace, but humans don't read code by counting parens; we read it by indentation. Your indentation should reflect the nesting of expressions, branches of execution. Parallel branches share the same indent, nested branches are indented further.
 
     ; BAD, misleading about nesting
@@ -1426,11 +1442,11 @@ Jisp is insensitive to whitespace, but humans don't read code by counting parens
              (+ (init name) (+ 1 (Number (last name))))))
 
 When nesting isn't deep, try lining up each next indent with the second word on the preceding line (example above). Otherwise, stick with two spaces for each new level.
-`}</md>
+`}</Md>
 
 <h2 id='why'>Why Use Jisp</h2>
 
-<md>{`
+<Md>{`
 #### Simple and Safe
 
 Despite being more powerful, jisp is a lot [simpler](#code-structure) than JavaScript. Is has practically no syntax; there's no semicolons, commas, or linebreaks to trip yourself over, no special rules for keywords and operators. Everything uses the same rules, making it hard to make an error.
@@ -1444,11 +1460,11 @@ At its heart, jisp is just JavaScript. But it's also much more.
 On the surface level, it builds some coding patterns right into the language and provides powerful higher-level [conditionals](#conditionals) and [loops](#loops), making your programs terser. Its [expressive](#everything-exp) functional syntax and implicit value resolution lets you focus on your ideas and have the language take care of data returns.
 
 More importantly, it lets you define syntactic abstractions and automatically [generate code](#macros), [reprogram](#macro-import-export) and [extend](#function-import-export) the language, implement embedded domain-specific languages on top of JS, deduplicate code in ways impossible with plain JavaScript.
-`}</md>
+`}</Md>
 
 <h3 id='why-over'>Why Jisp Over [insert dialect X]</h3>
 
-<md>{`
+<Md>{`
 There's a bunch of Lisp-JavaScript dialects floating in the wild. So why jisp?
 
 #### JavaScript-first
@@ -1468,24 +1484,23 @@ Jisp is full of features of [immediate](#existence), practical use to a JavaScri
 #### Axiomatic
 
 Despite aiming for features, jisp takes the minimalistic, simplest possible approach to design. It wants you to type less and do more with less code. It doesn't try to imitate [language X] — or JavaScript, for that matter. It aims to be [succinct](#lambda) and get out of your way.
-`}</md>
+`}</Md>
 
 <h2 id='acknowledgements'>Acknowledgements and Notes</h2>
 
-<md>{`
+<Md>{`
 Jisp is massively inspired by [CoffeeScript](http://coffeescript.org) and uses bits of its source for CLI utils. Design inspiration from [Arc](http://paulgraham.com/arc.html) and the Lisp family of languages, bits from other places. General inspiration from [Arc-js](https://github.com/smihica/arc-js).
 
 Reach me out by instant messaging (preferably Skype) or email. See my contacts [here](http://mitranim.com). The email is also a Jabber ID.
 
 Copyright (c) 2014 Mitranim, under the MIT License ([source](https://github.com/Mitranim/jisp/blob/master/license) / [docs](https://github.com/Mitranim/jisp/blob/gh-pages/license)).
-`}</md>
+`}</Md>
 
 </div>
 
-    );
-  }
-});
+  )}
+})
 
 /********************************** Export ***********************************/
 
-module.exports = Docs;
+module.exports = Docs

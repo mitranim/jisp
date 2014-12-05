@@ -1,21 +1,16 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React = require('react/addons'),
-    rb    = require('react-bootstrap'),
-    Link  = require('react-router').Link;
+var React = require('react')
 
 // Custom components
-var id    = require('./utils').rndId;
 
 /******************************** Components *********************************/
 
 var Sidenav = React.createClass({
-  render: function() {
-    return (
+  render: function() {return (
 
 <div className={this.props.className}>
   <div className='affix bs-sidebar hidden-print'>
@@ -93,10 +88,9 @@ var Sidenav = React.createClass({
   </div>
 </div>
 
-    );
-  }
-});
+  )}
+})
 
 /********************************** Export ***********************************/
 
-module.exports = Sidenav;
+module.exports = Sidenav

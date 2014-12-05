@@ -1,43 +1,42 @@
-/*--------------*/
-/* Dependencies */
-/*--------------*/
+/******************************* Dependencies ********************************/
 
+// Third party.
 @import (less) '../../node_modules/bootstrap/less/bootstrap.less';
 
-/*-----------*/
-/* Variables */
-/*-----------*/
+// Custom styles.
+@import (less) './code.less';
+@import (less) './sidenav.less';
 
-// Override fonts
+/********************************* Variables *********************************/
+
+// Typography.
 @font-family-sans-serif: 'Source Sans Pro', 'PT Sans', 'Open Sans', 'Segoe UI', Verdana, sans-serif;
 @font-family-serif: 'Optima', 'Segoe UI', 'PT Serif', 'Georgia', serif;
-
-// Bonus
 @font-family-decorative: 'Georgia', 'Impact', @font-family-monospace;
 @font-size-extra-large: ceil((@font-size-base * 1.5));
-
-@gray-lighter: lighten(#000, 85%); // #eee
-
 @blockquote-font-size: (@font-size-base * 1.1);
 
+// Colours.
+@gray-lighter: lighten(#000, 85%); // #eee
 @body-bg: #fffafa;
-
 @navbar-default-bg: #efefef;
 
-/*-------------*/
-/* Misc global */
-/*-------------*/
+// Border radius.
+@border-radius-base: 0;
+@border-radius-large: 0;
+@border-radius-small: 0;
+
+/*********************************** Misc ************************************/
 
 html, body {
   height: 100%;
 }
 
-// body {
-//   position: relative;
-//   margin-bottom: 3em;
-// }
+p {
+  margin-top: 4px;
+}
 
-/* Headers */
+/********************************** Headers **********************************/
 
 @font-size-h1: floor((@font-size-base * 2.2));
 @font-size-h2: floor((@font-size-base * 1.9));
@@ -50,28 +49,14 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
 }
 
-/* Navbar */
+/********************************** Navbar ***********************************/
 
 @grid-float-breakpoint: @screen-xs;
 
-/* Other */
+/******************************** Blockquote *********************************/
 
-button.btn, pre, code, form, input {
-  border-radius: 0;
+blockquote {
+  &.info    {border-color: @brand-info}
+  &.warning {border-color: @brand-warning}
+  &.danger  {border-color: @brand-danger}
 }
-
-p {
-  margin-top: 4px;
-}
-
-/*------------------*/
-/* Code Field Setup */
-/*------------------*/
-
-@import (less) './code.less';
-
-/*----------*/
-/* Side Nav */
-/*----------*/
-
-@import (less) './sidenav.less';

@@ -1,35 +1,29 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React   = require('react/addons');
+var React   = require('react')
 
 // Custom components
-var id      = require('./utils').rndId,
-    Docs    = require('./docs'),
-    Sidenav = require('./sidenav');
+var Docs    = require('./docs')
+var Sidenav = require('./sidenav')
 
 /******************************** Components *********************************/
 
 var Index = React.createClass({
-  render: function() {
-    return (
+  render: function() {return (
 
 <div className='container'>
   <div className='row'>
-    <Docs className='col-xs-12 col-md-9'>
-    </Docs>
-    <Sidenav className='col-xs-12 col-md-3'>
-    </Sidenav>
+    <Docs className='col-xs-12 col-md-9' />
+    <Sidenav className='col-xs-12 col-md-3' />
   </div>
 </div>
 
-    );
-  }
-});
+  )}
+})
 
 /********************************** Export ***********************************/
 
-module.exports = Index;
+module.exports = Index

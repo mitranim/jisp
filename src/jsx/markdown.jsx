@@ -1,11 +1,10 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React  = require('react/addons'),
-    marked = require('marked');
+var React  = require('react')
+var marked = require('marked')
 
 /********************************* Configure *********************************/
 
@@ -15,24 +14,20 @@ marked.setOptions({
   breaks:      true,
   sanitize:    false,
   smartypants: true
-});
+})
 
 /******************************** Components *********************************/
 
-var md = React.createClass({
-  render: function() {
-    var text = this.props.children.toString();
-    return (
+var Md = React.createClass({
+  render: function() {return (
 
-<div dangerouslySetInnerHTML={{__html: marked(text)}}
+<div dangerouslySetInnerHTML={{__html: marked(this.props.children.toString())}}
      className={this.props.className}
      style={this.props.style} />
 
-    );
-  }
-});
+  )}
+})
 
 /********************************** Export ***********************************/
 
-module.exports = {markdown : marked,
-                  md       : md};
+module.exports = Md

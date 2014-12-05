@@ -1,63 +1,38 @@
-/** @jsx React.DOM */
-'use strict';
+'use strict'
 
 /******************************* Dependencies ********************************/
 
 // Third party
-var React  = require('react/addons'),
-    rb     = require('react-bootstrap'),
-    Link   = require('react-router').Link;
+var React  = require('react')
+
+// Enable Bootstrap JS
+var rb     = require('react-bootstrap')
 
 // Custom components
-var id     = require('./utils').rndId,
-    Navbar = require('./navbar');
+var Index  = require('./index')
+var Navbar = require('./navbar')
+var Footer = require('./footer')
 
 /******************************** Components *********************************/
 
 var App = React.createClass({displayName: 'App',
-  render: function() {
-    return (
+  render: function() {return (
 
-React.DOM.div({role: "layout", className: "layout"}, 
+React.createElement("div", {role: "layout", className: "layout"}, 
 
-  Navbar(null), 
+  React.createElement(Navbar, null), 
 
-  React.DOM.div({className: "site-wrap"}, 
-    this.props.activeRouteHandler(null)
+  React.createElement("div", {className: "site-wrap"}, 
+    React.createElement(Index, null)
   ), 
 
-  Footer(null)
+  React.createElement(Footer, null)
 
 )
 
-    );
-  }
-});
+  )}
+})
 
-var Footer = React.createClass({displayName: 'Footer',
-  render: function() {
-    return (
+/********************************** Render ***********************************/
 
-React.DOM.footer({className: "site-footer"}, 
-  React.DOM.hr(null), 
-  React.DOM.div({className: "container"}, 
-    React.DOM.p({className: "pull-right"}, 
-      React.DOM.a({href: "#", className: "text-muted"}, 
-        React.DOM.span({className: "fa fa-arrow-up"})
-      )
-    ), 
-    React.DOM.p({className: "text-muted"}, 
-      '© ' +
-       ((new Date().getFullYear() === 2014) ? 2014 : '2014—' + new Date().getFullYear())
-       + ' Mitranim'
-    )
-  )
-)
-
-    );
-  }
-});
-
-/********************************** Export ***********************************/
-
-module.exports = App;
+React.render(React.createElement(App, null), document.body)
