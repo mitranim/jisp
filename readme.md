@@ -1,4 +1,4 @@
-> Note: The upcoming 0.4.0 is going to introduce a bunch of breaking changes. It's a complete from-scratch rewrite of the compiler, and I'm revising some parts of the language, dropping dead end ideas and focusing on the core stuff. Initially it's going to have fewer features than the current version.
+> Note: I apologise for the lack of updates. I've been preparing [0.4.0](https://github.com/Mitranim/jisp/tree/0.4.0), which is a complete rewrite of the compiler with a bunch of breaking changes. It revises some parts of the language, dropping dead end ideas and focusing on the core features. Unfortunately I'm busy with some other projects right now.
 
 ## Description
 
