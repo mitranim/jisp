@@ -9,7 +9,7 @@
   jisp = require("./jisp");
   utils = require("./utils");
   optparse = require("./optparse");
-  useWinPathSep = path.set === "\\ ".slice(0, 1);
+  useWinPathSep = path.sep === "\\ ".slice(0, 1);
   utils.extend(jisp, new EventEmitter());
 
   function printLine(line) {
@@ -188,8 +188,8 @@
   compileJoin = (function() {
     var _ref;
     if (!sourceCode.some((function(code) {
-      return (code === null);
-    }))) {
+        return (code === null);
+      }))) {
       clearTimeout(joinTimeout);
       _ref = (joinTimeout = wait(100, (function() {
         return compileScript(opts.join, sourceCode.join("\n"), opts.join);

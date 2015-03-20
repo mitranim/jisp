@@ -39,7 +39,8 @@
         _ref0 = printConditions(cond);
       } else {
         _ref0 = pr(cond);
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
+      }
+      if (typeof _ref0 !== 'undefined') _res.push(_ref0);
     }
     return _res
       .join("  ");
@@ -71,7 +72,8 @@
             return _ref1 = false;
           } else {
             _ref1 = undefined;
-          } if (typeof _ref1 !== 'undefined') _res.push(_ref1);
+          }
+          if (typeof _ref1 !== 'undefined') _res.push(_ref1);
         }
         return (_res ? true : undefined);
       });
@@ -131,7 +133,8 @@
         throw Error("unexpected " + pr(tokens[0]));
       } else {
         _ref0 = undefined;
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
+      }
+      if (typeof _ref0 !== 'undefined') _res.push(_ref0);
     }
     return _res;
   }

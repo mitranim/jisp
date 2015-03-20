@@ -212,7 +212,7 @@
   _ref0 = ops;
   for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
     op = _ref0[_i0];
-    (typeof op[1] === "string") ? operators[op[0]] = operators[op[1]] : operators[op[0]] = makeop.apply(makeop, [].concat(op));
+    (typeof op[1] === "string") ? operators[op[0]] = operators[op[1]]: operators[op[0]] = makeop.apply(makeop, [].concat(op));
   }
   stateops = [
     ["return", 0, 1],

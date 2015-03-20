@@ -411,7 +411,8 @@
       } else {
         _ref = undefined;
         break;
-      } if (typeof _ref !== 'undefined') _res.push(_ref);
+      }
+      if (typeof _ref !== 'undefined') _res.push(_ref);
     }
     return _res;
   }
@@ -634,7 +635,7 @@
   _ref0 = ops;
   for (_i0 = 0; _i0 < _ref0.length; ++_i0) {
     op = _ref0[_i0];
-    (typeof op[1] === "string") ? operators[op[0]] = operators[op[1]] : operators[op[0]] = makeop.apply(makeop, [].concat(op));
+    (typeof op[1] === "string") ? operators[op[0]] = operators[op[1]]: operators[op[0]] = makeop.apply(makeop, [].concat(op));
   }
   stateops = [
     ["return", 0, 1],
@@ -812,7 +813,8 @@
         _ref0 = printConditions(cond);
       } else {
         _ref0 = pr(cond);
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
+      }
+      if (typeof _ref0 !== 'undefined') _res.push(_ref0);
     }
     return _res
       .join("  ");
@@ -844,7 +846,8 @@
             return _ref1 = false;
           } else {
             _ref1 = undefined;
-          } if (typeof _ref1 !== 'undefined') _res.push(_ref1);
+          }
+          if (typeof _ref1 !== 'undefined') _res.push(_ref1);
         }
         return (_res ? true : undefined);
       });
@@ -904,7 +907,8 @@
         throw Error("unexpected " + pr(tokens[0]));
       } else {
         _ref0 = undefined;
-      } if (typeof _ref0 !== 'undefined') _res.push(_ref0);
+      }
+      if (typeof _ref0 !== 'undefined') _res.push(_ref0);
     }
     return _res;
   }
@@ -1207,8 +1211,8 @@
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isnta", split.slice(0, i + 1)
-          .join(""), "'undefined'"
-        ]) !== 'undefined') _res.push(_ref1);
+            .join(""), "'undefined'"
+          ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -1233,8 +1237,8 @@
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isa", split.slice(0, i + 1)
-          .join(""), "'undefined'"
-        ]) !== 'undefined') _res.push(_ref1);
+            .join(""), "'undefined'"
+          ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -1339,12 +1343,13 @@
       } else {
         _ref = undefined;
         break;
-      } if (typeof _ref !== 'undefined') _res.push(_ref);
+      }
+      if (typeof _ref !== 'undefined') _res.push(_ref);
     }
     return _res;
   }
   var vm, fs, path, beautify, utils, ops, operators, opFuncs, tokenise, lex, parse, Uniq, pr, spr, render, isAtom, isHash, isList, isVarName, isIdentifier, isService, getServicePart, assertExp, plusname, functionsRedeclare, functionsRedefine, specials, macros, functions;
-  exports.version = "0.3.2";
+  exports.version = "0.3.3";
   vm = require("vm");
   fs = require("fs");
   path = require("path");
@@ -1609,7 +1614,7 @@
           }
         }
         if ((typeof argsSpread === 'undefined')) {
-          ([].indexOf.call(Object.keys(operators), first) >= 0) ? buffer.push(operators[first](form, innerType)) : buffer.push(pr(first) + "(" + spr(form) + ")");
+          ([].indexOf.call(Object.keys(operators), first) >= 0) ? buffer.push(operators[first](form, innerType)): buffer.push(pr(first) + "(" + spr(form) + ")");
         } else {
           form = ["quote", form];
           _ref5 = compileGetLast(form, buffer, scope, opts, nested);
@@ -1639,7 +1644,8 @@
           } else {
             method = "";
             name = split[0];
-          } if (isIdentifier(name)) {
+          }
+          if (isIdentifier(name)) {
             buffer.push(name + method + ".apply(" + name + ", " + pr(form) + ")");
           } else {
             _ref7 = declareService("_ref", scope);
@@ -1648,7 +1654,8 @@
             buffer.push("(" + collector + " = " + name + ")" + method + ".apply(" + collector + ", " + pr(form) + ")");
           }
         }
-      } if ((typeof isOuterOperator !== 'undefined')) delete opts.compilingOperator;
+      }
+      if ((typeof isOuterOperator !== 'undefined')) delete opts.compilingOperator;
       _ref10 = [buffer, scope];
     }
     return _ref10;
@@ -1873,7 +1880,8 @@
             exp = _ref1[0];
             buffer = _ref1[1];
             scope = _ref1[2];
-          } if ((typeof exp !== 'undefined')) arr.push(exp);
+          }
+          if ((typeof exp !== 'undefined')) arr.push(exp);
         }
       }
       if ((arr.length > 0))(res === "[]") ? res = pr(arr) : res += (".concat(" + pr(arr) + ")");
@@ -2555,7 +2563,8 @@
         assertExp(key, isVarName, "valid identifier");
         if ((opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key))) functionsRedeclare.push(key);
         scope = declareVar(key, scope);
-      } if (isService(value)) {
+      }
+      if (isService(value)) {
         _ref5 = compileGetLast(value, buffer, scope, opts, nested);
         value = _ref5[0];
         buffer = _ref5[1];
@@ -2658,7 +2667,8 @@
         assertExp(key, isVarName, "valid identifier");
         if ((opts.topScope && ([].indexOf.call(Object.keys(functions), key) >= 0) && !([].indexOf.call(scope.hoist, key) >= 0) && notRedefined(key))) functionsRedeclare.push(key);
         scope = declareVar(key, scope);
-      } if (isService(value)) {
+      }
+      if (isService(value)) {
         _ref3 = compileGetLast(value, buffer, scope, opts, nested);
         value = _ref3[0];
         buffer = _ref3[1];
@@ -2810,7 +2820,8 @@
       _ref3 = declareService("_err", scope, (opts.function ? args : undefined));
       err = _ref3[0];
       scope = _ref3[1];
-    } if ((typeof catchForm === 'undefined')) catchForm = undefined;
+    }
+    if ((typeof catchForm === 'undefined')) catchForm = undefined;
     nested = nestedLocal;
     _ref4 = compileResolve(catchForm, buffer, scope, opts, nested);
     catchForm = _ref4[0];

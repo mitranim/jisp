@@ -161,8 +161,8 @@
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isnta", split.slice(0, i + 1)
-          .join(""), "'undefined'"
-        ]) !== 'undefined') _res.push(_ref1);
+            .join(""), "'undefined'"
+          ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
@@ -187,8 +187,8 @@
       for (i = 0; i < _ref0.length; ++i) {
         val = _ref0[i];
         if (typeof(_ref1 = ["isa", split.slice(0, i + 1)
-          .join(""), "'undefined'"
-        ]) !== 'undefined') _res.push(_ref1);
+            .join(""), "'undefined'"
+          ]) !== 'undefined') _res.push(_ref1);
       }
       _ref = _res;
     } else {
