@@ -18,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Rest ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Putting more than one backslash directly before a quote breaks our tokeniser, todo fix
-(= useWinPathSep (is path.set ("\\ ".slice 0 1)))
+(= useWinPathSep (is path.sep ("\\ ".slice 0 1)))
 
 ; Allow jisp to emit Node.js events
 (utils.extend jisp (new EventEmitter))
