@@ -1,0 +1,50 @@
+[use `jisp:prelude_3` `*`]
+[use `jisp:prelude_3` pre]
+[use `./test_3_mac.jisp` m]
+
+| Generates a syntactically valid call that panics at runtime.
+[nil no ok]
+
+| Compile error.
+| someVal
+
+[const someVal 10]
+
+| OK.
+someVal
+
+| Compile error.
+| [fn someFunc0 [] someArg]
+
+| OK.
+[fn someFunc1 [someArg] someArg]
+
+| Must generate a runtime call without "new".
+[someFunc1 10 20 30]
+
+| OK.
+[fn someFunc2 [] someVal]
+
+[callStyle `list run new val` someFunc2]
+
+| Must generate a runtime call with "new".
+[someFunc2 10 20 30]
+
+[pre.global.console.log `logging0`]
+
+[global.console.log `logging1`]
+
+| "global" must be predefined.
+[const g global]
+
+| Compile error.
+| astMacro
+
+| OK.
+[astMacro 10 20 30]
+
+| Compile error.
+| valMacro
+
+| OK.
+[valMacro 10 20 30]

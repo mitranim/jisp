@@ -1,0 +1,27 @@
+%YAML 1.2
+---
+version: 2
+extends: Packages/mox/mox_base.sublime-syntax
+scope: source.jisp
+
+variables:
+  # TODO commit to just one comment style.
+  comment_line_start: (\||;)
+
+  # TODO consider switching to ONLY fenced comments.
+  comment_block_start: (?!)
+  comment_block_end: (?!)
+
+  ident_start_chars: '[[:alpha:]_$]'
+  ident_chars: '[[:alnum:]_$]'
+  ident: (?<!{{ident_chars}}){{ident_start_chars}}{{ident_chars}}*(?!{{ident_chars}})
+
+contexts:
+  ident-match:
+    - meta_prepend: true
+    - include: ident-call-match
+    - include: ident-const-predeclared-match
+
+  ident-const-predeclared-match:
+    - match: \b(?:nil|null|no|ok)\b
+      scope: constant.language.jisp

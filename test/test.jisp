@@ -1,0 +1,81 @@
+[use `jisp:prelude` `*`]
+[use `jisp:prelude` p]
+[use `jisp:prelude` pre]
+
+| Generates a syntactically valid call that panics at runtime.
+[nil no ok]
+
+[const someVal 10]
+
+| OK.
+someVal
+
+| Compile error.
+| [fn someFunc0 [] someArg]
+
+| OK.
+[fn someFunc1 [someArg] someArg]
+
+| Must generate a runtime call without "new".
+[someFunc1 10 20 30]
+
+| OK.
+[fn someFunc2 [] someVal]
+
+[callStyle `list run new val` someFunc2]
+
+| Must generate a runtime call with "new".
+[someFunc2 10 20 30]
+
+[pre.global.console.log `logging0`]
+
+[global.console.log `logging1`]
+
+| "global" must be predefined.
+[const g global]
+
+| FIXME implement.
+| FIXME exclude from compiled code, unless used by non-macros.
+[fn astMacro []
+  | Shadowing must work.
+  [const g global]
+  [g.console.log `executing AST macro`]
+
+  | FIXME implement.
+  | FIXME compile error for unknown identifier "one" and others.
+  | [quote [one two three]]
+]
+
+| [setCallStyle astMacro "macroAst"]
+| [callStyle `LMCA` astMacro]
+[callStyle `list macro call ast` astMacro]
+
+| Compile error.
+| astMacro
+
+[astMacro 10 20 30]
+
+[fn valMacro []
+  | Shadowing must work.
+  [const g global]
+  [g.console.log `executing val macro`]
+  [g.Array.of
+    10
+    [g.Object.fromEntries
+      [g.Array.of
+        [g.Array.of `one` 20]
+        [g.Array.of `🙂😛😞` 30]
+      ]
+    ]
+  ]
+]
+
+| TODO consider: get "Def" and call its method.
+| [setCallStyle valMacro `macroAst`]
+| [callStyle `LMCV` valMacro]
+[callStyle `list macro call val` valMacro]
+
+| Compile error.
+| valMacro
+
+[valMacro 10 20 30]

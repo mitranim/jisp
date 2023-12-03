@@ -1,0 +1,428 @@
+| Need decent method chaining.
+
+[class Text
+  [extend Node]
+  [fn_static reg [] [throw [errMeth `reg` this]]]
+  [fn_static match [src] [[this.reg].exec [a.reqStr src]]]
+
+  [fn_static parse [span] 
+    | Must return if the variable's value is nil.
+    [guard_some [const mat [this.match [span.rem]]]]
+
+    [const tar [new this]]
+    [tar.setSpan [span.withLen 0]]
+    [tar.fromMatch mat]
+
+    | Equivalent.
+    | ↓↓↓↓↓↓
+
+    [span.skip [[tar.getSpan].getLen]]
+    [span.skip [-> tar [.getSpan] [.getLen]]]
+    [-> tar [$.getSpan] [$.getLen] [span.skip $]]
+    span.skip[tar.getSpan[].getLen[]]
+
+    | Postfix chaining. "←" stands for prev expression.
+    | Possible: "→" for next expression.
+
+    tar.getSpan[].getLen[] -> span.skip[←]
+
+    | Implicit postfix chaining.
+
+    tar.getSpan[].getLen[]
+    span.skip[←]
+
+    tar.getSpan[].getLen[], span.skip[←]
+
+    | In a sensible language:
+    |   * Property getters = nullary methods.
+    |   * Every call is unary and doesn't need delims.
+    |   * Delims are used only for grouping.
+    tar.span.len, span.skip ←
+    [tar.span.len], [span.skip ←]
+    tar, ←.span, ←.len, span.skip ←
+
+    | Separating expressions from each other on a single line:
+    10, 20, 30
+
+    | Same but multi-line:
+    10
+    20
+    30
+
+    | ↑↑↑↑↑↑
+
+    tar
+  ]
+
+  [fn fromMatch [mat]
+    [[this.getSpan].setLen [indexGet mat 0].length]
+    this
+  ]
+]
+
+
+
+| fun 10 20 30
+|   40
+|   50
+|   60
+
+
+fun
+  10
+  20
+  30
+  40
+  50
+  60
+
+one
+  two
+    three
+  four
+    five
+    six
+
+
+one.two.three
+
+one
+.two
+.three
+
+one
+  two.three
+  two
+  .three
+  four
+    five
+.six
+  seven
+.eight
+
+
+
+
+class Text
+  extend Node
+
+  | Equivalent.
+  | ↓↓↓↓↓↓
+
+  | public static async fn blah [] []
+
+  fn
+  .name
+    reg
+  .static
+  .body
+    errMeth `reg` this
+    throw ←
+
+  fn_static
+    reg
+    []
+    throw
+      errMeth
+        `reg`
+        this
+
+  fn_static reg [] [errMeth `reg` this, throw ←]
+
+  fn_static reg []
+    errMeth `reg` this
+    throw ←
+
+  [fn_static reg, [], errMeth `reg` this, throw ←]
+
+  | ↑↑↑↑↑↑
+
+  | ↓↓↓↓↓↓
+
+  fn
+  .name match
+  .static
+  .body [this.reg.exec $0]
+
+  fn
+  .name match
+  .static
+  .args String
+  .body [this.reg.exec $0]
+
+  fn
+  .name match
+  .static
+  .args src
+  .body [this.reg.exec src]
+
+  fn_static match [src] [this.reg.exec src]
+
+  fn_static
+    match
+    [src]
+    this.reg.exec
+      src
+
+  fn_static: match, [src]
+    this.reg.exec: src
+
+  fn_static: match, [src], this.reg.exec: src
+
+  | ↑↑↑↑↑↑
+
+  fn
+  .name
+    parse
+  .static
+  .body
+    guard_some [def mat [this.match span.rem]]
+
+    def tar
+      this.new
+      .span [span.withLen 0]
+      .fromMatch mat
+    span.skip tar
+    tar
+
+  | ↓↓↓↓↓↓
+
+  fn fromMatch [mat] this.span.get [mat.get 0].len
+
+  fn fromMatch [mat]
+    this.span.get [mat.get 0].len
+
+  fn fromMatch [mat]
+    mat.get 0
+    .len
+    this.span.get ←
+
+  fn fromMatch [mat]
+    this.span.get [mat.get 0, ←.len]
+
+  fn
+  .name
+    fromMatch
+  .args
+    mat
+  .body
+    | ↓↓↓↓↓↓
+    this.span.len [mat.get 0].len
+
+    this.span.len [mat.get 0, ←.len]
+
+    this.span.len →
+    [mat.get 0, ←.len]
+
+    this.span.len [
+      mat.get 0
+      ←.len
+    ]
+
+    mat.get 0
+    this.span.len ←.len
+
+    mat.get 0
+    ←.len
+    this.span.len ←
+
+    | ↑↑↑↑↑↑
+    this
+
+  fn
+  .name
+    fromMatch
+  .args
+    mat
+  .body
+    this.span.len [mat.get 0].len
+    this
+
+  fn
+    fromMatch
+    [mat]
+    this.span.len
+      mat.get
+        0
+      .len
+    this
+
+  fn
+  .name
+    fromMatch
+  .args
+    mat
+  .body
+    this span len
+      mat get
+        0
+      .len
+    this
+
+  fn
+  .name: fromMatch
+  .args: mat
+  .body
+    this span len: [mat get: 0] .len
+    this
+
+  fn: fromMatch, [mat]
+    this.span.len: mat.get: 0; .len
+    this
+
+  fn: fromMatch, [mat]
+    this.span.len: [mat.get: 0], .len
+
+    this.span.len: mat.get: 0; .len
+
+    one: two: three: four; this
+
+    : ; ,
+
+    one
+      two
+        three
+          four
+        this
+
+    one: two: three
+    four
+    | ->
+    one
+      two
+        three
+    four
+
+    one: two: three
+      four
+    | ->
+    one
+      two
+        three
+      four
+
+    one: two: three
+          four
+    | ->
+    one
+      two
+        three
+          four
+
+    one: two: three
+    five
+    | ->
+    one
+      two
+        three
+          five
+
+    def
+      someVar
+      someCall
+
+    retUnless
+      def
+        someVar
+        someCall
+
+    def: someVar, someCall
+    retUnless: def: someVar, someCall
+
+    | After ":", next indent is relative to first call.
+
+    def: someVar
+      someCall
+    | ->
+    def
+      someVar
+      someCall
+
+    retUnless: def: someVar
+      someCall
+    | ->
+    retUnless
+      def
+        someVar
+      someCall
+
+    retUnless: def: someVar
+        someCall
+    | ->
+    retUnless
+      def
+        someVar
+        someCall
+
+    | After ":", next indent is relative to last call.
+
+    def: someVar
+      someCall
+    | ->
+    def
+      someVar
+        someCall
+
+    def: someVar
+    someCall
+    | ->
+    def
+      someVar
+      someCall
+
+    this
+
+  fn: fromMatch, [mat], this.span.len: mat.get 0, .len, this
+
+  | ↑↑↑↑↑↑
+
+  def
+    name
+    123
+
+  slow
+    one
+    two
+
+  print
+    `slow`
+    slow
+      one
+      two
+
+  print `slow` [slow
+    one
+    two
+  ]
+
+  print `slow` slow:
+    one
+    two
+
+  print, `slow`, slow
+    one
+    two
+
+
+  one.two.three 10 20 30
+
+  one two three, 10, 20, 30
+
+
+one two
+
+one . two
+
+one + two
+
+one . + two
+
+one + two
+
+| one.two(three)
+
+one two three
+
+| one.+(three)
+
+one + three

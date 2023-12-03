@@ -1,0 +1,76 @@
+{
+  "scope": [
+    {
+      "name": "global",
+      "exportName": "Global",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "nil",
+      "exportName": "Nil",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "null",
+      "exportName": "Null",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "no",
+      "exportName": "No",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "ok",
+      "exportName": "Ok",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "callStyle",
+      "exportName": "CallStyle",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "call",
+      "exportName": "Call",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "const",
+      "exportName": "Const",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    },
+    {
+      "name": "fn",
+      "exportName": "Fn",
+      "callSyntax": "bare",
+      "callTime": "macro",
+      "callStyle": "new",
+      "callOut": "ast"
+    }
+  ]
+}

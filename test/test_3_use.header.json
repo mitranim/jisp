@@ -1,0 +1,10 @@
+{
+  "checksum": "f63ac1aefd6940f0bd32a4a147ec1174",
+  "dependencies": [
+    "jisp:prelude.mjs",
+    "./test_3_mac.jisp"
+  ]
+}
+
+// checksum of current file =
+//   timestamp of current file + checksums of dependencies
