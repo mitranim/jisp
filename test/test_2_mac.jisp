@@ -1,30 +1,30 @@
 [use `jisp:prelude` `*`]
 
-| "global" must be predefined.
+; "global" must be predefined.
 [const g global]
 
-| FIXME implement.
-| FIXME exclude from compiled code, unless used by non-macros.
+; FIXME implement.
+; FIXME exclude from compiled code, unless used by non-macros.
 [fn astMacro []
-  | Shadowing must work.
+  ; Shadowing must work.
   [const g global]
   [g.console.log `executing AST macro`]
 
-  | FIXME implement.
-  | FIXME compile error for unknown identifier "one" and others.
-  | [quote [one two three]]
+  ; FIXME implement.
+  ; FIXME compile error for unknown identifier "one" and others.
+  ; [quote [one two three]]
 ]
 
-[callStyle `list macro call ast` astMacro]
+[callSyntax `list macro call ast` astMacro]
 
-| Compile error.
+; Compile error.
 astMacro
 
-| Compile error.
+; Compile error.
 [astMacro 10 20 30]
 
 [fn valMacro []
-  | Shadowing must work.
+  ; Shadowing must work.
   [const g global]
   [g.console.log `executing val macro`]
 
@@ -39,11 +39,11 @@ astMacro
   ]
 ]
 
-| TODO consider: get "Def" and call its method.
-[callStyle `list macro call val` valMacro]
+; TODO consider: get "Def" and call its method.
+[callSyntax `list macro call val` valMacro]
 
-| Compile error.
+; Compile error.
 valMacro
 
-| Compile error.
+; Compile error.
 [valMacro 10 20 30]

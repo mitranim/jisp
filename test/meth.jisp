@@ -68,8 +68,8 @@ one.two.three.four
 
 ←↓↑→
 
-| some_blah.some_method[]
-| [some_blah some_method more_stuff]
+; some_blah.some_method[]
+; [some_blah some_method more_stuff]
 
 [SomeCls.property blah]
 
@@ -127,9 +127,9 @@ pre[.const blah 123]
         [
           [
             [
-              [this].setCallSyntax syntax
+              [this].setCallStyle syntax
             ].setCallTime time
-          ].setCallStyle style
+          ].setCallSyntax style
         ].setCallOut out
       ]
     ]
@@ -142,9 +142,9 @@ pre[.const blah 123]
       [const out ...]
 
       [this]
-      .[setCallSyntax syntax]
+      .[setCallStyle syntax]
       .[setCallTime time]
-      .[setCallStyle style]
+      .[setCallSyntax style]
       .[setCallOut out]
     ]
 
@@ -156,9 +156,9 @@ pre[.const blah 123]
       [const out ...]
 
       [this]
-      [.setCallSyntax syntax]
+      [.setCallStyle syntax]
       [.setCallTime time]
-      [.setCallStyle style]
+      [.setCallSyntax style]
       [.setCallOut out]
     ]
 
@@ -170,9 +170,9 @@ pre[.const blah 123]
       [const out ...]
 
       [this]
-      [↑.setCallSyntax syntax]
+      [↑.setCallStyle syntax]
       [↑.setCallTime time]
-      [↑.setCallStyle style]
+      [↑.setCallSyntax style]
       [↑.setCallOut out]
     ]
 
@@ -184,9 +184,9 @@ pre[.const blah 123]
       [const out ...]
 
       [-> [this]
-        [.setCallSyntax syntax]
+        [.setCallStyle syntax]
         [.setCallTime time]
-        [.setCallStyle style]
+        [.setCallSyntax style]
         [.setCallOut out]
       ]
     ]
@@ -199,9 +199,9 @@ pre[.const blah 123]
       const [out ...]
 
       this []
-      .setCallSyntax [syntax]
+      .setCallStyle [syntax]
       .setCallTime [time]
-      .setCallStyle [style]
+      .setCallSyntax [style]
       .setCallOut [out]
     ]
   ]

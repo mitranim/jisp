@@ -123,7 +123,7 @@ someVal
 ; OK.
 [fn someFunc2 [] someVal]
 
-[setCallStyle someFunc2 "runtimeNew"]
+[setCallSyntax someFunc2 "runtimeNew"]
 
 ; Must generate a runtime call with "new".
 [someFunc2 10 20 30]
@@ -144,7 +144,7 @@ someVal
 ]
 
 ; TODO consider: get "Def" and call its method.
-[setCallStyle astMacro "macroAst"]
+[setCallSyntax astMacro "macroAst"]
 
 ; Compile error.
 ; astMacro
@@ -167,7 +167,7 @@ someVal
 ]
 
 ; TODO consider: get "Def" and call its method.
-[setCallStyle valMacro "macroAst"]
+[setCallSyntax valMacro "macroAst"]
 
 ; Compile error.
 ; valMacro

@@ -5,8 +5,7 @@ extends: Packages/mox/mox_base.sublime-syntax
 scope: source.jisp
 
 variables:
-  # TODO commit to just one comment style.
-  comment_line_start: (\||;)
+  comment_line_start: ;
 
   # TODO consider switching to ONLY fenced comments.
   comment_block_start: (?!)

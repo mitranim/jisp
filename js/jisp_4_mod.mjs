@@ -2,7 +2,7 @@ export class ModuleScope extends FullScope {
   makeLexNs() {return super.makeLexNs().addMixin(Ns.ownPredecl())}
 }
 
-export class Module extends MixOwnValued.goc(MixScoper.goc(a.Emp)) {}
+export class Module extends MixOwnValued.goc(MixOwnScoped.goc(a.Emp)) {}
 
 // FIXME: has node list, macroing
 export class SrcModule extends Module {

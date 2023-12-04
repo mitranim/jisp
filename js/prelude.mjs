@@ -11,7 +11,7 @@ const mod = new j.Module().setUrl(import.meta.url)
 
 export default mod
 
-export class Global extends j.PredeclMacroNode {
+export class Global extends j.PredeclMacro {
   static getSrcName() {return `global`}
   static getCompiledName() {return `globalThis`}
   ownVal() {return globalThis}
@@ -19,7 +19,7 @@ export class Global extends j.PredeclMacroNode {
 
 mod.ownPubScope().add(Global.def())
 
-export class Nil extends j.PredeclMacroNode {
+export class Nil extends j.PredeclMacro {
   static getSrcName() {return `nil`}
   static getCompiledName() {return `undefined`}
   ownVal() {return undefined}
@@ -27,7 +27,7 @@ export class Nil extends j.PredeclMacroNode {
 
 mod.ownPubScope().add(Nil.def())
 
-export class Null extends j.PredeclMacroNode {
+export class Null extends j.PredeclMacro {
   static getSrcName() {return `null`}
   static getCompiledName() {return `null`}
   ownVal() {return null}
@@ -35,7 +35,7 @@ export class Null extends j.PredeclMacroNode {
 
 mod.ownPubScope().add(Null.def())
 
-export class No extends j.PredeclMacroNode {
+export class No extends j.PredeclMacro {
   static getSrcName() {return `no`}
   static getCompiledName() {return `false`}
   ownVal() {return false}
@@ -43,7 +43,7 @@ export class No extends j.PredeclMacroNode {
 
 mod.ownPubScope().add(No.def())
 
-export class Ok extends j.PredeclMacroNode {
+export class Ok extends j.PredeclMacro {
   static getSrcName() {return `ok`}
   static getCompiledName() {return `true`}
   ownVal() {return true}
@@ -51,8 +51,8 @@ export class Ok extends j.PredeclMacroNode {
 
 mod.ownPubScope().add(Ok.def())
 
-export class CallStyleSet extends j.MacroNode {
-  static getSrcName() {return `callStyle`}
+export class CallSyntaxSet extends j.Macro {
+  static getSrcName() {return `callSyntax`}
 
   str() {return this.reqSrcInstAt(1, j.Str)}
   name() {return this.reqSrcInstAt(2, j.Name)}
@@ -68,9 +68,9 @@ export class CallStyleSet extends j.MacroNode {
   }
 }
 
-mod.ownPubScope().add(CallStyleSet.def())
+mod.ownPubScope().add(CallSyntaxSet.def())
 
-export class Call extends j.MacroNode {
+export class Call extends j.Macro {
   static getSrcName() {return `call`}
 }
 
@@ -80,7 +80,7 @@ mod.ownPubScope().add(Call.def())
 FIXME consider:
   * `optRef` or `ownRef` that returns `UnqualName`.
 */
-export class Const extends j.MacroNode {
+export class Const extends j.Macro {
   static getSrcName() {return `const`}
 
   pk() {return this.name().pk()}
@@ -110,11 +110,11 @@ export class Const extends j.MacroNode {
 
 mod.ownPubScope().add(Const.def())
 
-export class Ret extends j.MacroNode {
+export class Ret extends j.Macro {
   static getSrcName() {return `ret`}
 }
 
-export class Fn extends j.MixOwnLexScoped.goc(j.MacroNode) {
+export class Fn extends j.MixOwnLexScoped.goc(j.Macro) {
   static getSrcName() {return `fn`}
 
   pk() {return this.name().pk()}
@@ -178,7 +178,7 @@ export class Fn extends j.MixOwnLexScoped.goc(j.MacroNode) {
 
 mod.ownPubScope().add(Fn.def())
 
-export class When extends j.MacroNode {
+export class When extends j.Macro {
   static getSrcName() {return `when`}
 }
 

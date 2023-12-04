@@ -3,73 +3,73 @@
     {
       "name": "global",
       "exportName": "Global",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "nil",
       "exportName": "Nil",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "null",
       "exportName": "Null",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "no",
       "exportName": "No",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "ok",
       "exportName": "Ok",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
-      "name": "callStyle",
-      "exportName": "CallStyle",
-      "callSyntax": "bare",
+      "name": "callSyntax",
+      "exportName": "CallSyntax",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "call",
       "exportName": "Call",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "const",
       "exportName": "Const",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "fn",
       "exportName": "Fn",
-      "callSyntax": "bare",
+      "callStyle": "bare",
       "callTime": "macro",
-      "callStyle": "new",
+      "callSyntax": "new",
       "callOut": "ast"
     }
   ]

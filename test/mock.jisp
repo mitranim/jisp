@@ -1,4 +1,4 @@
-| Need decent method chaining.
+; Need decent method chaining.
 
 [class Text
   [extend Node]
@@ -6,50 +6,50 @@
   [fn_static match [src] [[this.reg].exec [a.reqStr src]]]
 
   [fn_static parse [span] 
-    | Must return if the variable's value is nil.
+    ; Must return if the variable's value is nil.
     [guard_some [const mat [this.match [span.rem]]]]
 
     [const tar [new this]]
     [tar.setSpan [span.withLen 0]]
     [tar.fromMatch mat]
 
-    | Equivalent.
-    | ↓↓↓↓↓↓
+    ; Equivalent.
+    ; ↓↓↓↓↓↓
 
     [span.skip [[tar.getSpan].getLen]]
     [span.skip [-> tar [.getSpan] [.getLen]]]
     [-> tar [$.getSpan] [$.getLen] [span.skip $]]
     span.skip[tar.getSpan[].getLen[]]
 
-    | Postfix chaining. "←" stands for prev expression.
-    | Possible: "→" for next expression.
+    ; Postfix chaining. "←" stands for prev expression.
+    ; Possible: "→" for next expression.
 
     tar.getSpan[].getLen[] -> span.skip[←]
 
-    | Implicit postfix chaining.
+    ; Implicit postfix chaining.
 
     tar.getSpan[].getLen[]
     span.skip[←]
 
     tar.getSpan[].getLen[], span.skip[←]
 
-    | In a sensible language:
-    |   * Property getters = nullary methods.
-    |   * Every call is unary and doesn't need delims.
-    |   * Delims are used only for grouping.
+    ; In a sensible language:
+    ;   * Property getters = nullary methods.
+    ;   * Every call is unary and doesn't need delims.
+    ;   * Delims are used only for grouping.
     tar.span.len, span.skip ←
     [tar.span.len], [span.skip ←]
     tar, ←.span, ←.len, span.skip ←
 
-    | Separating expressions from each other on a single line:
+    ; Separating expressions from each other on a single line:
     10, 20, 30
 
-    | Same but multi-line:
+    ; Same but multi-line:
     10
     20
     30
 
-    | ↑↑↑↑↑↑
+    ; ↑↑↑↑↑↑
 
     tar
   ]
@@ -62,10 +62,10 @@
 
 
 
-| fun 10 20 30
-|   40
-|   50
-|   60
+; fun 10 20 30
+;   40
+;   50
+;   60
 
 
 fun
@@ -106,10 +106,10 @@ one
 class Text
   extend Node
 
-  | Equivalent.
-  | ↓↓↓↓↓↓
+  ; Equivalent.
+  ; ↓↓↓↓↓↓
 
-  | public static async fn blah [] []
+  ; public static async fn blah [] []
 
   fn
   .name
@@ -135,9 +135,9 @@ class Text
 
   [fn_static reg, [], errMeth `reg` this, throw ←]
 
-  | ↑↑↑↑↑↑
+  ; ↑↑↑↑↑↑
 
-  | ↓↓↓↓↓↓
+  ; ↓↓↓↓↓↓
 
   fn
   .name match
@@ -169,7 +169,7 @@ class Text
 
   fn_static: match, [src], this.reg.exec: src
 
-  | ↑↑↑↑↑↑
+  ; ↑↑↑↑↑↑
 
   fn
   .name
@@ -185,7 +185,7 @@ class Text
     span.skip tar
     tar
 
-  | ↓↓↓↓↓↓
+  ; ↓↓↓↓↓↓
 
   fn fromMatch [mat] this.span.get [mat.get 0].len
 
@@ -206,7 +206,7 @@ class Text
   .args
     mat
   .body
-    | ↓↓↓↓↓↓
+    ; ↓↓↓↓↓↓
     this.span.len [mat.get 0].len
 
     this.span.len [mat.get 0, ←.len]
@@ -226,7 +226,7 @@ class Text
     ←.len
     this.span.len ←
 
-    | ↑↑↑↑↑↑
+    ; ↑↑↑↑↑↑
     this
 
   fn
@@ -287,7 +287,7 @@ class Text
 
     one: two: three
     four
-    | ->
+    ; ->
     one
       two
         three
@@ -295,7 +295,7 @@ class Text
 
     one: two: three
       four
-    | ->
+    ; ->
     one
       two
         three
@@ -303,7 +303,7 @@ class Text
 
     one: two: three
           four
-    | ->
+    ; ->
     one
       two
         three
@@ -311,7 +311,7 @@ class Text
 
     one: two: three
     five
-    | ->
+    ; ->
     one
       two
         three
@@ -329,18 +329,18 @@ class Text
     def: someVar, someCall
     retUnless: def: someVar, someCall
 
-    | After ":", next indent is relative to first call.
+    ; After ":", next indent is relative to first call.
 
     def: someVar
       someCall
-    | ->
+    ; ->
     def
       someVar
       someCall
 
     retUnless: def: someVar
       someCall
-    | ->
+    ; ->
     retUnless
       def
         someVar
@@ -348,24 +348,24 @@ class Text
 
     retUnless: def: someVar
         someCall
-    | ->
+    ; ->
     retUnless
       def
         someVar
         someCall
 
-    | After ":", next indent is relative to last call.
+    ; After ":", next indent is relative to last call.
 
     def: someVar
       someCall
-    | ->
+    ; ->
     def
       someVar
         someCall
 
     def: someVar
     someCall
-    | ->
+    ; ->
     def
       someVar
       someCall
@@ -374,7 +374,7 @@ class Text
 
   fn: fromMatch, [mat], this.span.len: mat.get 0, .len, this
 
-  | ↑↑↑↑↑↑
+  ; ↑↑↑↑↑↑
 
   def
     name
@@ -419,10 +419,10 @@ one . + two
 
 one + two
 
-| one.two(three)
+; one.two(three)
 
 one two three
 
-| one.+(three)
+; one.+(three)
 
 one + three

@@ -1163,8 +1163,8 @@ export class Ident extends Text {
   //   a.optInst(def, Def)
   //   if (!def?.isMacro()) return this
 
-  //   const syn = def.ownCallSyntax()
-  //   if (syn === CallSyntax.bare) return def.macroNode(this)
+  //   const syn = def.ownCallStyle()
+  //   if (syn === CallStyle.bare) return def.macroNode(this)
   //   throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} with the following call opts: ${a.show(def.callOptStr())}`)
   // }
 
@@ -1177,8 +1177,8 @@ export class Ident extends Text {
   // FIXME rename, rewrite, and use.
   reqUsable() {
     const def = this.reqDef()
-    const syn = def.ownCallSyntax()
-    if (syn === CallSyntax.bare) return this
+    const syn = def.ownCallStyle()
+    if (syn === CallStyle.bare) return this
     throw this.err(`unexpected mention of ${a.show(this.decompile())} with the following call opts: ${a.show(def.callOptStr())}`)
   }
 }
@@ -1211,13 +1211,13 @@ export class UnqualName extends Name {
   }
 
   compileCall(def) {
-    const style = def.ownCallStyle()
-    if (style === CallStyle.call) return this.compileCallCall()
-    if (style === CallStyle.new) return `new ` + a.reqStr(this.compileCallCall())
-    throw CallStyle.errUnrec(this, style)
+    const style = def.ownCallSyntax()
+    if (style === CallSyntax.call) return this.compileCallCall()
+    if (style === CallSyntax.new) return `new ` + a.reqStr(this.compileCallCall())
+    throw CallSyntax.errUnrec(this, style)
   }
 
-  // Only for `CallStyle.call`.
+  // Only for `CallSyntax.call`.
   compileCallCall() {
     return a.reqStr(this.compileQualifier()) + a.reqStr(this.compileName()) + `()`
   }
@@ -1659,16 +1659,16 @@ export class DelimNodeList extends NodeList {
     const ind = src.findIndex(Node.isMeaningful, Node)
     if (!(ind >= 0)) return prn.compileDense(src)
 
-    const style = a.onlyInst(src[ind], Ident)?.optDef()?.ownCallStyle() || CallStyle.call
+    const style = a.onlyInst(src[ind], Ident)?.optDef()?.ownCallSyntax() || CallSyntax.call
 
     // Reslicing is suboptimal but probably not our bottleneck.
     const pre = src.slice(0, ind + 1)
     const suf = src.slice(ind + 1)
     const call = prn.compileDense(pre) + `(` + prn.compileCommaMultiLine(suf) + `)`
 
-    if (style === CallStyle.call) return call
-    if (style === CallStyle.new) return `new ` + call
-    throw this.err(CallStyle.msgUnrec(style))
+    if (style === CallSyntax.call) return call
+    if (style === CallSyntax.new) return `new ` + call
+    throw this.err(CallSyntax.msgUnrec(style))
   }
 
   [Insp.symMod()](tar) {
@@ -1749,11 +1749,11 @@ throughout the compiler. For example:
     * The input is the identifier node.
     * The macro can use parent/child relations to traverse the AST.
   * If runtime:
-    * Compiles to a nullary call, according to `CallStyle`.
+    * Compiles to a nullary call, according to `CallSyntax`.
   * Requires changes in `NodeList`/`DelimNodeList` and maybe
     `Ident`/`Path`/`Name`.
 */
-export class CallSyntax extends Enum {
+export class CallStyle extends Enum {
   static list = `list`
   static bare = `bare`
   static {this.validate()}
@@ -1766,7 +1766,7 @@ export class CallTime extends Enum {
 }
 
 // TODO rename ".call" to something more specific.
-export class CallStyle extends Enum {
+export class CallSyntax extends Enum {
   static call = `call`
   static new = `new`
   static {this.validate()}
@@ -1790,17 +1790,17 @@ export class CallOut extends Enum {
 }
 
 export class CallOpt extends MixInsp.goc(a.Emp) {
-  #callSyntax = CallSyntax.list
-  ownCallSyntax() {return this.#callSyntax}
-  setCallSyntax(val) {return this.#callSyntax = CallSyntax.reqValid(val), this}
+  #callStyle = CallStyle.list
+  ownCallStyle() {return this.#callStyle}
+  setCallStyle(val) {return this.#callStyle = CallStyle.reqValid(val), this}
 
   #callTime = CallTime.run
   ownCallTime() {return this.#callTime}
   setCallTime(val) {return this.#callTime = CallTime.reqValid(val), this}
 
-  #callStyle = CallStyle.call
-  ownCallStyle() {return this.#callStyle}
-  setCallStyle(val) {return this.#callStyle = CallStyle.reqValid(val), this}
+  #callSyntax = CallSyntax.call
+  ownCallSyntax() {return this.#callSyntax}
+  setCallSyntax(val) {return this.#callSyntax = CallSyntax.reqValid(val), this}
 
   // TODO consider removing. Can be done by individual macros, or by a macro
   // wrapper.
@@ -1808,7 +1808,7 @@ export class CallOpt extends MixInsp.goc(a.Emp) {
   ownCallOut() {return this.#callOut}
   setCallOut(val) {return this.#callOut = CallOut.reqValid(val), this}
 
-  isBare() {return this.ownCallSyntax() === CallSyntax.bare}
+  isBare() {return this.ownCallStyle() === CallStyle.bare}
   isMacro() {return this.ownCallTime() === CallTime.macro}
   isMacroBare() {return this.isMacro() && this.isBare()}
 
@@ -1821,10 +1821,10 @@ export class CallOpt extends MixInsp.goc(a.Emp) {
   }
 
   macroCall(src, fun) {
-    const style = this.ownCallStyle()
-    if (style === CallStyle.call) return this.macroCallCall(src, fun)
-    if (style === CallStyle.new) return this.macroCallNew(src, fun)
-    throw src.err(CallStyle.msgUnrec(style))
+    const style = this.ownCallSyntax()
+    if (style === CallSyntax.call) return this.macroCallCall(src, fun)
+    if (style === CallSyntax.new) return this.macroCallNew(src, fun)
+    throw src.err(CallSyntax.msgUnrec(style))
   }
 
   macroCallCall(src, fun) {
@@ -1884,32 +1884,32 @@ export class CallOpt extends MixInsp.goc(a.Emp) {
 
   callOptStr() {
     return [
-      a.reqValidStr(this.ownCallSyntax()),
-      a.reqValidStr(this.ownCallTime()),
       a.reqValidStr(this.ownCallStyle()),
+      a.reqValidStr(this.ownCallTime()),
+      a.reqValidStr(this.ownCallSyntax()),
       a.reqValidStr(this.ownCallOut()),
     ].join(` `)
   }
 
   callOptFromStr(src) {
     const mat = this.req(src, a.isStr).split(` `)
-    const syntax = CallSyntax.reqValid(mat[0])
+    const syntax = CallStyle.reqValid(mat[0])
     const time = CallTime.reqValid(mat[1])
-    const style = CallStyle.reqValid(mat[2])
+    const style = CallSyntax.reqValid(mat[2])
     const out = CallOut.reqValid(mat[3])
 
     return this
-      .setCallSyntax(syntax)
+      .setCallStyle(syntax)
       .setCallTime(time)
-      .setCallStyle(style)
+      .setCallSyntax(style)
       .setCallOut(out)
   }
 
   [Insp.symMod()](tar) {
     return tar.funs(
-      this.ownCallSyntax,
-      this.ownCallTime,
       this.ownCallStyle,
+      this.ownCallTime,
+      this.ownCallSyntax,
       this.ownCallOut,
     )
   }
@@ -1997,14 +1997,14 @@ export class NodeDef extends MixOwnNodeSourced.goc(Def) {
   }
 }
 
-export class MacroNode extends Node {
+export class Macro extends Node {
   static getSrcName() {throw errMeth(`getSrcName`, this)}
 
   static def() {
     return new FunDef()
       .setName(this.getSrcName())
       .setCallTime(CallTime.macro)
-      .setCallStyle(CallStyle.new)
+      .setCallSyntax(CallSyntax.new)
       .setCallOut(CallOut.ast)
       .setVal(this)
   }
@@ -2105,9 +2105,9 @@ resolve this in any of the following ways:
 
   * Generate compile-time exceptions, warning the user.
 */
-export class PredeclMacroNode extends MacroNode {
+export class PredeclMacro extends Macro {
   static getCompiledName() {throw errMeth(`getCompiledName`, this)}
-  static def() {return super.def().setCallSyntax(CallSyntax.bare)}
+  static def() {return super.def().setCallStyle(CallStyle.bare)}
 
   // FIXME remove.
   // getVal() {throw errMeth(`getVal`, this)}
@@ -2143,7 +2143,7 @@ FIXME:
         * Requires access from scope to `Use`.
   * Forbid use as expression.
 */
-export class Use extends MixOwnValued.goc(MacroNode) {
+export class Use extends MixOwnValued.goc(Macro) {
   static getSrcName() {return `use`}
   static getTarName() {return this.getSrcName()}
 
@@ -2344,7 +2344,7 @@ export class Scope extends MixParent.goc(MixMixable.goc(MixOwnParented.goc(a.Col
   }
 
   addFromNativeModuleEntry(key, val) {
-    if (a.isSubCls(val, MacroNode)) this.add(val.def())
+    if (a.isSubCls(val, Macro)) this.add(val.def())
   }
 }
 

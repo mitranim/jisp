@@ -532,7 +532,7 @@ export class Ident extends Text {
   head() {return strSplitBefore(this.getSrc(), this.sep())}
   last() {return strSplitAfter(this.getSrc(), this.sep())}
   hasNs() {return this.getSrc().includes(this.sep())}
-  getCallStyle() {return this.optDef()?.getCallStyle()}
+  getCallSyntax() {return this.optDef()?.getCallSyntax()}
 
   // FIXME support namespacing.
   // FIXME forbid reserved JS keywords.
@@ -696,9 +696,9 @@ export class DelimNodeList extends NodeList {
 
   macro() {
     const def = this.head()?.onlyInst(Ident)?.optDef()
-    const style = def?.getCallStyle()
-    if (style === CallStyle.macroAst) return def.macroAst(this)
-    if (style === CallStyle.macroVal) return def.macroVal(this)
+    const style = def?.getCallSyntax()
+    if (style === CallSyntax.macroAst) return def.macroAst(this)
+    if (style === CallSyntax.macroVal) return def.macroVal(this)
     return super.macro()
   }
 
@@ -712,16 +712,16 @@ export class DelimNodeList extends NodeList {
     if (!(ind >= 0)) return prn.spaced(src)
 
     const head = src[ind]
-    const style = head.onlyInst(Ident)?.getCallStyle() || CallStyle.runtimeCall
+    const style = head.onlyInst(Ident)?.getCallSyntax() || CallSyntax.runtimeCall
 
     // Reslicing is suboptimal but probably not our bottleneck.
     const pre = src.slice(0, ind + 1)
     const suf = src.slice(ind + 1)
     const call = prn.spaced(pre) + `(` + prn.commaSingle(suf) + `)`
 
-    if (style === CallStyle.runtimeCall) return call
-    if (style === CallStyle.runtimeNew) return `new ` + call
-    throw this.err(`invalid call style ${a.show(style)}; current context supports only ${a.show([CallStyle.runtimeCall, CallStyle.runtimeNew])}`)
+    if (style === CallSyntax.runtimeCall) return call
+    if (style === CallSyntax.runtimeNew) return `new ` + call
+    throw this.err(`invalid call style ${a.show(style)}; current context supports only ${a.show([CallSyntax.runtimeCall, CallSyntax.runtimeNew])}`)
   }
 }
 
@@ -768,7 +768,7 @@ export class Root extends a.MixChild(a.Emp) {
 
   default() {
     this.scope.add(PredeclNameDef.fromName(`globalThis`))
-    this.scope.add(SetCallStyle.def())
+    this.scope.add(SetCallSyntax.def())
     this.scope.add(Use.def())
     this.scope.add(Const.def())
     this.scope.add(Fn.def())
@@ -799,7 +799,7 @@ FIXME:
     * The macro can use parent/child relations to traverse the AST.
     * Requires special support in `NodeList`/`DelimNodeList`.
 */
-export class CallStyle extends a.Emp {
+export class CallSyntax extends a.Emp {
   static runtimeCall = `runtimeCall`
   static runtimeNew = `runtimeNew`
   static macroAst = `macroAst`
@@ -817,14 +817,14 @@ export class CallStyle extends a.Emp {
 
 export class Def extends Node {
   pk() {throw errMeth(`pk`, this)}
-  isMacro() {return CallStyle.isMacro(this.getCallStyle())}
-  getCallStyle() {return this.callStyle || CallStyle.runtimeCall}
-  setCallStyle(key) {return this.callStyle = CallStyle.valid(key, this), this}
+  isMacro() {return CallSyntax.isMacro(this.getCallSyntax())}
+  getCallSyntax() {return this.callSyntax || CallSyntax.runtimeCall}
+  setCallSyntax(key) {return this.callSyntax = CallSyntax.valid(key, this), this}
 
   /*
   Must be called for any call expression where the head is an identifier
   pointing to the current `Def`, when the def has the call style
-  `CallStyle.macroAst`. Viable only when the `Def` has something callable, such
+  `CallSyntax.macroAst`. Viable only when the `Def` has something callable, such
   as predeclared macro class or dynamically-defined function or class. If the
   definition is not callable, attempting to use it as a macro must cause a
   descriptive compile error. The node passed to this method must be the entire
@@ -861,7 +861,7 @@ export class PredeclNameDef extends Def {
 export class PredeclMacroDef extends PredeclNameDef {
   cls = undefined
   setCls(val) {return this.cls = a.reqCls(val), this}
-  getCallStyle() {return CallStyle.macroAst}
+  getCallSyntax() {return CallSyntax.macroAst}
   macroNode(src) {return new this.cls(src)}
 }
 
@@ -905,7 +905,7 @@ function errMeth(name, val) {
   throw TypeError(`method ${a.show(name)} not implemented on ${a.show(val)}`)
 }
 
-export class MacroNode extends MixWrapperNode(Node) {
+export class Macro extends MixWrapperNode(Node) {
   static defName() {throw errMeth(`defName`, this)}
 
   static def() {
@@ -958,28 +958,28 @@ export class MacroNode extends MixWrapperNode(Node) {
   }
 }
 
-export class IdentMacroNode extends MacroNode {
+export class IdentMacro extends Macro {
   pk() {return this.ident().reqLocal(this.name()).pk()}
   ident() {throw errMeth(`ident`, this)}
   macro() {return this.define()}
 }
 
-export class SetCallStyle extends MacroNode {
-  static defName() {return `setCallStyle`}
+export class SetCallSyntax extends Macro {
+  static defName() {return `setCallSyntax`}
 
   ident() {return this.argInstAt(Ident, 1)}
   str() {return this.argInstAt(Str, 2)}
 
   macro() {
     this.argLen(3)
-    this.ident().reqLocal(this.name()).reqDef().setCallStyle(
-      CallStyle.valid(this.str().body, this.getSrc()),
+    this.ident().reqLocal(this.name()).reqDef().setCallSyntax(
+      CallSyntax.valid(this.str().body, this.getSrc()),
     )
     return undefined
   }
 }
 
-export class Use extends IdentMacroNode {
+export class Use extends IdentMacro {
   static defName() {return `use`}
 
   str() {return this.argInstAt(Str, 1)}
@@ -1000,7 +1000,7 @@ export class Use extends IdentMacroNode {
   }
 }
 
-export class Const extends IdentMacroNode {
+export class Const extends IdentMacro {
   static defName() {return `const`}
 
   ident() {return this.argInstAt(Ident, 1)}
@@ -1018,7 +1018,7 @@ export class Const extends IdentMacroNode {
   }
 }
 
-export class Fn extends IdentMacroNode {
+export class Fn extends IdentMacro {
   static defName() {return `fn`}
 
   scope = new Scope().setParent(this)
@@ -1075,7 +1075,7 @@ export function evaluate(src) {
 return ${a.reqStr(src)}`)()
 }
 
-export class When extends MacroNode {
+export class When extends Macro {
   static defName() {return `when`}
 
   predicate() {return this.argAt(1)}
