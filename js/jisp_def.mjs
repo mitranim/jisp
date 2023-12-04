@@ -5,6 +5,8 @@ import * as jv from './jisp_valued.mjs'
 import * as jna from './jisp_named.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jco from './jisp_call_opt.mjs'
+import * as jns from './jisp_ns.mjs'
+import * as jnsd from './jisp_node_sourced.mjs'
 import * as jnun from './jisp_node_unqual_name.mjs'
 
 /*
@@ -22,7 +24,7 @@ export class Def extends (
   addUse(val) {return this.ownUses().add(val), this}
 
   pk() {return this.ownName()}
-  setParent(val) {return super.setParent(a.reqInst(val, Ns))}
+  setParent(val) {return super.setParent(a.reqInst(val, jns.Ns))}
 
   // Must override in subclass. Must return a function or class.
   ownVal() {throw errMeth(`ownVal`, this)}
@@ -45,4 +47,40 @@ export class Def extends (
   }
 
   [ji.symInspMod](tar) {return super[ji.symInspMod](tar.funs(this.ownName))}
+}
+
+export class FunDef extends jv.MixOwnValued.goc(Def) {
+  setVal(val) {return super.setVal(this.req(val, a.isFun))}
+  macroNode(node) {return this.macroNodeWith(node, this.ownVal())}
+}
+
+/*
+Variant of `Def` used for definitions generated from AST nodes, mostly by macros
+that add identifiers to scope, such as `Use`, `Const`, `Fn`.
+
+The use of `MixOwnNodeSourced` is tentative here. We may reserve that mixin for
+nodes replacing other nodes in the macroexpansion process. A `NodeDef`
+currently does not replace the node responsible for it. However, SOME way of
+setting the source node is mandatory. An instance of `NodeDef` added to a scope
+must ALWAYS have a source node, and its methods should assert this.
+*/
+export class NodeDef extends jnsd.MixOwnNodeSourced.goc(Def) {
+  // For `Def..pk`.
+  ownName() {return super.ownName() ?? a.pk(this.reqSrcNode())}
+
+  // Override for `MixRef`. Allows tracing definitions back to sources.
+  ownDeref() {return this.reqSrcNode()}
+
+  // Override for `MixValued`.
+  optVal() {return a.onlyFun(optVal(this.reqSrcNode()))}
+
+  macroNode(node) {
+    const fun = this.optVal()
+    if (fun) return this.macroNodeWith(node, fun)
+    throw node.err(`unable to execute macro ${a.show(this.ownName())}: definition not yet evaluated; tip: for technical reasons, macros can be used only by other modules, for example module "A" defines macro "B" and module "C" uses "A.B"`)
+  }
+}
+
+function optVal(src) {
+  return a.isObj(src) && `optVal` in src ? src.optVal() : undefined
 }

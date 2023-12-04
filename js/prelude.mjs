@@ -1,4 +1,13 @@
-import * as j from './jisp_2.mjs'
+import * as jsc from './jisp_scope.mjs'
+import * as jscd from './jisp_scoped.mjs'
+import * as jns from './jisp_ns.mjs'
+import * as jnst from './jisp_node_str.mjs'
+import * as jnn from './jisp_node_name.mjs'
+import * as jnp from './jisp_node_predecl.mjs'
+import * as jnm from './jisp_node_macro.mjs'
+import * as jnmo from './jisp_node_module.mjs'
+import * as jnnl from './jisp_node_node_list.mjs'
+import * as jnun from './jisp_node_unqual_name.mjs'
 
 /*
 Implementation note. We could have used `Scope..addFromNativeModule` to
@@ -7,55 +16,64 @@ separately throughout the file. However, it would be incorrect because some
 macro classes exported by this module should NOT be added to this scope. For
 example, the `Ret` macro should be available only in functions.
 */
-const mod = new j.Module().setUrl(import.meta.url)
+const mod = new jnmo.Module().setUrl(import.meta.url)
 
 export default mod
 
-export class Global extends j.PredeclMacro {
+export class Global extends jnp.Predecl {
   static getSrcName() {return `global`}
   static getCompiledName() {return `globalThis`}
   ownVal() {return globalThis}
 }
 
-mod.ownPubScope().add(Global.def())
+mod.ownScope().ownPubNs().add(Global.def())
 
-export class Nil extends j.PredeclMacro {
+export class Nil extends jnp.Predecl {
   static getSrcName() {return `nil`}
   static getCompiledName() {return `undefined`}
   ownVal() {return undefined}
 }
 
-mod.ownPubScope().add(Nil.def())
+mod.ownScope().ownPubNs().add(Nil.def())
 
-export class Null extends j.PredeclMacro {
+export class Null extends jnp.Predecl {
   static getSrcName() {return `null`}
   static getCompiledName() {return `null`}
   ownVal() {return null}
 }
 
-mod.ownPubScope().add(Null.def())
+mod.ownScope().ownPubNs().add(Null.def())
 
-export class No extends j.PredeclMacro {
+export class No extends jnp.Predecl {
   static getSrcName() {return `no`}
   static getCompiledName() {return `false`}
   ownVal() {return false}
 }
 
-mod.ownPubScope().add(No.def())
+mod.ownScope().ownPubNs().add(No.def())
 
-export class Ok extends j.PredeclMacro {
+export class Ok extends jnp.Predecl {
   static getSrcName() {return `ok`}
   static getCompiledName() {return `true`}
   ownVal() {return true}
 }
 
-mod.ownPubScope().add(Ok.def())
+mod.ownScope().ownPubNs().add(Ok.def())
 
-export class CallSyntaxSet extends j.Macro {
+export class CallSyntaxSet extends jnm.Macro {
   static getSrcName() {return `callSyntax`}
 
-  str() {return this.reqSrcInstAt(1, j.Str)}
-  name() {return this.reqSrcInstAt(2, j.Name)}
+  str() {return this.reqSrcInstAt(1, jnst.Str)}
+  name() {return this.reqSrcInstAt(2, jnun.UnqualName)}
+
+  /*
+  Definition must be in same scope as macro node, and must be owned by the
+  lexical namespace. Avoid searching mixins and ancestors. This restriction
+  ensures that call opts are set in the same scope where a given name is
+  defined, preventing other modules from changing them, which could easily
+  break unrelated code, depending on the order of module evaluation.
+  */
+  optDef() {return this.reqScope().reqLexNs().get(this.name().pk())}
 
   macroImpl() {
     this.reqSrcList().reqEveryMeaningful().reqLen(3)
@@ -63,28 +81,26 @@ export class CallSyntaxSet extends j.Macro {
     return undefined
   }
 
-  run() {
-    this.name().reqDef().callOptFromStr(this.str().ownVal())
-  }
+  run() {this.reqDef().callOptFromStr(this.str().ownVal())}
 }
 
-mod.ownPubScope().add(CallSyntaxSet.def())
+mod.ownScope().ownPubNs().add(CallSyntaxSet.def())
 
-export class Call extends j.Macro {
+export class Call extends jnm.Macro {
   static getSrcName() {return `call`}
 }
 
-mod.ownPubScope().add(Call.def())
+mod.ownScope().ownPubNs().add(Call.def())
 
 /*
 FIXME consider:
   * `optRef` or `ownRef` that returns `UnqualName`.
 */
-export class Const extends j.Macro {
+export class Const extends jnm.Macro {
   static getSrcName() {return `const`}
 
   pk() {return this.name().pk()}
-  name() {return this.reqSrcInstAt(1, j.Name)}
+  name() {return this.reqSrcInstAt(1, jnn.Name)}
   val() {return this.reqSrcAt(2)}
 
   // Override for `MixRef`.
@@ -97,8 +113,8 @@ export class Const extends j.Macro {
     return this
   }
 
-  // FIXME consider ensuring that this is not a `j.Name` identical to the
-  // `j.Name` defined by this macro, because it would be invalid in JS.
+  // FIXME consider ensuring that this is not a `jnn.Name` identical to the
+  // `jnn.Name` defined by this macro, because it would be invalid in JS.
   macroVal() {return this.reqSrcNode().macroAt(2)}
 
   compile() {
@@ -108,19 +124,25 @@ export class Const extends j.Macro {
   }
 }
 
-mod.ownPubScope().add(Const.def())
+mod.ownScope().ownPubNs().add(Const.def())
 
-export class Ret extends j.Macro {
+export class Ret extends jnm.Macro {
   static getSrcName() {return `ret`}
 }
 
-export class Fn extends j.MixOwnLexScoped.goc(j.Macro) {
+export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   static getSrcName() {return `fn`}
 
   pk() {return this.name().pk()}
-  name() {return this.reqSrcInstAt(1, j.Name)}
-  params() {return this.reqSrcInstAt(2, j.NodeList)}
+  name() {return this.reqSrcInstAt(1, jnn.Name)}
+  params() {return this.reqSrcInstAt(2, jnnl.NodeList)}
   body() {return this.srcNodesFrom(3)}
+
+  makeScope() {
+    const tar = new jsc.LexScope()
+    tar.ownLexNs().addMixin(this.constructor.ownMixin())
+    return tar
+  }
 
   /*
   FIXME:
@@ -140,46 +162,40 @@ export class Fn extends j.MixOwnLexScoped.goc(j.Macro) {
     return this
   }
 
-  /*
-  Override for `Node..defineLex`. Each function has its own scope. The default
-  implementation of `Node..defineLex` would accidentally add the function to
-  its own scope. That behavior would be correct when the function node is an
-  expression, but incorrect when it's a statement.
-  */
+  // Override for `Node..defineLex`.
   defineLex() {
     if (this.isExpression()) {
-      return this.defineInScope(this.reqLexScope())
+      return this.defineIn(this.reqOwnScope().reqLexNs())
     }
-    return this.defineInScope(this.reqParent().reqLexScope())
+    return this.defineIn(this.reqParent().reqScope().reqLexNs())
   }
 
   defineParams() {
-    for (const val of this.params()) val.asReqInst(j.Name).defineLex()
+    for (const val of this.params()) val.asReqInst(jnn.Name).defineLex()
   }
 
   macroBody() {return this.reqSrcNode().macroFrom(3)}
-
-  makeLexScope() {return super.makeLexScope().addMixin(this.constructor.mixin)}
 
   compile() {
     const prn = this.reqPrn()
 
     return `function ${
-      prn.compile(this.ident())
-    }(${
-      prn.compileCommaSingle(this.params())
-    }) {${
-      prn.compileBlock(this.body())
-    }}`
+      prn.compile(this.name())
+    }${
+      prn.compileParensCommaMultiLine(this.params())
+    } ${
+      prn.compileBracesStatementsMultiLine(this.body())
+    }`
   }
 
-  static mixin = new j.PubScope().add(Ret.def())
+  static #mixin = undefined
+  static ownMixin() {return this.#mixin ??= new jns.Ns().add(Ret.def())}
 }
 
-mod.ownPubScope().add(Fn.def())
+mod.ownScope().ownPubNs().add(Fn.def())
 
-export class When extends j.Macro {
+export class When extends jnm.Macro {
   static getSrcName() {return `when`}
 }
 
-mod.ownPubScope().add(When.def())
+mod.ownScope().ownPubNs().add(When.def())

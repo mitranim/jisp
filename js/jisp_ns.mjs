@@ -4,6 +4,7 @@ import * as je from './jisp_err.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jmi from './jisp_mixable.mjs'
 import * as jp from './jisp_parent.mjs'
+import * as jd from './jisp_def.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnu from './jisp_node_use.mjs'
@@ -15,7 +16,7 @@ export class NsErr extends je.Err {}
 export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.Coll))) {
   // For `a.TypedMap` used by `a.Coll`.
   reqKey(key) {return a.reqValidStr(key)}
-  reqVal(val) {return a.reqInst(val, Def)}
+  reqVal(val) {return a.reqInst(val, jd.Def)}
 
   // Used by namespace mixins.
   optNs() {return this}
@@ -100,13 +101,20 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   */
   addFromNativeModule(src) {
     for (const key of a.structKeys(jm.reqNativeModule(src))) {
-      this.addFromNativeModuleEntry(key, src[key])
+      this.addFromNativeModuleEntry(src[key], key)
     }
     return this
   }
 
-  addFromNativeModuleEntry(key, val) {
+/*
+  addFromNativeModuleEntry(val) {
     if (a.isSubCls(val, jnm.Macro)) this.add(val.def())
+  }
+*/
+
+  addFromNativeModuleEntry(val) {
+    const def = val?.def?.()
+    if (a.isInst(def, jd.Def)) this.add(def)
   }
 
   /*

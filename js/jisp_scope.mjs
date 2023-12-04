@@ -41,6 +41,8 @@ export class LexScope extends jlns.MixLexNsed.goc(Scope) {}
 Should be used by AST nodes that define a tangible namespace for public exports
 without a lexical scope for inner code: dict literals, class statics, class
 prototypes.
+
+FIXME use for `TarModule` and others.
 */
 export class PubScope extends jpns.MixPubNsed.goc(Scope) {}
 

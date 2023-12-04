@@ -4,8 +4,8 @@ import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jfs from './jisp_fs.mjs'
-import * as jmo from './jisp_module.mjs'
 import * as jcp from './jisp_code_printed.mjs'
+import * as jnmo from './jisp_node_module.mjs'
 
 /*
 First approximation:
@@ -37,8 +37,8 @@ export class Root extends jcp.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer
 
   // FIXME: src module vs tar module.
   #moduleColl = undefined
-  ownModuleColl() {return this.#moduleColl ??= new jmo.ModuleColl()}
-  setModuleColl(val) {return this.#moduleColl = this.reqInst(val, jmo.ModuleColl), this}
+  ownModuleColl() {return this.#moduleColl ??= new jnmo.ModuleColl()}
+  setModuleColl(val) {return this.#moduleColl = this.reqInst(val, jnmo.ModuleColl), this}
 
   #importPromiseCache = undefined
   ownImportPromiseCache() {return this.#importPromiseCache ??= new jm.PromiseCache()}
@@ -88,7 +88,7 @@ export class Root extends jcp.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer
 
   async importNativeUncached(key) {
     this.req(key, jm.isCanonicalModuleUrlStr)
-    return this.ownModuleColl().added(jmo.Module.fromNative(key, await import(key)))
+    return this.ownModuleColl().added(jnmo.Module.fromNative(key, await import(key)))
   }
 
   importLang(key) {return this.importCached(key, this.importLangUncached)}
@@ -134,7 +134,7 @@ export class Root extends jcp.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer
     // Root may cache both lang modules and native modules???
     //
     // Separate lang modules from native modules?
-    const mod = new jmo.Module().setParent(this).fromStr(src).setUrl(srcUrl.href)
+    const mod = new jnmo.Module().setParent(this).fromStr(src).setUrl(srcUrl.href)
     await mod.macro()
 
     const out = mod.compile()

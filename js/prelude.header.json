@@ -3,72 +3,72 @@
     {
       "name": "global",
       "exportName": "Global",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "nil",
       "exportName": "Nil",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "null",
       "exportName": "Null",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "no",
       "exportName": "No",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "ok",
       "exportName": "Ok",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "callSyntax",
       "exportName": "CallSyntax",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "call",
       "exportName": "Call",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "const",
       "exportName": "Const",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     },
     {
       "name": "fn",
       "exportName": "Fn",
-      "callStyle": "bare",
       "callTime": "macro",
+      "callStyle": "bare",
       "callSyntax": "new",
       "callOut": "ast"
     }

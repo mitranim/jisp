@@ -1,16 +1,18 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jsc from './jisp_scoped.mjs'
+import * as jsc from './jisp_scope.mjs'
+import * as jscd from './jisp_scoped.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 /*
 FIXME rework: split into `SrcModule` and `TarModule`.
 */
-export class Module extends jv.MixOwnValued.goc(jsc.MixOwnScoped.goc(jnnl.NodeList)) {
+export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeList)) {
   // FIXME consider using `Url`.
   #url = undefined
   ownUrl() {return this.#url}
@@ -22,7 +24,7 @@ export class Module extends jv.MixOwnValued.goc(jsc.MixOwnScoped.goc(jnnl.NodeLi
   fromStr(val) {return this.setNodes(jl.Lexer.nodesFromStr(val))}
   import(val) {return this.reqRoot().importRel(val, this.reqUrl())}
   makeScope() {return this.constructor.makeScope()}
-  static makeScope() {return new ModuleScope()}
+  static makeScope() {return new jsc.ModuleScope()}
   // Used by namespace mixins.
   optNs() {return this.ownScope().optPubNs()}
   toValidChild(val) {return this.toValidChildBase(val)}
