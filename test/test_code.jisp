@@ -1,6 +1,6 @@
-[use `jisp:prelude_3` `*`]
-[use `jisp:prelude_3` pre]
-[use `./test_3_mac.jisp` m]
+[use `jisp:prelude` `*`]
+[use `jisp:prelude` pre]
+[use `./test_macros.jisp` m]
 
 ; Generates a syntactically valid call that panics at runtime.
 [nil no ok]

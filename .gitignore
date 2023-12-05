@@ -12,6 +12,7 @@
 !/js
 !/sublime
 !/test
+!/jisp_misc
 
 mock_*
 stash_*

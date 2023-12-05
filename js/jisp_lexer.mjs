@@ -3,6 +3,7 @@ import * as je from './jisp_err.mjs'
 import * as jit from './jisp_iter.mjs'
 import * as js from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
+import * as jt from './jisp_tokenizer.mjs'
 
 export class LexerErr extends je.CodeErr {}
 
@@ -47,9 +48,9 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
     throw LexerErr.atNode(node, `failed to advance position at node ${a.show(node)}`)
   }
 
-  static fromStr(src) {return this.fromTokens(Tokenizer.tokensFromStr(src))}
+  static fromStr(src) {return this.fromTokens(jt.Tokenizer.tokensFromStr(src))}
   static fromTokens(src) {return new this().init(src)}
-  static fromTokenizer(src) {return this.fromTokens(a.reqInst(src, Tokenizer).toArray())}
+  static fromTokenizer(src) {return this.fromTokens(a.reqInst(src, jt.Tokenizer).toArray())}
   static nodesFromStr(src) {return this.fromStr(src).toArray()}
   static nodesFromTokens(src) {return this.fromTokens(src).toArray()}
 }
