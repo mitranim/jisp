@@ -164,11 +164,9 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcp.MixCodePrinted.goc
     return next
   }
 
-  static isMeaningful(val) {return !this.isMeaningless(val)}
-
-  static isMeaningless(val) {
-    return a.isNil(val) || a.isInst(val, Space) || a.isInst(val, Comment)
-  }
+  // Some node types may override this to indicate that they may be safely
+  // elided from the AST when tokenizing or lexing.
+  isCosmetic() {return false}
 
   [ji.symInspMod](tar) {return tar.funs(this.optSpan)}
 }

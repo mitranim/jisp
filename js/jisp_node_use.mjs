@@ -2,7 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnmo from './jisp_node_module.mjs'
 import * as jnm from './jisp_node_macro.mjs'
-import * as jns from './jisp_node_str.mjs'
+import * as jnst from './jisp_node_str.mjs'
 import * as jnun from './jisp_node_unqual_name.mjs'
 
 /*
@@ -39,13 +39,13 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
   // FIXME: inner or outer or both?
   setVal(val) {return super.setVal(a.reqInst(val, jnmo.Module))}
   strAll() {return `*`}
-  addr() {return this.reqSrcInstAt(1, jns.Str)}
-  dest() {return this.optSrcInstAt(2, jnun.UnqualName, jns.Str)}
+  addr() {return this.reqSrcInstAt(1, jnst.Str)}
+  dest() {return this.optSrcInstAt(2, jnun.UnqualName, jnst.Str)}
   destName() {return a.onlyInst(this.dest(), jnun.UnqualName)}
   reqDestName() {return a.reqInst(this.dest(), jnun.UnqualName)}
 
   destStr() {
-    const src = a.onlyInst(this.dest(), jns.Str)
+    const src = a.onlyInst(this.dest(), jnst.Str)
     if (!src) return undefined
 
     const str = src.ownVal()

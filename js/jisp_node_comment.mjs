@@ -31,6 +31,7 @@ export class Comment extends jnt.Text {
     return this
   }
 
+  isCosmetic() {return true}
   macro() {return this}
   compile() {return `//` + a.reqStr(this.#body) + a.reqStr(this.#delim)}
 }

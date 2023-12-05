@@ -1,8 +1,8 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jna from './jisp_named.mjs'
+import * as jnn from './jisp_node_name.mjs'
 
 // FIXME implement.
-export class Key extends jna.Name {
+export class Key extends jnn.Name {
   static reg() {return this.regQualName()}
 
   ownName() {return this.decompile().slice(this.sep().length)}

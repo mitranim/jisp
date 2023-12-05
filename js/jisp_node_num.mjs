@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jv from './jisp_valued.mjs'
 

@@ -22,13 +22,13 @@ t.test(function test_parsing() {
     const src = tu.SRC_TEXT
 
     const tok = jt.Tokenizer.fromStr(src)
-    // prn(`tok:`, tok)
-    // prn(`tokens:`, tok.toArray())
+    // tu.prn(`tok:`, tok)
+    // tu.prn(`tokens:`, tok.toArray())
 
     t.test(function test_Lexer() {
       const lex = jl.Lexer.fromStr(src)
-      // prn(`lex:`, lex)
-      // prn(`nodes:`, lex.toArray())
+      // tu.prn(`lex:`, lex)
+      // tu.prn(`nodes:`, lex.toArray())
     })
   })
 })

@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
@@ -40,8 +41,8 @@ export class DelimNodeList extends jnnl.NodeList {
   }
 
   meaningfulNodes() {return this.ownNodes().filter(jn.Node.isNodeMeaningful, jn.Node)}
-  firstMeaningful() {return this.ownNodes().find(jn.Node.isMeaningful, jn.Node)}
-  isEveryMeaningful() {return this.ownNodes().every(jn.Node.isMeaningful, jn.Node)}
+  firstMeaningful() {return this.ownNodes().find(jm.isNotCosmetic)}
+  isEveryMeaningful() {return this.ownNodes().every(jm.isNotCosmetic)}
 
   reqEveryMeaningful() {
     if (!this.isEveryMeaningful()) {
@@ -66,7 +67,7 @@ export class DelimNodeList extends jnnl.NodeList {
   compile() {
     const prn = this.reqCodePrinter()
     const src = this.ownNodes()
-    const ind = src.findIndex(jn.Node.isMeaningful, jn.Node)
+    const ind = src.findIndex(jm.isNotCosmetic)
     if (!(ind >= 0)) return prn.compileDense(src)
 
     const style = a.onlyInst(src[ind], Ident)?.optDef()?.ownCallSyntax() || CallSyntax.call

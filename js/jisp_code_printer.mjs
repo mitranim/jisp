@@ -18,7 +18,7 @@ export class CodePrinter extends a.Emp {
 
     let acc = ``
     for (src of src) {
-      if (!Node.isMeaningful(src)) continue
+      if (a.isNil(src) || src.isCosmetic()) continue
 
       const val = a.reqStr(this.compile(src))
       if (!val) continue

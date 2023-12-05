@@ -114,5 +114,5 @@ export class ArrSpan extends Span {
     return this
   }
 
-  skipMeaningless() {return this.skipWhile(Node.isMeaningless, Node)}
+  skipMeaningless() {return this.skipWhile(jm.isCosmetic)}
 }

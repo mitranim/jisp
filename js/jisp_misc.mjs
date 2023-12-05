@@ -10,6 +10,8 @@ export function errMeth(name, val) {throw TypeError(msgMeth(name, val))}
 export function msgMeth(name, val) {return `method ${a.show(name)} not fully implemented on ${a.show(val)}`}
 export function renderErr(val) {return (a.isErr(val) && val.message) || a.render(val)}
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
+export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
+export function isCosmetic(val) {return val?.isCosmetic()}
 
 export function isFullMatch(src, reg) {
   a.reqStr(src)
