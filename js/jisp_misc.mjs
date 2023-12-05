@@ -16,7 +16,8 @@ export function isCosmetic(val) {return val?.isCosmetic()}
 export function isFullMatch(src, reg) {
   a.reqStr(src)
   a.reqReg(reg)
-  return reg.test(src) && reg.exec(src)?.[0] === src
+  reg.lastIndex = 0
+  return reg.exec(src)?.[0] === src
 }
 
 class StrSet extends a.TypedSet {
@@ -220,4 +221,12 @@ function pathJoinOpt(...val) {
   let out = ``
   for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
   return out
+}
+
+export function optParent(src) {
+  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
+}
+
+export function ownScope(src) {
+  return a.isObj(src) && `ownScope` in src ? src.ownScope() : undefined
 }

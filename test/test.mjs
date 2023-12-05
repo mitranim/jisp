@@ -6,6 +6,13 @@ import * as io from '/Users/m/code/m/js/io_deno.mjs'
 import * as tu from './test_util.mjs'
 import * as jt from '../js/jisp_tokenizer.mjs'
 import * as jl from '../js/jisp_lexer.mjs'
+import * as jnu from '../js/jisp_node_num.mjs'
+import * as jsp from '../js/jisp_span.mjs'
+import * as jnun from '../js/jisp_node_unqual_name.mjs'
+import * as jnv from '../js/jisp_node_val.mjs'
+import * as jdfs from '../js/jisp_deno_fs.mjs'
+import * as jr from '../js/jisp_root.mjs'
+import * as jmo from '../js/jisp_module.mjs'
 
 t.test(function test_parsing() {
   t.test(function test_Tokenizer() {
@@ -36,7 +43,7 @@ t.test(function test_parsing() {
 // Incomplete. TODO test termination.
 t.test(function test_Num_parse() {
   t.is(
-    testParseFull(j.Num, `-12_345.6_7_8`).ownVal(),
+    testParseFull(jnu.Num, `-12_345.6_7_8`).ownVal(),
     -12_345.6_7_8,
   )
 })
@@ -56,7 +63,7 @@ t.test(function test_Num_parse() {
 // }
 
 function testParseFull(cls, src) {
-  const srcSpan = new j.StrSpan().init(src)
+  const srcSpan = new jsp.StrSpan().init(src)
   t.is(srcSpan.ownPos(), 0)
   t.is(srcSpan.ownLen(), src.length)
 
@@ -69,7 +76,7 @@ function testParseFull(cls, src) {
 }
 
 t.test(function test_UnqualName() {
-  const cls = j.UnqualName
+  const cls = jnun.UnqualName
 
   // TODO more cases.
   t.test(function test_parse() {
@@ -95,8 +102,8 @@ t.test(function test_UnqualName() {
   })
 })
 
-t.test(function test_ValNode() {
-  function make(val) {return new j.ValNode().setVal(val)}
+t.test(function test_Val() {
+  function make(val) {return new jnv.Val().setVal(val)}
   function test(src, exp) {t.eq(make(src).compile(), exp)}
 
   test(undefined, `undefined`)
@@ -117,12 +124,13 @@ t.test(function test_ValNode() {
   test({one: `two`}, `{one: "two"}`)
   test({one: `two`, three: `four`}, `{one: "two", three: "four"}`)
   test({12.34: 56}, `{12.34: 56}`)
+  test({'-10': 20}, `{"-10": 20}`)
   test({'one.two': `three.four`}, `{"one.two": "three.four"}`)
 })
 
 await t.test(async function test_Module() {
-  const fs = new j.DenoFs().setSrc(`test`).setTar(`.tmp`)
-  const root = new j.Root().setFs(fs)
+  const fs = new jdfs.DenoFs().setSrc(`test`).setTar(`.tmp`)
+  const root = new jr.Root().setFs(fs)
 
   /*
   root -> ask for tar module -> compile to FS -> load from FS -> RAM cached
@@ -130,7 +138,7 @@ await t.test(async function test_Module() {
   root -> ask for tar module ->                               -> RAM cached
   */
 
-  const mod = new j.Module().setParent(root).fromStr(SRC).setUrl(SRC_URL.href)
+  const mod = new jmo.Module().setParent(root).fromStr(tu.SRC_TEXT).setUrl(tu.SRC_FILE_URL.href)
   // const mod = await root.initModule(`test_code.jisp`)
 
   await mod.macro()

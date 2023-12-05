@@ -5,7 +5,7 @@ import * as jnst from './jisp_node_str.mjs'
 import * as jnn from './jisp_node_name.mjs'
 import * as jnp from './jisp_node_predecl.mjs'
 import * as jnm from './jisp_node_macro.mjs'
-import * as jnmo from './jisp_node_module.mjs'
+import * as jmo from './jisp_module.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jnun from './jisp_node_unqual_name.mjs'
 
@@ -16,7 +16,7 @@ separately throughout the file. However, it would be incorrect because some
 macro classes exported by this module should NOT be added to this scope. For
 example, the `Ret` macro should be available only in functions.
 */
-const mod = new jnmo.Module().setUrl(import.meta.url)
+const mod = new jmo.Module().setUrl(import.meta.url)
 
 export default mod
 

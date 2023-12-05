@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 
 export class Err extends Error {
   get name() {return this.constructor.name}
@@ -6,7 +7,7 @@ export class Err extends Error {
 
 export class CodeErr extends Err {
   constructor({msg, span, cause}) {
-    super(joinLines(a.reqStr(msg), span?.context?.()), {cause})
+    super(jm.joinLines(a.reqStr(msg), span?.context?.()), {cause})
     this.msg = msg
     this.span = span
   }

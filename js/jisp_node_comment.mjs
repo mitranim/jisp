@@ -12,9 +12,9 @@ FIXME:
       into single line comments.
 */
 export class Comment extends jnt.Text {
-  static reg() {return /^;([^\n\r]*)(\r\n|\r|\n|$)/}
-  static pre() {return `;`}
-  pre() {return this.constructor.pre()}
+  static regexp() {return /^;([^\n\r]*)(\r\n|\r|\n|$)/}
+  static prefix() {return `;`}
+  prefix() {return this.constructor.prefix()}
 
   #body = ``
   ownBody() {return this.#body}

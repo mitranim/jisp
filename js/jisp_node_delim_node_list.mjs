@@ -5,16 +5,16 @@ import * as jn from './jisp_node.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 export class DelimNodeList extends jnnl.NodeList {
-  static pre() {throw errMeth(`pre`, this)}
-  static suf() {throw errMeth(`suf`, this)}
+  static prefix() {throw errMeth(`prefix`, this)}
+  static suffix() {throw errMeth(`suffix`, this)}
 
-  pre() {return this.constructor.pre()}
-  suf() {return this.constructor.suf()}
+  prefix() {return this.constructor.prefix()}
+  suffix() {return this.constructor.suffix()}
 
   // TODO simplify.
   static lex(lex) {
-    const pre = a.reqValidStr(this.pre())
-    const suf = a.reqValidStr(this.suf())
+    const pre = a.reqValidStr(this.prefix())
+    const suf = a.reqValidStr(this.suffix())
     const span = lex.reqSpan()
     const head = span.optHead()
 

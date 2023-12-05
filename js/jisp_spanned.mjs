@@ -1,6 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as je from './jisp_err.mjs'
-import * as js from './jisp_span.mjs'
+import * as jsp from './jisp_span.mjs'
 
 export class MixOwnSpanned extends a.DedupMixinCache {
   static make(cls) {
@@ -14,7 +14,7 @@ export class MixOwnSpanned extends a.DedupMixinCache {
 
       decompile() {return decompile(this.optSpan())}
       get Span() {return this.constructor.Span}
-      static get Span() {return js.Span}
+      static get Span() {return jsp.Span}
     }
   }
 }

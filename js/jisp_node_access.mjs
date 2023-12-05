@@ -1,7 +1,9 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
+import * as jnk from './jisp_node_key.mjs'
 
 /*
 Combines an arbitrary expression with a subsequent `.key` expression, unifying
@@ -13,7 +15,7 @@ export class Access extends jp.MixParent.goc(jni.Ident) {
     span.skipMeaningless()
 
     const next = span.optHead()
-    if (!a.isInst(next, Key)) return prev
+    if (!a.isInst(next, jnk.Key)) return prev
     span.inc()
 
     return this.lexNext(
@@ -37,7 +39,7 @@ export class Access extends jp.MixParent.goc(jni.Ident) {
   #key = undefined
   ownKey() {return this.#key}
   optKey() {return this.#key}
-  setKey(val) {return this.#key = this.toValidChild(this.reqInst(val, Key)), this}
+  setKey(val) {return this.#key = this.toValidChild(this.reqInst(val, jnk.Key)), this}
   reqKey() {return this.optKey() ?? this.throw(`missing right-side key at ${a.show(this)}`)}
 
   /*

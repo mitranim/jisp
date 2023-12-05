@@ -21,7 +21,7 @@ FIXME: support resizable fences. Raw strings are unusable without that.
 FIXME: escape when encoding.
 */
 export class StrBacktick extends Str {
-  static reg() {return /^`([^`]*)`/}
+  static regexp() {return /^`([^`]*)`/}
 
   fromMatch(mat) {
     super.fromMatch(mat)
@@ -35,7 +35,7 @@ export class StrBacktick extends Str {
 }
 
 export class StrDouble extends Str {
-  static reg() {return /^"((?:\\.|[^"])*)"/}
+  static regexp() {return /^"((?:\\.|[^"])*)"/}
 
   optVal() {
     let val = super.optVal()

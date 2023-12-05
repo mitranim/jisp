@@ -4,7 +4,7 @@ import * as je from './jisp_err.mjs'
 import * as jr from './jisp_ref.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jch from './jisp_child.mjs'
-import * as js from './jisp_span.mjs'
+import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jns from './jisp_node_sourced.mjs'
 import * as jcp from './jisp_code_printed.mjs'
@@ -47,7 +47,7 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcp.MixCodePrinted.goc
   jns.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
-  static get Span() {return js.StrSpan}
+  static get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
   fromNode(src) {

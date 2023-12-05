@@ -4,9 +4,9 @@ import * as jn from './jisp_node.mjs'
 
 export class Text extends jn.Node {
   // Override in subclass. Must return a regex.
-  static reg() {throw jm.errMeth(`reg`, this)}
+  static regexp() {throw jm.errMeth(`regexp`, this)}
 
-  static match(src) {return this.reg().exec(a.reqStr(src))}
+  static match(src) {return this.regexp().exec(a.reqStr(src))}
 
   static parse(span) {
     const mat = this.match(span.rem())
@@ -17,7 +17,7 @@ export class Text extends jn.Node {
     return tar
   }
 
-  static isValid(val) {return jm.isFullMatch(val, this.reg())}
+  static isValid(val) {return jm.isFullMatch(val, this.regexp())}
 
   fromMatch(mat) {return this.reqSpan().setLen(mat[0].length), this}
 }

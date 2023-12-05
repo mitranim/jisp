@@ -2,6 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as je from './jisp_err.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as jrc from './jisp_row_col.mjs'
 
 /*
 Base class that describes a range spanning from position A to position B in some
@@ -59,7 +60,7 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
 
 export class StrSpan extends Span {
   setSrc(val) {return super.setSrc(a.reqStr(val))}
-  rowCol() {return new RowCol().fromUtf16(this.ownSrc(), this.ownPos())}
+  rowCol() {return new jrc.RowCol().fromUtf16(this.ownSrc(), this.ownPos())}
 
   /*
   FIXME:
@@ -70,10 +71,10 @@ export class StrSpan extends Span {
     * Consider highlighting specific region with carets.
   */
   context() {
-    return joinLines(
+    return jm.joinLines(
       // `position (UTF-16): ` + this.ownPos(),
       `row:col: ` + this.rowCol().strShort(),
-      `source ↓:\n` + jm.preview(this.rem()),
+      `source:\n\n` + jm.preview(this.rem()),
     )
   }
 }

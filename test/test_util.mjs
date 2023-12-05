@@ -12,6 +12,7 @@ export const SRC_FILE_URL = new URL(SRC_FILE_NAME, p.posix.dirLike(p.posix.dir(i
 
 export const SRC_TEXT = Deno.readTextFileSync(SRC_FILE_URL).trim()
 
+/*
 export function prn(desc, val) {
   console.log(desc, Deno.inspect(val, inspectOpt))
 }
@@ -24,3 +25,4 @@ export const inspectOpt = {
   showHidden: true,
   getters: true,
 }
+*/

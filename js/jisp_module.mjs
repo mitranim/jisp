@@ -38,7 +38,9 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
     const tar = this.ownNodes()
     let ind = -1
     while (++ind < tar.length) {
-      tar[ind] = await jn.Node.macroNodeAsync(tar[ind])
+      let val = jn.Node.macroNodeAsync(tar[ind])
+      if (a.isPromise(val)) val = await val
+      tar[ind] = val
     }
     return this
   }

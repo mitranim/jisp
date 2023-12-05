@@ -1,14 +1,18 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as je from './jisp_err.mjs'
 import * as jit from './jisp_iter.mjs'
-import * as js from './jisp_span.mjs'
+import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jt from './jisp_tokenizer.mjs'
+import * as jnbrc from './jisp_node_braces.mjs'
+import * as jnbrk from './jisp_node_brackets.mjs'
+import * as jnpar from './jisp_node_parens.mjs'
+import * as jna from './jisp_node_access.mjs'
 
 export class LexerErr extends je.CodeErr {}
 
 export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
-  static get Span() {return js.ArrSpan}
+  static get Span() {return jsp.ArrSpan}
 
   init(src) {return this.initSpan().init(src), super.init()}
   filter(val) {return val}
@@ -27,9 +31,9 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
 
   optStep() {
     return (
-      Brackets.lex(this) ||
-      Parens.lex(this) ||
-      Braces.lex(this) ||
+      jnbrc.Braces.lex(this) ||
+      jnbrk.Brackets.lex(this) ||
+      jnpar.Parens.lex(this) ||
       undefined
     )
   }
@@ -39,7 +43,7 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
 
     // May add more in the future.
     return (
-      Access.lexNext(this, prev)
+      jna.Access.lexNext(this, prev)
     )
   }
 

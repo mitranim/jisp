@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jnn from './jisp_node_name.mjs'
+import * as jnu from './jisp_node_num.mjs'
 
 export class UnqualNameSet extends a.TypedSet {
   reqVal(val) {return a.reqInst(val, UnqualName)}
@@ -11,7 +12,7 @@ Short for "unqualified name". Represents a standalone name which is not part of
 an access path in source code.
 */
 export class UnqualName extends jnn.Name {
-  static reg() {return this.regUnqualName()}
+  static regexp() {return this.regexpUnqualName()}
 
   pk() {return this.ownName()}
   ownName() {return this.decompile()}
@@ -22,7 +23,7 @@ export class UnqualName extends jnn.Name {
   */
   optDef() {
     const name = a.pk(this)
-    const resolve = val => ownScope(val)?.ownLexNs()?.resolve(name)
+    const resolve = val => jm.ownScope(val)?.ownLexNs()?.resolve(name)
     return this.ancProcure(resolve)
   }
 
@@ -61,8 +62,16 @@ export class UnqualName extends jnn.Name {
   compileName() {return this.optDef()?.compileName(this) ?? this.decompile()}
 
   static toValidDictKey(val) {
-    if (this.isValid(val) || Num.isValid(val)) return val
+    a.reqStr(val)
+    if (this.isValidDictKey(val)) return val
     return JSON.stringify(val)
+  }
+
+  static isValidDictKey(val) {
+    return a.isStr(val) && !!val && (
+      this.isValid(val) ||
+      (jnu.Num.isValid(val) && val[0] !== `-`)
+    )
   }
 
   static isJsReservedWord(val) {return jm.jsReservedWords.has(val)}

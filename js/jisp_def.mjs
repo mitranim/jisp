@@ -2,7 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jr from './jisp_ref.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jna from './jisp_named.mjs'
+import * as jnd from './jisp_named.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jco from './jisp_call_opt.mjs'
 import * as jns from './jisp_ns.mjs'
@@ -17,7 +17,7 @@ not the body. We may choose to support forward declarations, which would be
 similar to the latter.
 */
 export class Def extends (
-  jr.MixRef.goc(jv.MixValued.goc(jna.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))
+  jr.MixRef.goc(jv.MixValued.goc(jnd.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))
 ) {
   #uses = undefined
   ownUses() {return this.#uses ??= new jnun.UnqualNameSet()}

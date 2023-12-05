@@ -2,7 +2,7 @@
 
 [class Text
   [extend Node]
-  [fn_static reg [] [throw [errMeth `reg` this]]]
+  [fn_static reg [] [throw [errMeth `regexp` this]]]
   [fn_static match [src] [[this.reg].exec [a.reqStr src]]]
 
   [fn_static parse [span] 
@@ -116,7 +116,7 @@ class Text
     reg
   .static
   .body
-    errMeth `reg` this
+    errMeth `regexp` this
     throw ←
 
   fn_static
@@ -124,16 +124,16 @@ class Text
     []
     throw
       errMeth
-        `reg`
+        `regexp`
         this
 
-  fn_static reg [] [errMeth `reg` this, throw ←]
+  fn_static reg [] [errMeth `regexp` this, throw ←]
 
   fn_static reg []
-    errMeth `reg` this
+    errMeth `regexp` this
     throw ←
 
-  [fn_static reg, [], errMeth `reg` this, throw ←]
+  [fn_static reg, [], errMeth `regexp` this, throw ←]
 
   ; ↑↑↑↑↑↑
 

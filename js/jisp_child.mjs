@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
 
@@ -27,7 +28,7 @@ export class MixChild extends a.DedupMixinCache {
         }
 
         let tar = par
-        while ((tar = optParent(tar))) {
+        while ((tar = jm.optParent(tar))) {
           if (tar === this) {
             throw this.err(`forbidden cycle between child ${a.show(this)} and parent ${a.show(par)}`)
           }
@@ -75,7 +76,7 @@ export class MixChild extends a.DedupMixinCache {
         while (tar) {
           const val = fun(tar)
           if (val) return val
-          tar = optParent(tar)
+          tar = jm.optParent(tar)
         }
         return undefined
       }
@@ -86,16 +87,8 @@ export class MixChild extends a.DedupMixinCache {
       optModule() {return this.optAncMatch(Module)}
       reqModule() {return this.reqAncMatch(Module)}
 
-      optScoper() {return this.ancFind(ownScope)}
+      optScoper() {return this.ancFind(jm.ownScope)}
       reqScoper() {return this.optScoper() ?? this.throw(`missing scope at ${a.show(this)}`)}
     }
   }
-}
-
-function optParent(src) {
-  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
-}
-
-function ownScope(src) {
-  return a.isObj(src) && `ownScope` in src ? src.ownScope() : undefined
 }

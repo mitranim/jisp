@@ -6,6 +6,6 @@ export class BracketPre extends jnet.ExactText {static src() {return `[`}}
 export class BracketSuf extends jnet.ExactText {static src() {return `]`}}
 
 export class Brackets extends jndnl.DelimNodeList {
-  static pre() {return BracketPre.src}
-  static suf() {return BracketSuf.src}
+  static prefix() {return BracketPre.src()}
+  static suffix() {return BracketSuf.src()}
 }

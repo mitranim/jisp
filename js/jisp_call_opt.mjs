@@ -2,6 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jen from './jisp_enum.mjs'
+import * as jnv from './jisp_node_val.mjs'
 
 export class CallOpt extends ji.MixInsp.goc(a.Emp) {
   #callTime = CallTime.run
@@ -91,7 +92,7 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
 
   // FIXME support async.
   macroOutVal(src, out, fun) {
-    const cls = ValNode
+    const cls = jnv.Val
     if (cls.isValid(out)) return new cls().setVal(out)
     throw src.err(`expected macro ${a.show(fun)} to return a value compatible with ${a.show(cls)}, got ${a.show(out)}`)
   }

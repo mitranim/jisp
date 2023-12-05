@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jc from './jisp_conf.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jmi from './jisp_mixable.mjs'
@@ -50,7 +51,7 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   parentContext() {
     const span = this.ancProcure(optSpan)
     if (!span) return ``
-    return joinLines(` in scope ${a.show(this)} declared here:`, span.context())
+    return jm.joinLines(` in scope ${a.show(this)} declared here:`, span.context())
   }
 
   add(val) {return super.add(this.toValidChild(val))}

@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jit from './jisp_iter.mjs'
 import * as je from './jisp_err.mjs'
-import * as js from './jisp_span.mjs'
+import * as jsp from './jisp_span.mjs'
 import * as jsd from './jisp_spanned.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnbrc from './jisp_node_braces.mjs'
@@ -28,7 +28,7 @@ parentheses, which are only valid as tokens, and should not occur in a lexed
 AST.
 */
 export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
-  static get Span() {return js.StrSpan}
+  static get Span() {return jsp.StrSpan}
   init(src) {return this.initSpan().init(src), super.init()}
   more() {return this.reqSpan().more()}
 

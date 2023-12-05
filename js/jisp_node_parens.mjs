@@ -6,6 +6,6 @@ export class ParenPre extends jnet.ExactText {static src() {return `(`}}
 export class ParenSuf extends jnet.ExactText {static src() {return `)`}}
 
 export class Parens extends jndnl.DelimNodeList {
-  static pre() {return ParenPre.src}
-  static suf() {return ParenSuf.src}
+  static prefix() {return ParenPre.src()}
+  static suffix() {return ParenSuf.src()}
 }

@@ -1,14 +1,18 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jv from './jisp_valued.mjs'
+import * as jnun from './jisp_node_unqual_name.mjs'
 
 /*
-FIXME consider using, fixing, consolidating, or removing.
+Intended for serializing JS values into the AST. This is particularly useful
+when calling macros with `CallOut.val`, or more generally, whenever
+compile-time evaluation produces a value that must be eventually serialized
+into the compiled code as a JS value.
 
-Supposed (but unused) superclass for all nodes that may represent a JS value
-evaluatable at compile time.
+FIXME consider if this should be a superclass of all `Node` subclasses
+compatible with compile-time evaluation.
 */
-export class ValNode extends jv.MixOwnValued.goc(jn.Node) {
+export class Val extends jv.MixOwnValued.goc(jn.Node) {
   compile() {return this.constructor.compile(this, this.ownVal())}
 
   // Must match `.compile`.
@@ -56,7 +60,7 @@ export class ValNode extends jv.MixOwnValued.goc(jn.Node) {
       if (first) first = false
       else out += `, `
 
-      out += UnqualName.toValidDictKey(key)
+      out += jnun.UnqualName.toValidDictKey(key)
       out += `: `
       out += this.compile(node, val[key])
     }

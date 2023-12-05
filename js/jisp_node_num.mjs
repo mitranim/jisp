@@ -20,7 +20,7 @@ FIXME support:
   * `FracHex`
 */
 export class Num extends jv.MixOwnValued.goc(jnt.Text) {
-  static reg() {return /^-?\d+(_\d+)*(?:[.]\d+(_\d+)*)?(?![\w$])/}
+  static regexp() {return /^-?\d+(_\d+)*(?:[.]\d+(_\d+)*)?(?![\w$])/}
 
   ownVal() {return super.ownVal() ?? NaN}
   setVal(val) {return super.setVal(this.req(val, a.isFin))}
@@ -34,9 +34,9 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
   macro() {return this}
   compile() {return this.decompile()}
 
-  // Workaround for the lack of underscore support in `Number.parseFloat`.
   static parseFloat(src) {
     a.reqStr(src)
+    // Workaround for the lack of underscore support in `Number.parseFloat`.
     if (src.includes(`_`)) src = src.replace(/_/g, ``)
     return Number.parseFloat(src)
   }

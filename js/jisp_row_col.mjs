@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 
-export class RowCol extends MixInsp.goc(a.Emp) {
+export class RowCol extends ji.MixInsp.goc(a.Emp) {
   #row = undefined
   setRow(val) {return this.#row = a.reqNat(val), this}
   ownRow() {return this.#row}

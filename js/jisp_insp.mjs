@@ -9,6 +9,8 @@ export const symInspNode = Symbol.for(`nodejs.util.inspect.custom`)
 /*
 Short for "mixin: inspectable". Tool for implementing support for custom
 inspection (fancy pretty-printing).
+
+TODO: consider overriding inspection depth here.
 */
 export class MixInsp extends a.DedupMixinCache {
   static make(cls) {

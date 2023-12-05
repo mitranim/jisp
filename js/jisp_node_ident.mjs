@@ -8,10 +8,10 @@ FIXME: move most methods to `Name`, make this superclass of `Name` and
 `Access`.
 */
 export class Ident extends jnt.Text {
-  static regUnqualName() {return /^[A-Za-z$_][\w$]*/}
-  static regQualName() {return /^[.][A-Za-z$_][\w$]*/}
-  static sep() {return `.`}
-  sep() {return this.constructor.sep()}
+  static regexpUnqualName() {return /^[A-Za-z$_][\w$]*/}
+  static regexpQualName() {return /^[.][A-Za-z$_][\w$]*/}
+  static separator() {return `.`}
+  separator() {return this.constructor.separator()}
 
   // TODO: consider caching. Profile first.
   optDef() {throw errMeth(`optDef`, this)}
