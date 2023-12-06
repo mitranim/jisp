@@ -29,9 +29,9 @@ export class StrBacktick extends Str {
     return this
   }
 
-  // FIXME implement. Must escape backticks and backslashes. Should not need
-  // to escape anything else.
-  // compile() {}
+  compile() {
+    return '`' + this.ownVal().replaceAll('`', '\\`').replaceAll(`\\`, `\\\\`) + '`'
+  }
 }
 
 export class StrDouble extends Str {

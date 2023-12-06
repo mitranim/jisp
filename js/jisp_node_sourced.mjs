@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
+import * as jn from './jisp_node.mjs'
 
 /*
 This is named "node sourced" because this class is sourced FROM a node, but
@@ -16,7 +17,7 @@ export class MixOwnNodeSourced extends a.DedupMixinCache {
       optSrcNode() {return this.#srcNode}
 
       setSrcNode(val) {
-        a.reqInst(val, Node)
+        a.reqInst(val, jn.Node)
         if (jc.Conf.main.DEBUG) this.validSrcNode(val)
         this.#srcNode = val
         return this

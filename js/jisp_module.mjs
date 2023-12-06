@@ -22,7 +22,7 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
   pk() {return this.ownUrl()}
   setVal(val) {return super.setVal(jm.reqNativeModule(val))}
   fromStr(val) {return this.setNodes(jl.Lexer.nodesFromStr(val))}
-  import(val) {return this.reqRoot().importRel(val, this.reqUrl())}
+  import(val) {return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())}
   makeScope() {return this.constructor.makeScope()}
   static makeScope() {return new jsc.ModuleScope()}
   // Used by namespace mixins.

@@ -60,7 +60,7 @@ export class MixChild extends a.DedupMixinCache {
         )
       }
 
-      ancFind(fun) {
+      optAncFind(fun) {
         a.reqFun(fun)
         let tar = this
         while (tar) {
@@ -70,7 +70,14 @@ export class MixChild extends a.DedupMixinCache {
         return undefined
       }
 
-      ancProcure(fun) {
+      reqAncFind(fun) {
+        return (
+          this.optAncFind(fun) ??
+          this.throw(`missing ancestor for test function ${a.show(fun)} at descendant ${a.show(this)}`)
+        )
+      }
+
+      optAncProcure(fun) {
         a.reqFun(fun)
         let tar = this
         while (tar) {
@@ -81,13 +88,7 @@ export class MixChild extends a.DedupMixinCache {
         return undefined
       }
 
-      optRoot() {return this.optAncMatch(Root)}
-      reqRoot() {return this.reqAncMatch(Root)}
-
-      optModule() {return this.optAncMatch(Module)}
-      reqModule() {return this.reqAncMatch(Module)}
-
-      optScoper() {return this.ancFind(jm.ownScope)}
+      optScoper() {return this.optAncFind(jm.ownScope)}
       reqScoper() {return this.optScoper() ?? this.throw(`missing scope at ${a.show(this)}`)}
     }
   }

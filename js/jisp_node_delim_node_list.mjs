@@ -1,7 +1,10 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
+import * as jco from './jisp_call_opt.mjs'
 import * as jn from './jisp_node.mjs'
+import * as jni from './jisp_node_ident.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 export class DelimNodeList extends jnnl.NodeList {
@@ -70,16 +73,16 @@ export class DelimNodeList extends jnnl.NodeList {
     const ind = src.findIndex(jm.isNotCosmetic)
     if (!(ind >= 0)) return prn.compileDense(src)
 
-    const style = a.onlyInst(src[ind], Ident)?.optDef()?.ownCallSyntax() || CallSyntax.call
+    const style = a.onlyInst(src[ind], jni.Ident)?.optDef()?.ownCallSyntax() || jco.CallSyntax.call
 
     // Reslicing is suboptimal but probably not our bottleneck.
     const pre = src.slice(0, ind + 1)
     const suf = src.slice(ind + 1)
     const call = prn.compileDense(pre) + prn.compileParensCommaMultiLine(suf)
 
-    if (style === CallSyntax.call) return call
-    if (style === CallSyntax.new) return `new ` + call
-    throw this.err(CallSyntax.msgUnrec(style))
+    if (style === jco.CallSyntax.call) return call
+    if (style === jco.CallSyntax.new) return `new ` + call
+    throw this.err(jco.CallSyntax.msgUnrec(style))
   }
 
   [ji.symInspMod](tar) {

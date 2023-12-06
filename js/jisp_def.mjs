@@ -63,10 +63,11 @@ nodes replacing other nodes in the macroexpansion process. A `NodeDef`
 currently does not replace the node responsible for it. However, SOME way of
 setting the source node is mandatory. An instance of `NodeDef` added to a scope
 must ALWAYS have a source node, and its methods should assert this.
+
+TODO `.setSrcNode` should validate that the node defines valid `.pk`.
 */
 export class NodeDef extends jnsd.MixOwnNodeSourced.goc(Def) {
-  // For `Def..pk`.
-  ownName() {return super.ownName() ?? a.pk(this.reqSrcNode())}
+  pk() {return this.ownName() ?? a.pk(this.reqSrcNode())}
 
   // Override for `MixRef`. Allows tracing definitions back to sources.
   ownDeref() {return this.reqSrcNode()}
@@ -77,7 +78,7 @@ export class NodeDef extends jnsd.MixOwnNodeSourced.goc(Def) {
   macroNode(node) {
     const fun = this.optVal()
     if (fun) return this.macroNodeWith(node, fun)
-    throw node.err(`unable to execute macro ${a.show(this.ownName())}: definition not yet evaluated; tip: for technical reasons, macros can be used only by other modules, for example module "A" defines macro "B" and module "C" uses "A.B"`)
+    throw node.err(`unable to execute macro ${a.show(this.pk())}: definition not yet evaluated; tip: for technical reasons, macros can be used only by other modules, for example module "A" defines macro "B" and module "C" uses "A.B"`)
   }
 }
 

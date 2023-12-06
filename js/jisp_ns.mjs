@@ -49,19 +49,20 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
 
   // For error messages.
   parentContext() {
-    const span = this.ancProcure(optSpan)
+    const span = this.optAncProcure(optSpan)
     if (!span) return ``
     return jm.joinLines(` in scope ${a.show(this)} declared here:`, span.context())
   }
 
   add(val) {return super.add(this.toValidChild(val))}
 
-  // addNode(node) {
-  //   this.reqInst(node, jn.Node)
-  //   const key = a.pk(node)
-  //   if (this.has(key)) throw node.err(this.msgRedundant(key))
-  //   return this.replace(key, val)
-  // }
+  addFromNode(node) {
+    this.reqInst(node, jn.Node)
+    const def = new jd.NodeDef().setSrcNode(node)
+    try {this.add(def)}
+    catch (err) {throw node.err(`unable to register definition with name ${a.show(def.pk())}`, err)}
+    return def
+  }
 
   set(key, val) {
     if (this.has(key)) throw this.err(this.msgRedundant(key))

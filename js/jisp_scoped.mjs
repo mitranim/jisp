@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jp from './jisp_parent.mjs'
 
@@ -12,7 +13,7 @@ export class MixScoped extends a.DedupMixinCache {
   static make(cls) {
     return class MixScoped extends je.MixErrer.goc(cls) {
       ownScope() {}
-      optScope() {return this.ancProcure(ownScope)}
+      optScope() {return this.optAncProcure(jm.ownScope)}
       reqOwnScope() {return this.ownScope() ?? this.throw(`missing own scope at ${a.show(this)}`)}
       reqScope() {return this.optScope() ?? this.throw(`missing scope at ${a.show(this)}`)}
     }

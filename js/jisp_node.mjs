@@ -7,7 +7,7 @@ import * as jch from './jisp_child.mjs'
 import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jns from './jisp_node_sourced.mjs'
-import * as jcp from './jisp_code_printed.mjs'
+import * as jcpd from './jisp_code_printed.mjs'
 import * as jsc from './jisp_scoped.mjs'
 
 /*
@@ -43,18 +43,13 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcp.MixCodePrinted.goc(
+export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
   jns.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
   static get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
-  fromNode(src) {
-    this.setParent(src.reqParent())
-    this.setSrcNode(src)
-    return this
-  }
 
   err(msg, cause) {return new je.CodeErr({msg, span: this.optSpan(), cause})}
 
@@ -92,19 +87,11 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcp.MixCodePrinted.goc
 
     * "req lex", "opt pub". Use this by default.
   */
-  defineLex() {return this.defineIn(this.reqParent().reqScope().reqLexNs())}
+  defineLex() {return this.reqParent().reqScope().reqLexNs().addFromNode(this)}
 
   // TODO consider "optX" version.
   // TODO consider renaming to "reqX".
-  definePub() {return this.defineIn(this.reqParent().reqScope().reqPubNs())}
-
-  defineIn(nsp) {
-    a.reqInst(nsp, Ns)
-    const def = new NodeDef().setSrcNode(this)
-    try {nsp.add(def)}
-    catch (err) {throw this.err(`unable to register definition with name ${a.show(def?.pk())}`, err)}
-    return def
-  }
+  definePub() {return this.reqParent().reqScope().reqPubNs().addFromNode(this)}
 
   optDef() {}
   reqDef() {return this.optDef() ?? this.throw(`missing definition at ${a.show(this)}`)}
@@ -158,10 +145,12 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcp.MixCodePrinted.goc
     return node
   }
 
-  static replace(node, next) {
-    next = (next ?? new Empty()).fromNode(node)
-    node.setParent(next)
-    return next
+  static replace(src, tar) {
+    if (a.isNil(tar)) return undefined
+    tar.setParent(src.reqParent())
+    tar.setSrcNode(src)
+    src.setParent(tar)
+    return tar
   }
 
   // Some node types may override this to indicate that they may be safely

@@ -1,4 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as p from '/Users/m/code/m/js/path.mjs'
+import * as jc from './jisp_conf.mjs'
 
 export function decompile(val) {return a.laxStr(val?.decompile())}
 export function compile(val) {return a.laxStr(val?.compile())}
@@ -12,6 +14,20 @@ export function renderErr(val) {return (a.isErr(val) && val.message) || a.render
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
+
+export function optParent(src) {
+  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
+}
+
+export function ownScope(src) {
+  return a.isObj(src) && `ownScope` in src ? src.ownScope() : undefined
+}
+
+// Implemented by `Module`.
+export function isImporter(val) {return a.hasMeth(val, `import`)}
+
+// Implemented by `Root`.
+export function isImporterRel(val) {return a.hasMeth(val, `importRel`)}
 
 export function isFullMatch(src, reg) {
   a.reqStr(src)
@@ -192,7 +208,7 @@ export class PromiseCache extends PromiseMap {
   goc(key, fun, ctx) {
     a.reqFun(fun)
     if (this.has(key)) return this.get(key)
-    return this.setVal(key, fun.call(ctx, key))
+    return this.setted(key, fun.call(ctx, key))
   }
 }
 
@@ -221,12 +237,4 @@ function pathJoinOpt(...val) {
   let out = ``
   for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
   return out
-}
-
-export function optParent(src) {
-  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
-}
-
-export function ownScope(src) {
-  return a.isObj(src) && `ownScope` in src ? src.ownScope() : undefined
 }

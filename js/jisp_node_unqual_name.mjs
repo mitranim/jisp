@@ -24,7 +24,7 @@ export class UnqualName extends jnn.Name {
   optDef() {
     const name = a.pk(this)
     const resolve = val => jm.ownScope(val)?.ownLexNs()?.resolve(name)
-    return this.ancProcure(resolve)
+    return this.optAncProcure(resolve)
   }
 
   macroImpl() {

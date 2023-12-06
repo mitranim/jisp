@@ -119,7 +119,7 @@ export class Const extends jnm.Macro {
 
   compile() {
     this.reqStatement()
-    const prn = this.reqPrn()
+    const prn = this.reqCodePrinter()
     return `const ${prn.compile(this.name())} = ${prn.compile(this.val())}`
   }
 }
@@ -165,9 +165,9 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   // Override for `Node..defineLex`.
   defineLex() {
     if (this.isExpression()) {
-      return this.defineIn(this.reqOwnScope().reqLexNs())
+      return this.reqOwnScope().reqLexNs().addFromNode(this)
     }
-    return this.defineIn(this.reqParent().reqScope().reqLexNs())
+    return this.reqParent().reqScope().reqLexNs().addFromNode(this)
   }
 
   defineParams() {
@@ -177,7 +177,7 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   macroBody() {return this.reqSrcNode().macroFrom(3)}
 
   compile() {
-    const prn = this.reqPrn()
+    const prn = this.reqCodePrinter()
 
     return `function ${
       prn.compile(this.name())

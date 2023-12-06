@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jmo from './jisp_module.mjs'
 import * as jnm from './jisp_node_macro.mjs'
@@ -70,8 +71,13 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
     return this.macroName()
   }
 
+  /*
+  We must access the parent via `.reqParent()` because otherwise `jm.isImporter`
+  would match the current node and cause `.reqAncFind` to recur indefinitely,
+  causing stack overflow.
+  */
   async import() {
-    this.setVal(await this.reqModule().import(this.addr().reqVal()))
+    this.setVal(await this.reqParent().reqAncFind(jm.isImporter).import(this.addr().reqVal()))
   }
 
   async macroAll() {

@@ -28,13 +28,12 @@ export class Ident extends jnt.Text {
     return super.macroImpl()
   }
 
-  macroWithDef(def) {
-    a.optInst(def, Def)
-    if (def?.isMacro()) {
-      if (def?.isMacroBare()) return def.macroNode(this)
-      // FIXME implement.
-      // if (!this.isCalled()) throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} which has the following call opts: ${a.show(def.callOptStr())}`)
-    }
+  macroWithDef(def /* : Def */) {
+    if (a.isNil(def)) return this
+    if (!def.isMacro()) return this
+    if (def.isMacroBare()) return def.macroNode(this)
+    // FIXME implement.
+    // if (!this.isCalled()) throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} which has the following call opts: ${a.show(def.callOptStr())}`)
     return this
   }
 

@@ -1,10 +1,12 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jfs from './jisp_fs.mjs'
-import * as jcp from './jisp_code_printed.mjs'
+import * as jcp from './jisp_code_printer.mjs'
+import * as jcpd from './jisp_code_printed.mjs'
 import * as jmo from './jisp_module.mjs'
 
 /*
@@ -24,7 +26,7 @@ TODO second approximation:
   * Use header files.
   * Use cached files, invalidate by own and dependency checksums.
 */
-export class Root extends jcp.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(a.Emp))) {
+export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(a.Emp))) {
   #fs = undefined
   setFs(val) {return this.#fs = this.toValidChild(a.reqInst(val, jfs.Fs)), this}
   ownFs() {return this.#fs}
@@ -45,7 +47,7 @@ export class Root extends jcp.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer
   setImportPromiseCache(val) {return this.#importPromiseCache = this.reqInst(val, jm.PromiseCache), this}
 
   // Override for `MixOwnCodePrinted`.
-  optCodePrinter() {return super.optCodePrinter() ?? (this.setCodePrinter(new CodePrinter()), super.optCodePrinter())}
+  optCodePrinter() {return super.optCodePrinter() ?? (this.setCodePrinter(new jcp.CodePrinter()), super.optCodePrinter())}
 
   /*
   FIXME: handle self-import.
