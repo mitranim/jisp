@@ -1,0 +1,5 @@
+[use `jisp:prelude` `*`]
+
+[const someConst `some_const_value`]
+
+[fn someFunc [] `some_func_value`]

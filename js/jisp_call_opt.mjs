@@ -120,7 +120,7 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
       .setCallOut(out)
   }
 
-  [ji.symInspMod](tar) {
+  [ji.symInspInit](tar) {
     return tar.funs(
       this.ownCallTime,
       this.ownCallStyle,

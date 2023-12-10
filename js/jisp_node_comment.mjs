@@ -24,8 +24,8 @@ export class Comment extends jnt.Text {
   ownDelim() {return this.#delim}
   setDelim(val) {return this.#delim = this.req(val, a.isStr), this}
 
-  fromMatch(mat) {
-    super.fromMatch(mat)
+  setMatch(mat) {
+    super.setMatch(mat)
     this.setBody(mat[1])
     this.setDelim(mat[2])
     return this

@@ -23,11 +23,16 @@ export class MixScoped extends a.DedupMixinCache {
 export class MixOwnScoped extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnScoped extends jp.MixParent.goc(MixScoped.goc(cls)) {
+      get Scope() {throw jm.errGetter(`Scope`, this)}
+
       #scope = undefined
+      setScope(val) {
+        this.#scope = this.toValidChild(this.reqInst(val, this.Scope))
+        return this
+      }
       ownScope() {return this.#scope ??= this.toValidChild(this.makeScope())}
-      setScope(val) {return this.#scope = this.toValidChild(this.reqInst(val, Scope)), this}
       optScope() {return this.#scope ?? super.optScope()}
-      makeScope() {return new Scope()}
+      makeScope() {return new this.Scope()}
     }
   }
 }

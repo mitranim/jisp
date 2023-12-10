@@ -122,7 +122,7 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   /*
   Must be provided to every user-defined module, as a mixin for the lexical
   namespace, like an implicit "import all". This namespace must contain EXACTLY
-  ONE member: the `use` macro. All other built-ins must be defined in the
+  ONE member: the `Use` macro. All other built-ins must be defined in the
   `prelude` module.
   */
   static #predecl = undefined

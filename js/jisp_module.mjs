@@ -21,39 +21,49 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
 
   pk() {return this.ownUrl()}
   setVal(val) {return super.setVal(jm.reqNativeModule(val))}
-  fromStr(val) {return this.setNodes(jl.Lexer.nodesFromStr(val))}
+  toValidChild(val) {return this.toValidChildBase(val)}
   import(val) {return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())}
-  makeScope() {return this.constructor.makeScope()}
-  static makeScope() {return new jsc.ModuleScope()}
+
+  // Override for `MixOwnScoped`.
+  get Scope() {return jsc.ModuleScope}
+
   // Used by namespace mixins.
   optNs() {return this.ownScope().optPubNs()}
-  toValidChild(val) {return this.toValidChildBase(val)}
+
+  get Lexer() {return jl.Lexer}
+  parse(src) {return this.setNodes(this.Lexer.nodesFromStr(src))}
 
   /*
   Async version of `NodeList..macroImpl` without support for "list call" syntax.
-  This let us support `Use`, which uses dynamic/async imports, in module root.
+  This let us support async macros in module root, such as `Use`, which has to
+  be asynchronous because it uses native JS imports, which return promises.
   Other macro implementations must be synchronous for simplicity and speed.
   */
   async macroImpl() {
     const tar = this.ownNodes()
     let ind = -1
     while (++ind < tar.length) {
-      let val = jn.Node.macroNodeAsync(tar[ind])
+      let val = this.macroNodeAsync(tar[ind])
       if (a.isPromise(val)) val = await val
       tar[ind] = val
     }
     return this
   }
 
-  // FIXME: generate header file.
-  compile() {return jm.joinLines(this.compileBody(), this.compileHead())}
+  get Node() {return jn.Node}
+  macroNode(val) {return this.Node.macroNode(val)}
+  macroNodeAsync(val) {return this.Node.macroNodeAsync(val)}
 
+  compile() {return this.compileBody()}
   compileBody() {return this.reqCodePrinter().compileStatements(this)}
 
+/*
+  // FIXME: generate header file.
+  compile() {return jm.joinLines(this.compileBody(), this.compileHead())}
   compileHead() {return `export default ` + JSON.stringify(this.header())}
-
   // FIXME implement.
   header() {}
+*/
 
   static fromNative(key, src) {
     a.req(key, jm.isAbsUrlStr)
@@ -61,13 +71,17 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
 
     return (
       a.onlyInst(src.default, Module) ??
-      new this().setScope(
-        this.makeScope().setPubNs(new jns.Ns().addFromNativeModule(src))
-      )
+      this.makeFromNative(src)
     ).setVal(src).setUrl(key)
   }
 
-  [ji.symInspMod](tar) {return tar.funs(this.optSpan, this.optScope)}
+  static makeFromNative(src) {
+    const tar = new this()
+    tar.ownScope().setPubNs(new jns.Ns().addFromNativeModule(src))
+    return tar
+  }
+
+  [ji.symInspInit](tar) {return tar.funs(this.optSpan, this.optScope)}
 }
 
 export class ModuleColl extends a.Coll {

@@ -12,6 +12,7 @@
 !/js
 !/sublime
 !/test
+!/test_files
 !/jisp_misc
 
 mock_*

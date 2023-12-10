@@ -8,7 +8,7 @@ import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jns from './jisp_node_sourced.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
-import * as jsc from './jisp_scoped.mjs'
+import * as jscd from './jisp_scoped.mjs'
 
 /*
 Base class for all AST nodes.
@@ -43,7 +43,7 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
+export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
   jns.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
@@ -58,7 +58,20 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.go
     return this.err(jm.renderErrLax(err), err)
   }
 
-  // FIXME implement or move.
+  /*
+  FIXME implement or move.
+
+  FIXME consider the following:
+
+    * An expression is something whose value is used.
+
+    * A statement is something whose value is unused.
+
+    * The above is impossible with implicit return. Remove implicit return.
+
+    * We must implement support for detecting value used/unused anyway,
+      in order to properly generate code.
+  */
   isExpression() {return false}
   isStatement() {return !this.isExpression()}
   isInModuleRoot() {return false}
@@ -122,10 +135,6 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.go
     )
   }
 
-  // Override in subclass.
-  // Must take an instance of `StrSpan` and advance its position.
-  static parse() {throw jm.errMeth(`parse`, this)}
-
   static macroNode(node) {
     while (node) {
       const next = node.macro()
@@ -157,5 +166,5 @@ export class Node extends jsc.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.go
   // elided from the AST when tokenizing or lexing.
   isCosmetic() {return false}
 
-  [ji.symInspMod](tar) {return tar.funs(this.optSpan)}
+  [ji.symInspInit](tar) {return tar.funs(this.optSpan)}
 }

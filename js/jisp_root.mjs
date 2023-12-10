@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
@@ -26,7 +27,7 @@ TODO second approximation:
   * Use header files.
   * Use cached files, invalidate by own and dependency checksums.
 */
-export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(a.Emp))) {
+export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(ji.MixInsp.goc(a.Emp)))) {
   #fs = undefined
   setFs(val) {return this.#fs = this.toValidChild(a.reqInst(val, jfs.Fs)), this}
   ownFs() {return this.#fs}
@@ -37,6 +38,7 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
   // ownNativeModuleCache() {return this.#nativeModuleCache ??= this.toValidChild(new NativeModuleCache())}
   // setNativeModuleCache(val) {return this.#nativeModuleCache = this.toValidChild(this.reqInst(val, NativeModuleCache)), this}
 
+/*
   // FIXME: src module vs tar module.
   #moduleColl = undefined
   ownModuleColl() {return this.#moduleColl ??= new jmo.ModuleColl()}
@@ -45,9 +47,17 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
   #importPromiseCache = undefined
   ownImportPromiseCache() {return this.#importPromiseCache ??= new jm.PromiseCache()}
   setImportPromiseCache(val) {return this.#importPromiseCache = this.reqInst(val, jm.PromiseCache), this}
+*/
+
+  get CodePrinter() {return jcp.CodePrinter}
 
   // Override for `MixOwnCodePrinted`.
-  optCodePrinter() {return super.optCodePrinter() ?? (this.setCodePrinter(new jcp.CodePrinter()), super.optCodePrinter())}
+  optCodePrinter() {
+    return (
+      super.optCodePrinter() ??
+      this.setCodePrinter(new this.CodePrinter()).optCodePrinter()
+    )
+  }
 
   /*
   FIXME: handle self-import.
@@ -169,6 +179,8 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
       this.ownImportPromiseCache().goc(key, fun, this)
     )
   }
+
+  [ji.symInspInit](tar) {return tar.funs(this.ownFs)}
 }
 
 /*

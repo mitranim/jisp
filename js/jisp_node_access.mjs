@@ -72,7 +72,7 @@ export class Access extends jp.MixParent.goc(jni.Ident) {
     )
   }
 
-  [ji.symInspMod](tar) {
-    return super[ji.symInspMod](tar).funs(this.ownExpr, this.ownKey)
+  [ji.symInspInit](tar) {
+    return super[ji.symInspInit](tar).funs(this.ownExpr, this.ownKey)
   }
 }

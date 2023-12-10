@@ -4,46 +4,52 @@ import * as jnt from './jisp_node_text.mjs'
 import * as jv from './jisp_valued.mjs'
 
 export class Str extends jv.MixOwnValued.goc(jnt.Text) {
-  ownVal() {return a.laxStr(super.ownVal())}
   setVal(val) {return super.setVal(this.req(val, a.isStr))}
   macro() {return this}
-  [ji.symInspMod](tar) {return super[ji.symInspMod](tar).funs(this.ownVal)}
+  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.ownVal)}
 }
 
 /*
 Represents a "raw" string, like backtick strings in Go. Unlike JS, but like Go,
-Jisp needs raw string syntax. Partially because it lacks special syntax for
-regexes, and instead must use a regex-generating macro where the input is a raw
-string. There may be other use cases.
+Jisp needs raw string syntax. Part of the reason is that unlike JS, but like Go,
+Jisp doesn't have special syntax for regexes, and instead must use a macro that
+takes a raw string and eventually compiles to JS regex syntax. There may be
+other cases.
 
 FIXME: support resizable fences. Raw strings are unusable without that.
-
-FIXME: escape when encoding.
 */
 export class StrBacktick extends Str {
   static regexp() {return /^`([^`]*)`/}
 
-  fromMatch(mat) {
-    super.fromMatch(mat)
+  setMatch(mat) {
+    super.setMatch(mat)
     this.setVal(mat[1])
     return this
   }
 
   compile() {
-    return '`' + this.ownVal().replaceAll('`', '\\`').replaceAll(`\\`, `\\\\`) + '`'
+    return (
+      ``
+      + '`'
+      + this.ownVal()
+        // Included for completeness. This should never occur in instances
+        // parsed from source code, but may occur if the value is set
+        // programmatically during macroing.
+        .replaceAll('`', '\\`')
+        .replaceAll(`\\`, `\\\\`)
+      + '`'
+    )
   }
 }
 
 export class StrDouble extends Str {
-  static regexp() {return /^"((?:\\.|[^"])*)"/}
+  static regexp() {return /^"(?:\\"|[^"])*"/}
 
-  optVal() {
-    let val = super.optVal()
-    if (a.isNil(val)) {
-      val = this.constructor.decode(this.decompile())
-      this.setVal(val)
-    }
-    return val
+  ownVal() {
+    return (
+      super.ownVal() ??
+      this.setVal(this.constructor.decode(this.decompile())).ownVal()
+    )
   }
 
   /*

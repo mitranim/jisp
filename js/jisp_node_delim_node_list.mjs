@@ -85,7 +85,5 @@ export class DelimNodeList extends jnnl.NodeList {
     throw this.err(jco.CallSyntax.msgUnrec(style))
   }
 
-  [ji.symInspMod](tar) {
-    return super[ji.symInspMod](tar).funs(this.optNodes)
-  }
+  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.optNodes)}
 }

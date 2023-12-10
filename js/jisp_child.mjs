@@ -56,7 +56,7 @@ export class MixChild extends a.DedupMixinCache {
       reqAncMatch(cls) {
         return (
           this.optAncMatch(cls) ??
-          this.throw(`missing ancestor with class ${a.show(cls)} at descendant ${a.show(this)}`)
+          this.throw(`unable to find ancestor with class ${a.show(cls)} at descendant ${a.show(this)}`)
         )
       }
 
@@ -73,7 +73,7 @@ export class MixChild extends a.DedupMixinCache {
       reqAncFind(fun) {
         return (
           this.optAncFind(fun) ??
-          this.throw(`missing ancestor for test function ${a.show(fun)} at descendant ${a.show(this)}`)
+          this.throw(`unable to find ancestor matching test function ${a.show(fun)} at descendant ${a.show(this)}`)
         )
       }
 

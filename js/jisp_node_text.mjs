@@ -12,12 +12,15 @@ export class Text extends jn.Node {
     const mat = this.match(span.rem())
     if (!mat) return undefined
 
-    const tar = new this().setSpan(span.withLen(0)).fromMatch(mat)
+    const tar = new this().setSpan(span.withLen(0)).setMatch(mat)
     span.skip(tar.reqSpan().ownLen())
     return tar
   }
 
   static isValid(val) {return jm.isFullMatch(val, this.regexp())}
 
-  fromMatch(mat) {return this.reqSpan().setLen(mat[0].length), this}
+  setMatch(mat) {
+    this.reqSpan().setLen(a.reqStr(mat[0]).length)
+    return this
+  }
 }

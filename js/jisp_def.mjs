@@ -46,7 +46,7 @@ export class Def extends (
     return name
   }
 
-  [ji.symInspMod](tar) {return super[ji.symInspMod](tar.funs(this.ownName))}
+  [ji.symInspInit](tar) {return super[ji.symInspInit](tar.funs(this.ownName))}
 }
 
 export class FunDef extends jv.MixOwnValued.goc(Def) {

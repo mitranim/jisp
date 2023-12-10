@@ -132,6 +132,7 @@ export class Ret extends jnm.Macro {
 
 export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   static getSrcName() {return `fn`}
+  get Scope() {return jsc.Scope}
 
   pk() {return this.name().pk()}
   name() {return this.reqSrcInstAt(1, jnn.Name)}

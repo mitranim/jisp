@@ -25,8 +25,8 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
   ownVal() {return super.ownVal() ?? NaN}
   setVal(val) {return super.setVal(this.req(val, a.isFin))}
 
-  fromMatch(mat) {
-    super.fromMatch(mat)
+  setMatch(mat) {
+    super.setMatch(mat)
     this.setVal(this.constructor.parseFloat(a.reqStr(mat[0])))
     return this
   }
@@ -41,5 +41,5 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
     return Number.parseFloat(src)
   }
 
-  [ji.symInspMod](tar) {return super[ji.symInspMod](tar).funs(this.ownVal)}
+  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.ownVal)}
 }

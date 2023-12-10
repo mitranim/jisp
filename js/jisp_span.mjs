@@ -5,8 +5,11 @@ import * as jm from './jisp_misc.mjs'
 import * as jrc from './jisp_row_col.mjs'
 
 /*
-Base class that describes a range spanning from position A to position B in some
-outer collection, which may be either a string or a JS array.
+Describes a range spanning from position A to position B in some outer
+collection, which may be either a string or a JS array.
+
+This is a base class. For specialized implementations, see `StrSpan` and
+`ArrSpan`.
 */
 export class Span extends ji.MixInsp.goc(a.Emp) {
   #src = ``
@@ -32,6 +35,7 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   more() {return this.#pos < this.#src.length}
   inc() {return this.#pos++, this}
   skip(len) {return this.#pos += a.reqNat(len), this}
+  // Short for "remainder" or "remaining".
   rem() {return this.#src.slice(this.#pos)}
   remAt(pos) {return this.#src.slice(a.reqNat(pos))}
 
@@ -53,7 +57,7 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
     return a.isSome(begin) && a.isSome(end) ? this.range(begin, end) : undefined
   }
 
-  [ji.symInspMod](tar) {
+  [ji.symInspInit](tar) {
     return tar.funs(this.decompile, this.ownPos, this.ownLen)
   }
 }

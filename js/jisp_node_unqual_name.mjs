@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jnn from './jisp_node_name.mjs'
-import * as jnu from './jisp_node_num.mjs'
+import * as jnnu from './jisp_node_num.mjs'
 
 export class UnqualNameSet extends a.TypedSet {
   reqVal(val) {return a.reqInst(val, UnqualName)}
@@ -10,6 +10,9 @@ export class UnqualNameSet extends a.TypedSet {
 /*
 Short for "unqualified name". Represents a standalone name which is not part of
 an access path in source code.
+
+FIXME: verify detection of collisions with JS reserved names, and corresponding
+handling, either as compile-time exceptions or as automatic renaming.
 */
 export class UnqualName extends jnn.Name {
   static regexp() {return this.regexpUnqualName()}
@@ -70,7 +73,7 @@ export class UnqualName extends jnn.Name {
   static isValidDictKey(val) {
     return a.isStr(val) && !!val && (
       this.isValid(val) ||
-      (jnu.Num.isValid(val) && val[0] !== `-`)
+      (jnnu.Num.isValid(val) && val[0] !== `-`)
     )
   }
 

@@ -10,6 +10,8 @@ export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
 export function preview(src) {return a.ell(src, 128)}
 export function errMeth(name, val) {throw TypeError(msgMeth(name, val))}
 export function msgMeth(name, val) {return `method ${a.show(name)} not fully implemented on ${a.show(val)}`}
+export function errGetter(name, val) {throw TypeError(msgGetter(name, val))}
+export function msgGetter(name, val) {return `getter ${a.show(name)} not fully implemented on ${a.show(val)}`}
 export function renderErr(val) {return (a.isErr(val) && val.message) || a.render(val)}
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
