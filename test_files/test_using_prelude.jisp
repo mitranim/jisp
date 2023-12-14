@@ -1,4 +1,11 @@
+; FIXME remove. Added to ensure that errors point to the right row/col.
+10
+20
+30
+
 [use `jisp:prelude` `*`]
+
+[import `https://example.com/some_js_module.mjs` someLib]
 
 [const someConst `some_const_value`]
 

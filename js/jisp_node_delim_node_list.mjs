@@ -43,12 +43,12 @@ export class DelimNodeList extends jnnl.NodeList {
     throw LexerErr.atNode(span.reqLast(), `missing closing ${a.show(suf)}`)
   }
 
-  meaningfulNodes() {return this.ownNodes().filter(jn.Node.isNodeMeaningful, jn.Node)}
-  firstMeaningful() {return this.ownNodes().find(jm.isNotCosmetic)}
-  isEveryMeaningful() {return this.ownNodes().every(jm.isNotCosmetic)}
+  notCosmeticNodes() {return this.ownNodes().filter(jn.Node.isNodeMeaningful, jn.Node)}
+  firstNotCosmetic() {return this.ownNodes().find(jm.isNotCosmetic)}
+  isEveryNotCosmetic() {return this.ownNodes().every(jm.isNotCosmetic)}
 
-  reqEveryMeaningful() {
-    if (!this.isEveryMeaningful()) {
+  reqEveryNotCosmetic() {
+    if (!this.isEveryNotCosmetic()) {
       throw this.err(`expected every node to be meaningful (no whitespace or comments)`)
     }
     return this

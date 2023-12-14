@@ -11,7 +11,6 @@ export class MixOwnSpanned extends a.DedupMixinCache {
       optSpan() {return this.#span}
       reqSpan() {return this.optSpan() ?? this.throw(`missing span at ${a.show(this)}`)}
       initSpan() {return this.#span ??= new this.Span()}
-
       decompile() {return decompile(this.optSpan())}
       get Span() {return this.constructor.Span}
       static get Span() {return jsp.Span}

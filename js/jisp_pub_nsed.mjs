@@ -5,11 +5,12 @@ import * as jns from './jisp_ns.mjs'
 export class MixPubNsed extends a.DedupMixinCache {
   static make(cls) {
     return class MixPubNsed extends jp.MixParent.goc(cls) {
+      get PubNs() {return jns.Ns}
       #pubNs = undefined
-      setPubNs(val) {return this.#pubNs = this.toValidChild(this.reqInst(val, jns.Ns)), this}
+      setPubNs(val) {return this.#pubNs = this.toValidChild(this.reqInst(val, this.PubNs)), this}
       ownPubNs() {return this.#pubNs ??= this.toValidChild(this.makePubNs())}
       optPubNs() {return this.#pubNs}
-      makePubNs() {return new jns.Ns()}
+      makePubNs() {return new this.PubNs()}
     }
   }
 }

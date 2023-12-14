@@ -289,8 +289,16 @@ identNamespace.identQualified;
 
 await t.test(async function test_using_prelude() {
   const fs = makeTestFs()
+
+  const root = new jr.Root()
+  root.setFs(fs)
+
+  // FIXME: tell root to load file.
   const src = await fs.readSrc(`test_using_prelude.jisp`)
+
   const mod = new jmo.Module()
+  // Required for importing prelude.
+  mod.setParent(root)
 
   mod.parse(src)
   await mod.macro()

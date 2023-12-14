@@ -50,11 +50,21 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   static get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
+  get CodeErr() {return je.CodeErr}
+  err(msg, cause) {return new this.CodeErr({msg, span: this.optSpan(), cause})}
 
-  err(msg, cause) {return new je.CodeErr({msg, span: this.optSpan(), cause})}
-
+  /*
+  Error conversion. When possible and relevant, this should adorn the error with
+  additional context. In particular, it should convert non-`CodeErr` to
+  `CodeErr`. When the given error is already `CodeErr`, this should increase
+  specificity if possible.
+  */
   toErr(err) {
-    if (a.isInst(err, je.CodeErr) || !this.optSpan()) return err
+    if (!this.optSpan()) return err
+    if (a.isInst(err, je.CodeErr)) {
+      if (err.constructor === this.CodeErr) return err
+      return this.err(err.msg, err)
+    }
     return this.err(jm.renderErrLax(err), err)
   }
 

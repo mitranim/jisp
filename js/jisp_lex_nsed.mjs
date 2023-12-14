@@ -5,11 +5,12 @@ import * as jns from './jisp_ns.mjs'
 export class MixLexNsed extends a.DedupMixinCache {
   static make(cls) {
     return class MixLexNsed extends jp.MixParent.goc(cls) {
+      get LexNs() {return jns.Ns}
       #lexNs = undefined
-      setLexNs(val) {return this.#lexNs = this.toValidChild(this.reqInst(val, jns.Ns)), this}
+      setLexNs(val) {return this.#lexNs = this.toValidChild(this.reqInst(val, this.LexNs)), this}
       ownLexNs() {return this.#lexNs ??= this.toValidChild(this.makeLexNs())}
       optLexNs() {return this.#lexNs}
-      makeLexNs() {return new jns.Ns()}
+      makeLexNs() {return new this.LexNs()}
     }
   }
 }

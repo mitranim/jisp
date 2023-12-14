@@ -13,7 +13,14 @@ import * as jnn from './jisp_node_name.mjs'
 
 export class NsErr extends je.Err {}
 
-// Short for "namespace".
+/*
+Short for "namespace".
+
+FIXME: consider that the definition of a namespace / scope may sometimes also
+have access to an instance of that namespace / scope, where values can be
+obtained.
+
+*/
 export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.Coll))) {
   // For `a.TypedMap` used by `a.Coll`.
   reqKey(key) {return a.reqValidStr(key)}
@@ -124,6 +131,9 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   namespace, like an implicit "import all". This namespace must contain EXACTLY
   ONE member: the `Use` macro. All other built-ins must be defined in the
   `prelude` module.
+
+  FIXME consider moving this to `Root`. A root would provide a lexical
+  namespace, used by all modules in that root.
   */
   static #predecl = undefined
   static ownPredecl() {return this.#predecl ??= new this().add(jnu.Use.def())}
@@ -137,5 +147,11 @@ function optNs(val) {
   return a.isObj(val) && `optNs` in val ? val.optNs() : undefined
 }
 
-function isOptNsed(val) {return a.isInst(optNs(val), Ns)}
+// function isOptNsed(val) {return a.isInst(optNs(val), Ns)}
+
+function isOptNsed(val) {
+  return a.isInst(val.optNs(), Ns)
+  // return a.isInst(optNs(val), Ns)
+}
+
 function reqOptNsed(val) {return a.req(val, isOptNsed)}

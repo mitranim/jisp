@@ -76,7 +76,7 @@ export class CallSyntaxSet extends jnm.Macro {
   optDef() {return this.reqScope().reqLexNs().get(this.name().pk())}
 
   macroImpl() {
-    this.reqSrcList().reqEveryMeaningful().reqLen(3)
+    this.reqSrcList().reqEveryNotCosmetic().reqLen(3)
     this.run()
     return undefined
   }
@@ -107,7 +107,7 @@ export class Const extends jnm.Macro {
   ownDeref() {return this.val()}
 
   macroImpl() {
-    this.reqSrcList().reqEveryMeaningful().reqLen(3)
+    this.reqSrcList().reqEveryNotCosmetic().reqLen(3)
     this.defineLex()
     this.macroVal()
     return this
@@ -156,7 +156,7 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
     * Define static when possible.
   */
   macroImpl() {
-    this.reqSrcList().reqEveryMeaningful().reqLenMin(3)
+    this.reqSrcList().reqEveryNotCosmetic().reqLenMin(3)
     this.defineLex()
     this.defineParams()
     this.macroBody()

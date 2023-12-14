@@ -60,7 +60,24 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
   }
 
   /*
-  FIXME: handle self-import.
+  FIXME:
+
+    * Split this method in two.
+
+      * One always takes a `URL` and uses `.ownFs` to load file and header (if any).
+
+      * The other takes a file name (validate relative path without `..`) and
+        loads a compiler source file, relative to this file, using the native
+        import expression.
+
+      * No special support for the `jisp:` scheme. That's handled at the level
+        of `Module..import`, and calls the method above that natively imports a
+        compiler source file.
+
+    * Handle self-import.
+
+    * Reconsider the return value. In the current implementation, the return
+      value resolves to `Module`, which is WILDLY wrong.
 
   Somewhat similar to the JS built-in dynamic `import`, with various differences:
 

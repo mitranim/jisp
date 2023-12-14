@@ -10,6 +10,13 @@ collection, which may be either a string or a JS array.
 
 This is a base class. For specialized implementations, see `StrSpan` and
 `ArrSpan`.
+
+Technical note on length. For both array spans and string spans, the property
+`.getLen`/`.ownLen` must use the native property `.length` of the underlying
+source. JS strings use UTF-16, and `.length` counts UTF-16 code units, not
+characters. For simplicity and performance, we use the "native" length for most
+operations. We count characters only when really needed, such as for row/col
+positioning. See `Span.prototype.init`.
 */
 export class Span extends ji.MixInsp.goc(a.Emp) {
   #src = ``
@@ -31,6 +38,7 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   isEmpty() {return !this.hasLen()}
 
   init(src) {return this.setSrc(src).setPos(0).setLen(src.length)}
+  // TODO consider moving to `StrSpan`.
   decompile() {return this.#src.slice(this.#pos, this.#pos + this.#len)}
   more() {return this.#pos < this.#src.length}
   inc() {return this.#pos++, this}
