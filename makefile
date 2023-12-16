@@ -1,6 +1,7 @@
 MAKEFLAGS := --silent --always-make
 MAKE_PAR := $(MAKE) -j 128
-DENO := deno run -A --no-check --allow-hrtime
+# `--unstable` enables `Deno?.consoleSize` which is used for benchmark printing.
+DENO := deno run -A --no-check --allow-hrtime --unstable
 RUN := $(if $(run),--run="$(run)",)
 VERB_SHORT := $(if $(filter $(verb),true),-v,)
 VERB_LONG := $(if $(filter $(verb),true),--verb,)
@@ -8,8 +9,9 @@ PREC_LONG := $(if $(filter $(prec),true),--prec,)
 ONCE_LONG := $(if $(filter $(once),true),--once,)
 CLEAR_SHORT := $(if $(filter $(clear),true),-c,)
 CLEAR_LONG := $(if $(filter $(clear),true),--clear,)
-TEST := test/test.mjs --test=true $(VERB_LONG) $(RUN)
-BENCH := test/test.mjs --bench=true $(VERB_LONG) $(PREC_LONG) $(ONCE_LONG) $(RUN)
+TEST_FILE := $(or $(file),test).mjs
+TEST := test/$(TEST_FILE) --test=true $(VERB_LONG) $(RUN)
+BENCH := test/$(TEST_FILE) --bench=true $(VERB_LONG) $(PREC_LONG) $(ONCE_LONG) $(RUN)
 WATCH := watchexec $(CLEAR_SHORT) -r -d=0 -n
 SRC_JS := ./js
 

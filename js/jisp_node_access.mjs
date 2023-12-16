@@ -8,6 +8,10 @@ import * as jnk from './jisp_node_key.mjs'
 /*
 Combines an arbitrary expression with a subsequent `.key` expression, unifying
 them into one. Supports finding definitions in namespaces.
+
+FIXME convert this to abstract base class for `Key` and other "access" style
+nodes. Instead of `Access` having two expressions, it will become just an outer
+key-reading expression that has an inner source expression.
 */
 export class Access extends jp.MixParent.goc(jni.Ident) {
   static lexNext(lex, prev) {

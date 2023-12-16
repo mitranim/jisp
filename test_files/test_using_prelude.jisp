@@ -1,12 +1,13 @@
 ; FIXME remove. Added to ensure that errors point to the right row/col.
+; TODO add a test for row/col detection for various macro errors.
 10
 20
 30
 
-[use `jisp:prelude` `*`]
+[use `jisp:prelude` jp]
 
-[import `https://example.com/some_js_module.mjs` someLib]
+[jp.import `https://example.com/some_js_module.mjs` someLib]
 
-[const someConst `some_const_value`]
+[jp.const someConst `some_const_value`]
 
-[fn someFunc [] `some_func_value`]
+[jp.fn someFunc [] `some_func_value`]

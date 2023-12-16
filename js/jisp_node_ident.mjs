@@ -6,6 +6,24 @@ TODO: consider caching of definition lookup. Profile first.
 
 FIXME: move most methods to `Name`, make this superclass of `Name` and
 `Access`.
+
+Current:
+
+  Text
+  |
+  Ident
+  |
+  Name
+  |
+  Key | UnqualName | ???
+
+FIXME restructure:
+
+  Text
+  |
+  IdentBase                  ; no special macro methods
+  |
+  IdentUnqual | IdentAccess  ; special macro methods
 */
 export class Ident extends jnt.Text {
   static regexpUnqualName() {return /^[A-Za-z$_][\w$]*/}

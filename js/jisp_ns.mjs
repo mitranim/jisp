@@ -14,12 +14,14 @@ import * as jnn from './jisp_node_name.mjs'
 export class NsErr extends je.Err {}
 
 /*
-Short for "namespace".
-
-FIXME: consider that the definition of a namespace / scope may sometimes also
-have access to an instance of that namespace / scope, where values can be
-obtained.
-
+Short for "namespace". Contains compile-time declarations of names. Can be used
+either for lexical scopes or public properties of objects. When used by a
+lexical scope, this contains declarations of local variables. When used to
+describe public properties of an object (like JS module exports), this contains
+declarations of properties. This is an ordered map where declarations are
+stored in the order they were added, each definition is keyed under the name of
+the local variable or public property, and each definition also has knowledge
+of that name (method `.pk`).
 */
 export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.Coll))) {
   // For `a.TypedMap` used by `a.Coll`.

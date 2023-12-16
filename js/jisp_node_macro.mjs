@@ -38,14 +38,16 @@ export class Macro extends jnp.Predef {
 
   reqSrcInstAt(ind, ...cls) {
     const out = this.reqSrcAt(ind)
-    if (someInst(out, cls)) return out
-    throw this.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
+    if (isInstSome(out, cls)) return out
+    throw out.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
   }
 
+  // FIXME inconsistent with `a.opt`. Behaves like `a.only`.
+  // Add variant of `a.only` and fix consistency.
   optSrcInstAt(ind, ...cls) {
     const out = this.optSrcAt(ind)
     if (a.isNil(out)) return undefined
-    if (someInst(out, cls)) return out
+    if (isInstSome(out, cls)) return out
     throw this.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be either missing or an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
   }
 
@@ -63,7 +65,7 @@ export class Macro extends jnp.Predef {
   }
 }
 
-function someInst(val, cls) {
+function isInstSome(val, cls) {
   for (cls of cls) if (a.isInst(val, cls)) return true
   return false
 }

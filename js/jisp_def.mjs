@@ -15,6 +15,8 @@ tends to refer to complete definitions, while the term "declaration" may
 describe incomplete definitions, like declaring a function's type signature but
 not the body. We may choose to support forward declarations, which would be
 similar to the latter.
+
+FIXME: must be child of `Ns`.
 */
 export class Def extends (
   jr.MixRef.goc(jv.MixValued.goc(jnd.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))

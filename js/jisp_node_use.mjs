@@ -6,6 +6,8 @@ import * as jnm from './jisp_node_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jnun from './jisp_node_unqual_name.mjs'
 
+const IS_STAR_IMPORT_SUPPORTED = false
+
 /*
 Compile-time-only import, used for compile-time evaluation. Compare macro
 `Import` which is used for runtime-only imports.
@@ -36,8 +38,8 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
   strAll() {return `*`}
   reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
   optDest() {return this.optSrcInstAt(2, jnun.UnqualName, jnst.Str)}
-  optDestName() {return a.onlyInst(this.optDest(), jnun.UnqualName)}
-  reqDestName() {return a.reqInst(this.optDest(), jnun.UnqualName)}
+  optDestName() {return this.optSrcInstAt(2, jnun.UnqualName)}
+  reqDestName() {return this.reqSrcInstAt(2, jnun.UnqualName)}
 
   destStr() {
     const src = a.onlyInst(this.optDest(), jnst.Str)
@@ -59,7 +61,17 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
   }
 
   macroImpl() {
+    if (!IS_STAR_IMPORT_SUPPORTED) {
+      this.reqSrcList().reqEveryNotCosmetic().reqLen(3)
+      // FIXME: throw exception directly at offending node.
+      this.reqAddr()
+      // FIXME: throw exception directly at offending node.
+      this.reqDestName()
+      return this.macroName()
+    }
+
     this.reqSrcList().reqEveryNotCosmetic().reqLenBetween(2, 3)
+    // FIXME: throw exception directly at offending node.
     this.reqAddr()
     if (this.destStr()) return this.macroAll()
     return this.macroName()

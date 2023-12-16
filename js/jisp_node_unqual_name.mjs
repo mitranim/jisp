@@ -36,6 +36,7 @@ export class UnqualName extends jnn.Name {
     return this.macroWithDef(def)
   }
 
+  // FIXME: exception if macro
   compile() {
     const def = this.optDef()
     if (def?.isMacroBare()) return this.compileCall(def)

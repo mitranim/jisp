@@ -15,13 +15,14 @@ Base class for all AST nodes.
 
 ----
 
-Before macro replacement, parent-child relation is bilateral:
+The lexer constructs an AST where all parent-child relations are bilateral:
 
              parent
   role=child ↓    ↑ role=parent
              child0
 
-After macro replacement:
+Somem macro operations involve replacing nodes with other nodes. In such cases,
+some relations become unilateral.
 
   * The parent acquires a new child, bilaterally.
   * The old child unilaterally remembers the parent.
@@ -177,4 +178,13 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   isCosmetic() {return false}
 
   [ji.symInspInit](tar) {return tar.funs(this.optSpan)}
+
+  /*
+  Placeholder. This must be exactly copy-pasted into EVERY subclass and
+  descendant class. This should be used for "repr" functionality, which should
+  be implemented in this base class, and used by the "quote" macro. This
+  property must always be "own". Anything else should cause an exception when
+  repring.
+  */
+  static moduleUrl = import.meta.url
 }
