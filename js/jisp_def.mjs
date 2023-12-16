@@ -67,6 +67,9 @@ setting the source node is mandatory. An instance of `NodeDef` added to a scope
 must ALWAYS have a source node, and its methods should assert this.
 
 TODO `.setSrcNode` should validate that the node defines valid `.pk`.
+
+Placed in the same file as `Def` because otherwise we have module initialization
+exceptions due to cyclic dependencies between modules.
 */
 export class NodeDef extends jnsd.MixOwnNodeSourced.goc(Def) {
   pk() {return this.ownName() ?? a.pk(this.reqSrcNode())}

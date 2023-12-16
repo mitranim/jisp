@@ -33,14 +33,17 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
   isMacro() {return this.ownCallTime() === CallTime.macro}
   isMacroBare() {return this.isMacro() && this.isBare()}
 
+  // FIXME move to subclasses.
   macroNode(src) {throw src.err(msgMeth(`macroNode`, this))}
 
+  // FIXME move to subclasses.
   macroNodeWith(src, fun) {
     a.reqInst(src, jn.Node)
     src.req(fun, a.isFun)
     return this.macroOut(src, this.macroCall(src, fun), fun)
   }
 
+  // FIXME move to subclasses.
   macroCall(src, fun) {
     const style = this.ownCallSyntax()
     if (style === CallSyntax.call) return this.macroCallCall(src, fun)
@@ -48,16 +51,19 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
     throw src.err(CallSyntax.msgUnrec(style))
   }
 
+  // FIXME move to subclasses.
   macroCallCall(src, fun) {
     try {return fun(src)}
     catch (err) {throw src.err(msgMacroRun(fun), err)}
   }
 
+  // FIXME move to subclasses.
   macroCallNew(src, fun) {
     try {return new fun(src)}
     catch (err) {throw src.err(msgMacroRun(fun), err)}
   }
 
+  // FIXME move to subclasses.
   // FIXME support async.
   macroOut(src, out, fun) {
     const outType = this.ownCallOut()
@@ -66,6 +72,7 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
     throw src.err(CallOut.msgUnrec(outType))
   }
 
+  // FIXME move to subclasses.
   // FIXME support async.
   macroOutAst(src, out, fun) {
     if (a.isNil(out)) return out
@@ -96,6 +103,7 @@ export class CallOpt extends ji.MixInsp.goc(a.Emp) {
     throw src.err(`expected macro ${a.show(fun)} to return nil or an AST node, got ${a.show(out)}`)
   }
 
+  // FIXME move to subclasses.
   // FIXME support async.
   macroOutVal(src, out, fun) {
     const cls = jnv.Val
