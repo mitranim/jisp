@@ -90,7 +90,7 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   isCalled() {return false}
 
   /*
-  Defines the current node in the lexical namespace of the nearest available
+  Declares the current node in the lexical namespace of the nearest available
   parent scope. The node must implement method `.pk`, which must return a local
   identifier string. Method `.pk` must be implemented by `UnqualName` and all
   node subclasses that represent a named declaration such as `Const` or `Fn`.
@@ -98,8 +98,8 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
 
   Explicitly uses parent's scope because some macro nodes, such as `Fn`, define
   their own scope. If we didn't use the parent here, the default behavior would
-  be to add the definition to own scope, not to parent scope, and the
-  definition would be unknown/unavailable to sibling nodes, breaking a lot of
+  be to add the declaration to own scope, not to parent scope, and the
+  declaration would be unknown/unavailable to sibling nodes, breaking a lot of
   code. Macro nodes may override this behavior. For example, when `Fn` is used
   as an expression, it should add itself to own scope, but NOT to parent
   scope.
@@ -111,14 +111,14 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
 
     * "req lex", "opt pub". Use this by default.
   */
-  defineLex() {return this.reqParent().reqScope().reqLexNs().addFromNode(this)}
+  declareLex() {return this.reqParent().reqScope().reqLexNs().addFromNode(this)}
 
   // TODO consider "optX" version.
   // TODO consider renaming to "reqX".
-  definePub() {return this.reqParent().reqScope().reqPubNs().addFromNode(this)}
+  declarePub() {return this.reqParent().reqScope().reqPubNs().addFromNode(this)}
 
-  optDef() {}
-  reqDef() {return this.optDef() ?? this.throw(`missing definition at ${a.show(this)}`)}
+  optDecl() {}
+  reqDecl() {return this.optDecl() ?? this.throw(`missing declaration at ${a.show(this)}`)}
 
   macro() {
     try {

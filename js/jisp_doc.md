@@ -64,8 +64,8 @@ Common interfaces (non-exhaustive list):
   * `.ownVal`. Compile-time evaluation. Performs arbitrary compile-time
     evaluation and returns an arbitrary value usable by macros. AST tokens
     parsed from source may return numbers, strings, booleans, etc. Identifier
-    nodes may return the actual runtime values of definitions they refer to.
-    For example, module A defines and exports a class that's usable as a macro,
+    nodes may return the actual runtime values of declarations they refer to.
+    For example, module A declares and exports a class that's usable as a macro,
     under name "B". Module C imports A and attempts to use B as a macro. The
     identifier node referring to B may use `.ownVal`, in combination with
     recursive search, to return the actual evaluated reference to that class

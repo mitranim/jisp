@@ -27,6 +27,8 @@ Motives:
     `Access` nodes with instances of this class. See the point about
     specialized node classes.
 
+    * FIXME WTF does this mean? ↑
+
 Note: subclasses may define `.ownVal` which for any given predeclared identifier
 should return its "runtime" value at compile time. For example, `.ownVal` of
 Jisp `ok` should be JS `true`. Macros may use  predeclared constants as part of
@@ -41,9 +43,9 @@ other predeclareds.
 
 Because Jisp has only identifiers and no keywords, user code may accidentally
 mask the names of built-in constants such as `null`. This should not affect our
-correctness in any way, because we track identifiers to their definition sites,
-and can tell the difference between a predeclared name and a masking name.
-However, masking predeclared constants is generally bad practice, because
+correctness in any way, because we track identifiers to their declaration
+sites, and can tell the difference between a predeclared name and a masking
+name. However, masking predeclared constants is generally bad practice, because
 editor syntax highlighting tends to assume that they are never redefined, and
 always highlights built-in constants with special colors, which is incorrect
 after redefinition. Additionally, code where JS constants are masked may

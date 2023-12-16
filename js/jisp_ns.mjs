@@ -5,7 +5,7 @@ import * as je from './jisp_err.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jmi from './jisp_mixable.mjs'
 import * as jp from './jisp_parent.mjs'
-import * as jd from './jisp_def.mjs'
+import * as jd from './jisp_decl.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnu from './jisp_node_use.mjs'
@@ -19,14 +19,14 @@ either for lexical scopes or public properties of objects. When used by a
 lexical scope, this contains declarations of local variables. When used to
 describe public properties of an object (like JS module exports), this contains
 declarations of properties. This is an ordered map where declarations are
-stored in the order they were added, each definition is keyed under the name of
-the local variable or public property, and each definition also has knowledge
-of that name (method `.pk`).
+stored in the order they were added, each declaration is keyed under the name
+of the local variable or public property, and each declaration also has
+knowledge of that name (method `.pk`).
 */
 export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.Coll))) {
   // For `a.TypedMap` used by `a.Coll`.
   reqKey(key) {return a.reqValidStr(key)}
-  reqVal(val) {return a.reqInst(val, jd.Def)}
+  reqVal(val) {return a.reqInst(val, jd.Decl)}
 
   // Used by namespace mixins.
   optNs() {return this}
@@ -67,10 +67,10 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
 
   addFromNode(node) {
     this.reqInst(node, jn.Node)
-    const def = new jd.NodeDef().setSrcNode(node)
-    try {this.add(def)}
-    catch (err) {throw node.err(`unable to register definition with name ${a.show(def.pk())}`, err)}
-    return def
+    const decl = new jd.NodeDecl().setSrcNode(node)
+    try {this.add(decl)}
+    catch (err) {throw node.err(`unable to register declaration with name ${a.show(decl.pk())}`, err)}
+    return decl
   }
 
   set(key, val) {
@@ -85,7 +85,7 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   }
 
   /*
-  Finds a given name in the scope, including mixins. Returns nil or `Def`.
+  Finds a given name in the scope, including mixins. Returns nil or `Decl`.
 
   FIXME not good enough. When resolving from a mixin, the consumer requires
   the source of the mixin.
@@ -119,26 +119,26 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
 
 /*
   addFromNativeModuleEntry(val) {
-    if (a.isSubCls(val, jnm.Macro)) this.add(val.def())
+    if (a.isSubCls(val, jnm.Macro)) this.add(val.decl())
   }
 */
 
   addFromNativeModuleEntry(val) {
-    const def = val?.def?.()
-    if (a.isInst(def, jd.Def)) this.add(def)
+    const decl = val?.decl?.()
+    if (a.isInst(decl, jd.Decl)) this.add(decl)
   }
 
   /*
   Must be provided to every user-defined module, as a mixin for the lexical
   namespace, like an implicit "import all". This namespace must contain EXACTLY
-  ONE member: the `Use` macro. All other built-ins must be defined in the
+  ONE member: the `Use` macro. All other built-ins must be declared in the
   `prelude` module.
 
   FIXME consider moving this to `Root`. A root would provide a lexical
   namespace, used by all modules in that root.
   */
   static #predecl = undefined
-  static ownPredecl() {return this.#predecl ??= new this().add(jnu.Use.def())}
+  static ownPredecl() {return this.#predecl ??= new this().add(jnu.Use.decl())}
 }
 
 function optSpan(src) {

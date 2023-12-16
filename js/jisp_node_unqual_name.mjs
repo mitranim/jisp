@@ -24,27 +24,27 @@ export class UnqualName extends jnn.Name {
   Override. Note: this common interface doesn't have "lex" or "lexical" in the
   name, because it may involve non-lexical namespaces. See `Key` and `Access`.
   */
-  optDef() {
+  optDecl() {
     const name = a.pk(this)
     const resolve = val => jm.ownScope(val)?.ownLexNs()?.resolve(name)
     return this.optAncProcure(resolve)
   }
 
   macroImpl() {
-    const def = this.reqDef()
-    def.addUse(this)
-    return this.macroWithDef(def)
+    const decl = this.reqDecl()
+    decl.addUse(this)
+    return this.macroWithDecl(decl)
   }
 
   // FIXME: exception if macro
   compile() {
-    const def = this.optDef()
-    if (def?.isMacroBare()) return this.compileCall(def)
+    const decl = this.optDecl()
+    if (decl?.isMacroBare()) return this.compileCall(decl)
     return this.compileName()
   }
 
-  compileCall(def) {
-    const style = def.ownCallSyntax()
+  compileCall(decl) {
+    const style = decl.ownCallSyntax()
     if (style === CallSyntax.call) return this.compileCallCall()
     if (style === CallSyntax.new) return `new ` + a.reqStr(this.compileCallCall())
     throw CallSyntax.errUnrec(this, style)
@@ -59,11 +59,11 @@ export class UnqualName extends jnn.Name {
   compileQualifier() {throw jm.errMeth(`compileQualifier`, this)}
 
   /*
-  Supports automatic renaming of identifiers. See `Def..compileName`.
+  Supports automatic renaming of identifiers. See `Decl..compileName`.
 
   FIXME: detect unqualified names coming from mixins, qualify if necessary.
   */
-  compileName() {return this.optDef()?.compileName(this) ?? this.decompile()}
+  compileName() {return this.optDecl()?.compileName(this) ?? this.decompile()}
 
   static toValidDictKey(val) {
     a.reqStr(val)

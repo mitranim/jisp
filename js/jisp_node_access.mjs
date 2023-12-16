@@ -7,7 +7,7 @@ import * as jnk from './jisp_node_key.mjs'
 
 /*
 Combines an arbitrary expression with a subsequent `.key` expression, unifying
-them into one. Supports finding definitions in namespaces.
+them into one. Supports finding declarations in namespaces.
 
 FIXME convert this to abstract base class for `Key` and other "access" style
 nodes. Instead of `Access` having two expressions, it will become just an outer
@@ -47,18 +47,18 @@ export class Access extends jp.MixParent.goc(jni.Ident) {
       * Unqual name may resolve to native module val.
       * Qual name may resolve to something inside module.
       * We may evaluate this at compile time for sanity checking.
-      * Even when definitions are unavailable, or especially when definitions
+      * Even when declarations are unavailable, or especially when declarations
         are unavailable, we may dynamically inspect the _runtime_ values of
         objects addressed by a path at _compile time_, and sanity-check them.
   */
-  optDef() {
-    return this.reqExpr().optDef()?.optDeref()?.optScope()?.optPubNs()?.resolveNode(this.reqKey())
+  optDecl() {
+    return this.reqExpr().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolveNode(this.reqKey())
   }
 
   macroImpl() {
     this.setExpr(jn.Node.macroNode(this.reqExpr()))
-    const def = this.optDef()
-    if (def?.isMacroBare()) return def.macroNode(this)
+    const decl = this.optDecl()
+    if (decl?.isMacroBare()) return decl.macroNode(this)
     return this
   }
 

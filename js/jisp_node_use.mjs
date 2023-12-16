@@ -95,14 +95,14 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
 
   async macroName() {
     await this.import()
-    this.defineLex()
+    this.declareLex()
     return this
   }
 
   // Allows this object to be a namespace mixin. Required for `.macroAll`.
   optNs() {return this.reqVal().optNs()}
 
-  // Override for `MixRef`. Returns AST node responsible for this definition.
+  // Override for `MixRef`. Returns AST node responsible for this declaration.
   ownDeref() {return this.reqVal()}
 
   // Return nil. This node is intended only for compile-time imports.

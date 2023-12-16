@@ -57,8 +57,8 @@ export class DelimNodeList extends jnnl.NodeList {
 
   macroImpl() {
     this.macroAt(0)
-    const def = this.optFirstChild()?.optDef()
-    if (def?.isMacro()) return def.macroNode(this)
+    const decl = this.optFirstChild()?.optDecl()
+    if (decl?.isMacro()) return decl.macroNode(this)
     return this.macroFrom(1)
   }
 
@@ -75,7 +75,7 @@ export class DelimNodeList extends jnnl.NodeList {
     const ind = src.findIndex(jm.isNotCosmetic)
     if (!(ind >= 0)) return prn.compileDense(src)
 
-    const style = a.onlyInst(src[ind], jni.Ident)?.optDef()?.ownCallSyntax() || jco.CallSyntax.call
+    const style = a.onlyInst(src[ind], jni.Ident)?.optDecl()?.ownCallSyntax() || jco.CallSyntax.call
 
     // Reslicing is suboptimal but probably not our bottleneck.
     const pre = src.slice(0, ind + 1)

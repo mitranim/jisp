@@ -29,7 +29,7 @@ export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
     else {
       this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
       this.reqAddr()
-      this.defineLex()
+      this.declareLex()
     }
     return this
   }

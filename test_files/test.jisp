@@ -70,7 +70,7 @@ someVal
   ]
 ]
 
-; TODO consider: get "Def" and call its method.
+; TODO consider: get "Decl" and call its method.
 ; [setCallSyntax valMacro `macroAst`]
 ; [callSyntax `LMCV` valMacro]
 [callSyntax `list macro call val` valMacro]

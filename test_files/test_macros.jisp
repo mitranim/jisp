@@ -3,7 +3,7 @@
 ; FIXME must be compile error due to cyclic dependency.
 ; [use `./test_code.jisp` `*`]
 
-; "global" must be defined in prelude.
+; "global" must be declared in prelude.
 [const g global]
 
 ; FIXME implement.
@@ -42,7 +42,7 @@ astMacro
   ]
 ]
 
-; TODO consider: get "Def" and call its method.
+; TODO consider: get "Decl" and call its method.
 [callSyntax `list macro call val` valMacro]
 
 ; FIXME must be compile error.

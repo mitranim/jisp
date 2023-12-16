@@ -12,7 +12,7 @@ Base class for various scope implementations.
 
 Some AST nodes, such as `Module` or `Fn`, have a scope. Each scope has multiple
 namespaces. Depending on scope type, some namespaces may or may not be present.
-Consumers such as name-defining macros `Const` or `Fn` must look for the
+Consumers such as name-declaring macros `Const` or `Fn` must look for the
 nearest ancestor scope and request specific namespaces from that scope. If a
 scope is found but a required namespace is missing, a consumer must produce a
 descriptive exception, instead of continuing the search across the ancestor

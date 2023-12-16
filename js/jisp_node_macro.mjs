@@ -4,7 +4,7 @@ import * as jnp from './jisp_node_predef.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 export class Macro extends jnp.Predef {
-  static def() {return super.def().setCallStyle(jco.CallStyle.list)}
+  static decl() {return super.decl().setCallStyle(jco.CallStyle.list)}
 
   // FIXME some macros don't do this. Should this method be defined for all?
   // Probably not! Maybe split this class into a base macro class used by all

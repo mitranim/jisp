@@ -11,10 +11,10 @@ export class MixRef extends a.DedupMixinCache {
       /*
       Override in subclass.
 
-      Some `Node` and `Def` types are considered "references", and
-      may "dereference" into another object responsible for the value of the
-      given node or definition. This allows us to trace from usage sites to
-      original definitions or declarations. Rules:
+      Some `Node` and `Decl` types are considered "references", and may
+      "dereference" into another object responsible for the value of the given
+      node or declaration. This allows us to trace from usage sites to
+      original declarations. Rules:
 
         * Objects without a valid reference must return nil.
 
@@ -26,11 +26,11 @@ export class MixRef extends a.DedupMixinCache {
 
       Examples:
 
-        * name -> def -> use -> module
-        * name -> def -> const -> val
-        * name -> def -> class
-        * name -> def -> const -> val -> class
-        * name -> def -> const -> name -> def -> class
+        * name -> decl -> use -> module
+        * name -> decl -> const -> val
+        * name -> decl -> class
+        * name -> decl -> const -> val -> class
+        * name -> decl -> const -> name -> decl -> class
       */
       ownDeref() {return this}
 

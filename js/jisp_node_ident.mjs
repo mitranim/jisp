@@ -2,7 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnt from './jisp_node_text.mjs'
 
 /*
-TODO: consider caching of definition lookup. Profile first.
+TODO: consider caching of declaration lookup. Profile first.
 
 FIXME: move most methods to `Name`, make this superclass of `Name` and
 `Access`.
@@ -32,34 +32,36 @@ export class Ident extends jnt.Text {
   separator() {return this.constructor.separator()}
 
   // TODO: consider caching. Profile first.
-  optDef() {throw jm.errMeth(`optDef`, this)}
+  optDecl() {throw jm.errMeth(`optDecl`, this)}
 
-  reqDef() {
+  reqDecl() {
     return (
-      this.optDef() ??
-      this.throw(`missing definition for ${a.show(this.decompile())} at ${a.show(this)}`)
+      this.optDecl() ??
+      this.throw(`missing declaration of ${a.show(this.decompile())} at ${a.show(this)}`)
     )
   }
 
   macroImpl() {
-    this.reqDef()
+    this.reqDecl()
     return super.macroImpl()
   }
 
-  macroWithDef(def /* : Def */) {
-    if (a.isNil(def)) return this
-    if (!def.isMacro()) return this
-    if (def.isMacroBare()) return def.macroNode(this)
+  // Technical note: type assertion is missing due to module initialization
+  // issues caused by cyclic dependencies.
+  macroWithDecl(decl /* : Decl */) {
+    if (a.isNil(decl)) return this
+    if (!decl.isMacro()) return this
+    if (decl.isMacroBare()) return decl.macroNode(this)
     // FIXME implement.
-    // if (!this.isCalled()) throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} which has the following call opts: ${a.show(def.callOptStr())}`)
+    // if (!this.isCalled()) throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} which has the following call opts: ${a.show(decl.callOptStr())}`)
     return this
   }
 
   // FIXME rename, rewrite, and use.
   reqUsable() {
-    const def = this.reqDef()
-    const syn = def.ownCallStyle()
+    const decl = this.reqDecl()
+    const syn = decl.ownCallStyle()
     if (syn === CallStyle.bare) return this
-    throw this.err(`unexpected mention of ${a.show(this.decompile())} with the following call opts: ${a.show(def.callOptStr())}`)
+    throw this.err(`unexpected mention of ${a.show(this.decompile())} with the following call opts: ${a.show(decl.callOptStr())}`)
   }
 }
