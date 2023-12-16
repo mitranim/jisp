@@ -23,11 +23,11 @@ export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
 
   macroImpl() {
     if (this.isExpression()) {
-      this.reqSrcList().reqEveryNotCosmetic().reqLen(2)
+      this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(2)
       this.reqAddr()
     }
     else {
-      this.reqSrcList().reqEveryNotCosmetic().reqLenBetween(2, 3)
+      this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
       this.reqAddr()
       this.defineLex()
     }

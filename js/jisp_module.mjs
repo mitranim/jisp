@@ -30,7 +30,6 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
 
   pk() {return this.ownUrl()}
   setVal(val) {return super.setVal(jm.reqNativeModule(val))}
-  toValidChild(val) {return this.toValidChildBase(val)}
 
   /*
   FIXME:
@@ -62,7 +61,7 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
 
   parse(src) {
     this.initSpan().init(src)
-    this.setNodes(this.Lexer.nodesFromStr(src))
+    this.setChildren(...new this.Lexer().initFromStr(src))
     return this
   }
 
@@ -73,7 +72,7 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
   Other macro implementations must be synchronous for simplicity and speed.
   */
   async macroImpl() {
-    const tar = this.ownNodes()
+    const tar = this.childArr()
     let ind = -1
     while (++ind < tar.length) {
       let val = this.macroNodeAsync(tar[ind])
@@ -88,7 +87,7 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
   macroNodeAsync(val) {return this.Node.macroNodeAsync(val)}
 
   compile() {return this.compileBody()}
-  compileBody() {return this.reqCodePrinter().compileStatements(this)}
+  compileBody() {return this.reqCodePrinter().compileStatements(this.childIter())}
 
 /*
   // FIXME: generate header file.

@@ -3,23 +3,28 @@ import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
 
 /*
-Provides shortcuts for validating child-to-parent relations. Also see `MixChild`
-which is used to actually implement child-to-parent relations.
-
-FIXME rename. This implements only child-to-parent validation.
+Provides shortcuts for validating child-to-parent relations. Also see
+`MixParentOneToMany` and `MixParentOneToOne` which actually implement
+parent-to-child relations. Also see `MixChild` which implements
+child-to-parent relations.
 */
 export class MixParent extends a.DedupMixinCache {
   static make(cls) {
     return class MixParent extends je.MixErrer.goc(cls) {
       toValidChild(val) {
         val.setParent(this)
-        if (jc.Conf.main.DEBUG) this.reqValidChild(val)
+        this.reqValidChild(val)
         return val
       }
 
       reqValidChild(val) {
+        if (jc.Conf.main.DEBUG) return this.reqChildParentMatch(val)
+        return val
+      }
+
+      reqChildParentMatch(val) {
         const par = val.ownParent()
-        if (this !== par) {
+        if (par !== this) {
           throw this.err(`parent-child mismatch: expected child ${a.show(val)} to have parent ${a.show(this)}, found ${a.show(par)}`)
         }
         return val
@@ -30,28 +35,33 @@ export class MixParent extends a.DedupMixinCache {
 
 /*
 FIXME use for `NodeList`, `Root`, and possibly more.
+
+TODO consider support for splicing, like `DocumentFragment`.
 */
 export class MixParentOneToMany extends a.DedupMixinCache {
   static make(cls) {
-    return class MixParentOneToMany extends MixParent.goc(cls) {
+    return class MixParentOneToMany extends MixParentCommon.goc(MixParent.goc(cls)) {
       #chi = undefined
       #initChildren() {return this.#chi ??= []}
 
       hasChildren() {return this.childCount() > 0}
       childCount() {return this.#chi?.length ?? 0}
-      getFirstChild() {return this.#chi?.[0]}
-      getLastChild() {return a.last(this.#chi)}
       childIter() {return this.#initChildren().values()}
+
+      hasOnlyChild(val) {
+        const tar = this.#chi
+        return !!tar && tar.length === 1 && tar[0] === val
+      }
+
+      optChildAt(ind) {return this.#chi?.[this.req(ind, a.isInt)]}
+
+      optFirstChild() {return this.#chi?.[0]}
+
+      optLastChild() {return a.last(this.#chi)}
 
       clearChildren() {
         const chi = this.#chi
         if (chi) chi.length = 0
-        return this
-      }
-
-      setChild(val) {
-        this.clearChildren()
-        if (a.isSome(val)) this.appendChild(val)
         return this
       }
 
@@ -76,33 +86,63 @@ export class MixParentOneToMany extends a.DedupMixinCache {
 
         return this
       }
+
+      replaceChildAt(ind, val) {
+        this.req(ind, a.isInt)
+        this.toValidChild(val)
+
+        const tar = this.#chi
+        if (!tar || a.isNil(tar[ind])) {
+          throw this.err(`unable to replace child at index ${a.show(ind)} in parent ${a.show(this)}: no existing child at this index`)
+        }
+
+        tar[ind] = val
+      }
+
+      /*
+      Blatant abstraction leak. Allows callers to perform array-specific
+      operations on children, or to iterate more efficiently. If we cared more
+      about safety against errant callers, this would make a shallow copy of
+      the original array, but that would also penalize performance elsewhere.
+      */
+      childArr() {return this.#initChildren()}
+
+      optChildSlice(start, next) {
+        this.opt(start, a.isNat)
+        this.opt(next, a.isNat)
+        return this.#chi?.slice(...arguments) ?? []
+      }
     }
   }
 }
 
+// TODO consider support for splicing, like `DocumentFragment`.
 export class MixParentOneToOne extends a.DedupMixinCache {
   static make(cls) {
-    return class MixParentOneToOne extends MixParent.goc(cls) {
+    return class MixParentOneToOne extends MixParentCommon.goc(MixParent.goc(cls)) {
       #chi = undefined
 
-      hasChildren() {return a.isSome(this.#chi)}
-      childCount() {return Number(this.hasChildren())}
-      getFirstChild() {return this.#chi}
-      getLastChild() {return this.#chi}
+      hasChildren() {return this.childCount() > 0}
+      childCount() {return a.isSome(this.#chi) ? 1 : 0}
 
       *childIter() {
         const val = this.#chi
         if (a.isSome(val)) yield val
       }
 
-      clearChildren() {
-        this.#chi = undefined
-        return this
+      hasOnlyChild(val) {return a.isSome(val) && this.#chi === val}
+
+      optChildAt(ind) {
+        this.req(ind, a.isInt)
+        return ind === 0 ? this.#chi : undefined
       }
 
-      // FIXME validate child-to-parent.
-      setChild(val) {
-        this.#chi = val
+      optFirstChild() {return this.#chi}
+
+      optLastChild() {return this.#chi}
+
+      clearChildren() {
+        this.#chi = undefined
         return this
       }
 
@@ -115,15 +155,102 @@ export class MixParentOneToOne extends a.DedupMixinCache {
         }
       }
 
-      // FIXME validate child-to-parent.
       appendChild(val) {
         if (this.hasChildren()) throw Error(`unable to append child ${a.show(val)} to single-child parent ${a.show(this)} which already has a child`)
-        this.#chi = val
-        return this
+        return this.setChild(val)
       }
 
       appendChildren(...val) {
         for (val of val) this.appendChild(val)
+        return this
+      }
+
+      replaceChildAt(ind, next) {
+        const prev = this.optChildAt(ind)
+
+        if (a.isNil(prev)) {
+          throw this.err(`unable to replace child at index ${a.show(ind)} in parent ${a.show(this)}: no existing child at this index`)
+        }
+
+        if (prev === next) return
+        this.setChild(next)
+      }
+    }
+  }
+}
+
+/*
+For internal use. This is private because we apply mixins in the "wrong" order.
+From the perspective of static typing, this mixin is invalid because it's trying
+to use methods which are not defined on its superclass. It only works because
+all of its subclasses define the required methods.
+*/
+class MixParentCommon extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixParentCommon extends cls {
+      hasChildAt(ind) {return a.isSome(this.optChildAt(ind))}
+
+      reqChildAt(ind) {
+        return (
+          this.optChildAt(ind) ??
+          this.throw(`missing child at index ${a.show(ind)} in parent ${a.show(this)}`)
+        )
+      }
+
+      reqFirstChild() {
+        return (
+          this.optFirstChild() ??
+          this.throw(`missing first child in parent ${a.show(this)}`)
+        )
+      }
+
+      reqLastChild() {
+        return (
+          this.optLastChild() ??
+          this.throw(`missing last child in parent ${a.show(this)}`)
+        )
+      }
+
+      setChild(val) {
+        if (a.isNil(val)) return this.clearChildren()
+        if (this.hasOnlyChild(val)) return this
+        return this.clearChildren().appendChild(val)
+      }
+
+      reqChildCount(exp) {
+        this.req(exp, a.isNat)
+        const len = this.childCount()
+        if (exp !== len) {
+          throw this.err(`${a.show(this)} expected exactly ${exp} children, got ${len} children`)
+        }
+        return this
+      }
+
+      reqChildCountMin(exp) {
+        this.req(exp, a.isNat)
+        const len = this.childCount()
+        if (!(exp <= len)) {
+          throw this.err(`${a.show(this)} expected at least ${exp} children, got ${len} children`)
+        }
+        return this
+      }
+
+      reqChildCountMax(exp) {
+        this.req(exp, a.isNat)
+        const len = this.childCount()
+        if (!(len <= exp)) {
+          throw this.err(`${a.show(this)} expected no more than ${exp} children, got ${len} children`)
+        }
+        return this
+      }
+
+      reqChildCountBetween(min, max) {
+        this.req(min, a.isNat)
+        this.req(max, a.isNat)
+        const len = this.childCount()
+        if (!(min <= len) || !(len <= max)) {
+          throw this.err(`${a.show(this)} expected between ${min} and ${max} children, got ${len} children`)
+        }
         return this
       }
     }

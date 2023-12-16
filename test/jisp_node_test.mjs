@@ -7,7 +7,7 @@ import * as jnv from '../js/jisp_node_val.mjs'
 import * as jnnu from '../js/jisp_node_num.mjs'
 import * as jnun from '../js/jisp_node_unqual_name.mjs'
 
-/* FIXME split into smaller test files. */
+/* TODO split into test files for individual types. */
 
 // Incomplete. TODO test termination.
 t.test(function test_Num_parse() {

@@ -6,7 +6,7 @@ import * as jt from '../js/jisp_tokenizer.mjs'
 
 t.test(function test_Tokenizer() {
   function test(src) {
-    const tokens = jt.Tokenizer.tokensFromStr(src)
+    const tokens = new jt.Tokenizer().init(src).toArray()
     // tu.prn(`tokens:`, tokens)
   }
 

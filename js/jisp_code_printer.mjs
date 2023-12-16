@@ -13,8 +13,9 @@ export class CodePrinter extends a.Emp {
   joinSuf(src, suf) {return this.fold(src, this.addSuf, suf)}
 
   fold(src, fun, arg) {
-    a.reqIter(src)
+    a.optIter(src)
     a.reqFun(fun)
+    if (!src) return
 
     let acc = ``
     for (src of src) {

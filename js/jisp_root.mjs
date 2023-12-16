@@ -29,14 +29,14 @@ TODO second approximation:
 */
 export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(ji.MixInsp.goc(a.Emp)))) {
   #fs = undefined
-  setFs(val) {return this.#fs = this.toValidChild(a.reqInst(val, jfs.Fs)), this}
+  setFs(val) {return this.#fs = a.reqInst(val, jfs.Fs).setParent(this), this}
   ownFs() {return this.#fs}
   optFs() {return this.#fs}
   reqFs() {return this.optFs() ?? this.throw(`missing FS at ${a.show(this)}`)}
 
   // #nativeModuleCache = undefined
-  // ownNativeModuleCache() {return this.#nativeModuleCache ??= this.toValidChild(new NativeModuleCache())}
-  // setNativeModuleCache(val) {return this.#nativeModuleCache = this.toValidChild(this.reqInst(val, NativeModuleCache)), this}
+  // ownNativeModuleCache() {return this.#nativeModuleCache ??= new NativeModuleCache().setParent(this)}
+  // setNativeModuleCache(val) {return this.#nativeModuleCache = this.reqInst(val, NativeModuleCache).setParent(this), this}
 
 /*
   // FIXME: src module vs tar module.
@@ -163,7 +163,7 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
     // Root may cache both lang modules and native modules???
     //
     // Separate lang modules from native modules?
-    const mod = new jmo.Module().setParent(this).fromStr(src).setUrl(srcUrl.href)
+    const mod = new jmo.Module().setParent(this).parse(src).setUrl(srcUrl.href)
     await mod.macro()
 
     const out = mod.compile()

@@ -62,7 +62,7 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
 
   macroImpl() {
     if (!IS_STAR_IMPORT_SUPPORTED) {
-      this.reqSrcList().reqEveryNotCosmetic().reqLen(3)
+      this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
       // FIXME: throw exception directly at offending node.
       this.reqAddr()
       // FIXME: throw exception directly at offending node.
@@ -70,7 +70,7 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
       return this.macroName()
     }
 
-    this.reqSrcList().reqEveryNotCosmetic().reqLenBetween(2, 3)
+    this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
     // FIXME: throw exception directly at offending node.
     this.reqAddr()
     if (this.destStr()) return this.macroAll()

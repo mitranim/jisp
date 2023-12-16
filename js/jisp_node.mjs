@@ -48,7 +48,7 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   jns.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
-  static get Span() {return jsp.StrSpan}
+  get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
   get CodeErr() {return je.CodeErr}

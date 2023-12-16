@@ -5,24 +5,6 @@ import * as jp from '../js/jisp_parent.mjs'
 
 // TODO actual tests.
 
-class OptValIter extends a.Emp {
-  constructor(val) {
-    super()
-    this.value = val
-    this.done = false
-    this.doneNext = false
-  }
-
-  next() {
-    if (this.done) return this
-    if (a.isNil(this.value) || this.doneNext) this.done = true
-    this.doneNext = true
-    return this
-  }
-
-  [Symbol.iterator]() {return this}
-}
-
 class MixParentIterManual extends a.DedupMixinCache {
   static make(cls) {
     return class MixParentIterManual extends cls {
@@ -50,6 +32,24 @@ class MixParentIterGen extends a.DedupMixinCache {
 }
 
 class ParentIterGen extends MixParentIterGen.goc(a.Emp) {}
+
+class OptValIter extends a.Emp {
+  constructor(val) {
+    super()
+    this.value = val
+    this.done = false
+    this.doneNext = false
+  }
+
+  next() {
+    if (this.done) return this
+    if (a.isNil(this.value) || this.doneNext) this.done = true
+    this.doneNext = true
+    return this
+  }
+
+  [Symbol.iterator]() {return this}
+}
 
 t.bench(function bench_parent_single_iter_new_manual() {
   a.nop(new ParentIterManual().setChild(`some_val`))

@@ -17,12 +17,12 @@ export class MixChild extends a.DedupMixinCache {
       optParent() {return this.#parent}
 
       setParent(val) {
-        if (jc.Conf.main.DEBUG) this.validParent(val)
+        if (jc.Conf.main.DEBUG) this.reqValidParent(val)
         this.#parent = val
         return this
       }
 
-      validParent(par) {
+      reqValidParent(par) {
         if (par === this) {
           throw this.err(`${a.show(this)} is not allowed to be its own parent`)
         }
@@ -33,6 +33,7 @@ export class MixChild extends a.DedupMixinCache {
             throw this.err(`forbidden cycle between child ${a.show(this)} and parent ${a.show(par)}`)
           }
         }
+
         return par
       }
 

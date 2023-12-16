@@ -28,7 +28,7 @@ parentheses, which are only valid as tokens, and should not occur in a lexed
 AST.
 */
 export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
-  static get Span() {return jsp.StrSpan}
+  get Span() {return jsp.StrSpan}
   init(src) {return this.initSpan().init(src), super.init()}
   more() {return this.reqSpan().more()}
 
@@ -77,7 +77,4 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
     if (this.reqSpan().ownPos() > pos) return
     throw this.err(`failed to advance position at node ${a.show(node)}`)
   }
-
-  static fromStr(src) {return new this().init(src)}
-  static tokensFromStr(src) {return this.fromStr(src).toArray()}
 }

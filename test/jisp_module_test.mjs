@@ -30,12 +30,10 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   // The root provides `CodePrinter`, which is used by `.compile` calls below.
   mod.setParent(new jr.Root())
 
-  const nodes = mod.optNodes()
-  t.inst(nodes, Array)
-  t.is(nodes.length, 7)
+  t.is(mod.childCount(), 7)
 
   {
-    const node = nodes[0]
+    const node = mod.reqChildAt(0)
     t.inst(node, jnnu.Num)
     t.is(node.decompile(), `10`)
     t.is(node.ownVal(), 10)
@@ -43,7 +41,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = nodes[1]
+    const node = mod.reqChildAt(1)
     t.inst(node, jnnu.Num)
     t.is(node.decompile(), `20.30`)
     t.is(node.ownVal(), 20.30)
@@ -51,7 +49,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = nodes[2]
+    const node = mod.reqChildAt(2)
     t.inst(node, jnst.StrBacktick)
     t.is(node.decompile(), "`string_backtick`")
     t.is(node.ownVal(), `string_backtick`)
@@ -59,7 +57,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = nodes[3]
+    const node = mod.reqChildAt(3)
     t.inst(node, jnst.StrDouble)
     t.is(node.decompile(), `"string_double"`)
     t.is(node.ownVal(), `string_double`)
@@ -67,14 +65,14 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = nodes[4]
+    const node = mod.reqChildAt(4)
     t.inst(node, jnun.UnqualName)
     t.is(node.decompile(), `identUnqualified`)
     t.is(node.compile(), `identUnqualified`)
   }
 
   {
-    const node = nodes[5]
+    const node = mod.reqChildAt(5)
     t.inst(node, jna.Access)
     t.is(node.decompile(), `identNamespace.identQualified`)
     t.is(node.compile(), `identNamespace.identQualified`)
@@ -95,7 +93,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = nodes[6]
+    const node = mod.reqChildAt(6)
     t.inst(node, jnbrk.Brackets)
     t.is(node.decompile(), `[40 50 60]`)
     t.is(node.compile(), `40(
@@ -151,7 +149,7 @@ await t.test(async function test_Module() {
   root -> ask for tar module ->                               -> RAM cached
   */
 
-  const mod = new jmo.Module().setParent(root).fromStr(tu.SRC_TEXT).setUrl(tu.SRC_FILE_URL.href)
+  const mod = new jmo.Module().setParent(root).parse(tu.SRC_TEXT).setUrl(tu.SRC_FILE_URL.href)
   // const mod = await root.initModule(`test_code.jisp`)
 
   await mod.macro()

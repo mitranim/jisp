@@ -27,12 +27,11 @@ export function flush() {
   if (TEST) {
     console.log(`[test] ok`)
   }
-
   if (BENCH) {
     t.deopt()
     t.benches()
   }
 }
 
-// Indicates benchmark accuracy. Should be single digit nanoseconds.
+// Indicates benchmark accuracy. Should be ±0 nanoseconds.
 t.bench(function bench_baseline() {})

@@ -6,7 +6,7 @@ import * as jl from '../js/jisp_lexer.mjs'
 
 t.test(function test_Lexer() {
   function test(src) {
-    const nodes = jl.Lexer.nodesFromStr(src)
+    const nodes = new jl.Lexer().initFromStr(src).toArray()
     // tu.prn(`nodes:`, nodes)
   }
 

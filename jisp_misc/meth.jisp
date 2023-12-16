@@ -78,7 +78,7 @@ one.two.three.four
 
 p.global.console.log
 ->
-new Path().setNodes([`p`, `global`, `console`, `log`])
+new Path().setChildren(`p`, `global`, `console`, `log`)
 
 p.global.console.log
 ->

@@ -4,6 +4,12 @@ import * as jn from './jisp_node.mjs'
 import * as jen from './jisp_enum.mjs'
 import * as jnv from './jisp_node_val.mjs'
 
+/*
+
+FIXME drop!
+
+*/
+
 export class CallOpt extends ji.MixInsp.goc(a.Emp) {
   #callTime = CallTime.run
   setCallTime(val) {return this.#callTime = CallTime.reqValid(val), this}

@@ -12,10 +12,22 @@ import * as jna from './jisp_node_access.mjs'
 export class LexerErr extends je.CodeErr {}
 
 export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
-  static get Span() {return jsp.ArrSpan}
+  get Tokenizer() {return jt.Tokenizer}
+  get Span() {return jsp.ArrSpan}
 
-  init(src) {return this.initSpan().init(src), super.init()}
+  init(src) {
+    super.init()
+    this.initSpan().init(a.arr(src))
+    return this
+  }
+
+  initFromStr(src) {
+    return this.init(new this.Tokenizer().init(src))
+  }
+
+  // Can override in subclass.
   filter(val) {return val}
+
   more() {return this.reqSpan().more()}
 
   step() {
@@ -51,10 +63,4 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
     if (this.reqSpan().ownPos() > pos) return
     throw LexerErr.atNode(node, `failed to advance position at node ${a.show(node)}`)
   }
-
-  static fromStr(src) {return this.fromTokens(jt.Tokenizer.tokensFromStr(src))}
-  static fromTokens(src) {return new this().init(src)}
-  static fromTokenizer(src) {return this.fromTokens(a.reqInst(src, jt.Tokenizer).toArray())}
-  static nodesFromStr(src) {return this.fromStr(src).toArray()}
-  static nodesFromTokens(src) {return this.fromTokens(src).toArray()}
 }

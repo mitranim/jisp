@@ -240,3 +240,28 @@ function pathJoinOpt(...val) {
   for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
   return out
 }
+
+/*
+export function partitionWhile(src, fun) {
+  a.reqFun(fun)
+  if (a.isNil(src)) return []
+
+  const truthy = []
+  const falsy = []
+
+  for (const val of a.values(src)) {
+    if (allow) {
+      if (fun(val)) truthy.push(val)
+      else {
+        allow = false
+        falsy.push(val)
+      }
+    }
+    else {
+      falsy.push(val)
+    }
+  }
+
+  return [truthy, falsy]
+}
+*/

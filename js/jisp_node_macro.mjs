@@ -6,9 +6,10 @@ import * as jnnl from './jisp_node_node_list.mjs'
 export class Macro extends jnp.Predef {
   static def() {return super.def().setCallStyle(jco.CallStyle.list)}
 
+  // FIXME some macros don't do this. Should this method be defined for all?
+  // Probably not! Maybe split this class into a base macro class used by all
+  // macro classes, and another specialized for list-style macros.
   reqSrcList() {return this.reqSrcInst(jnnl.NodeList)}
-  optSrcNodes() {return a.reqTrueArr(this.reqSrcList().optNodes())}
-  reqSrcNodes() {return a.reqTrueArr(this.reqSrcList().ownNodes())}
 
   reqSrcInst(cls) {
     const src = this.optSrcNode()
@@ -18,22 +19,20 @@ export class Macro extends jnp.Predef {
 
   reqSrcAt(ind) {
     this.req(ind, a.isNat)
-    const src = this.reqSrcNodes()
-    const len = src.length
+
+    const src = this.reqSrcList()
+    const len = src.childCount()
 
     if (!(ind < len)) {
       throw this.err(`macro ${a.show(this.getSrcName())} requires at least ${ind+1} arguments, found ${len}`)
     }
 
-    const out = src[ind]
-    if (out) return out
-
-    // Internal sanity check. Should not be possible.
-    throw this.err(`macro ${a.show(this.getSrcName())} requires a valid node at index ${ind}, found ${a.show(out)}`)
+    return src.reqChildAt(ind)
   }
 
   optSrcAt(ind) {
-    return this.reqSrcNodes()[this.req(ind, a.isNat)]
+    this.req(ind, a.isNat)
+    return this.reqSrcList().optChildAt(ind)
   }
 
   reqSrcInstAt(ind, ...cls) {
@@ -51,11 +50,7 @@ export class Macro extends jnp.Predef {
     throw this.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be either missing or an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
   }
 
-  srcNodesFrom(ind) {
-    this.req(ind, a.isNat)
-    if (!ind) return this.reqSrcNodes()
-    return this.reqSrcList().reqLenMin(ind + 1).ownNodes().slice(ind)
-  }
+  srcNodesFrom(ind) {return this.reqSrcList().optChildSlice(ind)}
 
   reqStatement() {
     if (this.isExpression()) {

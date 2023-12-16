@@ -27,10 +27,11 @@ export class MixOwnScoped extends a.DedupMixinCache {
 
       #scope = undefined
       setScope(val) {
-        this.#scope = this.toValidChild(this.reqInst(val, this.Scope))
+        this.#scope = this.reqInst(val, this.Scope).setParent(this)
         return this
       }
-      ownScope() {return this.#scope ??= this.toValidChild(this.makeScope())}
+
+      ownScope() {return this.#scope ??= this.makeScope().setParent(this)}
       optScope() {return this.#scope ?? super.optScope()}
       makeScope() {return new this.Scope()}
     }

@@ -7,8 +7,8 @@ export class MixPubNsed extends a.DedupMixinCache {
     return class MixPubNsed extends jp.MixParent.goc(cls) {
       get PubNs() {return jns.Ns}
       #pubNs = undefined
-      setPubNs(val) {return this.#pubNs = this.toValidChild(this.reqInst(val, this.PubNs)), this}
-      ownPubNs() {return this.#pubNs ??= this.toValidChild(this.makePubNs())}
+      setPubNs(val) {return this.#pubNs = this.reqInst(val, this.PubNs).setParent(this), this}
+      ownPubNs() {return this.#pubNs ??= this.makePubNs().setParent(this)}
       optPubNs() {return this.#pubNs}
       makePubNs() {return new this.PubNs()}
     }

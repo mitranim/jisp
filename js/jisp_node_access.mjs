@@ -22,28 +22,22 @@ export class Access extends jp.MixParent.goc(jni.Ident) {
     if (!a.isInst(next, jnk.Key)) return prev
     span.inc()
 
-    return this.lexNext(
-      lex,
-      new this()
-        .setExpr(prev)
-        .setKey(next)
-        .setSpan(this.Span.range(
-          prev.reqSpan(),
-          next.reqSpan(),
-        ),
-    ))
+    const tar = new this().setExpr(prev).setKey(next)
+    tar.setSpan(tar.Span.range(prev.reqSpan(), next.reqSpan()))
+
+    return this.lexNext(lex, tar)
   }
 
   #expr = undefined
   ownExpr() {return this.#expr}
   optExpr() {return this.#expr}
-  setExpr(val) {return this.#expr = this.toValidChild(this.reqInst(val, jn.Node)), this}
+  setExpr(val) {return this.#expr = this.reqInst(val, jn.Node).setParent(this), this}
   reqExpr() {return this.optExpr() ?? this.throw(`missing left-side expression at ${a.show(this)}`)}
 
   #key = undefined
   ownKey() {return this.#key}
   optKey() {return this.#key}
-  setKey(val) {return this.#key = this.toValidChild(this.reqInst(val, jnk.Key)), this}
+  setKey(val) {return this.#key = this.reqInst(val, jnk.Key).setParent(this), this}
   reqKey() {return this.optKey() ?? this.throw(`missing right-side key at ${a.show(this)}`)}
 
   /*

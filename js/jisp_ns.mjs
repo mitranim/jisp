@@ -63,7 +63,7 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
     return jm.joinLines(` in scope ${a.show(this)} declared here:`, span.context())
   }
 
-  add(val) {return super.add(this.toValidChild(val))}
+  add(val) {return super.add(this.reqVal(val).setParent(this))}
 
   addFromNode(node) {
     this.reqInst(node, jn.Node)

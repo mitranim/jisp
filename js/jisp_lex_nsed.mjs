@@ -7,8 +7,8 @@ export class MixLexNsed extends a.DedupMixinCache {
     return class MixLexNsed extends jp.MixParent.goc(cls) {
       get LexNs() {return jns.Ns}
       #lexNs = undefined
-      setLexNs(val) {return this.#lexNs = this.toValidChild(this.reqInst(val, this.LexNs)), this}
-      ownLexNs() {return this.#lexNs ??= this.toValidChild(this.makeLexNs())}
+      setLexNs(val) {return this.#lexNs = this.reqInst(val, this.LexNs).setParent(this), this}
+      ownLexNs() {return this.#lexNs ??= this.makeLexNs().setParent(this)}
       optLexNs() {return this.#lexNs}
       makeLexNs() {return new this.LexNs()}
     }

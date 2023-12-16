@@ -37,26 +37,29 @@ export class DelimNodeList extends jnnl.NodeList {
         return tar
       }
 
-      tar.addNode(lex.popNext())
+      tar.appendChild(lex.popNext())
     }
 
     throw LexerErr.atNode(span.reqLast(), `missing closing ${a.show(suf)}`)
   }
 
-  notCosmeticNodes() {return this.ownNodes().filter(jn.Node.isNodeMeaningful, jn.Node)}
-  firstNotCosmetic() {return this.ownNodes().find(jm.isNotCosmetic)}
-  isEveryNotCosmetic() {return this.ownNodes().every(jm.isNotCosmetic)}
-
-  reqEveryNotCosmetic() {
-    if (!this.isEveryNotCosmetic()) {
-      throw this.err(`expected every node to be meaningful (no whitespace or comments)`)
-    }
+  reqEveryChildNotCosmetic() {
+    let ind = 0
+    while (ind < this.childCount()) this.reqNotCosmeticChildAt(ind++)
     return this
+  }
+
+  reqNotCosmeticChildAt(ind) {
+    const val = this.reqChildAt(ind)
+    if (val.isCosmetic()) {
+      throw this.err(`unexpected cosmetic child node ${a.show(val)} at index ${a.show(ind)} in parent ${a.show(this)}`)
+    }
+    return val
   }
 
   macroImpl() {
     this.macroAt(0)
-    const def = this.optHead()?.optDef()
+    const def = this.optFirstChild()?.optDef()
     if (def?.isMacro()) return def.macroNode(this)
     return this.macroFrom(1)
   }
@@ -64,12 +67,13 @@ export class DelimNodeList extends jnnl.NodeList {
   /*
   FIXME:
 
-    * Use `.optHead()` and `.rest()` instead of searching for meaning.
+    * Use `.optFirstChild()` and `.rest()` (???) instead of searching for meaning.
     * Head is required. Exception when empty.
   */
   compile() {
     const prn = this.reqCodePrinter()
-    const src = this.ownNodes()
+    const src = this.childArr()
+
     const ind = src.findIndex(jm.isNotCosmetic)
     if (!(ind >= 0)) return prn.compileDense(src)
 
@@ -85,5 +89,9 @@ export class DelimNodeList extends jnnl.NodeList {
     throw this.err(jco.CallSyntax.msgUnrec(style))
   }
 
-  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.optNodes)}
+  [ji.symInspInit](tar) {
+    tar = super[ji.symInspInit](tar)
+    if (this.hasChildren()) return tar.funs(this.childArr)
+    return tar
+  }
 }

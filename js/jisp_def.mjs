@@ -26,7 +26,7 @@ export class Def extends (
   addUse(val) {return this.ownUses().add(val), this}
 
   pk() {return this.ownName()}
-  setParent(val) {return super.setParent(a.reqInst(val, jns.Ns))}
+  reqValidParent(val) {return super.reqValidParent(a.reqInst(val, jns.Ns))}
 
   // Must override in subclass. Must return a function or class.
   ownVal() {throw errMeth(`ownVal`, this)}
