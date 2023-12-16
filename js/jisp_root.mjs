@@ -197,7 +197,7 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
     )
   }
 
-  [ji.symInspInit](tar) {return tar.funs(this.ownFs)}
+  [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }
 
 /*

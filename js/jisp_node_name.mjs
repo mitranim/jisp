@@ -10,5 +10,5 @@ FIXME: how exactly is this supposed to be different from an identifier?
 FIXME: restructure / merge with `Ident`.
 */
 export class Name extends jnd.MixNamed.goc(jni.Ident) {
-  ownName() {throw errMeth(`ownName`, this)}
+  ownName() {throw jm.errMeth(`ownName`, this)}
 }

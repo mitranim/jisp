@@ -41,5 +41,5 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
     return Number.parseFloat(src)
   }
 
-  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.ownVal)}
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
 }

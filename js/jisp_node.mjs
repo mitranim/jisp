@@ -177,7 +177,7 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   // elided from the AST when tokenizing or lexing.
   isCosmetic() {return false}
 
-  [ji.symInspInit](tar) {return tar.funs(this.optSpan)}
+  [ji.symInsp](tar) {return tar.funs(this.optSpan)}
 
   /*
   Placeholder. This must be exactly copy-pasted into EVERY subclass and

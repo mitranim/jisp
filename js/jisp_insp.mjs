@@ -1,8 +1,8 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 
-export const symInspCls  = Symbol.for(`Insp.cls`)
-export const symInspInit = Symbol.for(`Insp.init`)
-export const symInspMake = Symbol.for(`Insp.make`)
+export const symInsp     = Symbol.for(`jisp.insp`)
+export const symInspCls  = Symbol.for(`jisp.insp.cls`)
+export const symInspMake = Symbol.for(`jisp.insp.make`)
 export const symInspDeno = Symbol.for(`Deno.customInspect`)
 export const symInspNode = Symbol.for(`nodejs.util.inspect.custom`)
 
@@ -17,12 +17,12 @@ export class MixInsp extends a.DedupMixinCache {
     return class MixInsp extends cls {
       get [symInspCls]() {return Insp}
 
-      [symInspInit](val) {return val}
+      [symInsp](val) {return val}
 
       [symInspMake]() {
         let insp = new this[symInspCls]()
         insp = insp.setSrc(this)
-        insp = this[symInspInit](insp)
+        insp = this[symInsp](insp)
         return insp.initTar()
       }
 

@@ -53,5 +53,5 @@ export class RowCol extends ji.MixInsp.goc(a.Emp) {
     return this.setRow(row).setCol(col)
   }
 
-  [ji.symInspInit](tar) {return tar.funs(this.ownRow, this.ownCol)}
+  [ji.symInsp](tar) {return tar.funs(this.ownRow, this.ownCol)}
 }

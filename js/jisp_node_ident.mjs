@@ -32,7 +32,7 @@ export class Ident extends jnt.Text {
   separator() {return this.constructor.separator()}
 
   // TODO: consider caching. Profile first.
-  optDef() {throw errMeth(`optDef`, this)}
+  optDef() {throw jm.errMeth(`optDef`, this)}
 
   reqDef() {
     return (

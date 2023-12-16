@@ -121,7 +121,7 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
     return tar
   }
 
-  [ji.symInspInit](tar) {return tar.funs(this.optSpan, this.optScope)}
+  [ji.symInsp](tar) {return tar.funs(this.optSpan, this.optScope)}
 }
 
 export class ModuleColl extends a.Coll {

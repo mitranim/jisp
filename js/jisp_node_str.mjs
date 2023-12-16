@@ -6,7 +6,7 @@ import * as jv from './jisp_valued.mjs'
 export class Str extends jv.MixOwnValued.goc(jnt.Text) {
   setVal(val) {return super.setVal(this.req(val, a.isStr))}
   macro() {return this}
-  [ji.symInspInit](tar) {return super[ji.symInspInit](tar).funs(this.ownVal)}
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
 }
 
 /*

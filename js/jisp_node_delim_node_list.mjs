@@ -1,17 +1,15 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
-import * as ji from './jisp_insp.mjs'
-import * as jp from './jisp_parent.mjs'
 import * as jco from './jisp_call_opt.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 export class DelimNodeList extends jnnl.NodeList {
-  static prefix() {throw errMeth(`prefix`, this)}
-  static suffix() {throw errMeth(`suffix`, this)}
-
+  static prefix() {throw jm.errMeth(`prefix`, this)}
   prefix() {return this.constructor.prefix()}
+
+  static suffix() {throw jm.errMeth(`suffix`, this)}
   suffix() {return this.constructor.suffix()}
 
   // TODO simplify.
@@ -45,11 +43,11 @@ export class DelimNodeList extends jnnl.NodeList {
 
   reqEveryChildNotCosmetic() {
     let ind = 0
-    while (ind < this.childCount()) this.reqNotCosmeticChildAt(ind++)
+    while (ind < this.childCount()) this.reqChildNotCosmeticAt(ind++)
     return this
   }
 
-  reqNotCosmeticChildAt(ind) {
+  reqChildNotCosmeticAt(ind) {
     const val = this.reqChildAt(ind)
     if (val.isCosmetic()) {
       throw this.err(`unexpected cosmetic child node ${a.show(val)} at index ${a.show(ind)} in parent ${a.show(this)}`)
@@ -87,11 +85,5 @@ export class DelimNodeList extends jnnl.NodeList {
     if (style === jco.CallSyntax.call) return call
     if (style === jco.CallSyntax.new) return `new ` + call
     throw this.err(jco.CallSyntax.msgUnrec(style))
-  }
-
-  [ji.symInspInit](tar) {
-    tar = super[ji.symInspInit](tar)
-    if (this.hasChildren()) return tar.funs(this.childArr)
-    return tar
   }
 }

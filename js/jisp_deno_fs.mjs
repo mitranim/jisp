@@ -40,5 +40,5 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
     if (path) await Deno.mkdir(path, {recursive: true})
   }
 
-  [ji.symInspInit](tar) {return tar.funs(this.ownSrc, this.ownTar)}
+  [ji.symInsp](tar) {return tar.funs(this.ownSrc, this.ownTar)}
 }

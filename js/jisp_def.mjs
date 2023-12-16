@@ -29,7 +29,7 @@ export class Def extends (
   reqValidParent(val) {return super.reqValidParent(a.reqInst(val, jns.Ns))}
 
   // Must override in subclass. Must return a function or class.
-  ownVal() {throw errMeth(`ownVal`, this)}
+  ownVal() {throw jm.errMeth(`ownVal`, this)}
 
   /*
   TODO: JS reserved words must be detected contextually, only when used as bare
@@ -48,7 +48,7 @@ export class Def extends (
     return name
   }
 
-  [ji.symInspInit](tar) {return super[ji.symInspInit](tar.funs(this.ownName))}
+  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.ownName))}
 }
 
 export class FunDef extends jv.MixOwnValued.goc(Def) {

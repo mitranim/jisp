@@ -65,7 +65,7 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
     return a.isSome(begin) && a.isSome(end) ? this.range(begin, end) : undefined
   }
 
-  [ji.symInspInit](tar) {
+  [ji.symInsp](tar) {
     return tar.funs(this.decompile, this.ownPos, this.ownLen)
   }
 }

@@ -56,7 +56,7 @@ export class UnqualName extends jnn.Name {
   }
 
   // FIXME: if the name is coming from a mixin, generate a qualifier.
-  compileQualifier() {throw errMeth(`compileQualifier`, this)}
+  compileQualifier() {throw jm.errMeth(`compileQualifier`, this)}
 
   /*
   Supports automatic renaming of identifiers. See `Def..compileName`.

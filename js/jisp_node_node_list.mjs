@@ -1,17 +1,9 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jn from './jisp_node.mjs'
 
 export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
-  /*
-  TODO enable if we want this. Probably not.
-
-  [Symbol.iterator]() {return this.childIter()}
-
-  // Secret interface in `@mitranim/js`.`iter.mjs`.
-  toArray() {return this.childArr()}
-  */
-
   // Override for `MixParent`.
   reqValidChild(val) {return super.reqValidChild(this.reqInst(val, jn.Node))}
 
@@ -30,5 +22,11 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
 
   macroAt(ind) {
     this.replaceChildAt(ind, jn.Node.macroNode(this.reqChildAt(ind)))
+  }
+
+  [ji.symInsp](tar) {
+    tar = super[ji.symInsp](tar)
+    if (this.hasChildren()) return tar.funs(this.childArr)
+    return tar
   }
 }
