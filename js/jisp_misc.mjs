@@ -240,27 +240,3 @@ function pathJoinOpt(...val) {
   for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
   return out
 }
-
-/*
-For comparison, here's a generator-based implementation. Unfortunately,
-generators tend to be much slower than manual state-machine-style iterators.
-
-  function* optValIter(val) {if (a.isSome(val)) yield val}
-*/
-export class OptValIter extends a.Emp {
-  constructor(val) {
-    super()
-    this.value = val
-    this.done = false
-    this.doneNext = false
-  }
-
-  next() {
-    if (this.done) return this
-    if (a.isNil(this.value) || this.doneNext) this.done = true
-    this.doneNext = true
-    return this
-  }
-
-  [Symbol.iterator]() {return this}
-}

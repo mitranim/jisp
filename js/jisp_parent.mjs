@@ -84,14 +84,16 @@ export class MixParentOneToOne extends a.DedupMixinCache {
   static make(cls) {
     return class MixParentOneToOne extends MixParent.goc(cls) {
       #chi = undefined
+
       hasChildren() {return a.isSome(this.#chi)}
       childCount() {return Number(this.hasChildren())}
       getFirstChild() {return this.#chi}
       getLastChild() {return this.#chi}
 
-      // FIXME bench compare
-      childIter() {return new jm.OptValIter(this.#chi)}
-      // *childIter() {if (a.isSome(this.#chi)) yield this.#chi}
+      *childIter() {
+        const val = this.#chi
+        if (a.isSome(val)) yield val
+      }
 
       clearChildren() {
         this.#chi = undefined
