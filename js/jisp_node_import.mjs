@@ -1,8 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jmo from './jisp_module.mjs'
-import * as jnm from './jisp_node_macro.mjs'
+import * as jnma from './jisp_node_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
@@ -22,7 +21,7 @@ at compile time regardless of `Conf.main` configuration, in order to obtain
 knowledge of exported identifiers, which allows us to resolve unqualified
 names.
 */
-export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
+export class Import extends jv.MixOwnValued.goc(jnma.Macro) {
   static getSrcName() {return `import`}
   static getTarName() {return this.getSrcName()}
 

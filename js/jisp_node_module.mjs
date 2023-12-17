@@ -8,8 +8,6 @@ import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
-// FIXME rename this file to `jisp_node_module.mjs`.
-
 export class ModuleCodeErr extends je.CodeErr {}
 
 /*

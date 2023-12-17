@@ -12,7 +12,7 @@ import * as jl from '../js/jisp_lexer.mjs'
 import * as jnv from '../js/jisp_node_val.mjs'
 import * as jdfs from '../js/jisp_deno_fs.mjs'
 import * as jr from '../js/jisp_root.mjs'
-import * as jmo from '../js/jisp_module.mjs'
+import * as jnm from '../js/jisp_node_module.mjs'
 import * as jnst from '../js/jisp_node_str.mjs'
 import * as jnnu from '../js/jisp_node_num.mjs'
 import * as jniu from '../js/jisp_node_ident_unqual.mjs'
@@ -21,7 +21,7 @@ import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
   const fs = jdft.makeTestFs()
-  const mod = new jmo.Module()
+  const mod = new jnm.Module()
   const src = await fs.readSrc(`test_builtins.jisp`)
 
   mod.parse(src)
@@ -120,14 +120,14 @@ await t.test(async function test_using_prelude() {
   // FIXME: tell root to load file.
   const src = await fs.readSrc(`test_using_prelude.jisp`)
 
-  const mod = new jmo.Module()
+  const mod = new jnm.Module()
 
   // Required for predeclared names and support for imports.
   mod.setParent(root)
   mod.parse(src)
   await mod.macro()
 
-  // const mod = new jmo.Module().setParent(root)
+  // const mod = new jnm.Module().setParent(root)
   // const root = new jr.Root().setFs(fs)
   // console.log(`root:`, root)
   // console.log(`src:`, src)
@@ -144,7 +144,7 @@ await t.test(async function test_Module() {
   root -> ask for tar module ->                               -> RAM cached
   */
 
-  const mod = new jmo.Module().setParent(root).parse(tu.SRC_TEXT).setUrl(tu.SRC_FILE_URL.href)
+  const mod = new jnm.Module().setParent(root).parse(tu.SRC_TEXT).setUrl(tu.SRC_FILE_URL.href)
   // const mod = await root.initModule(`test_code.jisp`)
 
   await mod.macro()

@@ -1,8 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jmo from './jisp_module.mjs'
-import * as jnm from './jisp_node_macro.mjs'
+import * as jnma from './jisp_node_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
@@ -25,7 +24,7 @@ FIXME:
 
   * Forbid as expression. Must be statement.
 */
-export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
+export class Use extends jv.MixOwnValued.goc(jnma.Macro) {
   static getSrcName() {return `use`}
   static getTarName() {return this.getSrcName()}
 
@@ -33,7 +32,7 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
 
   // FIXME unfuck. The evaluated target must be a "compiled" module or otherwise
   // usable / evaluatable JS module with Jisp metadata, not an AST module.
-  setVal(val) {return super.setVal(this.reqInst(val, jmo.Module))}
+  setVal(val) {return super.setVal(this.reqInst(val, Module))}
 
   strAll() {return `*`}
   reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
