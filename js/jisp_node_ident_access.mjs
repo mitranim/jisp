@@ -98,17 +98,15 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
         objects addressed by a path at _compile time_, and sanity-check them.
   */
   optDecl() {
-    return this.reqFirstChild().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolveNode(this)
+    // return this.reqFirstChild().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolveNode(this)
   }
 
   macroImpl() {
-    // FIXME reorder. Macroing the source expression must be done only if we
-    // DON'T find a "live value" that causes replacement of this whole node.
-    this.setChild(jn.Node.macroNode(this.reqFirstChild()))
-
     // FIXME revise.
     const decl = this.optDecl()
     if (decl?.isMacroBare()) return decl.macroNode(this)
+
+    this.setChild(jn.Node.macroNode(this.reqFirstChild()))
 
     return this
   }

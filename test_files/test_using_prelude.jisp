@@ -1,8 +1,5 @@
-; FIXME remove. Added to ensure that errors point to the right row/col.
-; TODO add a test for row/col detection for various macro errors.
-10
-20
-30
+; FIXME remove this comment. Added to ensure that errors point to the right
+; row/col. TODO add a test for row/col detection for various macro errors.
 
 [use `jisp:prelude` jp]
 

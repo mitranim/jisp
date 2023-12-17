@@ -16,7 +16,7 @@ export class CallSyntaxSet extends jnm.Macro {
   declared, preventing other modules from changing them, which could easily
   break unrelated code, depending on the order of module evaluation.
   */
-  optDecl() {return this.reqScope().reqLexNs().get(this.reqName().pk())}
+  optDecl() {return this.reqLexNs().get(this.reqName().pk())}
 
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)

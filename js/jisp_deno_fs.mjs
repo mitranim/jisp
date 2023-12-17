@@ -27,7 +27,6 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   writeTar(path, body) {return this.write(this.resolveTar(path), body)}
 
   async checksum(path) {return (await Deno.stat(path)).mtime}
-
   async read(path) {return Deno.readTextFile(path)}
 
   async write(path, body) {

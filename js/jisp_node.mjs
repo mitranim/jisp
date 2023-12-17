@@ -6,9 +6,9 @@ import * as ji from './jisp_insp.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
-import * as jns from './jisp_node_sourced.mjs'
+import * as jnsd from './jisp_node_sourced.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
-import * as jscd from './jisp_scoped.mjs'
+import * as jlns from './jisp_lex_nsed.mjs'
 
 /*
 Base class for all AST nodes.
@@ -44,8 +44,8 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
-  jns.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
+export class Node extends jlns.MixLexNsed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
+  jnsd.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
   get Span() {return jsp.StrSpan}
@@ -90,32 +90,25 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   isCalled() {return false}
 
   /*
-  Declares the current node in the lexical namespace of the nearest available
-  parent scope. The node must implement method `.pk`, which must return a local
-  identifier string. Method `.pk` must be implemented by `Ident` and all node
+  Declares the current node in the nearest ancestor lexical namespace. The
+  current node must implement method `.pk`, which must return a string
+  representing an unqualified identifier, typically coming from some
+  `IdentUnqual`. Method `.pk` must be implemented by `Ident` and all node
   subclasses that represent a named declaration such as `Const` or `Fn`. For
   other node classes, this should cause an exception.
 
-  Explicitly uses parent's scope because some macro nodes, such as `Fn`, define
-  their own scope. If we didn't use the parent here, the default behavior would
-  be to add the declaration to own scope, not to parent scope, and the
-  declaration would be unknown/unavailable to sibling nodes, breaking a lot of
-  code. Macro nodes may override this behavior. For example, when `Fn` is used
-  as an expression, it should add itself to own scope, but NOT to parent
-  scope.
+  Must start search at the parent because some macro nodes, such as `Fn`, define
+  their own namespace. If we didn't use the parent here, the default behavior
+  would be to add the declaration to own namespace, not to an ancestor
+  namespace, which would be incorrect in several ways. For example, the
+  resulting declaration would be unknown/unavailable to sibling nodes, breaking
+  a lot of code. Some nodes may override this behavior. For example, when `Fn`
+  is used as an expression, it should add itself to own namespace, but NOT to
+  an ancestor namespace.
 
-  TODO consider "optX" version.
-  TODO consider renaming to "reqX".
-
-  FIXME: add combined versions:
-
-    * "req lex", "opt pub". Use this by default.
+  TODO consider renaming to "reqX". May add an "opt" version later.
   */
-  declareLex() {return this.reqParent().reqScope().reqLexNs().addFromNode(this)}
-
-  // TODO consider "optX" version.
-  // TODO consider renaming to "reqX".
-  declarePub() {return this.reqParent().reqScope().reqPubNs().addFromNode(this)}
+  declareLex() {return this.reqParent().reqLexNs().addFromNode(this)}
 
   optDecl() {}
   reqDecl() {return this.optDecl() ?? this.throw(`missing declaration at ${a.show(this)}`)}

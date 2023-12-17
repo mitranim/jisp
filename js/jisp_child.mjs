@@ -28,7 +28,7 @@ export class MixChild extends a.DedupMixinCache {
         }
 
         let tar = par
-        while ((tar = jm.optParent(tar))) {
+        while ((tar = optParentCall(tar))) {
           if (tar === this) {
             throw this.err(`forbidden cycle between child ${a.show(this)} and parent ${a.show(par)}`)
           }
@@ -84,13 +84,14 @@ export class MixChild extends a.DedupMixinCache {
         while (tar) {
           const val = fun(tar)
           if (val) return val
-          tar = jm.optParent(tar)
+          tar = optParentCall(tar)
         }
         return undefined
       }
-
-      optScoper() {return this.optAncFind(jm.ownScope)}
-      reqScoper() {return this.optScoper() ?? this.throw(`missing scope at ${a.show(this)}`)}
     }
   }
+}
+
+function optParentCall(src) {
+  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
 }

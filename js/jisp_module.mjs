@@ -6,9 +6,9 @@ import * as jns from './jisp_ns.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jsc from './jisp_scope.mjs'
-import * as jscd from './jisp_scoped.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
+
+// FIXME rename this file to `jisp_node_module.mjs`.
 
 export class ModuleCodeErr extends je.CodeErr {}
 
@@ -21,7 +21,7 @@ Various names:
   * `AstModule`
   * `ModuleNode`
 */
-export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeList)) {
+export class Module extends jv.MixOwnValued.goc(jns.MixOwnLexNsed.goc(jnnl.NodeList)) {
   // FIXME consider using `Url`.
   #url = undefined
   setUrl(val) {return this.#url = this.req(val, jm.isCanonicalModuleUrlStr), this}
@@ -50,12 +50,6 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
   import(val) {
     return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())
   }
-
-  // Override for `MixOwnScoped`.
-  get Scope() {return jsc.ModuleScope}
-
-  // Used by namespace mixins.
-  optNs() {return this.ownScope().optPubNs()}
 
   get Lexer() {return jl.Lexer}
 
@@ -100,32 +94,57 @@ export class Module extends jv.MixOwnValued.goc(jscd.MixOwnScoped.goc(jnnl.NodeL
   // Override for `Node` stuff.
   get CodeErr() {return ModuleCodeErr}
 
+  // FIXME either this should be unnecessary, or the special cases in
+  // `Node..toErr` should be unnecessary. Leave only one.
   toErr(err) {
     if (a.isInst(err, je.CodeErr)) return err
     return super.toErr(err)
   }
 
-  static fromNative(key, src) {
-    a.req(key, jm.isAbsUrlStr)
-    jm.reqNativeModule(src)
+  // FIXME drop. You can't make this from a native module.
+  //
+  // static fromNative(key, src) {
+  //   a.req(key, jm.isAbsUrlStr)
+  //   jm.reqNativeModule(src)
+  //
+  //   return (
+  //     a.onlyInst(src.default, Module) ??
+  //     this.makeFromNative(src)
+  //   ).setVal(src).setUrl(key)
+  // }
 
-    return (
-      a.onlyInst(src.default, Module) ??
-      this.makeFromNative(src)
-    ).setVal(src).setUrl(key)
+  // FIXME drop. You can't make this from a native module.
+  //
+  // static makeFromNative(src) {
+  //   const tar = new this()
+  //   tar.ownScope().setPubNs(new jns.Ns().addFromNativeModule(src))
+  //   return tar
+  // }
+
+  [ji.symInsp](tar) {
+    return super[ji.symInsp](tar).funs(this.optSpan, this.optLexNs)
   }
-
-  static makeFromNative(src) {
-    const tar = new this()
-    tar.ownScope().setPubNs(new jns.Ns().addFromNativeModule(src))
-    return tar
-  }
-
-  [ji.symInsp](tar) {return tar.funs(this.optSpan, this.optScope)}
 }
 
+/*
 export class ModuleColl extends a.Coll {
   // For `a.TypedMap` used by `a.Coll`.
   reqKey(key) {return jm.reqCanonicalModuleUrlStr(key)}
   reqVal(val) {return a.reqInst(val, Module)}
 }
+
+export class ModuleColl extends jp.MixParent(jch.MixChild(a.Coll)) {
+  // For `a.TypedMap` used by `a.Coll`.
+  reqKey(key) {return jm.reqCanonicalModuleUrlStr(key)}
+  reqVal(val) {return a.reqInst(val, Module).setParent(this)}
+}
+
+export class MixOwnModuleColld extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixOwnModuleColld extends jp.MixParent.goc(cls) {
+      #moduleColl = undefined
+      ownModuleColl() {return this.#moduleColl ??= new ModuleColl().setParent(this)}
+    }
+  }
+}
+*/

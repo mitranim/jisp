@@ -6,8 +6,10 @@ import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jfs from './jisp_fs.mjs'
+import * as jns from './jisp_ns.mjs'
 import * as jcp from './jisp_code_printer.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
+import * as jnu from './jisp_node_use.mjs'
 import * as jmo from './jisp_module.mjs'
 
 /*
@@ -27,12 +29,20 @@ TODO second approximation:
   * Use header files.
   * Use cached files, invalidate by own and dependency checksums.
 */
-export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErrer.goc(ji.MixInsp.goc(a.Emp)))) {
-  #fs = undefined
-  setFs(val) {return this.#fs = a.reqInst(val, jfs.Fs).setParent(this), this}
-  ownFs() {return this.#fs}
-  optFs() {return this.#fs}
-  reqFs() {return this.optFs() ?? this.throw(`missing FS at ${a.show(this)}`)}
+export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(ji.MixInsp.goc(a.Emp))))) {
+  /*
+  Override for `MixOwnLexNsed`. The resulting lexical namespace is inherited by
+  all modules in this root. This is where we add globally predeclared names.
+  The default implementation should contain exactly one declaration: `use`.
+  Other common built-ins should be provided by the prelude module, which should
+  be imported via `use`.
+
+  FIXME: it might be ideal to get rid of "declarations" here, and use an
+  approach based on "live values", same as used by `Use` in star-import mode.
+  We could use that by adding a mixin to this lexical namespace, just like a
+  star-import.
+  */
+  makeLexNs() {return super.makeLexNs().add(jnu.Use.decl())}
 
   // #nativeModuleCache = undefined
   // ownNativeModuleCache() {return this.#nativeModuleCache ??= new NativeModuleCache().setParent(this)}
@@ -49,15 +59,16 @@ export class Root extends jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(je.MixErre
   setImportPromiseCache(val) {return this.#importPromiseCache = this.reqInst(val, jm.PromiseCache), this}
 */
 
-  get CodePrinter() {return jcp.CodePrinter}
+  // // Override for `MixOwnCodePrinted`.
+  // get CodePrinter() {return jcp.CodePrinter}
 
-  // Override for `MixOwnCodePrinted`.
-  optCodePrinter() {
-    return (
-      super.optCodePrinter() ??
-      this.setCodePrinter(new this.CodePrinter()).optCodePrinter()
-    )
-  }
+  // // Override for `MixOwnCodePrinted`.
+  // optCodePrinter() {
+  //   return (
+  //     super.optCodePrinter() ??
+  //     this.setCodePrinter(new this.CodePrinter()).optCodePrinter()
+  //   )
+  // }
 
   /*
   FIXME:

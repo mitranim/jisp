@@ -37,6 +37,10 @@ export class MixParent extends a.DedupMixinCache {
 FIXME use for `NodeList`, `Root`, and possibly more.
 
 TODO consider support for splicing, like `DocumentFragment`.
+
+Known issue: unlike the DOM API, this does not ensure that a child only ever
+belongs to one parent. This parent may even contain multiple references to the
+same child. For now, it's unclear whether we care.
 */
 export class MixParentOneToMany extends a.DedupMixinCache {
   static make(cls) {

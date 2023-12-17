@@ -15,14 +15,6 @@ export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.ren
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
 
-export function optParent(src) {
-  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
-}
-
-export function ownScope(src) {
-  return a.isObj(src) && `ownScope` in src ? src.ownScope() : undefined
-}
-
 // Implemented by `Module`.
 export function isImporter(val) {return a.hasMeth(val, `import`)}
 

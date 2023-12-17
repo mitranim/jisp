@@ -91,7 +91,7 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
 
   async macroAll() {
     await this.import()
-    this.reqScope().reqLexNs().addMixin(this)
+    this.reqLexNs().addMixin(this)
     return undefined
   }
 

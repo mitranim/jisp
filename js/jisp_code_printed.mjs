@@ -6,20 +6,20 @@ import * as jcp from './jisp_code_printer.mjs'
 export class MixCodePrinted extends a.DedupMixinCache {
   static make(cls) {
     return class MixCodePrinted extends jch.MixChild.goc(cls) {
-      ownCodePrinter() {}
-      optCodePrinter() {return this.ownCodePrinter() || optCodePrinter(this.optParent())}
+      optCodePrinter() {return this.optAncProcure(ownCodePrinterCall)}
+
       reqCodePrinter() {
         return (
           this.optCodePrinter() ??
-          this.throw(`missing printer at ${a.show(this)}`)
+          this.throw(`missing code printer at ${a.show(this)}`)
         )
       }
     }
   }
 }
 
-function optCodePrinter(src) {
-  return a.isObj(src) && `optCodePrinter` in src ? src.optCodePrinter() : undefined
+function ownCodePrinterCall(src) {
+  return a.isObj(src) && `ownCodePrinter` in src ? src.ownCodePrinter() : undefined
 }
 
 /*
@@ -29,9 +29,10 @@ Used by ancestors of a node hierarchy.
 export class MixOwnCodePrinted extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnCodePrinted extends MixCodePrinted.goc(cls) {
+      get CodePrinter() {return jcp.CodePrinter}
       #prn = undefined
-      setCodePrinter(val) {return this.#prn = this.reqInst(val, jcp.CodePrinter), this}
-      ownCodePrinter() {return this.#prn}
+      setCodePrinter(val) {return this.#prn = this.reqInst(val, this.CodePrinter), this}
+      ownCodePrinter() {return this.#prn ??= new this.CodePrinter()}
       optCodePrinter() {return this.#prn}
     }
   }

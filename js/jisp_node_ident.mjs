@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jnnd from './jisp_named.mjs'
+import * as jlns from './jisp_lex_nsed.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 
@@ -35,12 +36,13 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   FIXME: lookup may produce a declaration, or a live value. Probably need to
   update this interface to accommodate both.
 
-  TODO: consider caching lookup. Profile first.
+  TODO: consider caching. Profile first.
   */
   optDecl() {
     const name = a.pk(this)
-    const resolve = val => jm.ownScope(val)?.ownLexNs()?.resolve(name)
-    return this.optAncProcure(resolve)
+    return this.optAncProcure(function resolveDecl(val) {
+      return jlns.ownLexNsCall(val)?.resolve(name)
+    })
   }
 
   reqDecl() {
