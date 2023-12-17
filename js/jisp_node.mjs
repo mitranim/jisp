@@ -52,21 +52,21 @@ export class Node extends jlns.MixLexNsed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
   get CodeErr() {return je.CodeErr}
-  err(msg, cause) {return new this.CodeErr({msg, span: this.optSpan(), cause})}
+
+  err(msg, opt) {
+    opt = a.laxDict(opt)
+    opt.span = this.optSpan()
+    return new this.CodeErr(msg, opt)
+  }
 
   /*
   Error conversion. When possible and relevant, this should adorn the error with
   additional context. In particular, it should convert non-`CodeErr` to
-  `CodeErr`. When the given error is already `CodeErr`, this should increase
-  specificity if possible.
+  `CodeErr`.
   */
   toErr(err) {
-    if (!this.optSpan()) return err
-    if (a.isInst(err, je.CodeErr)) {
-      if (err.constructor === this.CodeErr) return err
-      return this.err(err.msg, err)
-    }
-    return this.err(jm.renderErrLax(err), err)
+    if (a.isInst(err, je.CodeErr) || !this.optSpan()) return err
+    return this.err(jm.renderErrLax(err), {cause: err})
   }
 
   /*

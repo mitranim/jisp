@@ -70,7 +70,11 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
     )
   }
 
-  err(msg, cause) {return new TokenizerErr({msg, span: this.optSpan(), cause})}
+  err(msg, opt) {
+    opt = a.laxDict(opt)
+    opt.span = this.optSpan()
+    return new TokenizerErr(msg, opt)
+  }
 
   reqFound(node) {
     if (node) return

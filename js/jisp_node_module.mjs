@@ -8,8 +8,6 @@ import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
-export class ModuleCodeErr extends je.CodeErr {}
-
 /*
 FIXME rework: split into `SrcModule` and `TarModule`.
 
@@ -89,15 +87,15 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnLexNsed.goc(jnnl.NodeL
   header() {}
 */
 
-  // Override for `Node` stuff.
-  get CodeErr() {return ModuleCodeErr}
-
-  // FIXME either this should be unnecessary, or the special cases in
-  // `Node..toErr` should be unnecessary. Leave only one.
-  toErr(err) {
-    if (a.isInst(err, je.CodeErr)) return err
-    return super.toErr(err)
-  }
+  /*
+  Override for `Node..err` to avoid using `CodeErr`. A module span always points
+  to `row:col = 1:1`, which is not very useful. More importantly, `Node..toErr`
+  preserves instances of `CodeErr` as-is. Without this override, sometimes we
+  would generate module-level `CodeErr` with `row:col = 1:1`, which would be
+  preserved as-is by caller nodes which would otherwise generate a more
+  specific `CodeErr` pointing to the actual relevant place in the code.
+  */
+  err(...val) {return new je.Err(...val)}
 
   // FIXME drop. You can't make this from a native module.
   //

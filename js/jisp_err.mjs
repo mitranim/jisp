@@ -7,13 +7,13 @@ export class Err extends Error {
 }
 
 export class CodeErr extends Err {
-  constructor({msg, span, cause}) {
+  constructor(msg, {cause, span}) {
     super(jm.joinLines(a.reqStr(msg), span?.context?.()), {cause})
     this.msg = msg
     this.span = span
   }
 
-  static atNode(node, msg) {return new this({msg, span: node.optSpan()})}
+  static atNode(node, msg) {return new this(msg, {span: node.optSpan()})}
 }
 
 /*
