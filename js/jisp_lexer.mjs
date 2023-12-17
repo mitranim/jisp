@@ -7,7 +7,7 @@ import * as jt from './jisp_tokenizer.mjs'
 import * as jnbrc from './jisp_node_braces.mjs'
 import * as jnbrk from './jisp_node_brackets.mjs'
 import * as jnpar from './jisp_node_parens.mjs'
-import * as jna from './jisp_node_access.mjs'
+import * as jnia from './jisp_node_ident_access.mjs'
 
 export class LexerErr extends je.CodeErr {}
 
@@ -25,27 +25,30 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
     return this.init(new this.Tokenizer().init(src))
   }
 
-  // Can override in subclass.
+  // Copied from `Tokenizer` for API consistency.
+  // Can override in subclass to skip some nodes.
   filter(val) {return val}
 
-  more() {return this.reqSpan().more()}
+  // Called by `Iter`.
+  more() {return this.reqSpan().hasMore()}
 
+  // Called by `Iter`.
   step() {
     const pos = this.reqSpan().ownPos()
     const node = this.popNext()
-    this.advanced(pos, node)
+    this.reqAdvanced(pos, node)
     return this.filter(node)
   }
 
   popNext() {
-    return this.optNext(this.optStep() || this.reqSpan().popHead())
+    return this.optNext(this.optStep() ?? this.reqSpan().popHead())
   }
 
   optStep() {
     return (
-      jnbrc.Braces.lex(this) ||
-      jnbrk.Brackets.lex(this) ||
-      jnpar.Parens.lex(this) ||
+      jnbrc.Braces.lex(this) ??
+      jnbrk.Brackets.lex(this) ??
+      jnpar.Parens.lex(this) ??
       undefined
     )
   }
@@ -55,12 +58,12 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
 
     // May add more in the future.
     return (
-      jna.Access.lexNext(this, prev)
+      jnia.IdentAccess.lexNext(this, prev)
     )
   }
 
-  advanced(pos, node) {
+  reqAdvanced(pos, node) {
     if (this.reqSpan().ownPos() > pos) return
-    throw LexerErr.atNode(node, `failed to advance position at node ${a.show(node)}`)
+    throw LexerErr.atNode(node, `failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
   }
 }

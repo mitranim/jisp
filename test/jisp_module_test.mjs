@@ -15,9 +15,8 @@ import * as jr from '../js/jisp_root.mjs'
 import * as jmo from '../js/jisp_module.mjs'
 import * as jnst from '../js/jisp_node_str.mjs'
 import * as jnnu from '../js/jisp_node_num.mjs'
-import * as jnun from '../js/jisp_node_unqual_name.mjs'
-import * as jna from '../js/jisp_node_access.mjs'
-import * as jnk from '../js/jisp_node_key.mjs'
+import * as jniu from '../js/jisp_node_ident_unqual.mjs'
+import * as jnia from '../js/jisp_node_ident_access.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
@@ -66,30 +65,28 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
 
   {
     const node = mod.reqChildAt(4)
-    t.inst(node, jnun.UnqualName)
+    t.inst(node, jniu.IdentUnqual)
     t.is(node.decompile(), `identUnqualified`)
     t.is(node.compile(), `identUnqualified`)
   }
 
   {
     const node = mod.reqChildAt(5)
-    t.inst(node, jna.Access)
+    t.inst(node, jnia.IdentAccess)
+
+    t.is(a.pk(node), `identQualified`)
+    t.is(node.ownName(), `identQualified`)
+
+    {
+      const src = node.reqFirstChild()
+      t.inst(src, jniu.IdentUnqual)
+      t.is(src.decompile(), `identNamespace`)
+      t.is(src.compile(), `identNamespace`)
+    }
+
+    t.is(node.decompileOwn(), `.identQualified`)
     t.is(node.decompile(), `identNamespace.identQualified`)
     t.is(node.compile(), `identNamespace.identQualified`)
-
-    {
-      const expr = node.ownExpr()
-      t.inst(expr, jnun.UnqualName)
-      t.is(expr.decompile(), `identNamespace`)
-      t.is(expr.compile(), `identNamespace`)
-    }
-
-    {
-      const key = node.ownKey()
-      t.inst(key, jnk.Key)
-      t.is(key.decompile(), `.identQualified`)
-      t.is(key.compile(), `.identQualified`)
-    }
   }
 
   {

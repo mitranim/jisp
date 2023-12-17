@@ -24,14 +24,14 @@ export class DelimNodeList extends jnnl.NodeList {
     if (head.decompile() !== pre) return undefined
 
     const tar = new this()
-    span.inc()
+    span.skip(1)
 
-    while (span.more()) {
+    while (span.hasMore()) {
       const next = span.optHead()
 
       if (next.decompile() === suf) {
         tar.setSpan(tar.Span.range(head.reqSpan(), next.reqSpan()))
-        span.inc()
+        span.skip(1)
         return tar
       }
 

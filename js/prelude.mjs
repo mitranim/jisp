@@ -7,7 +7,7 @@ import * as jnp from './jisp_node_predecl.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jmo from './jisp_module.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
 
 /*
 Implementation note. We could have used `Scope..addFromNativeModule` to
@@ -65,8 +65,8 @@ mod.ownScope().ownPubNs().add(Ok.decl())
 export class CallSyntaxSet extends jnm.Macro {
   static getSrcName() {return `callSyntax`}
 
-  str() {return this.reqSrcInstAt(1, jnst.Str)}
-  name() {return this.reqSrcInstAt(2, jnun.UnqualName)}
+  reqStr() {return this.reqSrcInstAt(1, jnst.Str)}
+  reqName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
 
   /*
   Declaration must be in same scope as macro node, and must be owned by the
@@ -75,7 +75,7 @@ export class CallSyntaxSet extends jnm.Macro {
   declared, preventing other modules from changing them, which could easily
   break unrelated code, depending on the order of module evaluation.
   */
-  optDecl() {return this.reqScope().reqLexNs().get(this.name().pk())}
+  optDecl() {return this.reqScope().reqLexNs().get(this.reqName().pk())}
 
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
@@ -83,7 +83,7 @@ export class CallSyntaxSet extends jnm.Macro {
     return undefined
   }
 
-  run() {this.reqDecl().callOptFromStr(this.str().ownVal())}
+  run() {this.reqDecl().callOptFromStr(this.reqStr().ownVal())}
 }
 
 mod.ownScope().ownPubNs().add(CallSyntaxSet.decl())
@@ -96,17 +96,17 @@ mod.ownScope().ownPubNs().add(Call.decl())
 
 /*
 FIXME consider:
-  * `optRef` or `ownRef` that returns `UnqualName`.
+  * `optRef` or `ownRef` that returns `IdentUnqual`.
 */
 export class Const extends jnm.Macro {
   static getSrcName() {return `const`}
 
-  pk() {return this.name().pk()}
-  name() {return this.reqSrcInstAt(1, jnn.Name)}
-  val() {return this.reqSrcAt(2)}
+  pk() {return this.reqName().pk()}
+  reqName() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
+  reqVal() {return this.reqSrcAt(2)}
 
   // Override for `MixRef`.
-  ownDeref() {return this.val()}
+  ownDeref() {return this.reqVal()}
 
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
@@ -115,14 +115,13 @@ export class Const extends jnm.Macro {
     return this
   }
 
-  // FIXME consider ensuring that this is not a `jnn.Name` identical to the
-  // `jnn.Name` in the "name" position, because it would be invalid in JS.
   macroVal() {return this.reqSrcNode().macroAt(2)}
 
   compile() {
     this.reqStatement()
-    const prn = this.reqCodePrinter()
-    return `const ${prn.compile(this.name())} = ${prn.compile(this.val())}`
+    const name = this.reqName().compile()
+    const val = this.reqVal().compile()
+    return `const ${a.reqStr(name)} = ${a.reqStr(val)}`
   }
 }
 
@@ -136,9 +135,9 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   static getSrcName() {return `fn`}
   get Scope() {return jsc.Scope}
 
-  pk() {return this.name().pk()}
-  name() {return this.reqSrcInstAt(1, jnn.Name)}
-  params() {return this.reqSrcInstAt(2, jnnl.NodeList)}
+  pk() {return this.reqName().pk()}
+  reqName() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
+  reqParams() {return this.reqSrcInstAt(2, jnnl.NodeList)}
   body() {return this.srcNodesFrom(3)}
 
   makeScope() {
@@ -174,7 +173,7 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
   }
 
   declareParams() {
-    for (const val of this.params()) val.asReqInst(jnn.Name).declareLex()
+    for (const val of this.reqParams()) val.asReqInst(jniu.IdentUnqual).declareLex()
   }
 
   macroBody() {return this.reqSrcNode().macroFrom(3)}
@@ -183,9 +182,9 @@ export class Fn extends jscd.MixOwnScoped.goc(jnm.Macro) {
     const prn = this.reqCodePrinter()
 
     return `function ${
-      prn.compile(this.name())
+      a.reqStr(this.reqName().compile())
     }${
-      prn.compileParensCommaMultiLine(this.params())
+      prn.compileParensCommaMultiLine(this.reqParams())
     } ${
       prn.compileBracesStatementsMultiLine(this.body())
     }`

@@ -4,7 +4,7 @@ import * as jv from './jisp_valued.mjs'
 import * as jmo from './jisp_module.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
 
 const IS_STAR_IMPORT_SUPPORTED = false
 
@@ -37,9 +37,9 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
 
   strAll() {return `*`}
   reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
-  optDest() {return this.optSrcInstAt(2, jnun.UnqualName, jnst.Str)}
-  optDestName() {return this.optSrcInstAt(2, jnun.UnqualName)}
-  reqDestName() {return this.reqSrcInstAt(2, jnun.UnqualName)}
+  optDest() {return this.optSrcInstAt(2, jniu.IdentUnqual, jnst.Str)}
+  optDestName() {return this.optSrcInstAt(2, jniu.IdentUnqual)}
+  reqDestName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
 
   destStr() {
     const src = a.onlyInst(this.optDest(), jnst.Str)
@@ -60,6 +60,8 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
     )
   }
 
+  // FIXME: also support anonymous form which imports the target purely for side
+  // effects.
   macroImpl() {
     if (!IS_STAR_IMPORT_SUPPORTED) {
       this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
@@ -108,3 +110,20 @@ export class Use extends jv.MixOwnValued.goc(jnm.Macro) {
   // Return nil. This node is intended only for compile-time imports.
   compile() {}
 }
+
+import * as jd from './jisp_decl.mjs'
+
+/*
+FIXME:
+
+  * Created by `Use`.
+  * When `Use` is in named form, add to lex NS under that name.
+  * When `Use` is in star form, add to lex NS as mixin.
+  * This must refer to evaluated JS module object.
+  * This must behave kinda as a namespace.
+    * No declarations are available. We use normal JS runtime inspection on
+      evaluated module object.
+  * Should probably share a base class with `ImportDecl`.
+  * Unlike `ImportDecl`, this forces node replacement during macroing.
+*/
+class UseDecl extends jd.Decl {}

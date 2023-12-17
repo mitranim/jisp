@@ -2,12 +2,12 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jr from './jisp_ref.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jnd from './jisp_named.mjs'
+import * as jnnd from './jisp_named.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jco from './jisp_call_opt.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jnsd from './jisp_node_sourced.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
 
 /*
 Base class for declarations. Should typically belong to a namespace (`Ns`).
@@ -15,10 +15,10 @@ Declarations may be either lexical (local variables), or public (properties
 of a module object, class, class instance, etc.).
 */
 export class Decl extends (
-  jr.MixRef.goc(jv.MixValued.goc(jnd.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))
+  jr.MixRef.goc(jv.MixValued.goc(jnnd.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))
 ) {
   #uses = undefined
-  ownUses() {return this.#uses ??= new jnun.UnqualNameSet()}
+  ownUses() {return this.#uses ??= new jniu.IdentUnqualSet()}
   addUse(val) {return this.ownUses().add(val), this}
 
   pk() {return this.ownName()}
@@ -26,23 +26,6 @@ export class Decl extends (
 
   // Must override in subclass. Must return a function or class.
   ownVal() {throw jm.errMeth(`ownVal`, this)}
-
-  /*
-  TODO: JS reserved words must be detected contextually, only when used as bare
-  names. They are allowed as method names and property names (i.e. `Key`).
-
-  TODO: implement automatic renaming. Possible causes:
-
-    * Avoiding conflicts with JS reserved words.
-    * Module merging.
-  */
-  compileName(node) {
-    const name = this.ownName()
-    if (jnun.UnqualName.isJsReservedWord(name)) {
-      throw node.err(`${a.show(name)} is a reserved keyword in JS; this would generate invalid JS that doesn't run; please rename`)
-    }
-    return name
-  }
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.ownName))}
 }

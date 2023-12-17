@@ -11,8 +11,8 @@ import * as jnsp from './jisp_node_space.mjs'
 import * as jnco from './jisp_node_comment.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 import * as jnst from './jisp_node_str.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
-import * as jnk from './jisp_node_key.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnia from './jisp_node_ident_access.mjs'
 
 export class TokenizerErr extends je.CodeErr {}
 
@@ -29,14 +29,18 @@ AST.
 */
 export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   get Span() {return jsp.StrSpan}
-  init(src) {return this.initSpan().init(src), super.init()}
-  more() {return this.reqSpan().more()}
 
+  init(src) {return this.initSpan().init(src), super.init()}
+
+  // Called by `Iter`.
+  more() {return this.reqSpan().hasMore()}
+
+  // Called by `Iter`.
   step() {
     const pos = this.reqSpan().ownPos()
     const node = this.optStep()
-    this.found(node)
-    this.advanced(pos, node)
+    this.reqFound(node)
+    this.reqAdvanced(pos, node)
     return this.filter(node)
   }
 
@@ -49,32 +53,32 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
     const span = this.reqSpan()
 
     return (
-      jnbrc.BracePre.parse(span) ||
-      jnbrc.BraceSuf.parse(span) ||
-      jnbrk.BracketPre.parse(span) ||
-      jnbrk.BracketSuf.parse(span) ||
-      jnpar.ParenPre.parse(span) ||
-      jnpar.ParenSuf.parse(span) ||
-      jnsp.Space.parse(span) ||
-      jnco.Comment.parse(span) ||
-      jnnu.Num.parse(span) ||
-      jnst.StrBacktick.parse(span) ||
-      jnst.StrDouble.parse(span) ||
-      jnun.UnqualName.parse(span) ||
-      jnk.Key.parse(span) ||
+      jnbrc.BracePre.parse(span) ??
+      jnbrc.BraceSuf.parse(span) ??
+      jnbrk.BracketPre.parse(span) ??
+      jnbrk.BracketSuf.parse(span) ??
+      jnpar.ParenPre.parse(span) ??
+      jnpar.ParenSuf.parse(span) ??
+      jnsp.Space.parse(span) ??
+      jnco.Comment.parse(span) ??
+      jnnu.Num.parse(span) ??
+      jnst.StrBacktick.parse(span) ??
+      jnst.StrDouble.parse(span) ??
+      jniu.IdentUnqual.parse(span) ??
+      jnia.IdentAccess.parse(span) ??
       undefined
     )
   }
 
   err(msg, cause) {return new TokenizerErr({msg, span: this.optSpan(), cause})}
 
-  found(node) {
+  reqFound(node) {
     if (node) return
     throw this.err(`unrecognized syntax`)
   }
 
-  advanced(pos, node) {
+  reqAdvanced(pos, node) {
     if (this.reqSpan().ownPos() > pos) return
-    throw this.err(`failed to advance position at node ${a.show(node)}`)
+    throw this.err(`failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
   }
 }

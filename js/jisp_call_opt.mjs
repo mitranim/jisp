@@ -168,7 +168,7 @@ throughout the compiler. For example:
   * If runtime:
     * Compiles to a nullary call, according to `CallSyntax`.
   * Requires changes in `NodeList`/`DelimNodeList` and maybe
-    `Ident`/`Path`/`Name`.
+    `Ident`/`IdentAccess`.
 */
 export class CallStyle extends jen.Enum {
   static bare = `bare`

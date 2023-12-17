@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 
 export class Err extends Error {
@@ -45,6 +46,29 @@ export class MixErrer extends a.DedupMixinCache {
 
       // Shortcut for "downcasting" the instance into one of its superclasses.
       asReqInst(cls) {return this.reqInst(this, cls)}
+
+      // TODO better naming.
+      withToErr(method) {
+        try {
+          const val = method.call(this)
+          if (a.isPromise(val)) return this.withToErrAsync(val)
+          return val
+        }
+        catch (err) {throw this.toErr(err)}
+      }
+
+      // TODO better naming.
+      withToErrSync(method) {
+        try {return method.call(this)}
+        catch (err) {throw this.toErr(err)}
+      }
+
+      // TODO better naming.
+      async withToErrAsync(val) {
+        if (jc.Conf.main.DEBUG) this.req(val, a.isPromise)
+        try {return await val}
+        catch (err) {throw this.toErr(err)}
+      }
     }
   }
 }

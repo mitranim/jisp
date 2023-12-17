@@ -23,9 +23,9 @@ Motives:
     the AST would make it difficult to distinguish "source" names from "target"
     names and to avoid conflicts with user-defined names in the same scope.
 
-  * Why this uses "macro" definitions: to replace regular `UnqualName` or
-    `Access` nodes with instances of this class. See the point about
-    specialized node classes.
+  * Why this uses "macro" definitions: to replace `IdentUnqual` or `IdentAccess`
+    nodes with instances of this class. See the point about specialized node
+    classes.
 
     * FIXME WTF does this mean? ↑
 

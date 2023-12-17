@@ -38,11 +38,14 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   isEmpty() {return !this.hasLen()}
 
   init(src) {return this.setSrc(src).setPos(0).setLen(src.length)}
+
   // TODO consider moving to `StrSpan`.
+  // This interface is expected to always return a string.
   decompile() {return this.#src.slice(this.#pos, this.#pos + this.#len)}
-  more() {return this.#pos < this.#src.length}
-  inc() {return this.#pos++, this}
+
+  hasMore() {return this.#pos < this.#src.length}
   skip(len) {return this.#pos += a.reqNat(len), this}
+
   // Short for "remainder" or "remaining".
   rem() {return this.#src.slice(this.#pos)}
   remAt(pos) {return this.#src.slice(a.reqNat(pos))}
@@ -101,7 +104,7 @@ export class ArrSpan extends Span {
 
   popHead() {
     const tar = this.optHead()
-    this.inc()
+    this.skip(1)
     return tar
   }
 
@@ -118,14 +121,12 @@ export class ArrSpan extends Span {
     return undefined
   }
 
-  skipWhile(fun, ctx) {
+  skipWhile(fun) {
     a.reqFun(fun)
-    while (this.more()) {
-      if (fun.call(ctx, this.optHead())) this.inc()
-      else return this
+    while (this.hasMore()) {
+      if (!fun(this.optHead())) return this
+      this.skip(1)
     }
     return this
   }
-
-  skipMeaningless() {return this.skipWhile(jm.isCosmetic)}
 }

@@ -2,8 +2,6 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
 
-export function decompile(val) {return a.laxStr(val?.decompile())}
-export function compile(val) {return a.laxStr(val?.compile())}
 export function joinLines(...val) {return a.joinLinesOptLax(val)}
 export function isStrOrArr(val) {return a.isStr(val) || a.isTrueArr(val)}
 export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
@@ -47,16 +45,23 @@ Reference:
 
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
 
-Set of words that cannot be declared as identifiers in ES6+ strict mode. It
-should not include any other words. We compile to native JS modules, which
-require ES6+ and use strict mode. Therefore we ignore older JS versions and
-loose mode.
+Set of names which are reserved in JS in ES6+ strict mode in all contexts. We
+compile to native JS modules, which require ES6+ and use strict mode. We're
+free to ignore older JS versions and loose mode.
 
-In violation of the guideline above, we include `undefined` as a special case
-to forbid its accidental redefinition and to avoid collision with the output
-of our macro `nil`.
+Note that JS also has contextual keywords such as `async`, which can also be
+used as identifiers. This set should NOT include them.
+
+Most of these names are keywords, and attempting to use them as identifiers in
+JS produces a syntax error. Some of these names are not keywords but rather
+predeclared identifiers, typically contextual, such as `arguments`.
+
+One special exception is `undefined`. It's actually NOT reserved in JS, and may
+be redefined, even in ES6+ strict mode. However, we ourselves reserve it to
+avoid such insanity, and to avoid collisions with the output of our macro
+`nil`.
 */
-export const jsReservedWords = new StrSet([`arguments`, `await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `eval`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `this`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
+export const jsReservedNames = new StrSet([`arguments`, `await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `eval`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `this`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
 
 export function isNativeModule(val) {
   return (

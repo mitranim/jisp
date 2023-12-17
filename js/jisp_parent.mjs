@@ -54,15 +54,18 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       }
 
       optChildAt(ind) {return this.#chi?.[this.req(ind, a.isInt)]}
-
       optFirstChild() {return this.#chi?.[0]}
-
       optLastChild() {return a.last(this.#chi)}
 
       clearChildren() {
         const chi = this.#chi
         if (chi) chi.length = 0
         return this
+      }
+
+      setChild(val) {
+        if (this.hasOnlyChild(val)) return this
+        return this.clearChildren().appendChild(val)
       }
 
       setChildren(...val) {
@@ -107,6 +110,12 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       */
       childArr() {return this.#initChildren()}
 
+      /*
+      This has "opt" in the name because we could also define a method
+      `.reqChildSlice` which would validate that the exact start and next
+      indexes are actually present in the child list, producing a return value
+      with the length equal to `next - start`.
+      */
       optChildSlice(start, next) {
         this.opt(start, a.isNat)
         this.opt(next, a.isNat)
@@ -138,11 +147,15 @@ export class MixParentOneToOne extends a.DedupMixinCache {
       }
 
       optFirstChild() {return this.#chi}
-
       optLastChild() {return this.#chi}
 
       clearChildren() {
         this.#chi = undefined
+        return this
+      }
+
+      setChild(val) {
+        this.#chi = this.toValidChild(val)
         return this
       }
 
@@ -182,8 +195,7 @@ export class MixParentOneToOne extends a.DedupMixinCache {
 /*
 For internal use. This is private because we apply mixins in the "wrong" order.
 From the perspective of static typing, this mixin is invalid because it's trying
-to use methods which are not defined on its superclass. It only works because
-all of its subclasses define the required methods.
+to use methods which are not defined on its superclass.
 */
 class MixParentCommon extends a.DedupMixinCache {
   static make(cls) {
@@ -211,10 +223,9 @@ class MixParentCommon extends a.DedupMixinCache {
         )
       }
 
-      setChild(val) {
+      setChildOpt(val) {
         if (a.isNil(val)) return this.clearChildren()
-        if (this.hasOnlyChild(val)) return this
-        return this.clearChildren().appendChild(val)
+        return this.setChild(val)
       }
 
       reqChildCount(exp) {

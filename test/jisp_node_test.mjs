@@ -5,7 +5,7 @@ import * as tu from './test_util.mjs'
 import * as jsp from '../js/jisp_span.mjs'
 import * as jnv from '../js/jisp_node_val.mjs'
 import * as jnnu from '../js/jisp_node_num.mjs'
-import * as jnun from '../js/jisp_node_unqual_name.mjs'
+import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 
 /* TODO split into test files for individual types. */
 
@@ -44,8 +44,8 @@ function testParseFull(cls, src) {
   return node
 }
 
-t.test(function test_UnqualName() {
-  const cls = jnun.UnqualName
+t.test(function test_IdentUnqual() {
+  const cls = jniu.IdentUnqual
 
   // TODO more cases.
   t.test(function test_parse() {

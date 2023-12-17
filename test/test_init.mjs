@@ -2,7 +2,12 @@ import '/Users/m/code/m/js/cli_emptty.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as c from '/Users/m/code/m/js/cli.mjs'
 
-Error.stackTraceLimit = Infinity
+/*
+Should be sufficiently large to show any non-overflow stack traces, but also
+sufficiently small to avoid overflowing terminal scrollback buffers in cases
+of stack overflow.
+*/
+Error.stackTraceLimit = 1024
 
 export const cli = c.Flag.os()
 export const TEST = cli.boolOpt(`test`)

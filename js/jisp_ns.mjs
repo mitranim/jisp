@@ -9,7 +9,7 @@ import * as jd from './jisp_decl.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnu from './jisp_node_use.mjs'
-import * as jnn from './jisp_node_name.mjs'
+import * as jni from './jisp_node_ident.mjs'
 
 export class NsErr extends je.Err {}
 
@@ -101,7 +101,7 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   }
 
   resolveNode(val) {
-    return this.resolve(this.reqInst(val, jn.Node).asReqInst(jnn.Name).ownName())
+    return this.resolve(this.reqInst(val, jn.Node).asReqInst(jni.Ident).ownName())
   }
 
   /*
@@ -134,8 +134,8 @@ export class Ns extends jp.MixParent.goc(jmi.MixMixable.goc(jch.MixChild.goc(a.C
   ONE member: the `Use` macro. All other built-ins must be declared in the
   `prelude` module.
 
-  FIXME consider moving this to `Root`. A root would provide a lexical
-  namespace, used by all modules in that root.
+  FIXME move to `Root`. A root should provide a lexical namespace, used by all
+  modules in that root.
   */
   static #predecl = undefined
   static ownPredecl() {return this.#predecl ??= new this().add(jnu.Use.decl())}
@@ -151,9 +151,6 @@ function optNs(val) {
 
 // function isOptNsed(val) {return a.isInst(optNs(val), Ns)}
 
-function isOptNsed(val) {
-  return a.isInst(val.optNs(), Ns)
-  // return a.isInst(optNs(val), Ns)
-}
+function isOptNsed(val) {return a.isInst(val.optNs(), Ns)}
 
 function reqOptNsed(val) {return a.req(val, isOptNsed)}

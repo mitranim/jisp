@@ -9,7 +9,7 @@ class MixParentIterManual extends a.DedupMixinCache {
   static make(cls) {
     return class MixParentIterManual extends cls {
       #chi = undefined
-      setChild(val) {return this.#chi = val, this}
+      setChildOpt(val) {return this.#chi = val, this}
       childIter() {return new OptValIter(this.#chi)}
     }
   }
@@ -21,7 +21,7 @@ class MixParentIterGen extends a.DedupMixinCache {
   static make(cls) {
     return class MixParentIterGen extends cls {
       #chi = undefined
-      setChild(val) {return this.#chi = val, this}
+      setChildOpt(val) {return this.#chi = val, this}
 
       *childIter() {
         const val = this.#chi
@@ -52,19 +52,19 @@ class OptValIter extends a.Emp {
 }
 
 t.bench(function bench_parent_single_iter_new_manual() {
-  a.nop(new ParentIterManual().setChild(`some_val`))
+  a.nop(new ParentIterManual().setChildOpt(`some_val`))
 })
 
 t.bench(function bench_parent_single_iter_new_gen() {
-  a.nop(new ParentIterGen().setChild(`some_val`))
+  a.nop(new ParentIterGen().setChildOpt(`some_val`))
 })
 
 t.bench(function bench_parent_single_iter_run_manual() {
-  a.nop([...new ParentIterManual().setChild(`some_val`).childIter()])
+  a.nop([...new ParentIterManual().setChildOpt(`some_val`).childIter()])
 })
 
 t.bench(function bench_parent_single_iter_run_gen() {
-  a.nop([...new ParentIterGen().setChild(`some_val`).childIter()])
+  a.nop([...new ParentIterGen().setChildOpt(`some_val`).childIter()])
 })
 
 if (import.meta.main) ti.flush()

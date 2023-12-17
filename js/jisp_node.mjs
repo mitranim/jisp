@@ -92,9 +92,9 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   /*
   Declares the current node in the lexical namespace of the nearest available
   parent scope. The node must implement method `.pk`, which must return a local
-  identifier string. Method `.pk` must be implemented by `UnqualName` and all
-  node subclasses that represent a named declaration such as `Const` or `Fn`.
-  For other node classes, this should cause an exception.
+  identifier string. Method `.pk` must be implemented by `Ident` and all node
+  subclasses that represent a named declaration such as `Const` or `Fn`. For
+  other node classes, this should cause an exception.
 
   Explicitly uses parent's scope because some macro nodes, such as `Fn`, define
   their own scope. If we didn't use the parent here, the default behavior would
@@ -120,25 +120,12 @@ export class Node extends jscd.MixScoped.goc(jr.MixRef.goc(jcpd.MixCodePrinted.g
   optDecl() {}
   reqDecl() {return this.optDecl() ?? this.throw(`missing declaration at ${a.show(this)}`)}
 
-  macro() {
-    try {
-      const val = this.macroImpl()
-      if (a.isPromise(val)) return this.errFromAsync(val)
-      return val
-    }
-    catch (err) {throw this.toErr(err)}
-  }
-
-  // Override in subclass.
+  macro() {return this.withToErr(this.macroImpl)}
   macroImpl() {throw jm.errMeth(`macroImpl`, this)}
-
-  async errFromAsync(val) {
-    try {return await val}
-    catch (err) {throw this.toErr(err)}
-  }
-
   compile() {throw jm.errMeth(`compile`, this)}
 
+  // FIXME consider moving `MixOwnNodeSourced` from `Node` elsewhere,
+  // and removing this override.
   decompile() {
     return a.laxStr(
       this.optSrcNode()?.decompile() ??

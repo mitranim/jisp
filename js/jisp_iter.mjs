@@ -30,7 +30,13 @@ export class Iter extends a.Emp {
     return this
   }
 
-  // Override in subclass.
+  /*
+  Override in subclass.
+
+  This is called `.more` rather than `.hasMore` because some iterators may want
+  to perform side effects in this method. A non-boolean name indicates this
+  possibility.
+  */
   more() {return false}
 
   // Override in subclass.

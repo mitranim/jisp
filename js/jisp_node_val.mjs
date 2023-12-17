@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
+import * as jni from './jisp_node_ident.mjs'
 
 /*
 Intended for serializing JS values into the AST. This is particularly useful
@@ -60,7 +60,7 @@ export class Val extends jv.MixOwnValued.goc(jn.Node) {
       if (first) first = false
       else out += `, `
 
-      out += jnun.UnqualName.toValidDictKey(key)
+      out += jni.Ident.toValidDictKey(key)
       out += `: `
       out += this.compile(node, val[key])
     }

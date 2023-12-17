@@ -4,13 +4,23 @@ import * as jv from './jisp_valued.mjs'
 import * as jmo from './jisp_module.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
-import * as jnun from './jisp_node_unqual_name.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
 compile-time evaluation.
 
-FIXME move to prelude.
+FIXME add to prelude.
+
+FIXME support optional compile-time importing, controlled by additional
+configuration property on `Conf.main`. When enabled, causes `Import` to import
+target module at compile time and validate that all referenced identifiers are
+actually exported by target module.
+
+FIXME support "star" imports. They should cause `Import` to import target module
+at compile time regardless of `Conf.main` configuration, in order to obtain
+knowledge of exported identifiers, which allows us to resolve unqualified
+names.
 */
 export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
   static getSrcName() {return `import`}
@@ -18,8 +28,8 @@ export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
 
   pk() {return a.pk(this.reqDest())}
   reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
-  optDest() {return this.optSrcInstAt(2, jnun.UnqualName)}
-  reqDest() {return this.reqSrcInstAt(2, jnun.UnqualName)}
+  optDest() {return this.optSrcInstAt(2, jniu.IdentUnqual)}
+  reqDest() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
 
   macroImpl() {
     if (this.isExpression()) {
@@ -40,12 +50,10 @@ export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
   }
 
   compileExpression() {
-    const prn = this.reqCodePrinter()
-    return `import(${prn.compile(this.reqAddr())})`
+    return `import(` + a.reqStr(this.reqAddr().compile()) + `)`
   }
 
   compileStatement() {
-    const prn = this.reqCodePrinter()
     const name = this.optDest()
 
     /*
@@ -55,7 +63,26 @@ export class Import extends jv.MixOwnValued.goc(jnm.Macro) {
     */
     const addr = JSON.stringify(a.reqStr(this.reqAddr().reqVal()))
 
-    if (name) return `import * as ${prn.compile(name)} from ${addr}`
-    return `import ${addr}`
+    if (name) return `import * as ${a.reqStr(name.compile())} from ${a.reqStr(addr)}`
+    return `import ${a.reqStr(addr)}`
   }
 }
+
+import * as jd from './jisp_decl.mjs'
+
+/*
+FIXME:
+
+  * Created by `Import` when target module is actually imported at compile time.
+    * When target module is not imported at compile time, use a more basic decl
+      class that doesn't support NS-like features.
+  * When `Import` is in named form, add to lex NS under that name.
+  * When `Import` is in star form, add to lex NS as mixin.
+  * This must refer to evaluated JS module object.
+  * This must behave kinda as a namespace.
+    * No declarations are available. We use normal JS runtime inspection on
+      evaluated module object.
+  * Should probably share a base class with `UseDecl`.
+  * Unlike `UseDecl`, this doesn't force node replacement during macroing.
+*/
+class ImportDecl extends jd.Decl {}
