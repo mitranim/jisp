@@ -4,9 +4,16 @@ import * as jn from './jisp_node.mjs'
 import * as jco from './jisp_call_opt.mjs'
 import * as jd from './jisp_decl.mjs'
 
-// Common superclass for predeclared-identifier classes and macro classes.
-// TODO better name.
-// FIXME consolidate with `Predecl`.
+/*
+Common superclass for predeclared-identifier classes and macro classes.
+
+TODO better name.
+
+FIXME consolidate with `Predecl`.
+
+FIXME simplify due to removal of `CallOpt`. Consolidate with how the prelude
+is used by `Use` / `Ident` / `IdentAccess`, and other similar cases.
+*/
 export class Predef extends jn.Node {
   static getSrcName() {throw jm.errMeth(`getSrcName`, this)}
   getSrcName() {return this.constructor.getSrcName()}
