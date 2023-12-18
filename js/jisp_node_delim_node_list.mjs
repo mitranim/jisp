@@ -1,6 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
-import * as jco from './jisp_call_opt.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
@@ -67,33 +66,15 @@ export class DelimNodeList extends jnnl.NodeList {
     return this.macroFrom(0)
   }
 
-  /*
-  FIXME:
-
-    * Use `this.reqEveryChildNotCosmetic()`.
-    * Simplify.
-
-  FIXME:
-
-    * Use `.optFirstChild()` and `.rest()` (???) instead of searching for meaning.
-    * Head is required. Exception when empty.
-  */
   compile() {
-    const prn = this.reqCodePrinter()
-    const src = this.childArr()
+    const src = a.filter(this.childArr(), jm.isNotCosmetic)
+    if (!src.length) {
+      throw this.err(`unable to usefully compile empty node list ${a.show(this)}`)
+    }
 
-    const ind = src.findIndex(jm.isNotCosmetic)
-    if (!(ind >= 0)) return prn.compileDense(src)
-
-    const style = src[ind].asOnlyInst(jni.Ident)?.optDecl()?.ownCallSyntax() || jco.CallSyntax.call
-
-    // Reslicing is suboptimal but probably not our bottleneck.
-    const pre = src.slice(0, ind + 1)
-    const suf = src.slice(ind + 1)
-    const call = prn.compileDense(pre) + prn.compileParensCommaMultiLine(suf)
-
-    if (style === jco.CallSyntax.call) return call
-    if (style === jco.CallSyntax.new) return `new ` + call
-    throw this.err(jco.CallSyntax.msgUnrec(style))
+    return (
+      a.reqStr(a.head(src).compile()) +
+      a.reqStr(this.reqCodePrinter().compileParensCommaMultiLine(a.tail(src)))
+    )
   }
 }

@@ -22,7 +22,9 @@ TODO:
 
 FIXME:
 
-  * Forbid as expression. Must be statement.
+  * Support both named and star forms.
+  * In named form, add itself to ancestral `NsLex`.
+  * In star form, add own `NsLive` to mixins of ancestral `NsLex`.
 */
 export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
   pk() {return a.pk(this.reqDestName())}
@@ -59,17 +61,16 @@ export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
   // FIXME: also support anonymous form which imports the target purely for side
   // effects.
   macroImpl() {
+    this.reqStatement()
+
     if (!IS_STAR_IMPORT_SUPPORTED) {
       this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
-      // FIXME: throw exception directly at offending node.
       this.reqAddr()
-      // FIXME: throw exception directly at offending node.
       this.reqDestName()
       return this.macroName()
     }
 
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
-    // FIXME: throw exception directly at offending node.
     this.reqAddr()
     if (this.destStr()) return this.macroAll()
     return this.macroName()
@@ -87,9 +88,11 @@ export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
 
   async macroAll() {
     await this.import()
+
     // FIXME NYI. This node should initialize and store `NsLive` referring to
     // imported module.
     this.reqNsLex().addMixin(this.initNsLive())
+
     return undefined
   }
 
@@ -99,29 +102,6 @@ export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
     return this
   }
 
-  // Allows this object to be a namespace mixin. Required for `.macroAll`.
-  optNs() {return this.reqVal().optNs()}
-
-  // Override for `MixRef`. Returns AST node responsible for this declaration.
-  ownDeref() {return this.reqVal()}
-
   // Return nil. This node is intended only for compile-time imports.
   compile() {}
 }
-
-import * as jd from './jisp_decl.mjs'
-
-/*
-FIXME:
-
-  * Created by `Use`.
-  * When `Use` is in named form, add to lex NS under that name.
-  * When `Use` is in star form, add to lex NS as mixin.
-  * This must refer to evaluated JS module object.
-  * This must behave kinda as a namespace.
-    * No declarations are available. We use normal JS runtime inspection on
-      evaluated module object.
-  * Should probably share a base class with `ImportDecl`.
-  * Unlike `ImportDecl`, this forces node replacement during macroing.
-*/
-class UseDecl extends jd.Decl {}

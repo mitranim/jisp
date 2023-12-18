@@ -1,5 +1,4 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jco from './jisp_call_opt.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 

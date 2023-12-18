@@ -33,8 +33,20 @@ export class Import extends jv.MixOwnValued.goc(jnlm.ListMacro) {
     else {
       this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
       this.reqAddr()
+
+      /*
+      FIXME:
+
+        * When `Import` is in named form, add to lex NS under that name.
+        * When `Import` is in star form, add to lex NS as mixin.
+          * Must use something similar to `NsLive`, but which is considered NOT
+            live.
+          * No declarations are available. We use normal JS runtime inspection
+            on evaluated module object.
+      */
       this.declareLex()
     }
+
     return this
   }
 
@@ -61,22 +73,3 @@ export class Import extends jv.MixOwnValued.goc(jnlm.ListMacro) {
     return `import ${a.reqStr(addr)}`
   }
 }
-
-import * as jd from './jisp_decl.mjs'
-
-/*
-FIXME:
-
-  * Created by `Import` when target module is actually imported at compile time.
-    * When target module is not imported at compile time, use a more basic decl
-      class that doesn't support NS-like features.
-  * When `Import` is in named form, add to lex NS under that name.
-  * When `Import` is in star form, add to lex NS as mixin.
-  * This must refer to evaluated JS module object.
-  * This must behave kinda as a namespace.
-    * No declarations are available. We use normal JS runtime inspection on
-      evaluated module object.
-  * Should probably share a base class with `UseDecl`.
-  * Unlike `UseDecl`, this doesn't force node replacement during macroing.
-*/
-class ImportDecl extends jd.Decl {}

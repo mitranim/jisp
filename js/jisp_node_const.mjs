@@ -10,9 +10,6 @@ export class Const extends jnlm.ListMacro {
   reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqSrcAt(2)}
 
-  // Override for `MixRef`.
-  ownDeref() {return this.reqVal()}
-
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
     this.declareLex()

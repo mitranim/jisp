@@ -4,13 +4,9 @@ import * as jv from './jisp_valued.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
 /*
-Intended for serializing JS values into the AST. This is particularly useful
-when calling macros with `CallOut.val`, or more generally, whenever
-compile-time evaluation produces a value that must be eventually serialized
-into the compiled code as a JS value.
-
-FIXME consider if this should be a superclass of all `Node` subclasses
-compatible with compile-time evaluation.
+Intended for serializing JS values into the AST. May be useful for implementing
+macros where input and output are JS values rather than AST nodes. Currently
+unused, but this may change in the future.
 */
 export class Val extends jv.MixOwnValued.goc(jn.Node) {
   compile() {return this.constructor.compile(this, this.ownVal())}

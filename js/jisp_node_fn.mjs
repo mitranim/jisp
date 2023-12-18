@@ -3,6 +3,7 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
+import * as jnt from './jisp_node_this.mjs'
 
 export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   pk() {return this.reqIdent().reqName()}
@@ -16,19 +17,10 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   makeNsMixin() {
     const tar = a.npo()
     tar.ret = jnr.Ret
+    tar.this = jnt.This
     return new jns.NsLive().setVal(tar)
   }
 
-  /*
-  FIXME:
-
-    * When declaring a static method, add `this` to `Fn`'s scope.
-      Must be `NodeDecl` referring to enclosing `Class`.
-      Differentiate instance and static scopes.
-      Possible approach: when nearest scope belongs to `Class`.
-
-    * Declare static when possible.
-  */
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountMin(3)
     this.declareLex()

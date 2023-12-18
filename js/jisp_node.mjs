@@ -44,9 +44,9 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jnsl.MixNsLexed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
+export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
   jnsd.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
-))) {
+)) {
   // For `MixOwnSpanned`.
   get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}

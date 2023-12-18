@@ -13,6 +13,14 @@ Usage:
     * Mismatching name and value = undefined behavior.
 
   * Uses only own fields, ignores inherited fields.
+
+Usage example:
+
+  export class SomeEnum extends jen.Enum {
+    static one = `one`
+    static two = `two`
+    static {this.validate()}
+  }
 */
 export class Enum extends a.Emp {
   constructor() {
