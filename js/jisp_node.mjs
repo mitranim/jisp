@@ -155,38 +155,76 @@ export class Node extends jnsl.MixNsLexed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
   Indicates the base class for the input that must be replaced by this node.
   Used by `DelimNodeList..macroImpl`.
   */
-  static replacementCls() {return Node}
+  static macroSrcCls() {return Node}
 
-  static macroNode(node) {
-    while (node) {
-      const next = node.macro()
-      if (node === next) break
-      node = this.replace(node, next)
-    }
-    return node
+  /*
+  TODO: implement similar fancy dynamic switching in `NodeList`, to make it
+  possible to use async macros anywhere without slowing down absolutely
+  everything.
+  */
+  static macroNode(prev) {
+    if (!a.optInst(prev, Node)) return undefined
+    const next = prev.macro()
+    if (a.isPromise(next)) return this.macroNodeAsyncWith(prev, next)
+    return this.macroNodeWith(prev, next)
   }
 
-  static async macroNodeAsync(node) {
-    while (node) {
-      let next = node.macro()
-      if (a.isPromise(next)) next = await next
-      if (node === next) break
-      node = this.replace(node, next)
-    }
-    return node
+  static macroNodeWith(node, next) {
+    a.reqInst(node, Node)
+    if (a.isNil(next)) return undefined
+
+    // This convention is used by "nop" implementations of the `.macro` method.
+    // For example, this is used by all nodes representing primitive literals.
+    if (next === node) return node
+
+    return this.macroNode(this.replace(node, next))
   }
 
-  static replace(src, tar) {
-    if (a.isNil(tar)) return undefined
+  // static macroNodeSync(prev) {
+  //   if (!a.optInst(prev, Node)) return undefined
+  //   const next = prev.macro()
+  //   return this.macroNodeSyncWith(prev, next)
+  // }
 
-    tar.setParent(src.reqParent())
-    tar.setSrcNode(src)
+  // static macroNodeSyncWith(node, next) {
+  //   a.reqInst(node, Node)
+  //   if (a.isNil(next)) return undefined
+  //   if (next === node) return node
+  //   return this.macroNodeSync(this.replace(node, next))
+  // }
+
+  static async macroNodeAsync(prev) {
+    if (!a.optInst(prev, Node)) return undefined
+    let next = prev.macro()
+    if (a.isPromise(next)) next = await next
+    return this.macroNodeAsyncWith(prev, next)
+  }
+
+  static async macroNodeAsyncWith(node, next) {
+    a.reqInst(node, Node)
+    if (a.isPromise(next)) next = await next
+    if (a.isNil(next)) return undefined
+    if (next === node) return node
+    return this.macroNodeAsync(this.replace(node, next))
+  }
+
+  static replace(prev, next) {
+    a.reqInst(prev, Node)
+    prev.optInst(next, Node)
+
+    if (!next) return undefined
+    if (prev === next) {
+      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in the compiler or macros`)
+    }
+
+    next.setParent(prev.reqParent())
+    next.setSrcNode(prev)
 
     // FIXME drop this and update the comment on `Node` about child-to-parent
     // relations.
-    src.setParent(tar)
+    prev.setParent(next)
 
-    return tar
+    return next
   }
 
   [ji.symInsp](tar) {return tar.funs(this.optSpan)}

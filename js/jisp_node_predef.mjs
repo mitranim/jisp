@@ -4,6 +4,8 @@ import * as jn from './jisp_node.mjs'
 import * as jco from './jisp_call_opt.mjs'
 import * as jd from './jisp_decl.mjs'
 
+// FIXME remove along with declarations.
+
 /*
 Common superclass for predeclared-identifier classes and macro classes.
 

@@ -14,6 +14,8 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
     )
   }
 
+  macroImpl() {return this.macroFrom(0)}
+
   macroFrom(ind) {
     this.req(ind, a.isNat)
     while (ind < this.childCount()) this.macroAt(ind++)

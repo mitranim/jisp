@@ -18,7 +18,7 @@ export const BENCH = cli.boolOpt(`bench`)
 export const VERB = cli.boolOpt(`verb`)
 export const RUN = cli.get(`run`)
 
-if (VERB) t.conf.testRep = t.conf.benchRep
+if (VERB) t.conf.testRep = t.ConsoleAvgReporter.with(t.tsMilli)
 
 if (TEST) t.conf.setTestFilter(RUN)
 else t.conf.setTestFilter(/(?!)/)

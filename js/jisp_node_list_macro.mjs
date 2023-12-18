@@ -10,10 +10,10 @@ referencing identifier.
 */
 export class ListMacro extends jnm.Macro {
   /*
-  Override for `Node.replacementCls`. Indicates the base class for the input
+  Override for `Node.macroSrcCls`. Indicates the base class for the input
   that must be replaced by this node. Used by `DelimNodeList..macroImpl`.
   */
-  static replacementCls() {return jnnl.NodeList}
+  static macroSrcCls() {return jnnl.NodeList}
 
   reqSrcList() {return this.reqSrcInst(jnnl.NodeList)}
 
@@ -24,7 +24,7 @@ export class ListMacro extends jnm.Macro {
     const len = src.childCount()
 
     if (!(ind < len)) {
-      throw this.err(`macro ${a.show(this.getSrcName())} requires at least ${ind+1} arguments, found ${len}`)
+      throw this.err(`macro ${a.show(this)} requires at least ${ind+1} arguments, found ${len}`)
     }
 
     return src.reqChildAt(ind)
@@ -38,7 +38,7 @@ export class ListMacro extends jnm.Macro {
   reqSrcInstAt(ind, ...cls) {
     const out = this.reqSrcAt(ind)
     if (isInstSome(out, ...cls)) return out
-    throw out.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
+    throw out.err(`macro ${a.show(this)} requires the argument at index ${ind} to be an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
   }
 
   // FIXME inconsistent with `a.opt`. Behaves like `a.only`.
@@ -47,7 +47,7 @@ export class ListMacro extends jnm.Macro {
     const out = this.optSrcAt(ind)
     if (a.isNil(out)) return undefined
     if (isInstSome(out, ...cls)) return out
-    throw this.err(`macro ${a.show(this.getSrcName())} requires the argument at index ${ind} to be either missing or an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
+    throw this.err(`macro ${a.show(this)} requires the argument at index ${ind} to be either missing or an instance of one of the following classes: ${a.show(cls)}, found ${a.show(out)}`)
   }
 
   srcNodesFrom(ind) {return this.reqSrcList().optChildSlice(ind)}

@@ -61,7 +61,7 @@ export class DelimNodeList extends jnnl.NodeList {
     const head = this.optFirstChild()
     const live = jm.optResolveLiveValCall(head)
 
-    if (a.isSubCls(live, jn.Node) && a.isSubCls(live.replacementCls(), jnnl.NodeList)) {
+    if (a.isSubCls(live, jn.Node) && a.isSubCls(live.macroSrcCls(), jnnl.NodeList)) {
       return this.macroWithLiveVal(live)
     }
     return this.macroFrom(0)

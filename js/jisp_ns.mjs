@@ -1,16 +1,11 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jc from './jisp_conf.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
-import * as jch from './jisp_child.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jmi from './jisp_mixable.mjs'
-import * as jp from './jisp_parent.mjs'
-import * as jd from './jisp_decl.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
-import * as jnm from './jisp_node_macro.mjs'
 
 /*
 Base class for all namespaces.

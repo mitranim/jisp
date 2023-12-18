@@ -25,9 +25,6 @@ FIXME:
   * Forbid as expression. Must be statement.
 */
 export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
-  static getSrcName() {return `use`}
-  static getTarName() {return this.getSrcName()}
-
   pk() {return a.pk(this.reqDestName())}
 
   // FIXME unfuck. The evaluated target must be a "compiled" module or otherwise
@@ -47,7 +44,7 @@ export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
     const str = src.ownVal()
     const exp = this.strAll()
     if (str !== exp) {
-      throw this.err(`macro ${a.show(this.getSrcName())} requires argument at index 2 to be either a name or a string containing exactly ${a.show(exp)}, found invalid string ${a.show(str)}`)
+      throw this.err(`macro ${a.show(this)} requires argument at index 2 to be either a name or a string containing exactly ${a.show(exp)}, found invalid string ${a.show(str)}`)
     }
     return src
   }

@@ -8,7 +8,6 @@ import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeList)) {
-  // FIXME consider using `Url`.
   #url = undefined
   setUrl(val) {return this.#url = this.req(val, jm.isCanonicalModuleUrlStr), this}
   ownUrl() {return this.#url}
@@ -47,18 +46,17 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
   }
 
   /*
-  Async version of `NodeList..macroImpl` without support for "list call" syntax.
-  This let us support async macros in module root, such as `Use`, which has to
-  be asynchronous because it uses native JS imports, which return promises.
-  Other macro implementations must be synchronous for simplicity and speed.
+  Async override of `NodeList..macroImpl`. This let us support, in module root
+  only, async macros such as `Use`. Import macros have to be asynchronous
+  because of native JS imports, which return promises. Other macros must be
+  synchronous for simplicity and speed.
   */
   async macroImpl() {
-    const tar = this.childArr()
-    let ind = -1
-    while (++ind < tar.length) {
-      let val = this.constructor.macroNodeAsync(tar[ind])
+    let ind = 0
+    while (ind < this.childCount()) {
+      let val = this.constructor.macroNode(this.reqChildAt(ind))
       if (a.isPromise(val)) val = await val
-      tar[ind] = val
+      this.replaceChildAt(ind, val)
     }
     return this
   }

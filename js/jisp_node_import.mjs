@@ -9,8 +9,6 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
 compile-time evaluation.
 
-FIXME add to prelude.
-
 FIXME support optional compile-time importing, controlled by additional
 configuration property on `Conf.main`. When enabled, causes `Import` to import
 target module at compile time and validate that all referenced identifiers are
@@ -22,9 +20,6 @@ knowledge of exported identifiers, which allows us to resolve unqualified
 names.
 */
 export class Import extends jv.MixOwnValued.goc(jnlm.ListMacro) {
-  static getSrcName() {return `import`}
-  static getTarName() {return this.getSrcName()}
-
   pk() {return a.pk(this.reqDest())}
   reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
   optDest() {return this.optSrcInstAt(2, jniu.IdentUnqual)}

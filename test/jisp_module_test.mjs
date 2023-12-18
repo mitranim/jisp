@@ -19,6 +19,8 @@ import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnia from '../js/jisp_node_ident_access.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
+// FIXME rename to `jisp_node_module_test.mjs`
+
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
   const fs = jdft.makeTestFs()
   const mod = new jnm.Module()
