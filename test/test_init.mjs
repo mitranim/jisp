@@ -1,6 +1,7 @@
 import '/Users/m/code/m/js/cli_emptty.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as c from '/Users/m/code/m/js/cli.mjs'
+import * as jc from '../js/jisp_conf.mjs'
 
 /*
 Should be sufficiently large to show any non-overflow stack traces, but also
@@ -8,6 +9,8 @@ sufficiently small to avoid overflowing terminal scrollback buffers in cases
 of stack overflow.
 */
 Error.stackTraceLimit = 1024
+
+jc.conf.setDebug(true)
 
 export const cli = c.Flag.os()
 export const TEST = cli.boolOpt(`test`)

@@ -18,7 +18,7 @@ export class MixParent extends a.DedupMixinCache {
       }
 
       reqValidChild(val) {
-        if (jc.Conf.main.DEBUG) return this.reqChildParentMatch(val)
+        if (jc.conf.getDebug()) return this.reqChildParentMatch(val)
         return val
       }
 

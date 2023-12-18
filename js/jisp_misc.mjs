@@ -174,14 +174,14 @@ export function isStrictRelStr(val) {
 }
 
 // export function isLangImportPath(val) {
-//   return a.isStr(val) && val.startsWith(jc.Conf.main.SCHEME)
+//   return a.isStr(val) && val.startsWith(jc.conf.getUrlScheme())
 // }
 
 // FIXME move to `Root` for better assertions.
 export function toCompFileUrl(val) {
   return p.posix.join(
     p.posix.dir(import.meta.url),
-    unparametrize(a.req(val, isStrictRelStr)) + jc.Conf.main.EXT_NATIVE,
+    unparametrize(a.req(val, isStrictRelStr)) + jc.conf.getFileExtOut(),
   )
 }
 

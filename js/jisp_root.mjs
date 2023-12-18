@@ -105,8 +105,8 @@ export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     key = jm.unparametrize(key)
     this.req(modUrl, jm.isCanonicalModuleUrlStr)
 
-    if (key.startsWith(jc.Conf.main.SCHEME)) {
-      return this.importComp(key.slice(jc.Conf.main.SCHEME.length))
+    if (key.startsWith(jc.conf.getUrlScheme())) {
+      return this.importComp(key.slice(jc.conf.getUrlScheme().length))
     }
 
     if (!jm.hasScheme(key)) {
@@ -116,7 +116,7 @@ export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     }
 
     // this.req(key, jm.isCanonicalModuleUrlStr)
-    if (key.endsWith(jc.Conf.main.EXT_LANG)) return this.importLang(key)
+    if (key.endsWith(jc.conf.getFileExtSrc())) return this.importLang(key)
     return this.importNative(key)
   }
 
@@ -143,9 +143,9 @@ export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     header file and calculated from both the requested file and all its
     dependencies, which requires a module dependency graph.
     */
-    if (jc.Conf.main.DISK_CACHING) {
-      const nativeUrl = new URL(a.reqStr(key) + `.native` + jc.Conf.main.EXT_NATIVE)
-      const headerUrl = new URL(a.reqStr(key) + `.header` + jc.Conf.main.EXT_NATIVE)
+    if (jc.conf.getFsCaching()) {
+      const nativeUrl = new URL(a.reqStr(key) + `.native` + jc.conf.getFileExtOut())
+      const headerUrl = new URL(a.reqStr(key) + `.header` + jc.conf.getFileExtOut())
 
       // FIXME skip on 404.
       const [native, header] = await Promise.all([

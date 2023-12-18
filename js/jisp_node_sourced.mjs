@@ -18,7 +18,7 @@ export class MixOwnNodeSourced extends a.DedupMixinCache {
 
       setSrcNode(val) {
         a.reqInst(val, jn.Node)
-        if (jc.Conf.main.DEBUG) this.validSrcNode(val)
+        if (jc.conf.getDebug()) this.validSrcNode(val)
         this.#srcNode = val
         return this
       }

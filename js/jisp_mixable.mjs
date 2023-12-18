@@ -28,9 +28,8 @@ export class MixMixable extends a.DedupMixinCache {
 
       // Override in subclass.
       // Known limitation: shallow, doesn't check mixins of mixins.
-      validMixin(val) {
-        if (!jc.Conf.main.DEBUG) return val
-
+      reqValidMixin(val) {
+        if (!jc.conf.getDebug()) return val
         if (val === this) {
           throw this.err(`${a.show(this)} is not allowed to be its own mixin`)
         }

@@ -17,6 +17,7 @@ of a module object, class, class instance, etc.).
 export class Decl extends (
   jr.MixRef.goc(jv.MixValued.goc(jnnd.MixOwnNamed.goc(jch.MixChild.goc(jco.CallOpt))))
 ) {
+  // FIXME rename to "references".
   #uses = undefined
   ownUses() {return this.#uses ??= new jniu.IdentUnqualSet()}
   addUse(val) {return this.ownUses().add(val), this}

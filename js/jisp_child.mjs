@@ -17,7 +17,7 @@ export class MixChild extends a.DedupMixinCache {
       optParent() {return this.#parent}
 
       setParent(val) {
-        if (jc.Conf.main.DEBUG) this.reqValidParent(val)
+        if (jc.conf.getDebug()) this.reqValidParent(val)
         this.#parent = val
         return this
       }

@@ -65,7 +65,7 @@ export class MixErrer extends a.DedupMixinCache {
 
       // TODO better naming.
       async withToErrAsync(val) {
-        if (jc.Conf.main.DEBUG) this.req(val, a.isPromise)
+        if (jc.conf.getDebug()) this.req(val, a.isPromise)
         try {return await val}
         catch (err) {throw this.toErr(err)}
       }
