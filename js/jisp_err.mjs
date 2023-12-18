@@ -47,6 +47,10 @@ export class MixErrer extends a.DedupMixinCache {
       // Shortcut for "downcasting" the instance into one of its superclasses.
       asReqInst(cls) {return this.reqInst(this, cls)}
 
+      // Technically unnecessary because this doesn't produce exceptions on
+      // class mismatch. Provided for API consistency.
+      asOnlyInst(cls) {return a.onlyInst(this, cls)}
+
       // TODO better naming.
       withToErr(method) {
         try {

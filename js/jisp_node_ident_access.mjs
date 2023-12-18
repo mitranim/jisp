@@ -2,7 +2,6 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
-import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
 /*
@@ -66,50 +65,27 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     return spanOwn
   }
 
-  /*
-  FIXME:
+  // Override for `Ident..optResolveLiveValSrc`.
+  // Should also modify the behavior of `.optResolveLiveVal`.
+  optResolveLiveValSrc() {
+    return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optResolveLiveVal()
+  }
 
-    * The source expression may resolve to a declaration.
-
-    * The source declaration may provide no further information.
-
-    * The source declaration may dereference to a "live value". We may inspect
-      that value to determine if the given identifier is present as a property.
-      We may also obtain a property value for the purpose of compile-time
-      execution, node replacement, macroing. This must happen for declarations
-      created by `Use`.
-
-    * The source declaration may provide a way to validate presence of
-      identifiers / properties / fields without obtaining live values, whether
-      or not it's secretly backed by a live value. This would be a primitive
-      form of static analysis. In a more general case, it could provide
-      comprehensive type information for the value that the source expression
-      would have at runtime, but which does not exist at compile time. This may
-      happen for declarations created by `Import`.
-
-  FIXME (outdated):
-
-    * Each name may resolve to compile-time val.
-      * Unqual name may resolve to native module val.
-      * Qual name may resolve to something inside module.
-      * We may evaluate this at compile time for sanity checking.
-      * Even when declarations are unavailable, or especially when declarations
-        are unavailable, we may dynamically inspect the _runtime_ values of
-        objects addressed by a path at _compile time_, and sanity-check them.
-  */
-  optDecl() {
-    // const name = this.optName()
-    // if (!name) return undefined
-    // return this.reqFirstChild().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolve(name)
+  // Override for `Ident..reqResolveLiveValSrc`.
+  // Should also modify the behavior of `.reqResolveLiveVal`.
+  reqResolveLiveValSrc() {
+    return this.reqFirstChild().asReqInst(jni.Ident).reqResolveLiveVal()
   }
 
   macroImpl() {
-    // FIXME revise.
-    const decl = this.optDecl()
-    if (decl?.isMacroBare()) return decl.macroNode(this)
+    const chi = this.reqFirstChild()
+    const val = jm.optResolveLiveValCall(chi)
 
-    this.setChild(jn.Node.macroNode(this.reqFirstChild()))
+    if (a.isSome(val)) {
+      return this.macroWithLiveVal(this.reqDerefLiveVal(val))
+    }
 
+    this.setChild(this.constructor.macroNode(this.reqFirstChild()))
     return this
   }
 

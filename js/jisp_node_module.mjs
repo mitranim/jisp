@@ -3,20 +3,10 @@ import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as je from './jisp_err.mjs'
 import * as jns from './jisp_ns.mjs'
-import * as jn from './jisp_node.mjs'
 import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
-/*
-FIXME rework: split into `SrcModule` and `TarModule`.
-
-Various names:
-
-  * `SrcModule`
-  * `AstModule`
-  * `ModuleNode`
-*/
 export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeList)) {
   // FIXME consider using `Url`.
   #url = undefined
@@ -47,6 +37,7 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
     return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())
   }
 
+  // Used by `.parse`.
   get Lexer() {return jl.Lexer}
 
   parse(src) {
@@ -65,16 +56,12 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
     const tar = this.childArr()
     let ind = -1
     while (++ind < tar.length) {
-      let val = this.macroNodeAsync(tar[ind])
+      let val = this.constructor.macroNodeAsync(tar[ind])
       if (a.isPromise(val)) val = await val
       tar[ind] = val
     }
     return this
   }
-
-  get Node() {return jn.Node}
-  macroNode(val) {return this.Node.macroNode(val)}
-  macroNodeAsync(val) {return this.Node.macroNodeAsync(val)}
 
   compile() {return this.compileBody()}
   compileBody() {return this.reqCodePrinter().compileStatements(this.childIter())}

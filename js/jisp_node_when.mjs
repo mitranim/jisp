@@ -1,4 +1,4 @@
-import * as jnm from './jisp_node_macro.mjs'
+import * as jnlm from './jisp_node_list_macro.mjs'
 
 // Placeholder, FIXME implement.
-export class When extends jnm.Macro {}
+export class When extends jnlm.ListMacro {}

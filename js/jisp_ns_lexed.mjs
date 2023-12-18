@@ -8,12 +8,12 @@ namely by `Node`.
 Placed in its own file to avoid cyclic dependencies leading to exceptions during
 module evaluation.
 
-Also see `MixOwnNsLexed` in a different file.
+Also see `MixOwnNsLexed`.
 */
 export class MixNsLexed extends a.DedupMixinCache {
   static make(cls) {
     return class MixNsLexed extends jch.MixChild.goc(cls) {
-      optNsLex() {return this.optAncProcure(ownNsLexCall)}
+      optNsLex() {return this.optAncProcure(jm.ownNsLexCall)}
 
       reqNsLex() {
         return (
@@ -23,8 +23,4 @@ export class MixNsLexed extends a.DedupMixinCache {
       }
     }
   }
-}
-
-export function ownNsLexCall(src) {
-  return a.isObj(src) && `ownNsLex` in src ? src.ownNsLex() : undefined
 }

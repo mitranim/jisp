@@ -1,13 +1,11 @@
-import * as jnm from './jisp_node_macro.mjs'
+import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 /*
 FIXME consider:
   * `optRef` or `ownRef` that returns `IdentUnqual`.
 */
-export class Const extends jnm.Macro {
-  static getSrcName() {return `const`}
-
+export class Const extends jnlm.ListMacro {
   pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqSrcAt(2)}

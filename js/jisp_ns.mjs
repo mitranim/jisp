@@ -49,6 +49,12 @@ at compile time. Non-live namespaces describe an eventual runtime state, and do
 not participate in immediate compile-time evaluation. Live namespaces refer to
 live values intended for immediate compile-time evaluation / node replacement,
 also known as macroexpansion or macroing.
+
+In the future, we may consider adding another namespace variant used for
+validating imports (for class `Import`), which would contain information
+about exports provided by the given module, without providing access to
+live values. In a more general case, it could provide comprehensive type
+information, but type analysis is out of scope of this project, for now.
 */
 export class NsBase extends je.MixErrer.goc(a.Emp) {
   isLive() {return false}
@@ -58,11 +64,13 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
     return false
   }
 
+  // TODO consider renaming to `.optGet` for consistency with most of our interfaces.
   getOpt(key) {
     this.req(key, a.isValidStr)
     return false
   }
 
+  // TODO consider renaming to `.reqGet` for consistency with most of our interfaces.
   getReq(key) {
     if (!this.has(key)) {
       throw this.err(`missing declaration of ${a.show(key)} in namespace ${a.show(this)}`)
@@ -104,16 +112,9 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
   // Override for `MixOwnValued`.
   setVal(val) {return super.setVal(this.req(val, a.isObj))}
 
-  // // Extension for `MixOwnValued`.
-  // mutVal(src) {return a.assign(this.initVal(), src), this}
-
-  // // Extension for `MixOwnValued`.
-  // initVal() {return this.optVal() ? this : this.setVal(a.npo())}
-
   has(key) {
     this.req(key, a.isValidStr)
-    const tar = this.optVal()
-    return a.isObj(tar) && key in tar
+    return a.hasIn(this.optVal(), key)
   }
 
   getOpt(key) {
@@ -129,7 +130,7 @@ Short for "namespace lexical". Unlike `NsBase` and `NsLive`, this namespace
 is mutable.
 
 TODO: consider also storing the node that declares this namespace, and using its
-code span in error messages. Relevant old code:
+code span in error messages. Relevant sample of removed code:
 
   msgRedundant(key) {
     return `redundant redeclaration of ${a.show(key)}${a.reqStr(this.parentContext())}`
@@ -152,6 +153,8 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
     return this.#decls?.get(key)
   }
 
+  // TODO: would be ideal if these error messages referenced the code where this
+  // namespace was originally declared. See comment above.
   addNode(node) {
     this.reqInst(node, jn.Node)
 

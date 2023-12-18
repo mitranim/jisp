@@ -56,13 +56,23 @@ export class DelimNodeList extends jnnl.NodeList {
   }
 
   macroImpl() {
-    this.macroAt(0)
-    const decl = this.optFirstChild()?.optDecl()
-    if (decl?.isMacro()) return decl.macroNode(this)
-    return this.macroFrom(1)
+    this.reqEveryChildNotCosmetic()
+
+    const head = this.optFirstChild()
+    const live = jm.optResolveLiveValCall(head)
+
+    if (a.isSubCls(live, jn.Node) && a.isSubCls(live.replacementCls(), jnnl.NodeList)) {
+      return this.macroWithLiveVal(live)
+    }
+    return this.macroFrom(0)
   }
 
   /*
+  FIXME:
+
+    * Use `this.reqEveryChildNotCosmetic()`.
+    * Simplify.
+
   FIXME:
 
     * Use `.optFirstChild()` and `.rest()` (???) instead of searching for meaning.
@@ -75,7 +85,7 @@ export class DelimNodeList extends jnnl.NodeList {
     const ind = src.findIndex(jm.isNotCosmetic)
     if (!(ind >= 0)) return prn.compileDense(src)
 
-    const style = a.onlyInst(src[ind], jni.Ident)?.optDecl()?.ownCallSyntax() || jco.CallSyntax.call
+    const style = src[ind].asOnlyInst(jni.Ident)?.optDecl()?.ownCallSyntax() || jco.CallSyntax.call
 
     // Reslicing is suboptimal but probably not our bottleneck.
     const pre = src.slice(0, ind + 1)

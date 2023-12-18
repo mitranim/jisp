@@ -83,7 +83,7 @@ export class MixChild extends a.DedupMixinCache {
         let tar = this
         while (tar) {
           const val = fun(tar)
-          if (val) return val
+          if (a.isSome(val)) return val
           tar = optParentCall(tar)
         }
         return undefined

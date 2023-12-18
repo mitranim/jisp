@@ -1,10 +1,10 @@
 import * as jns from './jisp_ns.mjs'
-import * as jnm from './jisp_node_macro.mjs'
+import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
 
-export class Fn extends jns.MixOwnNsLexed.goc(jnm.Macro) {
+export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   static getSrcName() {return `fn`}
 
   pk() {return this.reqIdent().reqName()}

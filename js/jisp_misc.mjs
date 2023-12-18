@@ -15,6 +15,16 @@ export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.ren
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
 
+// Placed in generic utils to minimize cyclic dependencies between higher-level modules.
+export function ownNsLexCall(src) {
+  return a.isObj(src) && `ownNsLex` in src ? src.ownNsLex() : undefined
+}
+
+// Placed in generic utils to minimize cyclic dependencies between higher-level modules.
+export function optResolveLiveValCall(src) {
+  return a.isObj(src) && `optResolveLiveVal` in src ? src.optResolveLiveVal() : undefined
+}
+
 // Implemented by `Module`.
 export function isImporter(val) {return a.hasMeth(val, `import`)}
 

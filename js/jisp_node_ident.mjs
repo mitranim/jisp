@@ -2,7 +2,6 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jnnd from './jisp_named.mjs'
-import * as jnsl from './jisp_ns_lexed.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jnnu from './jisp_node_num.mjs'
@@ -31,55 +30,83 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   // Override for `MixNamed`.
   optName() {return this.decompile()}
 
-  resolveNsOpt() {
+  optResolveNs() {
     const key = this.reqName()
-    return this.optAncProcure(function resolveNsOpt(val) {
-      return jnsl.ownNsLexCall(val)?.resolveOpt(key)
+    return this.optAncProcure(function optResolveNs(val) {
+      return jm.ownNsLexCall(val)?.resolveOpt(key)
     })
   }
 
-  resolveNsReq() {
+  reqResolveNs() {
     return (
-      this.resolveNsOpt() ??
+      this.optResolveNs() ??
       this.throw(`missing declaration of ${a.show(this.optName())} at ${a.show(this)}`)
     )
   }
 
-  macroImpl() {
-    const nsp = this.resolveNsReq()
-    nsp.addRef(this)
-    return this.macroWithNs(nsp)
+  optResolveNsLive() {
+    const val = this.optResolveNs()
+    return val?.isLive() ? val : undefined
   }
 
-  macroWithNs(nsp /* : NsBase */) {
-    if (a.isNil(nsp)) return this
-    if (!nsp.isLive()) return this
+  reqResolveNsLive() {
+    const val = this.reqResolveNs()
+    if (val.isLive()) return val
+    throw this.err(`expected ${a.show(this.optName())} to be declared in live namespace, but declaration was found in non-live namespace ${a.show(val)}`)
+  }
 
+  optResolveLiveValSrc() {return this.optResolveNsLive()?.ownVal()}
+
+  reqResolveLiveValSrc() {
+    const src = this.reqResolveNsLive()
+    const val = src.ownVal()
+    if (a.isSome(val)) return val
+    throw this.err(`expected the namespace declaring ${a.show(this.optName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
+  }
+
+  // optResolveLiveVal() {return this.optResolveNsLive()?.getReq(this.reqName())}
+  optResolveLiveVal() {return this.optDerefLiveVal(this.optResolveLiveValSrc())}
+  reqResolveLiveVal() {return this.reqDerefLiveVal(this.reqResolveLiveValSrc())}
+
+  optDerefLiveVal(src) {
+    if (!a.optObj(src)) return undefined
+
+    const key = this.optName()
+    if (!key || !(key in src)) return undefined
+
+    return src[key]
+  }
+
+  /*
+  Somewhat redundant with `NsLive..getReq`, but usable directly on live vals,
+  without requiring a wrapping namespace, and generates more useful error
+  messages.
+  */
+  reqDerefLiveVal(src) {
     const key = this.reqName()
 
-    // Redundant with `nsp.getReq`, but superior because it generates a
-    // `CodeErr` pointing to the erring code.
-    if (!nsp.has(key)) {
-      throw this.err(`missing declaration of ${a.show(key)} (node ${a.show(this)}) in namespace ${a.show(nsp)}`)
+    if (!a.isObj(src)) {
+      throw this.err(`unable to dereference ${a.show(key)} in invalid live val ${a.show(src)}`)
     }
 
-    return this.macroWithLiveValue(nsp.getReq(key))
+    if (!(key in src)) {
+      throw this.err(`missing property ${a.show(key)} in live val ${a.show(src)}`)
+    }
+
+    const val = src[key]
+    if (a.isNil(val)) {
+      throw this.err(`unexpected nil property ${a.show(key)} in live val ${a.show(src)}`)
+    }
+
+    return val
   }
 
-  macroWithLiveValue(src) {
-    if (!a.isCls(src)) {
-      throw this.err(`expected live value to be a class, found ${a.show(src)}`)
-    }
-
-    if (!a.isSubCls(src, jn.Node)) {
-      throw this.err(`expected live value to be a subclass of ${a.show(jn.Node)}, found ${a.show(src)}`)
-    }
-
-    const val = new src()
-    val.setParent(this.ownParent())
-    val.setSrcNode(this)
-
-    return jn.Node.macroNode(val)
+  // FIXME unfuck inefficiency: involves searching for the declaring namespace twice.
+  macroImpl() {
+    this.reqResolveNs().addRef(this)
+    const val = this.optResolveLiveVal()
+    if (a.isSome(val)) return this.macroWithLiveVal(val)
+    return this
   }
 
   /*
@@ -120,15 +147,6 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
         || (jnnu.Num.isValid(val) && val[0] !== `-`)
       )
     )
-  }
-
-  // FIXME rename, rewrite, and use.
-  // FIXME drop because `CallOpts` are out.
-  reqUsable() {
-    const decl = this.reqDecl()
-    const syn = decl.ownCallStyle()
-    if (syn === CallStyle.bare) return this
-    throw this.err(`unexpected mention of ${a.show(this.decompile())} with the following call opts: ${a.show(decl.callOptStr())}`)
   }
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optName))}

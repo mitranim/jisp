@@ -110,21 +110,52 @@ export class Node extends jnsl.MixNsLexed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
   */
   declareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
-  optDecl() {}
-  reqDecl() {return this.optDecl() ?? this.throw(`missing declaration at ${a.show(this)}`)}
-
   macro() {return this.withToErr(this.macroImpl)}
   macroImpl() {throw jm.errMeth(`macroImpl`, this)}
+
+  /*
+  Should be used by node subclasses which are able to "dereference" to a live
+  value, typically identifiers such as `Ident`.
+  */
+  macroWithLiveVal(src) {
+    if (!a.isCls(src)) {
+      throw this.err(`expected live value to be a class, found ${a.show(src)}`)
+    }
+    if (!a.isSubCls(src, Node)) {
+      throw this.err(`expected live value to be a subclass of ${a.show(Node)}, found ${a.show(src)}`)
+    }
+
+    const val = new src()
+
+    // Partially redundant with `Node..replace`. However, this must be done both
+    // before and after macroing this node. Dedup might not be possible.
+    val.setParent(this.ownParent())
+    val.setSrcNode(this)
+
+    return this.constructor.macroNode(val)
+  }
+
   compile() {throw jm.errMeth(`compile`, this)}
 
   // FIXME consider moving `MixOwnNodeSourced` from `Node` elsewhere,
-  // and removing this override.
+  // and removing this override. However, this may require updates to
+  // `.macroWithLiveVal` and `Node.replace`.
   decompile() {
     return a.laxStr(
       this.optSrcNode()?.decompile() ??
       this.optSpan()?.decompile()
     )
   }
+
+  // Some node types may override this to indicate that they may be safely
+  // elided from the AST when tokenizing or lexing.
+  isCosmetic() {return false}
+
+  /*
+  Indicates the base class for the input that must be replaced by this node.
+  Used by `DelimNodeList..macroImpl`.
+  */
+  static replacementCls() {return Node}
 
   static macroNode(node) {
     while (node) {
@@ -147,20 +178,21 @@ export class Node extends jnsl.MixNsLexed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
 
   static replace(src, tar) {
     if (a.isNil(tar)) return undefined
+
     tar.setParent(src.reqParent())
     tar.setSrcNode(src)
+
+    // FIXME drop this and update the comment on `Node` about child-to-parent
+    // relations.
     src.setParent(tar)
+
     return tar
   }
-
-  // Some node types may override this to indicate that they may be safely
-  // elided from the AST when tokenizing or lexing.
-  isCosmetic() {return false}
 
   [ji.symInsp](tar) {return tar.funs(this.optSpan)}
 
   /*
-  Placeholder. This must be exactly copy-pasted into EVERY subclass and
+  Placeholder. FIXME: this must be exactly copy-pasted into EVERY subclass and
   descendant class. This should be used for "repr" functionality, which should
   be implemented in this base class, and used by the "quote" macro. This
   property must always be "own". Anything else should cause an exception when

@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jv from './jisp_valued.mjs'
-import * as jnma from './jisp_node_macro.mjs'
+import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
@@ -24,7 +24,7 @@ FIXME:
 
   * Forbid as expression. Must be statement.
 */
-export class Use extends jv.MixOwnValued.goc(jnma.Macro) {
+export class Use extends jv.MixOwnValued.goc(jnlm.ListMacro) {
   static getSrcName() {return `use`}
   static getTarName() {return this.getSrcName()}
 
@@ -41,7 +41,7 @@ export class Use extends jv.MixOwnValued.goc(jnma.Macro) {
   reqDestName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
 
   destStr() {
-    const src = a.onlyInst(this.optDest(), jnst.Str)
+    const src = this.optDest()?.asOnlyInst(jnst.Str)
     if (!src) return undefined
 
     const str = src.ownVal()
