@@ -133,6 +133,8 @@ await t.test(async function test_using_prelude() {
   // console.log(`src:`, src)
 })
 
+// FIXME convert to something more useful.
+// For example, convert to root test that verifies module caching.
 await t.test(async function test_Module() {
   return
   const fs = jdft.makeTestFs()

@@ -8,8 +8,8 @@ FIXME consider:
 export class Const extends jnm.Macro {
   static getSrcName() {return `const`}
 
-  pk() {return this.reqName().pk()}
-  reqName() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
+  pk() {return this.reqIdent().reqName()}
+  reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqSrcAt(2)}
 
   // Override for `MixRef`.
@@ -26,7 +26,7 @@ export class Const extends jnm.Macro {
 
   compile() {
     this.reqStatement()
-    const name = this.reqName().compile()
+    const name = this.reqIdent().compile()
     const val = this.reqVal().compile()
     return `const ${a.reqStr(name)} = ${a.reqStr(val)}`
   }

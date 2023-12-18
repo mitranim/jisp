@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
+// FIXME remove. Use `IdentColl` for references.
 export class IdentUnqualSet extends a.TypedSet {
   reqVal(val) {return a.reqInst(val, IdentUnqual)}
 }

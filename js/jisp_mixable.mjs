@@ -13,16 +13,14 @@ export class MixMixable extends a.DedupMixinCache {
   static make(cls) {
     return class MixMixable extends je.MixErrer.goc(cls) {
       #mixins = undefined
-      ownMixins() {return this.#mixins ??= []}
+      ownMixins() {return this.#mixins ??= new Set()}
       optMixins() {return this.#mixins}
-      hasMixins() {return !!this.#mixins?.length}
-      setMixins(val) {return this.#mixins = this.req(val, a.isTrueArr), this}
-      hasMixin(val) {return !!this.#mixins?.includes(val)}
+      hasMixins() {return !!this.#mixins?.size}
+      hasMixin(val) {return !!this.#mixins?.has(val)}
 
       addMixin(val) {
-        this.validMixin(val)
         if (this.hasMixin(val)) return this
-        this.ownMixins().push(val)
+        this.ownMixins().add(this.reqValidMixin(val))
         return this
       }
 

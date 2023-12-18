@@ -28,9 +28,9 @@ export class MixOwnValued extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnValued extends MixValued.goc(cls) {
       #val = undefined
+      setVal(val) {return this.#val = val, this}
       ownVal() {return this.#val}
       optVal() {return this.#val}
-      setVal(val) {return this.#val = val, this}
     }
   }
 }

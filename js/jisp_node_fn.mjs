@@ -1,19 +1,25 @@
-import * as jsc from './jisp_scope.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jnm from './jisp_node_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnr from './jisp_node_ret.mjs'
 
-export class Fn extends jns.MixOwnLexNsed.goc(jnm.Macro) {
+export class Fn extends jns.MixOwnNsLexed.goc(jnm.Macro) {
   static getSrcName() {return `fn`}
 
-  pk() {return this.reqName().pk()}
-  reqName() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
+  pk() {return this.reqIdent().reqName()}
+  reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqSrcInstAt(2, jnnl.NodeList)}
   body() {return this.srcNodesFrom(3)}
 
-  // Override for `MixOwnLexNsed`.
-  makeLexNs() {return super.makeLexNs().addMixin(this.constructor.initMixin())}
+  // Override for `MixOwnNsLexed`.
+  makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
+
+  makeNsMixin() {
+    const tar = a.npo()
+    tar.ret = jnr.Ret
+    return new jns.NsLive().setVal(tar)
+  }
 
   /*
   FIXME:
@@ -36,9 +42,9 @@ export class Fn extends jns.MixOwnLexNsed.goc(jnm.Macro) {
   // Override for `Node..declareLex`.
   declareLex() {
     if (this.isExpression()) {
-      return this.ownLexNs().addFromNode(this)
+      return this.ownNsLex().addNode(this)
     }
-    return this.reqParent().reqLexNs().addFromNode(this)
+    return this.reqParent().reqNsLex().addNode(this)
   }
 
   declareParams() {
@@ -51,15 +57,11 @@ export class Fn extends jns.MixOwnLexNsed.goc(jnm.Macro) {
     const prn = this.reqCodePrinter()
 
     return `function ${
-      a.reqStr(this.reqName().compile())
+      a.reqStr(this.reqIdent().compile())
     }${
       prn.compileParensCommaMultiLine(this.reqParams())
     } ${
       prn.compileBracesStatementsMultiLine(this.body())
     }`
   }
-
-  // FIXME convert to something similar to what `Use` does in star mode.
-  static mixin = undefined
-  static initMixin() {return this.mixin ??= new jns.Ns().add(Ret.decl())}
 }

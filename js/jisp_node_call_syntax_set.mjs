@@ -7,7 +7,7 @@ export class CallSyntaxSet extends jnm.Macro {
   static getSrcName() {return `callSyntax`}
 
   reqStr() {return this.reqSrcInstAt(1, jnst.Str)}
-  reqName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
+  reqIdent() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
 
   /*
   Declaration must be in same scope as macro node, and must be owned by the
@@ -16,7 +16,7 @@ export class CallSyntaxSet extends jnm.Macro {
   declared, preventing other modules from changing them, which could easily
   break unrelated code, depending on the order of module evaluation.
   */
-  optDecl() {return this.reqLexNs().get(this.reqName().pk())}
+  optDecl() {return this.reqLexNs().get(this.reqIdent().reqName())}
 
   macroImpl() {
     this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)

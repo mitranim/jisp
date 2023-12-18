@@ -98,7 +98,9 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
         objects addressed by a path at _compile time_, and sanity-check them.
   */
   optDecl() {
-    // return this.reqFirstChild().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolveNode(this)
+    // const name = this.optName()
+    // if (!name) return undefined
+    // return this.reqFirstChild().optDecl()?.optDeref()?.optScope()?.optPubNs()?.resolve(name)
   }
 
   macroImpl() {

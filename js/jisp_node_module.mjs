@@ -17,7 +17,7 @@ Various names:
   * `AstModule`
   * `ModuleNode`
 */
-export class Module extends jv.MixOwnValued.goc(jns.MixOwnLexNsed.goc(jnnl.NodeList)) {
+export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeList)) {
   // FIXME consider using `Url`.
   #url = undefined
   setUrl(val) {return this.#url = this.req(val, jm.isCanonicalModuleUrlStr), this}
@@ -118,7 +118,7 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnLexNsed.goc(jnnl.NodeL
   // }
 
   [ji.symInsp](tar) {
-    return super[ji.symInsp](tar).funs(this.optSpan, this.optLexNs)
+    return super[ji.symInsp](tar).funs(this.optSpan, this.optNsLex)
   }
 }
 

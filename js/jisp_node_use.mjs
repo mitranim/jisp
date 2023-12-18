@@ -90,7 +90,9 @@ export class Use extends jv.MixOwnValued.goc(jnma.Macro) {
 
   async macroAll() {
     await this.import()
-    this.reqLexNs().addMixin(this)
+    // FIXME NYI. This node should initialize and store `NsLive` referring to
+    // imported module.
+    this.reqNsLex().addMixin(this.initNsLive())
     return undefined
   }
 

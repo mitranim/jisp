@@ -10,6 +10,15 @@ import * as jnsd from './jisp_node_sourced.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 /*
+
+FIXME remove declarations. We're moving some of this functionality to `Ns` and
+its variants, and some functionality to `Node` subclasses used for fancy
+macroing. Lexical namespaces will refer to declaring nodes directly, without an
+intermediary declaration.
+
+*/
+
+/*
 Base class for declarations. Should typically belong to a namespace (`Ns`).
 Declarations may be either lexical (local variables), or public (properties
 of a module object, class, class instance, etc.).

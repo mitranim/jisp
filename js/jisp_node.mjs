@@ -8,7 +8,7 @@ import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jnsd from './jisp_node_sourced.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
-import * as jlns from './jisp_lex_nsed.mjs'
+import * as jnsl from './jisp_ns_lexed.mjs'
 
 /*
 Base class for all AST nodes.
@@ -44,7 +44,7 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jlns.MixLexNsed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
+export class Node extends jnsl.MixNsLexed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.goc(
   jnsd.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
 ))) {
   // For `MixOwnSpanned`.
@@ -108,7 +108,7 @@ export class Node extends jlns.MixLexNsed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
 
   TODO consider renaming to "reqX". May add an "opt" version later.
   */
-  declareLex() {return this.reqParent().reqLexNs().addFromNode(this)}
+  declareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
   optDecl() {}
   reqDecl() {return this.optDecl() ?? this.throw(`missing declaration at ${a.show(this)}`)}
@@ -167,4 +167,17 @@ export class Node extends jlns.MixLexNsed.goc(jr.MixRef.goc(jcpd.MixCodePrinted.
   repring.
   */
   static moduleUrl = import.meta.url
+}
+
+export class NodeSet extends a.TypedSet {
+  reqVal(val) {return a.reqInst(val, Node)}
+}
+
+/*
+Note: `a.Coll` requires values to implement method `.pk` which must return a
+valid key (non-falsy string or number). The base class `Node` does not
+implement such a method. Only some subclasses do.
+*/
+export class NodeColl extends a.Coll {
+  reqVal(val) {return a.reqInst(val, Node)}
 }

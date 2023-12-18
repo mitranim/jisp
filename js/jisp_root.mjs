@@ -29,9 +29,9 @@ TODO second approximation:
   * Use header files.
   * Use cached files, invalidate by own and dependency checksums.
 */
-export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(ji.MixInsp.goc(a.Emp))))) {
+export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(ji.MixInsp.goc(a.Emp))))) {
   /*
-  Override for `MixOwnLexNsed`. The resulting lexical namespace is inherited by
+  Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited by
   all modules in this root. This is where we add globally predeclared names.
   The default implementation should contain exactly one declaration: `use`.
   Other common built-ins should be provided by the prelude module, which should
@@ -42,7 +42,13 @@ export class Root extends jns.MixOwnLexNsed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   We could use that by adding a mixin to this lexical namespace, just like a
   star-import.
   */
-  makeLexNs() {return super.makeLexNs().add(jnu.Use.decl())}
+  makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
+
+  makeNsMixin() {
+    const tar = a.npo()
+    tar.use = jnu.Use
+    return new jns.NsLive().setVal(tar)
+  }
 
   // #nativeModuleCache = undefined
   // ownNativeModuleCache() {return this.#nativeModuleCache ??= new NativeModuleCache().setParent(this)}

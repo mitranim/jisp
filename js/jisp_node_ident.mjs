@@ -1,7 +1,9 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jnnd from './jisp_named.mjs'
-import * as jlns from './jisp_lex_nsed.mjs'
+import * as jnsl from './jisp_ns_lexed.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 
@@ -29,51 +31,55 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   // Override for `MixNamed`.
   optName() {return this.decompile()}
 
-  // TODO: consider caching. Profile first.
-  optDecl() {throw jm.errMeth(`optDecl`, this)}
-
-  /*
-  FIXME: lookup may produce a declaration, or a live value. Probably need to
-  update this interface to accommodate both.
-
-  TODO: consider caching. Profile first.
-  */
-  optDecl() {
-    const name = a.pk(this)
-    return this.optAncProcure(function resolveDecl(val) {
-      return jlns.ownLexNsCall(val)?.resolve(name)
+  resolveNsOpt() {
+    const key = this.reqName()
+    return this.optAncProcure(function resolveNsOpt(val) {
+      return jnsl.ownNsLexCall(val)?.resolveOpt(key)
     })
   }
 
-  reqDecl() {
+  resolveNsReq() {
     return (
-      this.optDecl() ??
-      this.throw(`missing declaration of ${a.show(this.decompile())} at ${a.show(this)}`)
+      this.resolveNsOpt() ??
+      this.throw(`missing declaration of ${a.show(this.optName())} at ${a.show(this)}`)
     )
   }
 
-  // macroImpl() {
-  //   this.reqDecl()
-  //   return super.macroImpl()
-  // }
-
   macroImpl() {
-    // FIXME there isn't always a decl. Sometimes we find this name in a
-    // namespace mixin, and what we found may be a live value.
-    const decl = this.reqDecl()
-    decl.addUse(this)
-    return this.macroWithDecl(decl)
+    const nsp = this.resolveNsReq()
+    nsp.addRef(this)
+    return this.macroWithNs(nsp)
   }
 
-  // Technical note: type assertion is missing due to module initialization
-  // issues caused by cyclic dependencies.
-  macroWithDecl(decl /* : Decl */) {
-    if (a.isNil(decl)) return this
-    if (!decl.isMacro()) return this
-    if (decl.isMacroBare()) return decl.macroNode(this)
-    // FIXME unfuck. (We're removing call opts, but we need a similar assertion for compile-only idents.)
-    // if (!this.isCalled()) throw this.err(`unexpected mention of identifier ${a.show(this.decompile())} which has the following call opts: ${a.show(decl.callOptStr())}`)
-    return this
+  macroWithNs(nsp /* : NsBase */) {
+    if (a.isNil(nsp)) return this
+    if (!nsp.isLive()) return this
+
+    const key = this.reqName()
+
+    // Redundant with `nsp.getReq`, but superior because it generates a
+    // `CodeErr` pointing to the erring code.
+    if (!nsp.has(key)) {
+      throw this.err(`missing declaration of ${a.show(key)} (node ${a.show(this)}) in namespace ${a.show(nsp)}`)
+    }
+
+    return this.macroWithLiveValue(nsp.getReq(key))
+  }
+
+  macroWithLiveValue(src) {
+    if (!a.isCls(src)) {
+      throw this.err(`expected live value to be a class, found ${a.show(src)}`)
+    }
+
+    if (!a.isSubCls(src, jn.Node)) {
+      throw this.err(`expected live value to be a subclass of ${a.show(jn.Node)}, found ${a.show(src)}`)
+    }
+
+    const val = new src()
+    val.setParent(this.ownParent())
+    val.setSrcNode(this)
+
+    return jn.Node.macroNode(val)
   }
 
   /*
@@ -124,4 +130,14 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     if (syn === CallStyle.bare) return this
     throw this.err(`unexpected mention of ${a.show(this.decompile())} with the following call opts: ${a.show(decl.callOptStr())}`)
   }
+
+  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optName))}
+}
+
+export class IdentSet extends a.TypedSet {
+  reqVal(val) {return a.reqInst(val, Ident)}
+}
+
+export class IdentColl extends a.Coll {
+  reqVal(val) {return a.reqInst(val, Ident)}
 }
