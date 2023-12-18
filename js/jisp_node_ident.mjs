@@ -64,8 +64,11 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     throw this.err(`expected the namespace declaring ${a.show(this.optName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
   }
 
-  // optResolveLiveVal() {return this.optResolveNsLive()?.getReq(this.reqName())}
   optResolveLiveVal() {return this.optDerefLiveVal(this.optResolveLiveValSrc())}
+
+  // TODO consider this alternative:
+  // optResolveLiveVal() {return this.optResolveNsLive()?.getReq(this.reqName())}
+
   reqResolveLiveVal() {return this.reqDerefLiveVal(this.reqResolveLiveValSrc())}
 
   optDerefLiveVal(src) {

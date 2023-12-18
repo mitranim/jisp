@@ -32,7 +32,7 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
 
     * Reconsider the return value.
   */
-  import(val) {
+  reqImport(val) {
     return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())
   }
 

@@ -188,11 +188,26 @@ considered to have its own lexical namespace.
 */
 export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {
-    return class MixOwnNsLexed extends cls {
+    return class MixOwnNsLexed extends je.MixErrer.goc(cls) {
       #nsLex = undefined
-      ownNsLex() {return this.#nsLex ??= this.makeNsLex()}
+      ownNsLex() {return this.initNsLex()}
       optNsLex() {return this.#nsLex}
+      reqNsLex() {return this.optNsLex() ?? this.throw(`missing own lexical namespace at ${a.show(this)}`)}
+      initNsLex() {return this.#nsLex ??= this.makeNsLex()}
       makeNsLex() {return new NsLex()}
+    }
+  }
+}
+
+export class MixOwnNsLived extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixOwnNsLived extends je.MixErrer.goc(cls) {
+      #nsLive = undefined
+      ownNsLive() {return this.initNsLive()}
+      optNsLive() {return this.#nsLive}
+      reqNsLive() {return this.optNsLive() ?? this.throw(`missing own live namespace at ${a.show(this)}`)}
+      initNsLive() {return this.#nsLive ??= this.makeNsLive()}
+      makeNsLive() {return new NsLive()}
     }
   }
 }

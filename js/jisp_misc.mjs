@@ -26,9 +26,10 @@ export function optResolveLiveValCall(src) {
 }
 
 // Implemented by `Module`.
-export function isImporter(val) {return a.hasMeth(val, `import`)}
+export function isReqImporter(val) {return a.hasMeth(val, `reqImport`)}
 
 // Implemented by `Root`.
+// FIXME rename.
 export function isImporterRel(val) {return a.hasMeth(val, `importRel`)}
 
 export function isFullMatch(src, reg) {
@@ -66,13 +67,8 @@ avoid such insanity, and to avoid collisions with the output of our macro
 export const jsReservedNames = new StrSet([`arguments`, `await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `eval`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `this`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
 
 export function isNativeModule(val) {
-  return (
-    a.isObj(val) &&
-    a.isNil(Object.getPrototypeOf(val)) &&
-    val[Symbol.toStringTag] === `Module`
-  )
+  return a.isNpo(val) && val[Symbol.toStringTag] === `Module`
 }
-
 export function reqNativeModule(val) {return a.req(val, isNativeModule)}
 export function optNativeModule(val) {return a.opt(val, isNativeModule)}
 
