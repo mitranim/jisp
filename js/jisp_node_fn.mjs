@@ -1,3 +1,4 @@
+import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
@@ -38,7 +39,7 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   declareParams() {
-    for (const val of this.reqParams()) val.asReqInst(jniu.IdentUnqual).declareLex()
+    for (const val of this.reqParams().childIter()) val.asReqInst(jniu.IdentUnqual).declareLex()
   }
 
   macroBody() {return this.reqSrcNode().macroFrom(3)}
@@ -49,7 +50,7 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     return `function ${
       a.reqStr(this.reqIdent().compile())
     }${
-      prn.compileParensCommaMultiLine(this.reqParams())
+      prn.compileParensCommaMultiLine(this.reqParams().childIter())
     } ${
       prn.compileBracesStatementsMultiLine(this.body())
     }`

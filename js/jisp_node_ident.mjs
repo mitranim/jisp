@@ -33,7 +33,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   optResolveNs() {
     const key = this.reqName()
     return this.optAncProcure(function optResolveNs(val) {
-      return jm.ownNsLexCall(val)?.resolveOpt(key)
+      return jm.ownNsLexCall(val)?.optResolve(key)
     })
   }
 
@@ -64,12 +64,48 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     throw this.err(`expected the namespace declaring ${a.show(this.optName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
   }
 
-  optResolveLiveVal() {return this.optDerefLiveVal(this.optResolveLiveValSrc())}
+  optResolveLiveVal() {
+    const key = this.optName()
+    if (!key) return undefined
 
-  // TODO consider this alternative:
-  // optResolveLiveVal() {return this.optResolveNsLive()?.getReq(this.reqName())}
+    const src = this.optResolveNs()
+    if (!src) return undefined
 
-  reqResolveLiveVal() {return this.reqDerefLiveVal(this.reqResolveLiveValSrc())}
+    if (src.isLive()) return this.optDerefLiveVal(src.ownVal())
+
+    /*
+    Example where this is relevant:
+
+      [use `jisp:prelude` jp]
+      jp.nil
+
+    In this example, the local lexical namespace has an entry for `jp`, where
+    the value is an instance of `Use` created after macroing the list that
+    describes the `use` call. This instance of `Use` implements
+    `optResolveLiveVal` which returns the module that it imported. As a result,
+    the identifier `jp` resolves to the live value of the imported module,
+    which is our prelude, and the expression `jp.nil`, which is an instance of
+    `IdentAccess`, is able to find `Nil`.
+
+    Since our system is open-ended, it's possible to create other macro classes
+    using this functionality.
+    */
+    return jm.optResolveLiveValCall(src.optGet(key))
+  }
+
+  reqResolveLiveVal() {
+    const src = this.reqResolveNs()
+    if (src.isLive()) return this.reqDerefLiveVal(src.ownVal())
+
+    const key = this.reqName()
+    const val = src.reqGet(key)
+
+    // See the comment in `.optResolveLiveVal`.
+    const tar = jm.optResolveLiveValCall(val)
+    if (a.isSome(tar)) return tar
+
+    throw this.err(`expected the declaration of ${a.show(key)} to resolve to a live value, but found no live value in declaration ${a.show(val)}`)
+  }
 
   optDerefLiveVal(src) {
     if (!a.optObj(src)) return undefined
@@ -81,7 +117,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   /*
-  Somewhat redundant with `NsLive..getReq`, but usable directly on live vals,
+  Somewhat redundant with `NsLive..reqGet`, but usable directly on live vals,
   without requiring a wrapping namespace, and generates more useful error
   messages.
   */
@@ -115,7 +151,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   /*
   FIXME support renaming reserved JS names. May require knowledge of all
   unqualified names used in the same scope (which scope? all of them?).
-  May require storing some data in the nearest lexical scope.
+  May require storing some data in the nearest lexical namespace.
 
   Note: some subclasses such as `IdentAccess` must override this and avoid
   calling `.reqNotReserved`. In ES5+, reserved names can be used as property

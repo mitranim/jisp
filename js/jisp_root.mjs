@@ -112,7 +112,7 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     this.req(modUrl, jm.isCanonicalModuleUrlStr)
 
     if (key.startsWith(jc.conf.getUrlScheme())) {
-      return this.importComp(key.slice(jc.conf.getUrlScheme().length))
+      return this.importCompilerFile(key.slice(jc.conf.getUrlScheme().length))
     }
 
     if (!jm.hasScheme(key)) {
@@ -126,8 +126,10 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     return this.importNative(key)
   }
 
-  importComp(key) {return this.importNative(jm.toCompFileUrl(key))}
+  // FIXME just use normal `import()`!
+  importCompilerFile(key) {return this.importNative(jm.toCompilerFileUrl(key))}
 
+  // FIXME drop!
   importNative(key) {
     return this.importCached(key, this.importNativeUncached)
   }

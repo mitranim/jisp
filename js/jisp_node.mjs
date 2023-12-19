@@ -132,7 +132,7 @@ export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
     val.setParent(this.ownParent())
     val.setSrcNode(this)
 
-    return this.constructor.macroNode(val)
+    return val
   }
 
   compile() {throw jm.errMeth(`compile`, this)}

@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as je from './jisp_err.mjs'
@@ -32,8 +33,15 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
 
     * Reconsider the return value.
   */
-  reqImport(val) {
-    return this.reqAncFind(jm.isImporterRel).importRel(val, this.reqUrl())
+  reqImport(addr) {
+    const scheme = a.reqStr(jc.conf.getUrlScheme())
+
+    // FIXME unfuck!
+    if (a.isStr(addr) && addr.startsWith(scheme)) {
+      return import(jm.toCompilerFileUrl(addr.slice(scheme.length)))
+    }
+
+    return this.reqAncFind(jm.isImporterRel).importRel(addr, this.reqUrl())
   }
 
   // Used by `.parse`.
@@ -52,8 +60,8 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
   synchronous for simplicity and speed.
   */
   async macroImpl() {
-    let ind = 0
-    while (ind < this.childCount()) {
+    let ind = -1
+    while (++ind < this.childCount()) {
       let val = this.constructor.macroNode(this.reqChildAt(ind))
       if (a.isPromise(val)) val = await val
       this.replaceChildAt(ind, val)

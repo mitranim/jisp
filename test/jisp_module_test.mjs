@@ -129,6 +129,8 @@ await t.test(async function test_using_prelude() {
   mod.parse(src)
   await mod.macro()
 
+  console.log(mod.compile())
+
   // const mod = new jnm.Module().setParent(root)
   // const root = new jr.Root().setFs(fs)
   // console.log(`root:`, root)

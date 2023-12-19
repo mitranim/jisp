@@ -184,7 +184,7 @@ export function isStrictRelStr(val) {
 // }
 
 // FIXME move to `Root` for better assertions.
-export function toCompFileUrl(val) {
+export function toCompilerFileUrl(val) {
   return p.posix.join(
     p.posix.dir(import.meta.url),
     unparametrize(a.req(val, isStrictRelStr)) + jc.conf.getFileExtOut(),

@@ -38,6 +38,12 @@ export class MixErrer extends a.DedupMixinCache {
         throw this.err(a.msgFun(val, fun))
       }
 
+      // Like `a.opt` but using `this.err` for context.
+      opt(val, fun) {
+        if (a.isNil(val)) return undefined
+        return this.req(val, fun)
+      }
+
       // Like `a.optInst` but using `this.err` for context.
       optInst(val, cls) {
         if (a.isNil(val)) return undefined

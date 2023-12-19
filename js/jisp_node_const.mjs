@@ -1,3 +1,4 @@
+import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 

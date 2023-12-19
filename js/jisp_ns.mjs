@@ -30,7 +30,7 @@ lexical scoping. In both lexical and dynamic scoping, any given namespace
 should be accessible only to the current-level node and descendants, but not to
 ancestors. Every language has dynamic scoping or makes it possible to hack it
 in. Most languages have lexical scoping, and it tends to be preferred. Jisp
-deals only with lexical scopes, because dynamic scoping is a runtime-only
+deals only with lexical scoping, because dynamic scoping is a runtime-only
 feature which is out of scope for our compiler (pun intended).
 
 This is called "namespace" rather than "scope" because the term "scope" refers
@@ -59,25 +59,23 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
     return false
   }
 
-  // TODO consider renaming to `.optGet` for consistency with most of our interfaces.
-  getOpt(key) {
+  optGet(key) {
     this.req(key, a.isValidStr)
     return false
   }
 
-  // TODO consider renaming to `.reqGet` for consistency with most of our interfaces.
-  getReq(key) {
+  reqGet(key) {
     if (!this.has(key)) {
       throw this.err(`missing declaration of ${a.show(key)} in namespace ${a.show(this)}`)
     }
 
-    const tar = this.getOpt(key)
+    const tar = this.optGet(key)
     if (a.isSome(tar)) return tar
 
     throw this.err(`unexpected nil declaration of ${a.show(key)} in namespace ${a.show(this)}`)
   }
 
-  resolveOpt(key) {
+  optResolve(key) {
     if (this.has(key)) return this
     return undefined
   }
@@ -112,7 +110,7 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
     return a.hasIn(this.optVal(), key)
   }
 
-  getOpt(key) {
+  optGet(key) {
     if (this.has(key)) return this.reqVal()[key]
     return undefined
   }
@@ -143,7 +141,12 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
   #initDecls() {return this.#decls ??= new jn.NodeColl()}
   optDecls() {return this.#decls}
 
-  getOpt(key) {
+  has(key) {
+    this.req(key, a.isValidStr)
+    return !!this.optDecls()?.has(key)
+  }
+
+  optGet(key) {
     this.req(key, a.isValidStr)
     return this.#decls?.get(key)
   }
@@ -171,11 +174,11 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
     return super.reqValidMixin(this.reqInst(val, NsBase))
   }
 
-  resolveOpt(key) {return super.resolveOpt(key) ?? this.resolveMixinOpt(key)}
+  optResolve(key) {return super.optResolve(key) ?? this.resolveMixinOpt(key)}
 
   resolveMixinOpt(key) {
     const src = this.optMixins()
-    if (src) for (const val of src) if (val.resolveOpt(key)) return val
+    if (src) for (const val of src) if (val.optResolve(key)) return val
     return undefined
   }
 

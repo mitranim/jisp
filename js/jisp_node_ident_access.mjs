@@ -65,14 +65,18 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     return spanOwn
   }
 
+  // Override for `Ident..optResolveLiveVal`.
+  optResolveLiveVal() {return this.optDerefLiveVal(this.optResolveLiveValSrc())}
+
   // Override for `Ident..optResolveLiveValSrc`.
-  // Should also modify the behavior of `.optResolveLiveVal`.
   optResolveLiveValSrc() {
     return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optResolveLiveVal()
   }
 
+  // Override for `Ident..reqResolveLiveVal`.
+  reqResolveLiveVal() {return this.reqDerefLiveVal(this.reqResolveLiveValSrc())}
+
   // Override for `Ident..reqResolveLiveValSrc`.
-  // Should also modify the behavior of `.reqResolveLiveVal`.
   reqResolveLiveValSrc() {
     return this.reqFirstChild().asReqInst(jni.Ident).reqResolveLiveVal()
   }
@@ -96,7 +100,5 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     )
   }
 
-  [ji.symInsp](tar) {
-    return super[ji.symInsp](tar).funs(this.optFirstChild, this.ownName)
-  }
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optFirstChild)}
 }

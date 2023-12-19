@@ -5,6 +5,8 @@
 
 [jp.import `https://example.com/some_js_module.mjs` someLib]
 
+[jp.import `./some_local_file.jisp` someJispLib]
+
 [jp.const someConst `some_const_value`]
 
 [jp.fn someFunc [] `some_func_value`]

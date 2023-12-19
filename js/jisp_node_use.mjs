@@ -88,7 +88,17 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
 
   async macroDestName() {
     await this.reqImport()
+
+    /*
+    Technical note. When reading this code, it may be unclear how this allows
+    identifiers referencing our declaration to gain access to the live value of
+    the imported module. This works because this class implements the method
+    `.optResolveLiveVal`, which is a common interface used by various other
+    classes. When an identifier finds this node in a lexical namespace, it will
+    call this to obtain the live value. See `Ident..optResolveLiveVal`.
+    */
     this.declareLex()
+
     return this
   }
 
@@ -103,7 +113,7 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
 
   async macroDestMixin() {
     await this.reqImport()
-    this.reqNsLex().addMixin(this.reqNsLive())
+    this.reqNsLex().addMixin(this.initNsLive())
     return this
   }
 
@@ -111,16 +121,17 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
     return `macro ${a.show(this)} requires the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
   }
 
-  /*
-  We must start this search on the parent, because otherwise the combination of
-  `.reqAncFind` and `jm.isReqImporter` would match the current node and recur
-  indefinitely, causing stack overflow.
-  */
   async reqImport() {
     const addr = this.reqAddr().reqVal()
+
+    /*
+    We must start this search on the parent, because otherwise the combination
+    of `.reqAncFind` and `isReqImporter` would match the current node and recur
+    indefinitely, causing stack overflow.
+    */
     const importer = this.reqParent().reqAncFind(jm.isReqImporter)
+
     this.setVal(await importer.reqImport(addr))
-    this.initNsLive()
     return this
   }
 
