@@ -256,22 +256,22 @@ export class PromiseMap extends a.TypedMap {
   reqVal(val) {return a.reqPromise(val)}
 }
 
-// FIXME use or remove.
-export class NativeModuleMap extends a.TypedMap {
-  reqKey(key) {return reqCanonicalModuleUrlStr(key)}
-  reqVal(val) {return reqNativeModule(val)}
-}
+// // FIXME use or remove.
+// export class NativeModuleMap extends a.TypedMap {
+//   reqKey(key) {return reqCanonicalModuleUrlStr(key)}
+//   reqVal(val) {return reqNativeModule(val)}
+// }
 
-// FIXME use or remove.
-export class Url extends URL {
-  simple() {
-    return pathJoinOpt(
-      a.optStr(this.protocol).replace(/:/g, ``),
-      a.optStr(this.hostname),
-      a.optStr(this.pathname),
-    )
-  }
-}
+// // FIXME use or remove.
+// export class Url extends URL {
+//   simple() {
+//     return pathJoinOpt(
+//       a.optStr(this.protocol).replace(/:/g, ``),
+//       a.optStr(this.hostname),
+//       a.optStr(this.pathname),
+//     )
+//   }
+// }
 
 /*
 Avoids `p.posix.join` because we're appending an absolute path to a relative

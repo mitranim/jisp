@@ -83,7 +83,14 @@ jp.global
   })
 })
 
-await t.test(async function test_Root_jisp_file_conversion() {
+/*
+TODO: also test that compilation is performed idempotently. For each Jisp file
+requested from `Root`, it must normalize the resulting file URL to a canonical
+form and cache the promise the represents the compilation process. Whenever a
+file is requested repeatedly from the same `Root`, compilation must be
+performed only once.
+*/
+await t.test(async function test_Root_resolution_and_compilation() {
   async function fail(src, msg) {
     const root = new jr.Root()
     await t.throws(async () => root.resolveLangFile(src), Error, msg)
@@ -94,23 +101,44 @@ await t.test(async function test_Root_jisp_file_conversion() {
   await fail(`https://example.com`, `expected instance of URL, got "https://example.com"`)
   await fail(`https://example.com`, `expected instance of URL, got "https://example.com"`)
 
-  const srcUrl = new URL(`../test_files/test_simple_runnable.jisp`, import.meta.url)
+  const srcUrl = new URL(`../test_files/test_simple.jisp`, import.meta.url)
   await fail(srcUrl, `missing FS at [object Root]`)
 
   const fs = jdft.makeTestFs()
   const root = new jr.Root().setFs(fs)
-  const out = await root.resolveLangFile(srcUrl)
 
-  // const mod = await import(out)
-  // console.log(`mod:`, mod)
+  /*
+  Despite "resolve" in the name, this involves reading, parsing, macroing,
+  compiling, and writing the compiled file. The return value must be a valid
+  file URL to the compiled file, suitable for FS access and use with the native
+  pseudo-function `import`.
+  */
+  const out = await root.resolveLangFile(srcUrl)
+  t.inst(out, URL)
+
+  const outText = await fs.read(out)
+
+  tu.testCompiled(outText, `
+const someConst = \`some_const_value\`;
+function someFunc() {
+\`some_func_value\`;
+};
+`)
 
   /*
   Output is meant to be passed to the native pseudo-function `import`.
   We don't care if it's a string or URL, but it must be stringable.
+
+  TODO: simplify and flatten the paths.
   */
   t.is(
     a.render(out),
-    a.render(new URL(`../.tmp/test_simple_runnable.mjs`, import.meta.url)),
+    a.render(
+      new URL(
+        fs.toAbs(fs.relTar(new URL(`../test_files/test_simple.mjs`, import.meta.url).href)),
+        `file:`,
+      ),
+    ),
   )
 })
 
