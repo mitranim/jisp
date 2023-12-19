@@ -180,18 +180,18 @@ export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
     return this.macroNode(this.replace(node, next))
   }
 
-  // static macroNodeSync(prev) {
-  //   if (!a.optInst(prev, Node)) return undefined
-  //   const next = prev.macro()
-  //   return this.macroNodeSyncWith(prev, next)
-  // }
+  static macroNodeSync(prev) {
+    if (!a.optInst(prev, Node)) return undefined
+    const next = prev.macro()
+    return this.macroNodeSyncWith(prev, next)
+  }
 
-  // static macroNodeSyncWith(node, next) {
-  //   a.reqInst(node, Node)
-  //   if (a.isNil(next)) return undefined
-  //   if (next === node) return node
-  //   return this.macroNodeSync(this.replace(node, next))
-  // }
+  static macroNodeSyncWith(node, next) {
+    a.reqInst(node, Node)
+    if (a.isNil(next)) return undefined
+    if (next === node) return node
+    return this.macroNodeSync(this.replace(node, next))
+  }
 
   static async macroNodeAsync(prev) {
     if (!a.optInst(prev, Node)) return undefined

@@ -3,7 +3,8 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as jp from '../js/jisp_parent.mjs'
 
-// TODO actual tests.
+// TODO actual tests. For now, the file contains only benchmarks for some
+// internal stuff.
 
 class MixParentIterManual extends a.DedupMixinCache {
   static make(cls) {

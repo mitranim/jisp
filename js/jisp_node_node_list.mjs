@@ -23,7 +23,7 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
   }
 
   macroAt(ind) {
-    this.replaceChildAt(ind, this.constructor.macroNode(this.reqChildAt(ind)))
+    this.replaceChildAt(ind, this.constructor.macroNodeSync(this.reqChildAt(ind)))
   }
 
   [ji.symInsp](tar) {

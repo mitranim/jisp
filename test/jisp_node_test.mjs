@@ -17,20 +17,6 @@ t.test(function test_Num_parse() {
   )
 })
 
-// t.test(function test_Path() {
-//   t.test(function test_Path_parse() {
-//     // TODO more cases.
-//     testParsePath(`one.two`, [`one`, `two`])
-//     testParsePath(`one.two.three`, [`one`, `two`, `three`])
-//   })
-// })
-
-// function testParsePath(src, names) {
-//   const cls = j.Path
-//   const tar = testParseFull(cls, src)
-//   t.eq(tar.getNodes().map(j.decompile), names)
-// }
-
 function testParseFull(cls, src) {
   const srcSpan = new jsp.StrSpan().init(src)
   t.is(srcSpan.ownPos(), 0)
