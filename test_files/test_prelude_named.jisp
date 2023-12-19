@@ -1,0 +1,11 @@
+[use `jisp:prelude` jp]
+
+jp.nil
+jp.null
+jp.no
+jp.ok
+jp.global
+
+[jp.import `https://example.com/some_js_module.mjs` someLib]
+[jp.const someConst `some_const_value`]
+[jp.fn someFunc [] `some_func_value`]

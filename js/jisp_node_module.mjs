@@ -72,14 +72,6 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
   compile() {return this.compileBody()}
   compileBody() {return this.reqCodePrinter().compileStatements(this.childIter())}
 
-/*
-  // FIXME: generate header file.
-  compile() {return jm.joinLines(this.compileBody(), this.compileHead())}
-  compileHead() {return `export default ` + JSON.stringify(this.header())}
-  // FIXME implement.
-  header() {}
-*/
-
   /*
   Override for `Node..err` to avoid using `CodeErr`. A module span always points
   to `row:col = 1:1`, which is not very useful. More importantly, `Node..toErr`
@@ -89,26 +81,6 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
   specific `CodeErr` pointing to the actual relevant place in the code.
   */
   err(...val) {return new je.Err(...val)}
-
-  // FIXME drop. You can't make this from a native module.
-  //
-  // static fromNative(key, src) {
-  //   a.req(key, jm.isAbsUrlStr)
-  //   jm.reqNativeModule(src)
-  //
-  //   return (
-  //     a.onlyInst(src.default, Module) ??
-  //     this.makeFromNative(src)
-  //   ).setVal(src).setUrl(key)
-  // }
-
-  // FIXME drop. You can't make this from a native module.
-  //
-  // static makeFromNative(src) {
-  //   const tar = new this()
-  //   tar.ownScope().setPubNs(new jns.Ns().addFromNativeModule(src))
-  //   return tar
-  // }
 
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar).funs(this.optSpan, this.optNsLex)

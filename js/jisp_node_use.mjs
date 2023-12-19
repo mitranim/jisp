@@ -143,7 +143,7 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
   exception is the only sensible option left.
   */
   compile() {
-    if (this.isStatement()) return undefined
+    if (this.isStatement()) return ``
     throw this.err(`unexpected attempt to compile macro node ${a.show(this)} in an expression position`)
   }
 }

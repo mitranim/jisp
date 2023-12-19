@@ -50,9 +50,9 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     return `function ${
       a.reqStr(this.reqIdent().compile())
     }${
-      prn.compileParensCommaMultiLine(this.reqParams().childIter())
+      prn.compileParensWithExpressions(this.reqParams().childIter())
     } ${
-      prn.compileBracesStatementsMultiLine(this.body())
+      prn.compileBracesWithStatements(this.body())
     }`
   }
 }

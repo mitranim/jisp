@@ -74,7 +74,7 @@ export class DelimNodeList extends jnnl.NodeList {
 
     return (
       a.reqStr(a.head(src).compile()) +
-      a.reqStr(this.reqCodePrinter().compileParensCommaMultiLine(a.tail(src)))
+      a.reqStr(this.reqCodePrinter().compileParensWithExpressions(a.tail(src)))
     )
   }
 }

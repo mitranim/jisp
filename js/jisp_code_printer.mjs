@@ -1,47 +1,50 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 
+/*
+A code printer should be owned by an ancestor of the AST hierarchy, such as
+`Root`. Descendant nodes should access it by searching through the ancestors.
+See `MixCodePrinted` and `MixOwnCodePrinted`. This allows to change how code is
+printed by reconfiguring the printer at the top level.
+
+Methods with names "compileX" where "X" is singular assume that the input is a
+`Node`. Methods with names "compileX" where "X" is plural assume that the input
+is an iterable sequence of `Node`. However, the printer uses only a limited
+subset of the `Node` interface. Inputs may be arbitrary objects that implement
+the correct methods.
+*/
 export class CodePrinter extends a.Emp {
-  compile(src) {return a.laxStr(src.compile())}
-  compileDense(src) {return this.joinInf(src, ``)}
-  compileSpaced(src) {return this.joinInf(src, ` `)}
-  compileCommaSingleLine(src) {return this.joinInf(src, `, `)}
-  compileCommaMultiLine(src) {return this.joinInf(src, `,\n`)}
-  compileParensCommaMultiLine(src) {return this.wrapMulti(this.compileCommaMultiLine(src), `(`, `)`)}
-  compileStatements(src) {return this.joinSuf(src, `;\n`)}
-  compileBracesStatementsMultiLine(src) {return this.wrapMulti(this.compileStatements(src), `{`, `}`)}
-  joinInf(src, sep) {return this.fold(src, this.addInf, sep)}
-  joinSuf(src, suf) {return this.fold(src, this.addSuf, suf)}
-
-  fold(src, fun, arg) {
-    a.optIter(src)
-    a.reqFun(fun)
-    if (!src) return
-
-    let acc = ``
-    for (src of src) {
-      if (a.isNil(src) || src.isCosmetic()) continue
-
-      const val = a.reqStr(this.compile(src))
-      if (!val) continue
-
-      acc = a.reqStr(fun.call(this, acc, val, arg))
-    }
-    return acc
+  compile(src) {
+    if (a.isNil(src)) return ``
+    return a.reqStr(src.compile())
   }
 
-  addInf(acc, val, sep) {
-    a.reqStr(sep)
-    return a.reqStr(acc) + (acc ? sep : ``) + a.reqStr(val)
+  mapCompile(src) {
+    return a.compact(a.arr(src).map(this.compile, this))
   }
 
-  addSuf(acc, val, suf) {
-    return a.reqStr(acc) + a.reqStr(val) + a.reqStr(suf)
+  compileNotCosmetic(src) {
+    if (a.isNil(src) || src.isCosmetic()) return ``
+    return a.reqStr(src.compile())
   }
 
-  wrapMulti(src, pre, suf) {
-    a.reqStr(src)
-    a.reqStr(pre)
-    a.reqStr(suf)
-    return src ? (pre + `\n` + src + `\n` + suf) : (pre + suf)
+  mapCompileNotCosmetic(src) {
+    return a.compact(a.arr(src).map(this.compileNotCosmetic, this))
+  }
+
+  compileExpressions(src) {
+    return this.mapCompileNotCosmetic(src).join(`, `)
+  }
+
+  compileStatements(src) {
+    const tar = this.mapCompileNotCosmetic(src).join(`;\n`)
+    return tar && (`\n` + tar + `;\n`)
+  }
+
+  compileParensWithExpressions(src) {
+    return `(` + a.reqStr(this.compileExpressions(src)) + `)`
+  }
+
+  compileBracesWithStatements(src) {
+    return `{` + a.reqStr(this.compileStatements(src)) + `}`
   }
 }

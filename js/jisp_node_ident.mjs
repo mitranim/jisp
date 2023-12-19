@@ -37,6 +37,12 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     })
   }
 
+  /*
+  TODO: consider including all locally available names in the error message.
+  It might be useful to exactly represent the hierarchical structure of the
+  available lexical namespaces and their mixins, instead of simply listing all
+  names.
+  */
   reqResolveNs() {
     return (
       this.optResolveNs() ??
