@@ -1,9 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
-import * as jv from './jisp_valued.mjs'
-import * as jnlm from './jisp_node_list_macro.mjs'
-import * as jnst from './jisp_node_str.mjs'
-import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnib from './jisp_node_import_base.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
@@ -14,40 +11,21 @@ configuration property on `Conf.main`. When enabled, causes `Import` to import
 target module at compile time and validate that all referenced identifiers are
 actually exported by target module.
 
-FIXME support "star" imports. They should cause `Import` to import target module
-at compile time regardless of `Conf.main` configuration, in order to obtain
-knowledge of exported identifiers, which allows us to resolve unqualified
-names.
+FIXME support "mixin" imports. They should cause `Import` to import target
+module at compile time regardless of `Conf.main` configuration, in order to
+obtain knowledge of exported identifiers, which allows us to resolve
+unqualified names.
+
+  * Perform an actual import similarly to what `Use` does.
+  * Create a special namespace and add it to the nearest lexical namespace as a
+    mixin.
+    * Must use something similar to `NsLive`, but NOT considered live.
+    * No static declarations are available. We use normal JS runtime inspection
+      on the evaluated module object.
 */
-export class Import extends jv.MixOwnValued.goc(jnlm.ListMacro) {
-  pk() {return a.pk(this.reqDest())}
-  reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
-  optDest() {return this.optSrcInstAt(2, jniu.IdentUnqual)}
-  reqDest() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
-
-  macroImpl() {
-    if (this.isExpression()) {
-      this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(2)
-      this.reqAddr()
-    }
-    else {
-      this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
-      this.reqAddr()
-
-      /*
-      FIXME:
-
-        * When `Import` is in named form, add to lex NS under that name.
-        * When `Import` is in star form, add to lex NS as mixin.
-          * Must use something similar to `NsLive`, but which is considered NOT
-            live.
-          * No declarations are available. We use normal JS runtime inspection
-            on evaluated module object.
-      */
-      this.declareLex()
-    }
-
-    return this
+export class Import extends jnib.ImportBase {
+  macroDestMixin() {
+    throw this.err(`mixin-style imports (star-imports) are not yet supported by ${a.show(this)}`)
   }
 
   compile() {

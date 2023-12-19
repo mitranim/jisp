@@ -2,9 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jns from './jisp_ns.mjs'
-import * as jnlm from './jisp_node_list_macro.mjs'
-import * as jnst from './jisp_node_str.mjs'
-import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnib from './jisp_node_import_base.mjs'
 
 /*
 This class implements compile-time imports, which are used for compile-time
@@ -26,18 +24,8 @@ TODO:
       [use `some_path` `*`]
       ↓
       [use `some_path` *]
-
-FIXME:
-
-  * Move common code to base class shared with `Import`.
-  * Support both named and star forms.
-  * In named form, add itself to ancestral `NsLex`.
-  * In star form, add own `NsLive` to mixins of ancestral `NsLex`.
 */
-export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacro)) {
-  pk() {return this.reqDestName().reqName()}
-  mixinStr() {return `*`}
-
+export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnib.ImportBase)) {
   // Override for `MixOwnValued`.
   setVal(val) {return super.setVal(this.req(val, jm.isNativeModule))}
 
@@ -68,25 +56,6 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
   optResolveLiveVal() {return this.optVal()}
   reqResolveLiveVal() {return this.reqVal()}
 
-  reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
-  reqDest() {return this.reqSrcAt(2)}
-  optDest() {return this.optSrcAt(2)}
-  optDestName() {return this.onlySrcInstAt(2, jniu.IdentUnqual)}
-  reqDestName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
-  optDestStr() {return this.onlySrcInstAt(2, jnst.Str)}
-  reqDestStr() {return this.reqSrcInstAt(2, jnst.Str)}
-
-  macroImpl() {
-    this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
-    this.reqAddr()
-
-    if (!this.optDest()) return this.macroDestNil()
-    if (this.optDestName()) return this.macroDestName()
-    if (this.optDestStr()) return this.macroDestStr()
-
-    throw this.err(`${a.reqStr(this.msgArgDest())}; found unrecognized node ${a.show(this.reqDest())}`)
-  }
-
   async macroDestNil() {
     await this.reqImport()
     return this
@@ -103,28 +72,13 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
     classes. When an identifier finds this node in a lexical namespace, it will
     call this to obtain the live value. See `Ident..optResolveLiveVal`.
     */
-    this.declareLex()
-
-    return this
-  }
-
-  macroDestStr() {
-    const val = this.reqDestStr().ownVal()
-    const exp = this.mixinStr()
-    if (val !== exp) {
-      throw this.err(`${a.reqStr(this.msgArgDest())}; found unsupported string ${a.show(val)}`)
-    }
-    return this.macroDestMixin()
+    return super.macroDestName()
   }
 
   async macroDestMixin() {
     await this.reqImport()
     this.reqNsLex().addMixin(this.initNsLive())
     return this
-  }
-
-  msgArgDest() {
-    return `macro ${a.show(this)} requires the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
   }
 
   async reqImport() {
