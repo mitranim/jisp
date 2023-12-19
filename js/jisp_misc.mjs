@@ -25,12 +25,7 @@ export function optResolveLiveValCall(src) {
   return a.isObj(src) && `optResolveLiveVal` in src ? src.optResolveLiveVal() : undefined
 }
 
-// Implemented by `Module`.
-export function isReqImporter(val) {return a.hasMeth(val, `reqImport`)}
-
-// Implemented by `Root`.
-// FIXME rename.
-export function isImporterRel(val) {return a.hasMeth(val, `importRel`)}
+export function isImportResolver(val) {return a.hasMeth(val, `resolveImport`)}
 
 export function isFullMatch(src, reg) {
   a.reqStr(src)
@@ -89,15 +84,29 @@ export function isAbsNetworkUrl(val) {
 }
 
 export function isCanonicalModuleUrlStr(val) {
-  return a.isStr(val) && !isParametrizedStr(val) && isAbsUrlStr(val)
+  return a.isStr(val) && !isStrWithUrlDecorations(val) && isAbsUrlStr(val)
 }
 
 export function reqCanonicalModuleUrlStr(val) {
   return a.req(val, isCanonicalModuleUrlStr)
 }
 
-export function isParametrizedStr(val) {
+export function isStrWithUrlDecorations(val) {
   return a.isStr(val) && (val.includes(`?`) || val.includes(`#`))
+}
+
+export function stripUrlDecorations(val) {
+  val = sliceUntil(val, `#`)
+  val = sliceUntil(val, `?`)
+  return val
+}
+
+function sliceUntil(src, str) {
+  src = a.reqStr(src)
+  str = a.reqStr(str)
+  const ind = src.indexOf(str)
+  if (ind >= 0) return src.slice(0, ind)
+  return src
 }
 
 export function isAbsUrlStr(val) {
@@ -164,11 +173,11 @@ export function hasFileScheme(val) {
 }
 
 /*
-More restrictive than normal relative path format.
-Requires the path to have NO special prefix.
-Used for paths in `jisp:<path>`.
+Short for "is strictly relative". Similar to the functions `p.posix.isRel` and
+`p.windows.isRel`, but more restrictive than both. Requires the path to have NO
+special prefix. Must be used for paths in `jisp:<path>`.
 */
-export function isStrictRelStr(val) {
+export function isStrictRelPathStr(val) {
   return (
     a.isStr(val) &&
     !val.startsWith(`/`) &&
@@ -179,28 +188,36 @@ export function isStrictRelStr(val) {
   )
 }
 
-// export function isLangImportPath(val) {
-//   return a.isStr(val) && val.startsWith(jc.conf.getUrlScheme())
-// }
+export function optCompilerImportPathToCompilerUrl(src) {
+  const tar = optCompilerImportPathToCompilerUrlStr(src)
+  return tar && new URL(tar)
+}
 
-// FIXME move to `Root` for better assertions.
-export function toCompilerFileUrl(val) {
+export function optCompilerImportPathToCompilerUrlStr(src) {
+  if (!a.optStr(src)) return undefined
+
+  const sch = jc.conf.getUrlScheme()
+  if (!src.startsWith(sch)) return undefined
+
+  return toCompilerUrlStr(src.slice(sch.length))
+}
+
+export function isCompilerImportPath(val) {
+  return a.isStr(val) && val.startsWith(jc.conf.getUrlScheme())
+}
+
+export function toCompilerUrlStr(val) {
+  a.req(val, isStrictRelPathStr)
+
   return p.posix.join(
     p.posix.dir(import.meta.url),
-    unparametrize(a.req(val, isStrictRelStr)) + jc.conf.getFileExtOut(),
+    stripUrlDecorations(val) + jc.conf.getFileExtOut(),
   )
 }
 
-export function unparametrize(src) {
-  return stripAt(stripAt(src, `?`), `#`)
-}
-
-export function stripAt(src, str) {
-  src = a.reqStr(src)
-  str = a.reqStr(str)
-  const ind = src.indexOf(str)
-  if (ind >= 0) return src.slice(0, ind)
-  return src
+export function optUrlFileExt(val) {
+  if (!a.optInst(val, URL)) return undefined
+  return p.posix.ext(val.pathname)
 }
 
 export class PromiseMap extends a.TypedMap {

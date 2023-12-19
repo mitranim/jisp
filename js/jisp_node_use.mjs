@@ -17,9 +17,15 @@ imported via `Use`.
 
 TODO:
 
-  * Instead of `"*"`, use `*` or `...` (without quotes). Requires tokenizer
-    changes. At the time of writing, the syntax used in these examples is not
-    supported by our tokenizer at all.
+  * Instead of `"*"`, consider using `*` without quotes. Requires tokenizer
+    changes. At the time of writing, this syntax is not supported by our
+    tokenizer at all. Note that unlike traditional Lisps, we restrict our
+    identifiers to the format of valid JS identifiers. See
+    `Ident.regexpIdentUnqual`.
+
+      [use `some_path` `*`]
+      ↓
+      [use `some_path` *]
 
 FIXME:
 
@@ -122,17 +128,27 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnlm.ListMacr
   }
 
   async reqImport() {
-    const addr = this.reqAddr().reqVal()
+    return this.setVal(await import(await this.resolveImport()))
+  }
+
+  async resolveImport() {
+    const srcPath = this.reqAddr().reqVal()
+
+    // This is typically a `Module`.
+    const resolver = this.reqParent().reqAncFind(jm.isImportResolver)
 
     /*
-    We must start this search on the parent, because otherwise the combination
-    of `.reqAncFind` and `isReqImporter` would match the current node and recur
-    indefinitely, causing stack overflow.
+    Import resolving is asynchronous because it may involve converting a Jisp
+    file to a JS file, or finding an already-existing compiled file.
+    Compilation is async because it may involve native imports, and FS
+    operations are async in the general case (varies by platform).
     */
-    const importer = this.reqParent().reqAncFind(jm.isReqImporter)
+    const tarPath = await resolver.resolveImport(srcPath)
 
-    this.setVal(await importer.reqImport(addr))
-    return this
+    if (!a.isInst(tarPath, URL)) {
+      throw this.err(`expected import resolver ${a.show(resolver)} to resolve import path ${a.show(srcPath)} to URL object, but it resolved to ${a.show(tarPath)}`)
+    }
+    return tarPath
   }
 
   /*

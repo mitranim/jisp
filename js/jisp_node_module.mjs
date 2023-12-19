@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
@@ -8,43 +9,15 @@ import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
-export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeList)) {
+export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
+  pk() {return this.reqUrl()}
+
   #url = undefined
   setUrl(val) {return this.#url = this.req(val, jm.isCanonicalModuleUrlStr), this}
   ownUrl() {return this.#url}
   reqUrl() {return this.ownUrl() ?? this.throw(`missing module URL at ${a.show(this)}`)}
 
-  pk() {return this.ownUrl()}
-  setVal(val) {return super.setVal(jm.reqNativeModule(val))}
-
-  /*
-  FIXME:
-
-    * Handle `jisp:` scheme specially, by calling root method that imports
-      relatively to compiler source code.
-
-    * If path is `URL`, or string with scheme, or string and absolute
-      (starts with `/`), then convert to `URL` and call root method that
-      performs FS-based import.
-
-    * If path is relative, then resolve to absolute `URL`, then see above.
-
-    * Current module URL should be required ONLY when the import is relative.
-
-    * Reconsider the return value.
-  */
-  reqImport(addr) {
-    const scheme = a.reqStr(jc.conf.getUrlScheme())
-
-    // FIXME unfuck!
-    if (a.isStr(addr) && addr.startsWith(scheme)) {
-      return import(jm.toCompilerFileUrl(addr.slice(scheme.length)))
-    }
-
-    return this.reqAncFind(jm.isImporterRel).importRel(addr, this.reqUrl())
-  }
-
-  // Used by `.parse`.
+  // Used by `.parse`. May be overridden by subclasses.
   get Lexer() {return jl.Lexer}
 
   parse(src) {
@@ -82,30 +55,52 @@ export class Module extends jv.MixOwnValued.goc(jns.MixOwnNsLexed.goc(jnnl.NodeL
   */
   err(...val) {return new je.Err(...val)}
 
+  /*
+  Import resolution should be implemented at two levels: `Module` and `Root`.
+
+  At the level of `Root`, we should accept only absolute file URLs, and handle
+  only conversion of Jisp files to JS files, which involves deduplication,
+  deadlock prevention, and caching.
+
+  At the level of `Module`, we should handle all other cases, including but not
+  limited to the following:
+
+    * Handling `jisp:`-scheme imports, which allow user code to import arbitrary
+      files from the Jisp compiler.
+    * Converting relative paths to absolute paths.
+    * Handling any non-Jisp imports.
+    * Detecting Jisp imports and using `Root` for those.
+  */
+  resolveImport(src) {
+    src = this.importPathToUrl(src)
+    this.reqInst(src, URL)
+
+    if (jm.optUrlFileExt(src) === jc.conf.getFileExtSrc()) {
+      throw this.err(`FIXME NYI: need to use root to convert Jisp to JS and resolve to a URL of the resulting JS file`)
+      // return this.reqAncFind(jm.blahBlaher).blahBlah(src)
+    }
+
+    return src
+  }
+
+  importPathToUrl(src) {
+    if (a.isInst(src, URL)) return src
+    this.req(src, a.isStr)
+
+    const compilerUrl = jm.optCompilerImportPathToCompilerUrl(src)
+    if (compilerUrl) return compilerUrl
+
+    if (jm.hasScheme(src)) return new URL(src)
+    if (p.posix.isAbs(src)) return new URL(src, `file:`)
+
+    /*
+    Handling other special cases first allows us to require the module URL only
+    when it's actually needed. This is also convenient for testing.
+    */
+    return new URL(src, this.reqUrl())
+  }
+
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar).funs(this.optSpan, this.optNsLex)
   }
 }
-
-/*
-export class ModuleColl extends a.Coll {
-  // For `a.TypedMap` used by `a.Coll`.
-  reqKey(key) {return jm.reqCanonicalModuleUrlStr(key)}
-  reqVal(val) {return a.reqInst(val, Module)}
-}
-
-export class ModuleColl extends jp.MixParent(jch.MixChild(a.Coll)) {
-  // For `a.TypedMap` used by `a.Coll`.
-  reqKey(key) {return jm.reqCanonicalModuleUrlStr(key)}
-  reqVal(val) {return a.reqInst(val, Module).setParent(this)}
-}
-
-export class MixOwnModuleColld extends a.DedupMixinCache {
-  static make(cls) {
-    return class MixOwnModuleColld extends jp.MixParent.goc(cls) {
-      #moduleColl = undefined
-      ownModuleColl() {return this.#moduleColl ??= new ModuleColl().setParent(this)}
-    }
-  }
-}
-*/

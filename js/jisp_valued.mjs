@@ -31,6 +31,12 @@ export class MixOwnValued extends a.DedupMixinCache {
       setVal(val) {return this.#val = val, this}
       ownVal() {return this.#val}
       optVal() {return this.#val}
+      reqVal() {
+        return (
+          this.ownVal() ??
+          this.throw(`missing own value at ${a.show(this)}`)
+        )
+      }
     }
   }
 }

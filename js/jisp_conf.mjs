@@ -5,7 +5,7 @@ TODO consider making this non-global by moving this to `Root`. Descendants would
 acquire `Conf` from ancestors.
 
 TODO: add an option that allows `Import` to import target modules at compile
-time and validate references. Disabled by default for performance. Opt-in for
+time and validate references. Disable by default for performance. Opt-in for
 production builds.
 */
 export const conf = new class Conf extends a.Emp {

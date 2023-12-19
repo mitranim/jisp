@@ -65,23 +65,13 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   setImportPromiseCache(val) {return this.#importPromiseCache = this.reqInst(val, jm.PromiseCache), this}
 */
 
-  // // Override for `MixOwnCodePrinted`.
-  // get CodePrinter() {return jcp.CodePrinter}
-
-  // // Override for `MixOwnCodePrinted`.
-  // optCodePrinter() {
-  //   return (
-  //     super.optCodePrinter() ??
-  //     this.setCodePrinter(new this.CodePrinter()).optCodePrinter()
-  //   )
-  // }
-
   /*
   FIXME:
 
     * Split this method in two.
 
-      * One always takes a `URL` and uses `.ownFs` to load file and header (if any).
+      * One always takes a `URL` and uses `.ownFs` to load file and header
+        (if any).
 
       * The other takes a file name (validate relative path without `..`) and
         loads a compiler source file, relative to this file, using the native
@@ -108,7 +98,7 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
       `Promise<Module>`. (Tentative, TODO split off to separate method.)
   */
   importRel(key, modUrl) {
-    key = jm.unparametrize(key)
+    key = jm.stripUrlDecorations(key)
     this.req(modUrl, jm.isCanonicalModuleUrlStr)
 
     if (key.startsWith(jc.conf.getUrlScheme())) {
@@ -127,7 +117,7 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   }
 
   // FIXME just use normal `import()`!
-  importCompilerFile(key) {return this.importNative(jm.toCompilerFileUrl(key))}
+  importCompilerFile(key) {return this.importNative(jm.toCompilerUrlStr(key))}
 
   // FIXME drop!
   importNative(key) {

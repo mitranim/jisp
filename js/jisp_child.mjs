@@ -44,6 +44,8 @@ export class MixChild extends a.DedupMixinCache {
         )
       }
 
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
       optAncMatch(cls) {
         a.reqCls(cls)
         let tar = this
@@ -54,6 +56,8 @@ export class MixChild extends a.DedupMixinCache {
         return undefined
       }
 
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
       reqAncMatch(cls) {
         return (
           this.optAncMatch(cls) ??
@@ -61,6 +65,8 @@ export class MixChild extends a.DedupMixinCache {
         )
       }
 
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
       optAncFind(fun) {
         a.reqFun(fun)
         let tar = this
@@ -71,6 +77,8 @@ export class MixChild extends a.DedupMixinCache {
         return undefined
       }
 
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
       reqAncFind(fun) {
         return (
           this.optAncFind(fun) ??
@@ -78,6 +86,8 @@ export class MixChild extends a.DedupMixinCache {
         )
       }
 
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
       optAncProcure(fun) {
         a.reqFun(fun)
         let tar = this

@@ -89,7 +89,7 @@ export class StrSpan extends Span {
     return jm.joinLines(
       // `position (UTF-16): ` + this.ownPos(),
       `row:col: ` + this.rowCol().strShort(),
-      `source:\n\n` + jm.preview(this.rem()),
+      `source:\n---\n` + jm.preview(this.rem()),
     )
   }
 }

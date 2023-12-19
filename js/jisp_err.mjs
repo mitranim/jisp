@@ -6,6 +6,7 @@ export class Err extends Error {
   get name() {return this.constructor.name}
 }
 
+// FIXME: whenever possible, this should include file path.
 export class CodeErr extends Err {
   constructor(msg, {cause, span}) {
     super(jm.joinLines(a.reqStr(msg), span?.context?.()), {cause})

@@ -1,3 +1,5 @@
+import * as a from '/Users/m/code/m/js/all.mjs'
+import * as t from '/Users/m/code/m/js/test.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
 
@@ -46,4 +48,25 @@ export function urlRel(url, path) {
 
 export function readFileRel(url, path) {
   return Deno.readTextFileSync(urlRel(url, path))
+}
+
+export function testCompiled(act, exp) {
+  act = a.trim(act)
+  exp = a.trim(exp)
+
+  if (act !== exp) {
+    throw new t.AssertError(`
+mismatch of compiled text and expected text
+
+compiled:
+---
+${act}
+---
+
+expected:
+---
+${exp}
+---
+`)
+  }
 }
