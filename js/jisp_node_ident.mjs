@@ -114,7 +114,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   optDerefLiveVal(src) {
-    if (!a.optObj(src)) return undefined
+    if (!a.isObj(src)) return undefined
 
     const key = this.optName()
     if (!key || !(key in src)) return undefined

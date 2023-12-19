@@ -14,6 +14,8 @@ export function renderErr(val) {return (a.isErr(val) && val.message) || a.render
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
+export function isImportResolver(val) {return a.hasMeth(val, `resolveImport`)}
+export function isLangFileResolver(val) {return a.hasMeth(val, `resolveLangFile`)}
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function ownNsLexCall(src) {
@@ -24,8 +26,6 @@ export function ownNsLexCall(src) {
 export function optResolveLiveValCall(src) {
   return a.isObj(src) && `optResolveLiveVal` in src ? src.optResolveLiveVal() : undefined
 }
-
-export function isImportResolver(val) {return a.hasMeth(val, `resolveImport`)}
 
 export function isFullMatch(src, reg) {
   a.reqStr(src)
@@ -67,6 +67,7 @@ export function isNativeModule(val) {
 export function reqNativeModule(val) {return a.req(val, isNativeModule)}
 export function optNativeModule(val) {return a.opt(val, isNativeModule)}
 
+// SYNC[canonical_module_url]
 export function isCanonicalModuleUrl(val) {
   return isAbsUrl(val) && !val.search && !val.hash
 }
@@ -83,6 +84,7 @@ export function isAbsNetworkUrl(val) {
   return a.isInst(val, URL) && val.protocol !== `file:` && !!val.hostname
 }
 
+// SYNC[canonical_module_url]
 export function isCanonicalModuleUrlStr(val) {
   return a.isStr(val) && !isStrWithUrlDecorations(val) && isAbsUrlStr(val)
 }
@@ -98,6 +100,34 @@ export function isStrWithUrlDecorations(val) {
 export function stripUrlDecorations(val) {
   val = sliceUntil(val, `#`)
   val = sliceUntil(val, `?`)
+  return val
+}
+
+export function urlWithoutDecorations(val) {
+  a.reqInst(val, URL)
+  if (!val.search && !val.hash) return val
+  return urlStripDecorations(new URL(val))
+}
+
+export function urlStripDecorations(val) {
+  a.reqInst(val, URL)
+  val.search = ``
+  val.hash = ``
+  return val
+}
+
+/*
+Missing feature of `@mitranim/js/path.mjs`→`Paths`. Various methods of `Paths`,
+such as `Paths..dir`, support only strings, and don't support file URLs. In our
+compiler, FS operations use mostly file URLs. We may consider subclassing
+`Paths` and making some overrides instead of spreading around random function
+calls like this. We may also consider subclassing `URL` to add various relevant
+methods.
+*/
+export function dirUrl(val) {
+  val = new URL(val)
+  urlStripDecorations(val)
+  val.pathname = p.posix.dir(val.pathname)
   return val
 }
 
@@ -182,7 +212,8 @@ export function isStrictRelPathStr(val) {
     a.isStr(val) &&
     !val.startsWith(`/`) &&
     !val.startsWith(`\\`) &&
-    !val.startsWith(`.`) &&
+    !val.startsWith(`./`) &&
+    !val.startsWith(`.\\`) &&
     !hasScheme(val) &&
     !isAbsUrlStr(val)
   )
@@ -215,7 +246,7 @@ export function toCompilerUrlStr(val) {
   )
 }
 
-export function optUrlFileExt(val) {
+export function optUrlExt(val) {
   if (!a.optInst(val, URL)) return undefined
   return p.posix.ext(val.pathname)
 }
@@ -223,15 +254,6 @@ export function optUrlFileExt(val) {
 export class PromiseMap extends a.TypedMap {
   reqKey(key) {return a.reqValidStr(key)}
   reqVal(val) {return a.reqPromise(val)}
-}
-
-// Questionable. Do we need this?
-export class PromiseCache extends PromiseMap {
-  goc(key, fun, ctx) {
-    a.reqFun(fun)
-    if (this.has(key)) return this.get(key)
-    return this.setted(key, fun.call(ctx, key))
-  }
 }
 
 // FIXME use or remove.

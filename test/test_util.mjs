@@ -3,9 +3,9 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
 
-export const SRC_FILE_URL = urlRel(import.meta.url, `../test_files/test_code.jisp`)
-
-export const SRC_TEXT = Deno.readTextFileSync(SRC_FILE_URL).trim()
+export const SRC_TEXT = Deno.readTextFileSync(
+  new URL(`../test_files/test_code.jisp`, import.meta.url)
+).trim()
 
 export const SRC_TEXT_SHORT = `
 10 20
@@ -33,21 +33,6 @@ export const inspectOpt = {
   trailingComma: true,
   showHidden: true,
   getters: true,
-}
-
-/*
-Usage: `urlRel(import.meta.url, someRelPath)`.
-
-Seems like the easiest way to relate a file name to the directory of the current
-file. Simply writing `./test_code.jisp` would not work, since that would be
-relative to CWD, not relative to current file.
-*/
-export function urlRel(url, path) {
-  return new URL(path, p.posix.dirLike(p.posix.dir(url)))
-}
-
-export function readFileRel(url, path) {
-  return Deno.readTextFileSync(urlRel(url, path))
 }
 
 export function testCompiled(act, exp) {

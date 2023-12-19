@@ -26,20 +26,32 @@ export const conf = new class Conf extends a.Emp {
   setFileExtOut(val) {return this.#fileExtOut = a.reqValidStr(val), this}
   getFileExtOut() {return this.#fileExtOut}
 
+  /*
+  Not implemented. This is meant to control whether `Root` attempts to reuse
+  files already found on disk. Actual, proper implementation of caching
+  requires us to detect when a file is outdated, which requires us to detect if
+  any of its compile-time dependencies is outdated, which requires knowing
+  dependencies, which may require metadata stored separately from the compiled
+  files. We may implement those features in the future.
+
+  Note that we ALWAYS write compiled files to disk regardless of this setting.
+  */
   #fsCaching = false
   setFsCaching(val) {return this.#fsCaching = a.reqBool(val), this}
   getFsCaching() {return this.#fsCaching}
 
+  // See above about FS caching.
   #fsCacheDirName = `jisp_cache`
   setFsCacheDirName(val) {return this.#fsCacheDirName = a.reqValidStr(val), this}
   getFsCacheDirName() {return this.#fsCacheDirName}
 }()
 
 /*
-If we were committed to global configuration, it would be simpler to express
-it as exported variables, instead of defining a class. See the example below.
-However, it might be better to make configuration non-global by moving it to
-`Root`.
+If we were committed to configuration being global, it would be simpler to
+express it as exported variables, instead of defining a class. See the example
+below. However, it might be better to make configuration non-global by moving
+it to `Root`.
+
 
 
 export let debug = false

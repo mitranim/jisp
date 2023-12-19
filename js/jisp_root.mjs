@@ -31,16 +31,17 @@ TODO second approximation:
 */
 export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(ji.MixInsp.goc(a.Emp))))) {
   /*
+  Used for parsing and compiling Jisp sources.
+  May override in superclass.
+  */
+  get Module() {return jnm.Module}
+
+  /*
   Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited by
   all modules in this root. This is where we add globally predeclared names.
   The default implementation should contain exactly one declaration: `use`.
   Other common built-ins should be provided by the prelude module, which should
   be imported via `use`.
-
-  FIXME: it might be ideal to get rid of "declarations" here, and use an
-  approach based on "live values", same as used by `Use` in star-import mode.
-  We could use that by adding a mixin to this lexical namespace, just like a
-  star-import.
   */
   makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
 
@@ -50,179 +51,88 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     return new jns.NsLive().setVal(tar)
   }
 
-  // #nativeModuleCache = undefined
-  // ownNativeModuleCache() {return this.#nativeModuleCache ??= new NativeModuleCache().setParent(this)}
-  // setNativeModuleCache(val) {return this.#nativeModuleCache = this.reqInst(val, NativeModuleCache).setParent(this), this}
-
-/*
-  // FIXME: src module vs tar module.
-  #moduleColl = undefined
-  ownModuleColl() {return this.#moduleColl ??= new jnm.ModuleColl()}
-  setModuleColl(val) {return this.#moduleColl = this.reqInst(val, jnm.ModuleColl), this}
-
-  #importPromiseCache = undefined
-  ownImportPromiseCache() {return this.#importPromiseCache ??= new jm.PromiseCache()}
-  setImportPromiseCache(val) {return this.#importPromiseCache = this.reqInst(val, jm.PromiseCache), this}
-*/
-
   /*
   FIXME:
 
-    * Split this method in two.
-
-      * One always takes a `URL` and uses `.ownFs` to load file and header
-        (if any).
-
-      * The other takes a file name (validate relative path without `..`) and
-        loads a compiler source file, relative to this file, using the native
-        import expression.
-
-      * No special support for the `jisp:` scheme. That's handled at the level
-        of `Module..import`, and calls the method above that natively imports a
-        compiler source file.
-
-    * Handle self-import.
-
-    * Reconsider the return value. In the current implementation, the return
-      value resolves to `Module`, which is WILDLY wrong.
-
-  Somewhat similar to the JS built-in dynamic `import`, with various differences:
-
-    * The output type is our own `Module` which combines a native JS module with
-      our own metadata.
-
-    * If the target is a Jisp file, we automatically convert it to JS, reusing
-      from cache if possible.
-
-    * If the target is available synchronously, returns `Module` rather than
-      `Promise<Module>`. (Tentative, TODO split off to separate method.)
+    * Promise dedup.
+    * Deadlock detection.
+    * Persistent FS caching.
+      * Requires dependency graph for detecting outdated.
   */
-  importRel(key, modUrl) {
-    key = jm.stripUrlDecorations(key)
-    this.req(modUrl, jm.isCanonicalModuleUrlStr)
+  resolveLangFile(src) {
+    this.reqInst(src, URL)
+    src = jm.urlWithoutDecorations(src)
+    const key = this.req(src.href, a.isValidStr)
+    const tar = this.initImportCache()
+    return tar.get(key) ?? tar.setted(key, this.resolveLangFileUncached(src))
+  }
 
-    if (key.startsWith(jc.conf.getUrlScheme())) {
-      return this.importCompilerFile(key.slice(jc.conf.getUrlScheme().length))
+  async resolveLangFileUncached(srcUrl) {
+    this.req(srcUrl, jm.isCanonicalModuleUrl)
+
+    const srcStr = this.req(srcUrl.href, a.isValidStr)
+    const srcExt = p.posix.ext(srcUrl.pathname)
+    const expExtSrc = a.reqValidStr(jc.conf.getFileExtSrc())
+
+    if (srcExt !== expExtSrc) {
+      throw this.err(`expected import path with extension ${a.show(expExtSrc)}, got import path ${a.show(srcStr)}`)
     }
 
-    if (!jm.hasScheme(key)) {
-      // TODO revise. URLs don't always end with a file name we can strip off.
-      const dir = p.posix.dir(modUrl)
-      key = p.posix.join(dir, key)
+    const fs = this.reqFs()
+
+    const tarRel = (
+      a.stripSuf(fs.relTar(srcStr), expExtSrc) +
+      a.reqValidStr(jc.conf.getFileExtOut())
+    )
+
+    // TODO: stricter validation: ensure that the resolved target path is
+    // actually a subpath of `fs.reqTar()`.
+    if (!jm.isStrictRelPathStr(tarRel)) {
+      throw this.err(`expected FS ${a.show(fs)} of ${a.show(this)} to resolve import URL ${a.show(srcStr)} to relative path, got ${a.show(tarRel)}`)
     }
 
-    // this.req(key, jm.isCanonicalModuleUrlStr)
-    if (key.endsWith(jc.conf.getFileExtSrc())) return this.importLang(key)
-    return this.importNative(key)
-  }
-
-  // FIXME just use normal `import()`!
-  importCompilerFile(key) {return this.importNative(jm.toCompilerUrlStr(key))}
-
-  // FIXME drop!
-  importNative(key) {
-    return this.importCached(key, this.importNativeUncached)
-  }
-
-  async importNativeUncached(key) {
-    this.req(key, jm.isCanonicalModuleUrlStr)
-    return this.ownModuleColl().added(jnm.Module.fromNative(key, await import(key)))
-  }
-
-  importLang(key) {return this.importCached(key, this.importLangUncached)}
-
-  // FIXME actual shit!
-  async importLangUncached(key) {
-    this.req(key, jm.isCanonicalModuleUrlStr)
-    console.log(`importing:`, key)
+    const tarUrl = new URL(fs.toAbs(tarRel), `file:`)
 
     /*
-    FIXME disk caching. Requires cache invalidation via checksums stored in
-    header file and calculated from both the requested file and all its
-    dependencies, which requires a module dependency graph.
+    We pass `URL` here, rather than a string, for compatibility with Deno, where
+    string paths are interpreted as filesystem paths, whereas `URL` objects
+    enable support for file URLs.
     */
-    if (jc.conf.getFsCaching()) {
-      const nativeUrl = new URL(a.reqStr(key) + `.native` + jc.conf.getFileExtOut())
-      const headerUrl = new URL(a.reqStr(key) + `.header` + jc.conf.getFileExtOut())
+    const srcText = await fs.read(srcUrl)
 
-      // FIXME skip on 404.
-      const [native, header] = await Promise.all([
-        this.reqFs().read(nativeUrl),
-        this.reqFs().read(headerUrl),
-      ])
-
-      if (native && header) {
-        /*
-        FIXME cache invalidation:
-          * Header stores checksums.
-          * Header stores dependency list.
-          * Compare to checksums for:
-            * Requested module.
-            * Dependencies.
-        */
-      }
-    }
-
-    const srcUrl = new URL(a.reqStr(key))
-    const src = await this.reqFs().read(srcUrl)
-
-    // FIXME perhaps module requires path and registers in root immediately.
-    // Allows self-import.
-    //
-    // Root may cache both lang modules and native modules???
-    //
-    // Separate lang modules from native modules?
-    const mod = new jnm.Module().setParent(this).parse(src).setUrl(srcUrl.href)
+    const mod = new this.Module().setParent(this).setUrl(srcStr).parse(srcText)
     await mod.macro()
+    const tarText = this.req(mod.compile(), a.isStr)
 
-    const out = mod.compile()
-    console.log(`out:`, out)
-
-    const url = a.pk(mod)
-    console.log(`url:`, url)
-
-    const fs = this.ownFs()
-    await fs.mock(a.pk(mod))
-
-    // mod.toJSON() -> header data
-
-    // FIXME:
-    // * Module:
-    //   * Compile to native.
-    //   * Compile to header.
-    //   * Write both to disk.
-    //   * Import both.
-    //   * Generate module from imported.
-
-    FIXME
+    await fs.write(tarUrl, tarText)
+    return tarUrl
   }
 
-  importCached(key, fun) {
-    a.reqStr(key)
-    a.reqFun(fun)
-    return (
-      this.ownModuleColl().get(key) ||
-      this.ownImportPromiseCache().goc(key, fun, this)
-    )
+  #importCache = undefined
+  initImportCache() {return this.#importCache ??= new jm.PromiseMap()}
+  optImportCache() {return this.#importCache}
+
+/*
+  async resolveLangFileUncached(key) {
+    const nativeUrl = new URL(a.reqStr(key) + `.native` + jc.conf.getFileExtOut())
+    const headerUrl = new URL(a.reqStr(key) + `.header` + jc.conf.getFileExtOut())
+
+    // FIXME skip on 404.
+    const [native, header] = await Promise.all([
+      this.reqFs().read(nativeUrl),
+      this.reqFs().read(headerUrl),
+    ])
+
+    if (native && header) {
+      // FIXME cache invalidation:
+      //   * Header stores checksums.
+      //   * Header stores dependency list.
+      //   * Compare to checksums for:
+      //     * Requested module.
+      //     * Dependencies.
+    }
   }
+*/
 
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }
-
-/*
-FIXME use or remove.
-
-Intended for module imports. Probably don't need because we're going to use only
-native imports, which are already deduplicated internally by every JS runtime.
-*/
-/*
-export class MixPromiseCached extends a.DedupMixinCache {
-  static make(cls) {
-    return class MixPromiseCached extends je.MixErrer.goc(cls) {
-      #promiseCache = undefined
-      ownPromiseCache() {return this.#promiseCache ??= new jm.PromiseCache()}
-      setPromiseCache(val) {return this.#promiseCache = this.reqInst(val, jm.PromiseCache), this}
-    }
-  }
-}
-*/

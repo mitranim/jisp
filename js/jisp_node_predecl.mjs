@@ -47,9 +47,9 @@ mask the names of built-in constants such as `null`. This should not affect our
 correctness in any way, because we track identifiers to their declaration
 sites, and can tell the difference between a predeclared name and a masking
 name. However, masking predeclared constants is generally bad practice, because
-editor syntax highlighting tends to assume that they are never redefined, and
+editor syntax highlighting tends to assume that they are never redeclared, and
 always highlights built-in constants with special colors, which is incorrect
-after redefinition. Additionally, code where JS constants are masked may
+after redeclaration. Additionally, code where JS constants are masked may
 compile to invalid JS that fails to parse. We may resolve this in any of the
 following ways:
 

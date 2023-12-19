@@ -74,12 +74,9 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   resolveImport(src) {
     src = this.importPathToUrl(src)
     this.reqInst(src, URL)
-
-    if (jm.optUrlFileExt(src) === jc.conf.getFileExtSrc()) {
-      throw this.err(`FIXME NYI: need to use root to convert Jisp to JS and resolve to a URL of the resulting JS file`)
-      // return this.reqAncFind(jm.blahBlaher).blahBlah(src)
+    if (jm.optUrlExt(src) === jc.conf.getFileExtSrc()) {
+      return this.reqAncFind(jm.isLangFileResolver).resolveLangFile(src)
     }
-
     return src
   }
 
