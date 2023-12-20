@@ -39,7 +39,9 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   declareParams() {
-    for (const val of this.reqParams().childIter()) val.asReqInst(jniu.IdentUnqual).declareLex()
+    for (const val of this.reqParams().childIter()) {
+      val.asReqInst(jniu.IdentUnqual).declareLex()
+    }
   }
 
   macroBody() {return this.reqSrcNode().macroFrom(3)}
@@ -47,12 +49,24 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   compile() {
     const prn = this.reqCodePrinter()
 
-    return `function ${
-      a.reqStr(this.reqIdent().compile())
-    }${
-      prn.compileParensWithExpressions(this.reqParams().childIter())
-    } ${
-      prn.compileBracesWithStatements(this.body())
-    }`
+    return (
+      ``
+      + `function `
+      + a.reqStr(this.reqIdent().compile())
+      + a.reqStr(prn.compileParensWithExpressions(this.reqParams().childIter()))
+      + ` `
+      + a.reqStr(prn.compileBracesWithStatements(this.body()))
+    )
+  }
+
+  isChildStatement(val) {
+    const list = this.reqSrcList()
+
+    return val.ownParent() === list && (
+      true
+      && val !== list.optChildAt(0)
+      && val !== list.optChildAt(1)
+      && val !== list.optChildAt(2)
+    )
   }
 }

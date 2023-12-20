@@ -1,9 +1,11 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jr from './jisp_ref.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jch from './jisp_child.mjs'
+import * as jp from './jisp_parent.mjs'
 import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
 import * as jnsd from './jisp_node_sourced.mjs'
@@ -44,9 +46,23 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 `MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
 nodes, they must prevent cycles too.
 */
-export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
-  jnsd.MixOwnNodeSourced.goc(jsn.MixOwnSpanned.goc(jch.MixChild.goc(ji.MixInsp.goc(a.Emp))))
-)) {
+export class Node extends (
+  jnsl.MixNsLexed.goc(
+    jcpd.MixCodePrinted.goc(
+      jnsd.MixOwnNodeSourced.goc(
+        jsn.MixOwnSpanned.goc(
+          jp.MixParent.goc(
+            jch.MixChild.goc(
+              ji.MixInsp.goc(
+                a.Emp
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+) {
   // For `MixOwnSpanned`.
   get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
@@ -68,26 +84,6 @@ export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
     if (a.isInst(err, je.CodeErr) || !this.optSpan()) return err
     return this.err(jm.renderErrLax(err), {cause: err})
   }
-
-  /*
-  FIXME implement or move.
-
-  FIXME consider the following:
-
-    * An expression is something whose value is used.
-
-    * A statement is something whose value is unused.
-
-    * The above is impossible with implicit return. Remove implicit return.
-
-    * We must implement support for detecting value used/unused anyway,
-      in order to properly generate code.
-  */
-  isExpression() {return false}
-  isStatement() {return !this.isExpression()}
-  isInModuleRoot() {return false}
-  isExportable() {return this.isStatement() && this.isInModuleRoot()}
-  isCalled() {return false}
 
   /*
   Declares the current node in the nearest ancestor lexical namespace. The
@@ -147,6 +143,39 @@ export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
     )
   }
 
+  /*
+  Subclasses may override this to allow some children to behave as statements.
+  For example, statements are allowed in module roots, function bodies, blocks,
+  and so on.
+
+  Overrides should mind the following:
+
+    * An expression is something whose value is used.
+    * A statement is something whose value is unused.
+  */
+  isChildStatement(val) {
+    /*
+    This is nearly identical to the implementation of the base method
+    `MixParent..reqValidChild`. We don't call it here to avoid surprising
+    behaviors in case of unusual overrides in subclasses.
+    */
+    if (jc.conf.getDebug()) this.reqChildParentMatch(val)
+    return false
+  }
+
+  /*
+  Some parents can explicitly decide that some children are statements.
+  Otherwise, it seems safer to assume that the node is an expression.
+  */
+  isStatement() {
+    return !!a.onlyInst(this.optParent(), Node)?.isChildStatement(this)
+  }
+
+  isExpression() {return !this.isStatement()}
+  isInModuleRoot() {return false}
+  isExportable() {return this.isStatement() && this.isInModuleRoot()}
+  isCalled() {return false}
+
   // Some node types may override this to indicate that they may be safely
   // elided from the AST when tokenizing or lexing.
   isCosmetic() {return false}
@@ -183,6 +212,9 @@ export class Node extends jnsl.MixNsLexed.goc(jcpd.MixCodePrinted.goc(
   static macroNodeSync(prev) {
     if (!a.optInst(prev, Node)) return undefined
     const next = prev.macro()
+    if (a.isPromise(next)) {
+      throw prev.err(`expected node ${a.show(prev)} to macro synchronously, but received a promise`)
+    }
     return this.macroNodeSyncWith(prev, next)
   }
 

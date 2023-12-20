@@ -23,7 +23,6 @@ import * as mod from "./some_other_module";
 await t.test(async function test_Import_as_expression() {
   const mod = new jnm.Module().setParent(new jr.Root()).parse(`
 [use "jisp:prelude" "*"]
-
 [const someVal [import "./some_other_module"]]
 `)
 

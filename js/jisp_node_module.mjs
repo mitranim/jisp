@@ -30,20 +30,25 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   Async override of `NodeList..macroImpl`. This let us support, in module root
   only, async macros such as `Use`. Import macros have to be asynchronous
   because of native JS imports, which return promises. Other macros must be
-  synchronous for simplicity and speed.
+  synchronous for simplicity and speed. We may consider extending async support
+  to other parts of the AST in the future.
   */
   async macroImpl() {
     let ind = -1
+
     while (++ind < this.childCount()) {
       let val = this.constructor.macroNode(this.reqChildAt(ind))
       if (a.isPromise(val)) val = await val
       this.replaceChildAt(ind, val)
     }
+
     return this
   }
 
   compile() {return this.compileBody()}
   compileBody() {return this.reqCodePrinter().compileStatements(this.childIter())}
+
+  isChildStatement() {return true}
 
   /*
   Override for `Node..err` to avoid using `CodeErr`. A module span always points
