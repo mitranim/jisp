@@ -2,8 +2,6 @@ import * as ti from './test_init.mjs'
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as tu from './test_util.mjs'
-import * as jl from '../js/jisp_lexer.mjs'
-import * as jnbrk from '../js/jisp_node_brackets.mjs'
 import * as jnm from '../js/jisp_node_module.mjs'
 import * as jr from '../js/jisp_root.mjs'
 

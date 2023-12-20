@@ -13,14 +13,14 @@ subset of the `Node` interface. Inputs may be arbitrary objects that implement
 the correct methods.
 */
 export class CodePrinter extends a.Emp {
+  map(src, fun) {return a.compact(a.arr(src).map(fun, this))}
+
   compile(src) {
     if (a.isNil(src)) return ``
     return a.reqStr(src.compile())
   }
 
-  mapCompile(src) {
-    return a.compact(a.arr(src).map(this.compile, this))
-  }
+  mapCompile(src) {return this.map(src, this.compile)}
 
   compileNotCosmetic(src) {
     if (a.isNil(src) || src.isCosmetic()) return ``
@@ -28,16 +28,25 @@ export class CodePrinter extends a.Emp {
   }
 
   mapCompileNotCosmetic(src) {
-    return a.compact(a.arr(src).map(this.compileNotCosmetic, this))
+    return this.map(src, this.compileNotCosmetic)
   }
 
   compileExpressions(src) {
     return this.mapCompileNotCosmetic(src).join(`, `)
   }
 
+  compileStatement(src) {
+    const out = a.reqStr(this.compileNotCosmetic(src))
+    return out && (out + `;`)
+  }
+
+  mapCompileStatements(src) {
+    return this.map(src, this.compileStatement)
+  }
+
   compileStatements(src) {
-    const tar = this.mapCompileNotCosmetic(src).join(`;\n`)
-    return tar && (`\n` + tar + `;\n`)
+    const tar = this.mapCompileStatements(src).join(`\n`)
+    return tar && (`\n` + tar + `\n`)
   }
 
   compileParensWithExpressions(src) {

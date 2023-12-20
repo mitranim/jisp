@@ -15,8 +15,11 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
     )
   }
 
-  macroImpl() {return this.macroFrom(0)}
-
+  /*
+  For use by subclasses. Note that this class should avoid defining `.macroImpl`
+  to avoid having a confusing default behavior in subclasses without an
+  override, particularly in subclasses of `ListMacro`.
+  */
   macroFrom(ind) {
     this.req(ind, a.isNat)
     while (ind < this.childCount()) this.macroAt(ind++)
