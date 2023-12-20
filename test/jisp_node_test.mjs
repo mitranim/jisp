@@ -1,6 +1,6 @@
-import * as ti from './test_init.mjs'
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
+import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jsp from '../js/jisp_span.mjs'
 import * as jnv from '../js/jisp_node_val.mjs'

@@ -176,7 +176,7 @@ export class Node extends (
   // Used by some "macro" node types.
   reqStatement() {
     if (this.isExpression()) {
-      throw this.err(`node ${a.show(this)} can only be used as a statement`)
+      throw this.err(`${a.show(this)} can only be used as a statement`)
     }
     return this
   }

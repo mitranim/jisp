@@ -55,7 +55,7 @@ export class ListMacro extends jnnl.NodeList {
   reqChildInstAt(ind, cls) {
     const out = this.reqChildAt(ind)
     if (a.isInst(out, cls)) return out
-    throw out.err(`node ${a.show(this)} requires the child node at index ${ind} to be an instance of ${a.show(cls)}, found ${a.show(out)}`)
+    throw out.err(`${a.show(this)} requires the child node at index ${ind} to be an instance of ${a.show(cls)}, found ${a.show(out)}`)
   }
 }
 

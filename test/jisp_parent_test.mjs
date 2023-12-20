@@ -1,6 +1,6 @@
-import * as ti from './test_init.mjs'
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
+import * as ti from './test_init.mjs'
 import * as jp from '../js/jisp_parent.mjs'
 
 // TODO actual tests. For now, the file contains only benchmarks for some

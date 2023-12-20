@@ -84,7 +84,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   macroImpl() {
     const val = this.optResolveLiveVal()
     if (a.isSome(val)) return this.macroWithLiveVal(val)
-    this.setChild(this.constructor.macroNode(this.reqFirstChild()))
+    this.setChild(this.constructor.macroNodeSync(this.reqFirstChild()))
     return this
   }
 
