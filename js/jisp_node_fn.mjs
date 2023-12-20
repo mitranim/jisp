@@ -8,9 +8,9 @@ import * as jnt from './jisp_node_this.mjs'
 
 export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   pk() {return this.reqIdent().reqName()}
-  reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
-  reqParams() {return this.reqSrcInstAt(2, jnnl.NodeList)}
-  body() {return this.srcNodesFrom(3)}
+  reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+  reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
+  body() {return this.optChildSlice(3)}
 
   // Override for `MixOwnNsLexed`.
   makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
@@ -23,7 +23,8 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   macroImpl() {
-    this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountMin(3)
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCountMin(3)
     this.declareLex()
     this.declareParams()
     this.macroBody()
@@ -44,7 +45,7 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     }
   }
 
-  macroBody() {return this.reqSrcNode().macroFrom(3)}
+  macroBody() {return this.macroFrom(3)}
 
   compile() {
     const prn = this.reqCodePrinter()
@@ -60,13 +61,13 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   isChildStatement(val) {
-    const list = this.reqSrcList()
+    super.isChildStatement(val)
 
-    return val.ownParent() === list && (
+    return val.ownParent() === this && (
       true
-      && val !== list.optChildAt(0)
-      && val !== list.optChildAt(1)
-      && val !== list.optChildAt(2)
+      && val !== this.optChildAt(0)
+      && val !== this.optChildAt(1)
+      && val !== this.optChildAt(2)
     )
   }
 }

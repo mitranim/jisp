@@ -8,17 +8,18 @@ FIXME consider:
 */
 export class Const extends jnlm.ListMacro {
   pk() {return this.reqIdent().reqName()}
-  reqIdent() {return this.reqSrcInstAt(1, jniu.IdentUnqual)}
-  reqVal() {return this.reqSrcAt(2)}
+  reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+  reqVal() {return this.reqChildAt(2)}
 
   macroImpl() {
-    this.reqSrcList().reqEveryChildNotCosmetic().reqChildCount(3)
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCount(3)
     this.declareLex()
     this.macroVal()
     return this
   }
 
-  macroVal() {return this.reqSrcNode().macroAt(2)}
+  macroVal() {return this.macroAt(2)}
 
   compile() {
     this.reqStatement()

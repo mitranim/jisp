@@ -9,16 +9,17 @@ export class ImportBase extends jnlm.ListMacro {
   pk() {return this.reqDestName().reqName()}
   mixinStr() {return `*`}
 
-  reqAddr() {return this.reqSrcInstAt(1, jnst.Str)}
-  reqDest() {return this.reqSrcAt(2)}
-  optDest() {return this.optSrcAt(2)}
-  optDestName() {return this.onlySrcInstAt(2, jniu.IdentUnqual)}
-  reqDestName() {return this.reqSrcInstAt(2, jniu.IdentUnqual)}
-  optDestStr() {return this.onlySrcInstAt(2, jnst.Str)}
-  reqDestStr() {return this.reqSrcInstAt(2, jnst.Str)}
+  reqAddr() {return this.reqChildInstAt(1, jnst.Str)}
+  reqDest() {return this.reqChildAt(2)}
+  optDest() {return this.optChildAt(2)}
+  optDestName() {return this.optChildAt(2)?.asOnlyInst(jniu.IdentUnqual)}
+  reqDestName() {return this.reqChildInstAt(2, jniu.IdentUnqual)}
+  optDestStr() {return this.optChildAt(2)?.asOnlyInst(jnst.Str)}
+  reqDestStr() {return this.reqChildInstAt(2, jnst.Str)}
 
   macroImpl() {
-    this.reqSrcList().reqEveryChildNotCosmetic().reqChildCountBetween(2, 3)
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCountBetween(2, 3)
     this.reqAddr()
 
     if (!this.optDest()) return this.macroDestNil()

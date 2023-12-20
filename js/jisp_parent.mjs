@@ -112,7 +112,13 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       about safety against errant callers, this would make a shallow copy of
       the original array, but that would also penalize performance elsewhere.
       */
-      childArr() {return this.#initChildren()}
+      reqChildArr() {return this.#initChildren()}
+
+      setChildArr(val) {
+        this.#chi = this.opt(val, a.isTrueArr)
+        if (val) for (val of val) this.toValidChild(val)
+        return this
+      }
 
       /*
       This has "opt" in the name because we could also define a method

@@ -6,15 +6,13 @@ Short for "return". Compiles to the JS `return` statement. Should be available
 in the lexical namespace of every `Fn`, and nowhere else.
 */
 export class Ret extends jnlm.ListMacro {
-  optVal() {return this.optSrcAt(1)}
-  reqVal() {return this.reqSrcAt(1)}
+  optVal() {return this.optChildAt(1)}
+  reqVal() {return this.reqChildAt(1)}
 
   macroImpl() {
-    this
-      .reqSrcList()
-      .reqEveryChildNotCosmetic()
-      .reqChildCountBetween(1, 2)
-      .macroFrom(1)
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCountBetween(1, 2)
+    this.macroFrom(1)
     return this
   }
 

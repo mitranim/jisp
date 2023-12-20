@@ -40,20 +40,6 @@ export class DelimNodeList extends jnnl.NodeList {
     throw LexerErr.atNode(span.reqLast(), `missing closing ${a.show(suf)}`)
   }
 
-  reqEveryChildNotCosmetic() {
-    let ind = 0
-    while (ind < this.childCount()) this.reqChildNotCosmeticAt(ind++)
-    return this
-  }
-
-  reqChildNotCosmeticAt(ind) {
-    const val = this.reqChildAt(ind)
-    if (val.isCosmetic()) {
-      throw this.err(`unexpected cosmetic child node ${a.show(val)} at index ${a.show(ind)} in parent ${a.show(this)}`)
-    }
-    return val
-  }
-
   macroImpl() {
     this.reqEveryChildNotCosmetic()
 
@@ -67,7 +53,7 @@ export class DelimNodeList extends jnnl.NodeList {
   }
 
   compile() {
-    const src = a.filter(this.childArr(), jm.isNotCosmetic)
+    const src = a.filter(this.reqChildArr(), jm.isNotCosmetic)
     if (!src.length) {
       throw this.err(`unable to usefully compile empty node list ${a.show(this)}`)
     }

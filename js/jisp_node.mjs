@@ -172,6 +172,15 @@ export class Node extends (
   }
 
   isExpression() {return !this.isStatement()}
+
+  // Used by some "macro" node types.
+  reqStatement() {
+    if (this.isExpression()) {
+      throw this.err(`node ${a.show(this)} can only be used as a statement`)
+    }
+    return this
+  }
+
   isInModuleRoot() {return false}
   isExportable() {return this.isStatement() && this.isInModuleRoot()}
   isCalled() {return false}
@@ -182,7 +191,8 @@ export class Node extends (
 
   /*
   Indicates the base class for the input that must be replaced by this node.
-  Used by `DelimNodeList..macroImpl`.
+  For usage, see the override in `ListMacro` and special support in
+  `DelimNodeList..macroImpl`.
   */
   static macroSrcCls() {return Node}
 
