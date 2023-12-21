@@ -15,6 +15,11 @@ BENCH := test/$(TEST_FILE) --bench=true $(VERB_LONG) $(PREC_LONG) $(ONCE_LONG) $
 WATCH := watchexec $(CLEAR_SHORT) -r -d=0 -n
 SRC_JS := ./js
 
+# # Disables coloring in Deno.
+# export NO_COLOR=
+
+default: mock
+
 ifeq ($(verb),true)
 	OK = echo [$@] ok
 endif
@@ -42,3 +47,6 @@ else
 	eslint --config=./.eslintrc --ext=mjs $(SRC_JS)
 endif
 	$(OK)
+
+mock:
+	$(DENO) mock.mjs

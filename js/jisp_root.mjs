@@ -13,17 +13,8 @@ import * as jnu from './jisp_node_use.mjs'
 import * as jnm from './jisp_node_module.mjs'
 
 /*
-First approximation:
+TODO:
 
-  * Pluggable FS implementation, read-only.
-  * RAM-only caching.
-  * Dedup imports.
-  * No disk writes.
-
-TODO second approximation:
-
-  * Disk writes.
-  * Disk/net caching.
   * Module dependency graphs (acyclic).
   * Checksums (ƒ of path).
   * Use header files.
@@ -54,59 +45,81 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   /*
   FIXME:
 
-    * Promise dedup.
     * Deadlock detection.
-    * Persistent FS caching.
+    * Persistent FS caching. (Reused between different `Root` runs.)
       * Requires dependency graph for detecting outdated.
   */
   resolveLangFile(src) {
-    this.reqInst(src, URL)
-    src = jm.urlWithoutDecorations(src)
-    const key = this.req(src.href, a.isValidStr)
+    src = new jm.Url(src).toCanonical()
+    const key = src.href
     const tar = this.initImportCache()
     return tar.get(key) ?? tar.setted(key, this.resolveLangFileUncached(src))
   }
 
   async resolveLangFileUncached(srcUrl) {
-    this.req(srcUrl, jm.isCanonicalModuleUrl)
-
-    const srcStr = this.req(srcUrl.href, a.isValidStr)
-    const srcExt = p.posix.ext(srcUrl.pathname)
-    const expExtSrc = a.reqValidStr(jc.conf.getFileExtSrc())
-
-    if (srcExt !== expExtSrc) {
-      throw this.err(`expected import path with extension ${a.show(expExtSrc)}, got import path ${a.show(srcStr)}`)
-    }
-
+    const tarUrl = await this.srcUrlToTarUrl(srcUrl)
     const fs = this.reqFs()
-
-    const tarRel = (
-      a.stripSuf(fs.relTar(srcStr), expExtSrc) +
-      a.reqValidStr(jc.conf.getFileExtOut())
-    )
-
-    // TODO: stricter validation: ensure that the resolved target path is
-    // actually a subpath of `fs.reqTar()`.
-    if (!jm.isStrictRelPathStr(tarRel)) {
-      throw this.err(`expected FS ${a.show(fs)} of ${a.show(this)} to resolve import URL ${a.show(srcStr)} to relative path, got ${a.show(tarRel)}`)
-    }
-
-    const tarUrl = new URL(fs.toAbs(tarRel), `file:`)
-
-    /*
-    We pass `URL` here, rather than a string, for compatibility with Deno, where
-    string paths are interpreted as filesystem paths, whereas `URL` objects
-    enable support for file URLs.
-    */
     const srcText = await fs.read(srcUrl)
 
-    const mod = new this.Module().setParent(this).setUrl(srcStr).parse(srcText)
+    const mod = new this.Module()
+      .setParent(this)
+      .setUrl(srcUrl.href)
+      .parse(srcText)
+
     await mod.macro()
-    const tarText = this.req(mod.compile(), a.isStr)
+    const tarText = mod.compile()
 
     await fs.write(tarUrl, tarText)
     return tarUrl
   }
+
+  srcUrlToTarUrl(src) {
+    src = new jm.Url(src).toCanonical()
+    const key = src.href
+    const tar = this.#initSrcUrlToTarUrl()
+    return tar.get(key) ?? tar.setted(key, this.srcUrlToTarUrlUncached(src))
+  }
+
+  /*
+  Mostly for private use. May also be overridden by subclasses. Callers should
+  use `.srcUrlToTarUrl`.
+
+  FIXME consider returning string instead of URL object to avoid accidental
+  mutation by errant callers.
+
+  FIXME: opt-in overrides: mapping specific source dirs or paths to specific
+  intermediary paths, replacing the default hash.
+  */
+  async srcUrlToTarUrlUncached(src) {
+    this.reqInst(src, jm.Url)
+    if (!src.hasExtSrc()) return src
+
+    const tarUrl = this.reqFs().reqTarUrl()
+
+    const hash = await jm.strToHash(
+      src.clone().toDir().optRelTo(tarUrl) ??
+      src.href
+    )
+
+    const tarName = src.getBaseNameWithoutExt() + a.reqStr(jc.conf.getFileExtTar())
+    const tarPath = p.posix.join(hash, tarName)
+
+    return new jm.Url(tarPath, tarUrl)
+  }
+
+  /*
+  This caching is used for several reasons.
+
+  This potentially allows the algorithm that converts source URLs to target URLs
+  to be non-deterministic, for example by using random salts rather than
+  hashes. Storing the mapping from source URLs to target URLs allows us to
+  pretend that this conversion is a pure function.
+
+  This conversion may involve using the native crypto API for hashing, and many
+  operations wiht the native `URL` API, all of which are on a slow side.
+  */
+  #srcUrlToTarUrl = undefined
+  #initSrcUrlToTarUrl() {return this.#srcUrlToTarUrl ??= new jm.PromiseMap()}
 
   #importCache = undefined
   initImportCache() {return this.#importCache ??= new jm.PromiseMap()}
@@ -114,8 +127,8 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
 
 /*
   async resolveLangFileUncached(key) {
-    const nativeUrl = new URL(a.reqStr(key) + `.native` + jc.conf.getFileExtOut())
-    const headerUrl = new URL(a.reqStr(key) + `.header` + jc.conf.getFileExtOut())
+    const nativeUrl = new jm.Url(a.reqStr(key) + `.native` + jc.conf.getFileExtTar())
+    const headerUrl = new jm.Url(a.reqStr(key) + `.header` + jc.conf.getFileExtTar())
 
     // FIXME skip on 404.
     const [native, header] = await Promise.all([

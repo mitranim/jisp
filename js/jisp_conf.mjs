@@ -22,9 +22,9 @@ export const conf = new class Conf extends a.Emp {
   setFileExtSrc(val) {return this.#fileExtSrc = a.reqValidStr(val), this}
   getFileExtSrc() {return this.#fileExtSrc}
 
-  #fileExtOut = `.mjs`
-  setFileExtOut(val) {return this.#fileExtOut = a.reqValidStr(val), this}
-  getFileExtOut() {return this.#fileExtOut}
+  #fileExtTar = `.mjs`
+  setFileExtTar(val) {return this.#fileExtTar = a.reqValidStr(val), this}
+  getFileExtTar() {return this.#fileExtTar}
 
   /*
   Not implemented. This is meant to control whether `Root` attempts to reuse
@@ -35,6 +35,8 @@ export const conf = new class Conf extends a.Emp {
   files. We may implement those features in the future.
 
   Note that we ALWAYS write compiled files to disk regardless of this setting.
+  This is meant to allow us to skip recompilation between different runs of the
+  compiler.
   */
   #fsCaching = false
   setFsCaching(val) {return this.#fsCaching = a.reqBool(val), this}
@@ -63,8 +65,8 @@ export function setUrlScheme(val) {urlScheme = a.reqValidStr(val)}
 export let fileExtSrc = `.jisp`
 export function setFileExtSrc(val) {fileExtSrc = a.reqValidStr(val)}
 
-export let fileExtOut = `.mjs`
-export function setFileExtOut(val) {fileExtOut = a.reqValidStr(val)}
+export let fileExtTar = `.mjs`
+export function setFileExtTar(val) {fileExtTar = a.reqValidStr(val)}
 
 export let fsCaching = false
 export function setFsCaching(val) {fsCaching = a.reqBool(val)}

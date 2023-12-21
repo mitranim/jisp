@@ -3,7 +3,6 @@
 
 !/.*rc
 !/.*ignore
-!/*.mjs
 
 !/makefile
 !/readme.md

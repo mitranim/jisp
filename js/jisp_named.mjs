@@ -10,7 +10,12 @@ export class MixNamed extends a.DedupMixinCache {
     return class MixNamed extends je.MixErrer.goc(cls) {
       ownName() {}
       optName() {}
-      reqName() {return this.optName() ?? this.throw(`missing name at ${a.show(this)}`)}
+      reqName() {
+        return (
+          this.optName() ??
+          this.throw(`missing name at ${a.show(this)}`)
+        )
+      }
     }
   }
 }
@@ -23,9 +28,15 @@ export class MixOwnNamed extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNamed extends MixNamed.goc(cls) {
       #name = undefined
+      setName(val) {return this.#name = this.req(val, a.isValidStr), this}
       ownName() {return this.#name}
       optName() {return this.#name}
-      setName(val) {return this.#name = this.req(val, a.isValidStr), this}
+      reqName() {
+        return (
+          this.ownName() ??
+          this.throw(`missing own name at ${a.show(this)}`)
+        )
+      }
     }
   }
 }

@@ -50,4 +50,24 @@ export class ImportBase extends jnlm.ListMacro {
   msgArgDest() {
     return `macro ${a.show(this)} requires the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
   }
+
+  async reqResolveImport() {
+    const srcPath = this.reqAddr().reqVal()
+
+    // This is typically a `Module`.
+    const resolver = this.reqParent().reqAncFind(jm.isImportResolver)
+
+    /*
+    Import resolving is asynchronous because it may involve converting a Jisp
+    file to a JS file, or finding an already-existing compiled file.
+    Compilation is async because it may involve native imports, and FS
+    operations are async in the general case (varies by platform).
+    */
+    const tarUrl = await resolver.resolveImport(srcPath)
+
+    if (!a.isInst(tarUrl, URL)) {
+      throw this.err(`expected import resolver ${a.show(resolver)} to resolve import path ${a.show(srcPath)} to URL object, but it resolved to ${a.show(tarUrl)}`)
+    }
+    return tarUrl
+  }
 }

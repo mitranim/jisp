@@ -6,35 +6,26 @@ import * as ji from './jisp_insp.mjs'
 import * as jfs from './jisp_fs.mjs'
 
 export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
-  #src = undefined
-  setSrc(val) {return this.#src = a.reqStr(val), this}
-  ownSrc() {return this.#src}
-  reqSrc() {return a.reqStr(this.#src)}
-  laxSrc() {return a.laxStr(this.#src)}
-  optSrc() {return this.#src}
+  #tarUrlStr = undefined
+  setTarUrlStr(val) {return this.#tarUrlStr = a.req(val, jm.isAbsUrlStrDirLike), this}
+  optTarUrlStr() {return this.#tarUrlStr}
 
-  #tar = undefined
-  setTar(val) {return this.#tar = a.reqStr(val), this}
-  ownTar() {return this.#tar}
-  reqTar() {return a.reqStr(this.#tar)}
-  laxTar() {return a.laxStr(this.#tar)}
-  optTar() {return this.#tar}
-
-  relSrc(path) {return io.paths.join(this.laxSrc(), path)}
-  readSrc(path) {return this.read(this.relSrc(path))}
-  writeSrc(path, body) {return this.write(this.relSrc(path), body)}
-
-  relTar(path) {return io.paths.join(this.laxTar(), path)}
-  readTar(path) {return this.read(this.relTar(path))}
-  writeTar(path, body) {return this.write(this.relTar(path), body)}
-
-  toAbs(path) {
-    if (p.posix.isAbs(path)) return path
-    return io.paths.join(io.cwd(), path)
+  optTarUrl() {
+    const src = this.optTarUrlStr()
+    return src && new jm.Url(src)
   }
 
-  async checksum(path) {return (await Deno.stat(path)).mtime}
+  reqTarUrl() {return new jm.Url(this.reqTarUrlStr())}
+
+  setTar(val) {
+    this.#tarUrlStr = new jm.Url(val, this.cwdUrl()).toUndecorated().toDirLike().href
+    return this
+  }
+
+  cwdUrl() {return new jm.Url(io.paths.dirLike(io.cwd()), `file:`)}
+
   async read(path) {return Deno.readTextFile(path)}
+  async checksum(path) {return (await Deno.stat(path)).mtime}
 
   async write(path, body) {
     await this.mkdirForFile(path)
@@ -42,14 +33,22 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   }
 
   async mkdirForFile(path) {
-    if (a.isInst(path, URL)) path = jm.dirUrl(path)
-    else path = io.paths.dir(path)
-    if (path) await Deno.mkdir(path, {recursive: true})
+    if (a.isInst(path, URL)) {
+      await Deno.mkdir(new jm.Url(path).toDir(), {recursive: true})
+      return
+    }
+    await this.mkdir(io.paths.dir(path))
   }
 
   async mkdir(path) {
     path = io.paths.clean(path)
-    if (path) await Deno.mkdir(path, {recursive: true})
+
+    // When the directory path is an empty string, then the directory should
+    // already exist. We could check, but it would be an unnecessary expense.
+    // Passing this to `Deno.mkdir` would cause an exception.
+    if (!path) return
+
+    await Deno.mkdir(path, {recursive: true})
   }
 
   [ji.symInsp](tar) {return tar.funs(this.ownSrc, this.ownTar)}

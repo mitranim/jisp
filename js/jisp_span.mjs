@@ -58,8 +58,16 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   }
 
   static range(begin, end) {
+    const beginSrc = begin.ownSrc()
+    const endSrc = end.ownSrc()
+
+    // TODO: consider including a preview of the two sources.
+    if (beginSrc !== endSrc) {
+      throw Error(`unable to create range from spans ${a.show(begin)} and ${a.show(end)} with mismatching source`)
+    }
+
     return new this()
-      .setSrc(begin.ownSrc())
+      .setSrc(beginSrc)
       .setPos(begin.ownPos())
       .setLen(end.nextPos() - begin.ownPos())
   }

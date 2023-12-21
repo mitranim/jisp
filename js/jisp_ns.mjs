@@ -28,10 +28,10 @@ descendants can access those names. In modern languages (at the time of
 writing), the two most common scoping approaches are dynamic scoping and
 lexical scoping. In both lexical and dynamic scoping, any given namespace
 should be accessible only to the current-level node and descendants, but not to
-ancestors. Every language has dynamic scoping or makes it possible to hack it
-in. Most languages have lexical scoping, and it tends to be preferred. Jisp
-deals only with lexical scoping, because dynamic scoping is a runtime-only
-feature which is out of scope for our compiler (pun intended).
+ancestors. Every language has dynamic scoping, either first-class, or possible
+to hack it in. Most languages have lexical scoping, and it tends to be
+preferred. Jisp deals only with lexical scoping, because dynamic scoping is a
+runtime-only feature which is out of scope for our compiler.
 
 This is called "namespace" rather than "scope" because the term "scope" refers
 to the extent in which a given name is declared, often encompassing several
@@ -187,7 +187,7 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
 
 /*
 Short for "mixin: own lexically namespaced". Any class using this mixin is
-considered to have its own lexical namespace.
+considered to have its own lexical namespace. Also see `MixNsLexed`.
 */
 export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {

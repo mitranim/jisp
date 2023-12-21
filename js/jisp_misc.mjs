@@ -3,6 +3,7 @@ import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
 
 export function joinLines(...val) {return a.joinLinesOptLax(val)}
+export function joinUnderscore(...val) {return a.joinLax(val, `_`)}
 export function isStrOrArr(val) {return a.isStr(val) || a.isTrueArr(val)}
 export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
 export function preview(src) {return a.ell(src, 128)}
@@ -68,6 +69,11 @@ export function reqNativeModule(val) {return a.req(val, isNativeModule)}
 export function optNativeModule(val) {return a.opt(val, isNativeModule)}
 
 // SYNC[canonical_module_url]
+export function isCanonicalModuleFileUrl(val) {
+  return isAbsFileUrl(val) && isCanonicalModuleUrl(val)
+}
+
+// SYNC[canonical_module_url]
 export function isCanonicalModuleUrl(val) {
   return isAbsUrl(val) && !val.search && !val.hash
 }
@@ -82,6 +88,11 @@ export function isAbsFileUrl(val) {
 
 export function isAbsNetworkUrl(val) {
   return a.isInst(val, URL) && val.protocol !== `file:` && !!val.hostname
+}
+
+// SYNC[canonical_module_url]
+export function isCanonicalModuleFileUrlStr(val) {
+  return isAbsFileUrlStr(val) && isCanonicalModuleUrlStr(val)
 }
 
 // SYNC[canonical_module_url]
@@ -103,33 +114,16 @@ export function stripUrlDecorations(val) {
   return val
 }
 
-export function urlWithoutDecorations(val) {
-  a.reqInst(val, URL)
-  if (!val.search && !val.hash) return val
-  return urlStripDecorations(new URL(val))
-}
-
-export function urlStripDecorations(val) {
-  a.reqInst(val, URL)
-  val.search = ``
-  val.hash = ``
-  return val
-}
-
 /*
-Missing feature of `@mitranim/js/path.mjs`→`Paths`. Various methods of `Paths`,
-such as `Paths..dir`, support only strings, and don't support file URLs. In our
-compiler, FS operations use mostly file URLs. We may consider subclassing
-`Paths` and making some overrides instead of spreading around random function
-calls like this. We may also consider subclassing `URL` to add various relevant
-methods.
-*/
-export function dirUrl(val) {
-  val = new URL(val)
-  urlStripDecorations(val)
-  val.pathname = p.posix.dir(val.pathname)
-  return val
+export function replaceExt(src, exp) {
+  a.reqStr(src)
+  a.reqStr(exp)
+
+  const act = p.posix.ext(src)
+  if (act === exp) return src
+  return a.stripSuf(src, act) + exp
 }
+*/
 
 function sliceUntil(src, str) {
   src = a.reqStr(src)
@@ -141,6 +135,10 @@ function sliceUntil(src, str) {
 
 export function isAbsUrlStr(val) {
   return isAbsFileUrlStr(val) || isAbsNetworkUrlStr(val)
+}
+
+export function isAbsUrlStrDirLike(val) {
+  return isAbsUrlStr(val) && !isStrWithUrlDecorations(val) && p.posix.isDirLike(val)
 }
 
 /*
@@ -219,9 +217,19 @@ export function isStrictRelPathStr(val) {
   )
 }
 
+/*
+Opposite of `p.paths.clean`. Instead of cleaning the path, it "uncleans" the
+path, prepending `./` when the path is strictly relative.
+*/
+export function toPosixRel(val) {
+  a.reqStr(val)
+  if (isStrictRelPathStr(val)) return p.posix.relPre() + val
+  return val
+}
+
 export function optCompilerImportPathToCompilerUrl(src) {
   const tar = optCompilerImportPathToCompilerUrlStr(src)
-  return tar && new URL(tar)
+  return tar && new Url(tar)
 }
 
 export function optCompilerImportPathToCompilerUrlStr(src) {
@@ -242,7 +250,7 @@ export function toCompilerUrlStr(val) {
 
   return p.posix.join(
     p.posix.dir(import.meta.url),
-    stripUrlDecorations(val) + jc.conf.getFileExtOut(),
+    stripUrlDecorations(val) + jc.conf.getFileExtTar(),
   )
 }
 
@@ -262,26 +270,100 @@ export class PromiseMap extends a.TypedMap {
 //   reqVal(val) {return reqNativeModule(val)}
 // }
 
-// // FIXME use or remove.
-// export class Url extends URL {
-//   simple() {
-//     return pathJoinOpt(
-//       a.optStr(this.protocol).replace(/:/g, ``),
-//       a.optStr(this.hostname),
-//       a.optStr(this.pathname),
-//     )
-//   }
-// }
+export function toUrl(val) {return a.toInst(val, Url)}
+export function toUrlOpt(val) {return a.toInstOpt(val, Url)}
 
-/*
-Avoids `p.posix.join` because we're appending an absolute path to a relative
-path, which is forbidden in `@mitranim/js/path.mjs`.
-*/
-function pathJoinOpt(...val) {
-  let out = ``
-  for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
-  return out
+export class Url extends URL {
+  pk() {
+    if (this.isCanonical()) return this.href
+    throw Error(`unable to get primary key of non-canonical URL ${a.show(this.href)}; only canonical URLs may considered to be primary keys`)
+  }
+
+  // simple() {
+  //   return pathJoinOpt(
+  //     a.optStr(this.protocol).replace(/:/g, ``),
+  //     a.optStr(this.hostname),
+  //     a.optStr(this.pathname),
+  //   )
+  // }
+
+  clone() {return new this.constructor(this)}
+  isAbs() {return this.isFile() ? !this.hostname : !!this.hostname}
+  isFile() {return this.protocol === `file:`}
+  isNet() {return !this.isFile()}
+  isDecorated() {return !!this.search || !!this.hash}
+  isCanonical() {return this.isAbs() && !this.isDecorated()}
+
+  toCanonical() {
+    this.toUndecorated()
+
+    // While we can automatically undecorate the URL, we can't automatically
+    // convert relative URLs to absolute.
+    if (!this.isCanonical()) throw Error(`unable to convert URL ${a.show(this)} ${a.show(this.href)} to canonical`)
+
+    return this
+  }
+
+  toUndecorated() {
+    this.search = ``
+    this.hash = ``
+    return this
+  }
+
+  getDir() {return p.posix.dir(this.pathname)}
+
+  toDir() {
+    this.pathname = p.posix.dirLike(this.getDir())
+    return this
+  }
+
+  toDirLike() {
+    this.pathname = p.posix.dirLike(this.pathname)
+    return this
+  }
+
+  getBaseName() {return p.posix.base(this.pathname)}
+  getBaseNameWithoutExt() {return p.posix.name(this.pathname)}
+  getExt() {return p.posix.ext(this.pathname)}
+  hasExt() {return !!this.getExt()}
+
+  // TODO more descriptive name. This may be confusing or ambiguous.
+  hasExtSrc() {return this.getExt() === jc.conf.getFileExtSrc()}
+
+  // TODO more descriptive name. This may be confusing or ambiguous.
+  hasExtTar() {return this.getExt() === jc.conf.getFileExtTar()}
+
+  setExtTar() {return this.setExt(jc.conf.getFileExtTar())}
+
+  setExt(val) {
+    a.reqStr(val)
+
+    const path = this.pathname
+    const prev = p.posix.ext(path)
+    if (prev === val) return this
+
+    this.pathname = a.stripSuf(path, prev) + val
+    return this
+  }
+
+  optRelTo(tar) {
+    if (!a.optInst(tar, URL)) return undefined
+    if (this.protocol !== tar.protocol) return undefined
+    if (this.hostname !== tar.hostname) return undefined
+    if (this.port !== tar.port) return undefined
+    return p.posix.relTo(this.pathname, tar.pathname)
+  }
 }
+
+// /*
+// Avoids `p.posix.join` because we're appending an absolute path to a relative
+// path, which is forbidden in `@mitranim/js/path.mjs`.
+// */
+// function pathJoinOpt(...val) {
+//   let out = ``
+//   for (val of val) if (a.isSome(val)) out = a.inter(out, `/`, a.renderLax(val))
+//   return out
+// }
 
 /*
 export function partitionWhile(src, fun) {
@@ -307,3 +389,9 @@ export function partitionWhile(src, fun) {
   return [truthy, falsy]
 }
 */
+
+export async function strToHash(src) {
+  const srcArr = new TextEncoder().encode(a.reqStr(src))
+  const outBuf = await crypto.subtle.digest(`sha-256`, srcArr)
+  return a.arrHex(new Uint8Array(outBuf))
+}

@@ -43,7 +43,7 @@ export function testCompiled(act, exp) {
     throw new t.AssertError(`
 mismatch of compiled text and expected text
 
-compiled:
+actual:
 ---
 ${act}
 ---
