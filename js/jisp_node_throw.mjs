@@ -9,8 +9,7 @@ export class Throw extends jnlm.ListMacro {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
-    this.macroFrom(1)
-    return this
+    return this.macroFrom(1)
   }
 
   compile() {

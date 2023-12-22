@@ -24,10 +24,7 @@ import * as mod1 from "https://example.com/some_file";
 `)
 })
 
-// FIXME unfuck: requires nested async macroing.
 await t.test(async function test_Import_as_expression() {
-  // return
-
   await jrt.testModuleCompile(`
 [use "jisp:prelude" "*"]
 

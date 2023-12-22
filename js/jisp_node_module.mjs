@@ -34,26 +34,16 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   }
 
   /*
-  Async override of `NodeList..macroImpl`. This let us support, in module root
-  only, async macros such as `Use`. Import macros have to be asynchronous
-  because of native JS imports, which return promises. Other macros must be
-  synchronous for simplicity and speed. We may consider extending async support
-  to other parts of the AST in the future.
+  Immediate children of a module typically begin with `Use`, whose macro
+  implementation is async. As a result, module macroing is almost always
+  asynchronous. We prefer synchronous macroing whenever possible, due to
+  huge overheads of async/await, but we should also automatically switch
+  into async mode when necessary. The super method `NodeList..macroFrom`
+  should support both modes.
   */
-  async macroImpl() {
-    let ind = -1
+  macroImpl() {return this.macroFrom(0)}
 
-    while (++ind < this.childCount()) {
-      let val = this.constructor.macroNode(this.reqChildAt(ind))
-      if (a.isPromise(val)) val = await val
-      this.replaceChildAt(ind, val)
-    }
-
-    return this
-  }
-
-  compile() {return this.compileBody()}
-  compileBody() {return this.reqCodePrinter().compileStatements(this.childIter())}
+  compile() {return this.reqCodePrinter().compileStatements(this.childIter())}
 
   isChildStatement() {return true}
 
@@ -194,6 +184,6 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   }
 
   [ji.symInsp](tar) {
-    return super[ji.symInsp](tar).funs(this.optUrl, this.optSpan, this.optNsLex)
+    return super[ji.symInsp](tar.funs(this.optUrl, this.optNsLex))
   }
 }

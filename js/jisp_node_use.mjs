@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
@@ -12,18 +13,6 @@ is used for runtime-only imports.
 This should be the ONLY member of the "predeclared" scope. All other identifiers
 provided by the language must be part of the "prelude" module which must be
 imported via `Use`.
-
-TODO:
-
-  * Instead of `"*"`, consider using `*` without quotes. Requires tokenizer
-    changes. At the time of writing, this syntax is not supported by our
-    tokenizer at all. Note that unlike traditional Lisps, we restrict our
-    identifiers to the format of valid JS identifiers. See
-    `Ident.regexpIdentUnqual`.
-
-      [use `some_path` `*`]
-      ↓
-      [use `some_path` *]
 */
 export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnib.ImportBase)) {
   // Override for `MixOwnValued`.
@@ -96,4 +85,6 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnib.ImportBa
   async reqImport() {
     return this.setVal(await import(await this.reqResolveImport()))
   }
+
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optVal)}
 }

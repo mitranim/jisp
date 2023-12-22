@@ -269,7 +269,7 @@ export class Node extends (
     return next
   }
 
-  [ji.symInsp](tar) {return tar.funs(this.optSpan)}
+  [ji.symInsp](tar) {return tar.funs(this.decompile)}
 
   /*
   Placeholder. FIXME: this must be exactly copy-pasted into EVERY subclass and

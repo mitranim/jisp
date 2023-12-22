@@ -7,6 +7,16 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 // Base class for node subclasses that deal with imports. See `Use` and `Import`.
 export class ImportBase extends jnlm.ListMacro {
   pk() {return this.reqDestName().reqName()}
+
+  /*
+  Indicates the expected string content used for the "star" / "mixin" import
+  form. Some other languages use special syntax, such as unquoted asterisk,
+  dot, triple dot. We use a string with a star because at the time of writing,
+  our tokenizer and AST don't have a way of parsing and representing special
+  symbols such as an unquoted star. Note that unlike traditional Lisps, we
+  restrict our identifiers to the format of valid JS identifiers. See
+  `Ident.regexpIdentUnqual`.
+  */
   mixinStr() {return `*`}
 
   reqAddr() {return this.reqChildInstAt(1, jnst.Str)}

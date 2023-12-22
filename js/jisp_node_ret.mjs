@@ -12,8 +12,7 @@ export class Ret extends jnlm.ListMacro {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(1, 2)
-    this.macroFrom(1)
-    return this
+    return this.macroFrom(1)
   }
 
   compile() {

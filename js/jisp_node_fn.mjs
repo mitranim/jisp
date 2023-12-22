@@ -27,8 +27,7 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     this.reqChildCountMin(3)
     this.declareLex()
     this.declareParams()
-    this.macroBody()
-    return this
+    return this.macroFrom(3)
   }
 
   // Override for `Node..declareLex`.
@@ -44,8 +43,6 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       val.asReqInst(jniu.IdentUnqual).declareLex()
     }
   }
-
-  macroBody() {return this.macroFrom(3)}
 
   compile() {
     const prn = this.reqCodePrinter()

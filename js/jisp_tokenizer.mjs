@@ -70,6 +70,42 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
     )
   }
 
+  // // May override in subclass. Needs benching.
+  // get BracePre() {return jnbrc.BracePre}
+  // get BraceSuf() {return jnbrc.BraceSuf}
+  // get BracketPre() {return jnbrk.BracketPre}
+  // get BracketSuf() {return jnbrk.BracketSuf}
+  // get ParenPre() {return jnpar.ParenPre}
+  // get ParenSuf() {return jnpar.ParenSuf}
+  // get Space() {return jnsp.Space}
+  // get Comment() {return jnco.Comment}
+  // get Num() {return jnnu.Num}
+  // get StrBacktick() {return jnst.StrBacktick}
+  // get StrDouble() {return jnst.StrDouble}
+  // get IdentUnqual() {return jniu.IdentUnqual}
+  // get IdentAccess() {return jnia.IdentAccess}
+
+  // optStep() {
+  //   const span = this.reqSpan()
+  //
+  //   return (
+  //     this.BracePre.parse(span) ??
+  //     this.BraceSuf.parse(span) ??
+  //     this.BracketPre.parse(span) ??
+  //     this.BracketSuf.parse(span) ??
+  //     this.ParenPre.parse(span) ??
+  //     this.ParenSuf.parse(span) ??
+  //     this.Space.parse(span) ??
+  //     this.Comment.parse(span) ??
+  //     this.Num.parse(span) ??
+  //     this.StrBacktick.parse(span) ??
+  //     this.StrDouble.parse(span) ??
+  //     this.IdentUnqual.parse(span) ??
+  //     this.IdentAccess.parse(span) ??
+  //     undefined
+  //   )
+  // }
+
   err(msg, opt) {
     opt = a.laxDict(opt)
     opt.span = this.optSpan()

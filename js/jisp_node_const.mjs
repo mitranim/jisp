@@ -15,8 +15,7 @@ export class Const extends jnlm.ListMacro {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
     this.declareLex()
-    this.macroVal()
-    return this
+    return this.macroFrom(2)
   }
 
   macroVal() {return this.macroAt(2)}

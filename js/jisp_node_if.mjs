@@ -25,8 +25,7 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 4)
-    this.macroFrom(1)
-    return this
+    return this.macroFrom(1)
   }
 
   compile() {
