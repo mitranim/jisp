@@ -222,6 +222,7 @@ Opposite of `p.paths.clean`. Instead of cleaning the path, it "uncleans" the
 path, prepending `./` when the path is strictly relative.
 */
 export function toPosixRel(val) {
+  if (!a.optStr(val)) return undefined
   a.reqStr(val)
   if (isStrictRelPathStr(val)) return p.posix.relPre() + val
   return val

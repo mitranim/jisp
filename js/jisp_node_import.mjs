@@ -82,33 +82,11 @@ export class Import extends jnib.ImportBase {
     if (!importSrcUrl) return this
 
     // FIXME unfuck.
-    // Incomplete stopgap solution.
-    // This is in the wrong place, and prevents cyclic dependencies between modules.
-    if (importSrcUrl.hasExtSrc()) {
-      await this.reqResolveImport()
-    }
-
-    const importTarUrl = await mod.srcUrlToTarUrl(importSrcUrl)
-    const importTarRel = jm.toPosixRel(importTarUrl.optRelTo(moduleTarUrl.clone().toDir()))
-    this.setTarAddr(importTarRel)
-    return this
-  }
-
-  async _optResolveTarAddr() {
-    const mod = this.optAncMatch(jnm.Module)
-    if (!mod) return this
-
-    const moduleTarUrl = await mod.optTarUrl()
-    if (!moduleTarUrl) return this
-
-    const importSrcStr = this.reqAddr().reqVal()
-    const importSrcUrl = mod.optImportSrcPathToImportSrcUrl(importSrcStr)
-    if (!importSrcUrl) return this
-
-    // Incomplete stopgap solution.
-    if (importSrcUrl.hasExtSrc()) {
-
-    }
+    //
+    // Incomplete stopgap solution. This is in the wrong place, and prevents us
+    // from having cyclic dependencies between modules, which are natively
+    // supported in JS and sometimes useful.
+    if (importSrcUrl.hasExtSrc()) await this.reqResolveImport()
 
     const importTarUrl = await mod.srcUrlToTarUrl(importSrcUrl)
     const importTarRel = jm.toPosixRel(importTarUrl.optRelTo(moduleTarUrl.clone().toDir()))
