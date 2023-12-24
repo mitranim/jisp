@@ -1,4 +1,7 @@
 import * as ti from './test_init.mjs'
+import * as tu from './test_util.mjs'
+
+tu.clearTar()
 
 await import(`./jisp_misc_test.mjs`)
 await import(`./jisp_parent_test.mjs`)

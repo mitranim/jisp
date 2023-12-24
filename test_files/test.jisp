@@ -1,6 +1,6 @@
-[use `jisp:prelude` `*`]
-[use `jisp:prelude` p]
-[use `jisp:prelude` pre]
+[use `jisp:prelude.mjs` `*`]
+[use `jisp:prelude.mjs` p]
+[use `jisp:prelude.mjs` pre]
 
 ; Generates a syntactically valid call that panics at runtime.
 [nil no ok]

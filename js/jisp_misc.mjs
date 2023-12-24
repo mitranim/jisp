@@ -108,11 +108,11 @@ export function isStrWithUrlDecorations(val) {
   return a.isStr(val) && (val.includes(`?`) || val.includes(`#`))
 }
 
-export function stripUrlDecorations(val) {
-  val = sliceUntil(val, `#`)
-  val = sliceUntil(val, `?`)
-  return val
-}
+// export function stripUrlDecorations(val) {
+//   val = sliceUntil(val, `#`)
+//   val = sliceUntil(val, `?`)
+//   return val
+// }
 
 /*
 export function replaceExt(src, exp) {
@@ -204,6 +204,12 @@ export function hasFileScheme(val) {
 Short for "is strictly relative". Similar to the functions `p.posix.isRel` and
 `p.windows.isRel`, but more restrictive than both. Requires the path to have NO
 special prefix. Must be used for paths in `jisp:<path>`.
+
+FIXME rename to "implicit relative" or "relative implicit" and add a function
+that answers if the path is explicitly relative. FIXME consider moving to
+`@mitranim/js`.
+
+FIXME consider dropping.
 */
 export function isStrictRelPathStr(val) {
   return (
@@ -220,6 +226,8 @@ export function isStrictRelPathStr(val) {
 /*
 Opposite of `p.paths.clean`. Instead of cleaning the path, it "uncleans" the
 path, prepending `./` when the path is strictly relative.
+
+FIXME consider dropping.
 */
 export function toPosixRel(val) {
   if (!a.optStr(val)) return undefined
@@ -229,30 +237,12 @@ export function toPosixRel(val) {
 }
 
 export function optCompilerImportPathToCompilerUrl(src) {
-  const tar = optCompilerImportPathToCompilerUrlStr(src)
-  return tar && new Url(tar)
-}
-
-export function optCompilerImportPathToCompilerUrlStr(src) {
   if (!a.optStr(src)) return undefined
 
   const sch = jc.conf.getUrlScheme()
   if (!src.startsWith(sch)) return undefined
 
-  return toCompilerUrlStr(src.slice(sch.length))
-}
-
-export function isCompilerImportPath(val) {
-  return a.isStr(val) && val.startsWith(jc.conf.getUrlScheme())
-}
-
-export function toCompilerUrlStr(val) {
-  a.req(val, isStrictRelPathStr)
-
-  return p.posix.join(
-    p.posix.dir(import.meta.url),
-    stripUrlDecorations(val) + jc.conf.getFileExtTar(),
-  )
+  return new Url(src.slice(sch.length), import.meta.url)
 }
 
 export function optUrlExt(val) {

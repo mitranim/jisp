@@ -8,7 +8,7 @@ await t.test(async function test_If() {
   await t.test(async function test_invalid() {
     await jrt.testModuleFail(
 `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 [if]
 `,
       `[object If] expected between 2 and 4 children, got 1`,
@@ -16,7 +16,7 @@ await t.test(async function test_If() {
 
     await jrt.testModuleFail(
 `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 [const someConst [if]]
 `,
       `[object If] expected between 2 and 4 children, got 1`,
@@ -24,7 +24,7 @@ await t.test(async function test_If() {
 
     await jrt.testModuleFail(
 `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 [if 10 20 30 40]
 `,
       `[object If] expected between 2 and 4 children, got 5`,
@@ -32,7 +32,7 @@ await t.test(async function test_If() {
 
     await jrt.testModuleFail(
 `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 [const someConst [if 10 20 30 40]]
 `,
       `[object If] expected between 2 and 4 children, got 5`,
@@ -41,7 +41,7 @@ await t.test(async function test_If() {
 
   await t.test(async function test_as_statement() {
     await jrt.testModuleCompile(`
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [if 10]
 
@@ -59,7 +59,7 @@ else 30;;
 
   await t.test(async function test_as_expression() {
     await jrt.testModuleCompile(`
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [const someConst1 [if 10]]
 

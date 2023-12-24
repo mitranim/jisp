@@ -19,6 +19,11 @@ export class ImportBase extends jnlm.ListMacro {
   */
   mixinStr() {return `*`}
 
+  /*
+  FIXME: when this is used in expression mode, the address should be an
+  arbitrary expression. Requiring the address to be a literal string should be
+  done only in statement mode.
+  */
   reqAddr() {return this.reqChildInstAt(1, jnst.Str)}
   reqDest() {return this.reqChildAt(2)}
   optDest() {return this.optChildAt(2)}

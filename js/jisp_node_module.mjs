@@ -117,8 +117,8 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   returned URL should be suitable for use with the native pseudo-function
   `import`.
 
-    `jisp:prelude`   -> `file:///jisp/js/prelude.mjs`
-    `jisp:jisp_misc` -> `file:///jisp/js/jisp_misc.mjs`
+    `jisp:prelude.mjs`   -> `file:///jisp/js/prelude.mjs`
+    `jisp:one/two.three` -> `file:///jisp/js/one/two.three`
 
   TODO convert examples to tests.
   */

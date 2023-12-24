@@ -17,6 +17,12 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
 
   reqTarUrl() {return new jm.Url(this.reqTarUrlStr())}
 
+  /*
+  If the target path is relative, this implicitly resolves it relative to
+  CWD. That's common and expected behavior, but in our system, we tend to
+  be explicit about relative vs absolute. TODO consider if the behavior
+  should be reflected in the name.
+  */
   setTar(val) {
     this.#tarUrlStr = new jm.Url(val, this.cwdUrl()).toUndecorated().toDirLike().href
     return this

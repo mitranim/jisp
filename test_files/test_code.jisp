@@ -1,5 +1,5 @@
-[use `jisp:prelude` `*`]
-[use `jisp:prelude` jp]
+[use `jisp:prelude.mjs` `*`]
+[use `jisp:prelude.mjs` jp]
 [use `./test_macros.jisp` m]
 
 ; Generates a syntactically valid call that panics at runtime.

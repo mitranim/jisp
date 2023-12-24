@@ -1,4 +1,4 @@
-[use `jisp:prelude` jp]
+[use `jisp:prelude.mjs` jp]
 
 jp.nil
 jp.null

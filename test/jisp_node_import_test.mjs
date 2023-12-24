@@ -6,7 +6,7 @@ import * as jrt from './jisp_root_test.mjs'
 
 await t.test(async function test_Import_as_statement() {
   await jrt.testModuleCompile(`
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [import "./some_other_module"]
 
@@ -26,7 +26,7 @@ import * as mod1 from "https://example.com/some_file";
 
 await t.test(async function test_Import_as_expression() {
   await jrt.testModuleCompile(`
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [const someVal [import "./some_other_module"]]
 `,

@@ -8,7 +8,7 @@ await t.test(async function test_Fn() {
   await t.test(async function test_with_ret_predeclared() {
     await jrt.testModuleCompile(
       `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [fn someFunc []
   [ret 10]
@@ -25,7 +25,7 @@ return 10;
   await t.test(async function test_with_ret_shadowed() {
     await jrt.testModuleCompile(
 `
-[use "jisp:prelude" "*"]
+[use "jisp:prelude.mjs" "*"]
 
 [fn someFunc []
   [const ret 10]

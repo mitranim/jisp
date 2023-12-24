@@ -1,4 +1,4 @@
-[use `jisp:prelude` `*`]
+[use `jisp:prelude.mjs` `*`]
 
 [const someConst `some_const_value`]
 

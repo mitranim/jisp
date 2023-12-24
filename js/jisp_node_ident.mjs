@@ -82,7 +82,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     /*
     Example where this is relevant:
 
-      [use `jisp:prelude` jp]
+      [use `jisp:prelude.mjs` jp]
       jp.nil
 
     In this example, the local lexical namespace has an entry for `jp`, where

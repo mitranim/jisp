@@ -3,6 +3,10 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
 
+export const TEST_TAR_NAME = `.tmp`
+
+export const TEST_TAR_URL = new URL(`../.tmp/`, import.meta.url)
+
 export const SRC_TEXT = Deno.readTextFileSync(
   new URL(`../test_files/test_code.jisp`, import.meta.url)
 ).trim()
@@ -33,6 +37,16 @@ export const inspectOpt = {
   trailingComma: true,
   showHidden: true,
   getters: true,
+}
+
+export function clearTar() {
+  try {
+    Deno.removeSync(TEST_TAR_URL, {recursive: true})
+  }
+  catch (err) {
+    if (a.isInst(err, Deno.errors.NotFound)) return
+    throw err
+  }
 }
 
 export function testCompiled(act, exp) {

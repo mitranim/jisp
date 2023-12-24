@@ -1,4 +1,4 @@
-[use `jisp:prelude` `*`]
+[use `jisp:prelude.mjs` `*`]
 
 ; FIXME must be compile error due to cyclic dependency.
 ; [use `./test_code.jisp` `*`]

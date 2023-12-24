@@ -153,7 +153,7 @@ function someFunc() {
 
     t.is(
       io.paths.relTo(out.pathname, io.cwd()),
-      io.paths.join(`.tmp`, hash, `test_simple.mjs`),
+      io.paths.join(tu.TEST_TAR_NAME, hash, `test_simple.mjs`),
     )
   })
 })
