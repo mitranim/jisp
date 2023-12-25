@@ -9,7 +9,9 @@ import * as jr from '../js/jisp_root.mjs'
 import * as jnm from '../js/jisp_node_module.mjs'
 
 await t.test(async function test_Import_as_statement() {
-  await jrt.testModuleCompile(`
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
 [use "jisp:prelude.mjs" "*"]
 
 [import "some_import_path"]
@@ -27,7 +29,9 @@ import * as mod1 from "one://two/three.four";
 })
 
 await t.test(async function test_Import_as_expression() {
-  await jrt.testModuleCompile(`
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
 [use "jisp:prelude.mjs" "*"]
 
 [const someVal0 [import "some_import_path"]]
@@ -44,18 +48,9 @@ Incomplete. See the comment on `ImportBase` for various other cases we need to
 test.
 */
 await t.test(async function test_Import_rewriting_non_jisp() {
-  async function test(src, exp) {
-    const mod = new jnm.Module()
-      .setParent(new jr.Root())
-      .setSrcUrlStr(new jm.Url(`../test_files/test.jisp`, import.meta.url).href)
-      .setTarUrlStr(new jm.Url(`../.tmp/test.mjs`, import.meta.url).href)
-
-    mod.parse(src)
-    await mod.macro()
-    tu.testCompiled(mod.compile(), exp)
-  }
-
-  await test(`
+  await jrt.testModuleCompile(
+      jrt.makeModuleAddressed(),
+`
 [use "jisp:prelude.mjs" "*"]
 [import "./some_other_module"]
 `,
@@ -63,7 +58,9 @@ await t.test(async function test_Import_rewriting_non_jisp() {
 import "./../test_files/some_other_module";
 `)
 
-  await test(`
+  await jrt.testModuleCompile(
+      jrt.makeModuleAddressed(),
+`
 [use "jisp:prelude.mjs" "*"]
 [import "./some_other_module.mjs"]
 `,
@@ -71,7 +68,9 @@ import "./../test_files/some_other_module";
 import "./../test_files/some_other_module.mjs";
 `)
 
-  await test(`
+  await jrt.testModuleCompile(
+      jrt.makeModuleAddressed(),
+`
 [use "jisp:prelude.mjs" "*"]
 [import "../some_other_module.mjs"]
 `,
@@ -98,6 +97,28 @@ FIXME verify behaviors:
   * Always rewriting `.jisp` paths into `.mjs` relative to target.
 
 */
+
+/*
+This test is incomplete. TODO verify the following:
+
+  * Self-import is allowed and doesn't cause exceptions.
+  * Self-import doesn't cause additional FS operations.
+  * Self-import doesn't cause `Module..ready` to deadlock.
+*/
+await t.test(async function test_Import_self() {
+  await jrt.testModuleCompile(
+    jrt.makeModuleAddressed(),
+`
+[use "jisp:prelude.mjs" "*"]
+
+[import "./test.jisp"]
+[import "./test.jisp" self]
+`,
+`
+import "./test.mjs";
+import * as self from "./test.mjs";
+`)
+})
 
 /*
 This test should compile and JS-import Jisp file A which Jisp-imports Jisp file
@@ -129,7 +150,7 @@ await t.test(async function test_Import_transitive() {
 
   await import(
     await root.reqModuleReadyTarUrlStr(
-      new URL(`../test_files/test_import_one.jisp`, import.meta.url).href
+      new URL(`test_import_one.jisp`, tu.TEST_SRC_URL).href,
     )
   )
 })

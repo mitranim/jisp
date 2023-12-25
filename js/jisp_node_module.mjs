@@ -35,19 +35,32 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
 
   /*
   Semi-placeholder. TODO better ancestor search or better assertion.
-  This doesn't search by instance of `Root` because it would involve
-  an import cycle, which is likely to cause issues.
+  This doesn't search by instance of `Root` because importing `Root`
+  into this file would involve an import cycle, which is likely to
+  cause issues.
   */
   reqRoot() {return this.reqParent()}
   optRoot() {return this.optParent()}
 
-  /*
-  Caution: this doesn't wait for dependencies. FIXME wait for dependencies.
-  Requires us to register dependency information during macroing. Detecting
-  cycles and deadlocks can be done at the step of "waiting for dependencies".
+  ready() {return this.#ready ??= this.readyUncached()}
+  #ready = undefined
 
+  async readyUncached() {
+    await this.readySelf()
+
+    /*
+    Note: this must be invoked sequentually after `.readySelf`, not concurrently
+    with it, because dependencies are found while macroing the current module,
+    which is done as part of `.readySelf`.
+    */
+    return this.readyDeps()
+  }
+
+  /*
   FIXME: if possible, detect if the module is already cached to disk and fresh,
-  and avoid performing the read-macro-compile-write-wait-for-deps sequence if so.
+  and avoid performing the read-macro-compile-write sequence if so. Note that
+  we would still have to wait for runtime dependencies to be ready before this
+  module is considered ready.
 
   Determining freshness:
 
@@ -77,10 +90,10 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   just the timestamp of the target file. If the target has some dependencies,
   it's the max of any of the max timestamps, recursively.
   */
-  ready() {return this.#ready ??= this.readyUncached()}
-  #ready = undefined
+  readySelf() {return this.#readySelf ??= this.readySelfUncached()}
+  #readySelf = undefined
 
-  async readyUncached() {
+  async readySelfUncached() {
     await this.init()
     await this.read()
     await this.macro()
@@ -95,11 +108,52 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return this
   }
 
+  async readyDeps() {
+    const deps = this.#optDeps()
+    if (deps) await Promise.all(a.map(deps, jm.readyCall))
+    return this
+  }
+
+  // Short for "dependencies".
+  #deps = undefined
+  #initDeps() {return this.#deps ??= new ModuleSet()}
+  #optDeps() {return this.#deps}
+
+  hasDep(val) {
+    this.optInst(val, Module)
+    return !!this.#optDeps()?.has(val)
+  }
+
+  addDep(val) {
+    this.reqInst(val, Module)
+
+    /*
+    Self-dependency is the unspoken implicit default. Of course any module
+    depends on itself. More to the point, this method may be called with the
+    current module as the input in case of explicit self-imports, which are
+    valid and sometimes useful.
+    */
+    if (val === this) return this
+
+    if (this.hasDep(val)) return this
+
+    // FIXME also prevent indirect import cycles.
+    if (val.hasDep(this)) {
+      throw this.err(`unexpected direct import cycle between module ${a.show(this.optSrcUrlStr())} and module ${a.show(val.optSrcUrlStr())}`)
+    }
+
+    this.#initDeps().add(val)
+    return this
+  }
+
   // initOnce() {return this.#init ??= this.init()}
   // #init = undefined
 
   async init() {
-    return this.setTarUrlStr(await this.reqRoot().srcUrlStrToTarUrlStr(this.reqSrcUrlStr()))
+    if (!this.optTarUrlStr()) {
+      this.setTarUrlStr(await this.reqRoot().srcUrlStrToTarUrlStr(this.reqSrcUrlStr()))
+    }
+    return this
   }
 
   // readOnce() {return this.#read ??= this.read()}
@@ -159,43 +213,8 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   isChildStatement() {return true}
 
   /*
-  Takes an import address string, the kind that would occur in import
-  expressions in the source code of the current module, and returns an
-  absolute URL for the same import. If the import address was already
-  absolute, then it's returned as-is. If the import address was relative,
-  it's resolved against the URL of the current module. Note that for
-  modules in the OS filesystem, URLs have the scheme `file:`.
-
-  This should NOT rewrite Jisp extensions to JS extensions, and should NOT
-  trigger compilation of Jisp files at the level of `Root`. If the import
-  address points to a Jisp file, then it requires additional processing which
-  is out of scope for this function. For non-Jisp imports, the resulting URL
-  should be suitable for use with the native pseudo-function `import`.
-
-  The following examples assume that the current module URL is
-  `file:///project/module.jisp`:
-
-    ./file.jisp                     -> file:///project/file.jisp
-    ./file.mjs                      -> file:///project/file.mjs
-    ../file.jisp                    -> file:///file.jisp
-    ../file.mjs                     -> file:///file.mjs
-    ./subdir/file.jisp              -> file:///project/subdir/file.jisp
-    ./subdir/file.mjs               -> file:///project/subdir/file.mjs
-    file:///project/file.jisp       -> (unchanged)
-    file:///other_project/file.jisp -> (unchanged)
-    https://example.com/file.mjs    -> (unchanged)
-
-  The scheme `jisp:` is treated specially. It resolves to the directory
-  containing the source files of the Jisp compiler. In other words, to the
-  directory containing this very source file. The returned URL should be
-  suitable for use with the native pseudo-function `import`. The examples
-  below assume that the compiler code is located at the example location
-  `file:///jisp`.
-
-    `jisp:prelude.mjs`   -> `file:///jisp/js/prelude.mjs`
-    `jisp:one/two.three` -> `file:///jisp/js/one/two.three`
-
-  TODO convert examples to tests.
+  See the comment on `ImportBase` for the explanation of various import paths
+  and how we handle them.
   */
   reqImportSrcPathToImportSrcUrl(src) {
     // If a URL is provided, assume it's already absolute.
@@ -245,7 +264,7 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return {
       srcUrlStr: this.optSrcUrlStr(),
       tarUrlStr: this.optTarUrlStr(),
-      deps: a.map(this.optDeps(), jm.toJSON),
+      deps: a.map(this.optDeps(), jm.toJsonCall),
     }
   }
 
@@ -274,6 +293,10 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar.funs(this.optSrcUrlStr, this.optNsLex))
   }
+}
+
+export class ModuleSet extends a.TypedSet {
+  reqVal(val) {return a.reqInst(val, Module)}
 }
 
 export class ModuleColl extends a.Coll {

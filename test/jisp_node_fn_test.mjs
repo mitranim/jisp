@@ -7,6 +7,7 @@ import * as jrt from './jisp_root_test.mjs'
 await t.test(async function test_Fn() {
   await t.test(async function test_with_ret_predeclared() {
     await jrt.testModuleCompile(
+      jrt.makeModule(),
       `
 [use "jisp:prelude.mjs" "*"]
 
@@ -24,6 +25,7 @@ return 10;
 
   await t.test(async function test_with_ret_shadowed() {
     await jrt.testModuleCompile(
+      jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 

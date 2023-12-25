@@ -7,6 +7,7 @@ import * as jrt from './jisp_root_test.mjs'
 await t.test(async function test_If() {
   await t.test(async function test_invalid() {
     await jrt.testModuleFail(
+      jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [if]
@@ -15,6 +16,7 @@ await t.test(async function test_If() {
     )
 
     await jrt.testModuleFail(
+      jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [const someConst [if]]
@@ -23,6 +25,7 @@ await t.test(async function test_If() {
     )
 
     await jrt.testModuleFail(
+      jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [if 10 20 30 40]
@@ -31,6 +34,7 @@ await t.test(async function test_If() {
     )
 
     await jrt.testModuleFail(
+      jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [const someConst [if 10 20 30 40]]
@@ -40,13 +44,13 @@ await t.test(async function test_If() {
   })
 
   await t.test(async function test_as_statement() {
-    await jrt.testModuleCompile(`
+    await jrt.testModuleCompile(
+      jrt.makeModule(),
+`
 [use "jisp:prelude.mjs" "*"]
 
 [if 10]
-
 [if 10 20]
-
 [if 10 20 30]
 `,
 `
@@ -58,13 +62,13 @@ else 30;;
   })
 
   await t.test(async function test_as_expression() {
-    await jrt.testModuleCompile(`
+    await jrt.testModuleCompile(
+      jrt.makeModule(),
+`
 [use "jisp:prelude.mjs" "*"]
 
 [const someConst1 [if 10]]
-
 [const someConst2 [if 10 20]]
-
 [const someConst3 [if 10 20 30]]
 `,
 `

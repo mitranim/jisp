@@ -31,7 +31,7 @@ should be suitable for use with the native pseudo-function `import`. This is
 intended only for compile-time importing, and should not be included in any
 compiled code. See the class `Use` which performs immediate compile-time
 imports and does not generate runtime import statements. The examples below
-assume that the compiler code is located at example location `file:///jisp`.
+assume that the compiler repo is located at example location `file:///jisp`.
 
   import path        | target absolute path
   --------------------------------------------------
@@ -43,8 +43,8 @@ modules, implicitly relative paths are resolved by using an importmap; this
 also affects the behavior of the pseudo-function `import`. For example, if the
 current importmap has an entry for `blah`, then the call `import("blah")` is
 valid and may resolve to a native module. Implicitly relative paths without
-importmap entries are considered invalid and cause runtime exceptions. In
-legacy JS modules such as CommonJS, implicitly relative paths are resolved
+importmap entries are considered invalid and cause exceptions when executed.
+In legacy JS modules such as CommonJS, implicitly relative paths are resolved
 relatively to a local directory of dependencies such as `node_modules`; unlike
 the importmap approach, this does not natively modify the behavior of the
 pseudo-function `import`, but bundlers such as Esbuild and Webpack have special
@@ -61,7 +61,7 @@ paths.
   one/two.mjs  | one/two.mjs
   one/two.jisp | one/two.jisp
 
-All further examples below assume that the current module URL is
+All further examples assume that the current module URL is
 `file:///project/some_module.jisp`.
 
 For any import path with the `.jisp` extension (except for implicitly relative
@@ -82,12 +82,12 @@ network URLs.
   ../one.jisp              | file:///one.jisp             | ../some_dir/one.mjs
   file:///project/one.jisp | file:///project/one.jisp     | ./one.mjs
 
-For any other import path, if the path is on the same filesystem or network host
-as the current module, we must rewrite the import path, using a relative path
-from the absolute target URL of the current module (where the compiled code of
-the current module will be written) to the absolute URL of the imported file.
-If the import path is explicitly relative, we also convert it to an absolute
-URL, relative to the source URL of the current module.
+If the import path is on the same filesystem or network host as the current
+module, we must rewrite it, using a relative path from the absolute target URL
+of the current module (where the compiled code of the current module will be
+written) to the absolute URL of the imported file. If the import path is
+explicitly relative, we also convert it to an absolute URL, resolving it
+relatively to the source URL of the current module.
 
   import path             | target absolute path        | target relative path
   ----------------------------------------------------------------------------
@@ -97,9 +97,9 @@ URL, relative to the source URL of the current module.
   /project/one.mjs        | file:///project/one.mjs     | ./one.mjs
   file:///project/one.mjs | file:///project/one.mjs     | ./one.mjs
 
-For any other import path, if the path is an absolute URL which can't be made
-relative to the absolute URL of the current module, it must be preserved as-is
-in the compiled code:
+If the import path is an absolute URL which can't be made relative to the
+absolute URL of the current module, it must be preserved as-is in the compiled
+code:
 
   import path               | target path
   -----------------------------------------------------
@@ -154,7 +154,7 @@ export class ImportBase extends jnlm.ListMacro {
   mixinStr() {return `*`}
 
   /*
-  FIXME: when this is used in expression mode, allow the address to be an
+  TODO: when this is used in expression mode, allow the address to be an
   arbitrary expression. Requiring the address to be a literal string should be
   done only in statement mode.
   */
@@ -273,15 +273,22 @@ export class ImportBase extends jnlm.ListMacro {
   reqModule() {return this.reqAncMatch(jnm.Module)}
 
   /*
+  Short for "optional dependency module". Returns a module corresponding to the
+  imported Jisp module, if any. Returns nil if the import does not point at a
+  Jisp file, or has not yet been resolved via `ImportBase..resolve`.
+  */
+  optDepModule() {
+    const key = a.optValidStr(this.optSrcUrlStr())
+    return key && this.optModule()?.optRoot()?.reqModule(key)
+  }
+
+  /*
   Waits until the target is importable. Non-Jisp targets are importable
   immediately. Jisp targets are importable after they're compiled to disk,
   along with their runtime dependencies. Intended mainly for compile-time
   imports.
   */
-  async ready() {
-    const key = this.optSrcUrlStr()
-    return key && this.reqModule().reqRoot().reqModule(key).ready()
-  }
+  ready() {return this.optDepModule()?.ready()}
 
   async resolve() {
     const srcPath = this.reqSrcPath()
@@ -309,9 +316,21 @@ export class ImportBase extends jnlm.ListMacro {
     this.setSrcUrlStr(srcUrlStr)
 
     const mod = this.reqModule()
-    const tarUrlStr = await mod.reqRoot().srcUrlStrToTarUrlStr(srcUrlStr)
-    this.setTarPathAbs(tarUrlStr)
 
+    const tarUrlStr = (
+      srcUrlStr === mod.optSrcUrlStr()
+      /*
+      In case of self-import, short-circuit to a known target URL. Technically
+      this should be unnecessary, and the result should be equivalent in all
+      real-world cases. This is done mainly for testing, where modules and
+      roots are sometimes used without FS access. May be useful in other
+      similar edge cases.
+      */
+      ? mod.reqTarUrlStr()
+      : await mod.reqRoot().srcUrlStrToTarUrlStr(srcUrlStr)
+    )
+
+    this.setTarPathAbs(tarUrlStr)
     this.setTarPathRel(mod.optTarUrlToTarAddr(new jm.Url(tarUrlStr)))
     return this
   }

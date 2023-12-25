@@ -15,7 +15,8 @@ export function renderErr(val) {return (a.isErr(val) && val.message) || a.render
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
-export function toJSON(val) {return val.toJSON()}
+export function toJsonCall(val) {return val.toJSON()}
+export function readyCall(val) {return val.ready()}
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function ownNsLexCall(src) {

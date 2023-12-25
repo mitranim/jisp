@@ -65,4 +65,17 @@ export class Import extends jnib.ImportBase {
     if (name) return `import * as ${a.reqStr(name.compile())} from ${a.reqStr(addr)}`
     return `import ${a.reqStr(addr)}`
   }
+
+  async resolve() {
+    await super.resolve()
+
+    const mod = this.optModule()
+    if (!mod) return this
+
+    const dep = this.optDepModule()
+    if (!dep) return this
+
+    mod.addDep(dep)
+    return this
+  }
 }

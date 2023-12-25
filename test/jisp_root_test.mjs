@@ -10,30 +10,36 @@ import * as je from '../js/jisp_err.mjs'
 import * as jr from '../js/jisp_root.mjs'
 import * as jnm from '../js/jisp_node_module.mjs'
 
-export async function testModuleFail(src, msg) {
-  const mod = new jnm.Module().setParent(new jr.Root()).parse(src)
+export async function testModuleFail(mod, src, msg) {
+  mod.parse(src)
   await t.throws(async () => mod.macro(), Error, msg)
 }
 
-export async function testModuleCompile(src, exp) {
-  const mod = new jnm.Module().setParent(new jr.Root()).parse(src)
+export async function testModuleCompile(mod, src, exp) {
+  mod.parse(src)
   await mod.macro()
   tu.testCompiled(mod.compile(), exp)
 }
 
 export function makeModule() {return new jnm.Module().setParent(new jr.Root())}
 
+export function makeModuleAddressed() {
+  return makeModule()
+    .setSrcUrlStr(new URL(`test.jisp`, tu.TEST_SRC_URL).href)
+    .setTarUrlStr(new URL(`test.mjs`, tu.TEST_TAR_URL).href)
+}
+
 await t.test(async function test_compilation_with_prelude_star() {
   await testSingleFileCompilation(
-    new jm.Url(`../test_files/test_use_prelude_star.jisp`,         import.meta.url),
-    new jm.Url(`../test_files/test_use_prelude_star_or_named.mjs`, import.meta.url),
+    new URL(`test_use_prelude_star.jisp`,         tu.TEST_SRC_URL),
+    new URL(`test_use_prelude_star_or_named.mjs`, tu.TEST_SRC_URL),
   )
 })
 
 await t.test(async function test_compilation_with_prelude_named() {
   await testSingleFileCompilation(
-    new jm.Url(`../test_files/test_use_prelude_named.jisp`,        import.meta.url),
-    new jm.Url(`../test_files/test_use_prelude_star_or_named.mjs`, import.meta.url),
+    new URL(`test_use_prelude_named.jisp`,        tu.TEST_SRC_URL),
+    new URL(`test_use_prelude_star_or_named.mjs`, tu.TEST_SRC_URL),
   )
 })
 
@@ -53,11 +59,11 @@ async function testSingleFileCompilation(src, exp) {
 
 await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_without_module_url() {
-    await testModuleFail(`[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
-    await testModuleFail(`[use "./blah"]`,       `missing module source URL at [object Module]`)
-    await testModuleFail(`[use "../blah"]`,      `missing module source URL at [object Module]`)
-    await testModuleFail(`[use "/blah"]`,        `Module not found "file:///blah"`)
-    await testModuleFail(`[use "file:///blah"]`, `Module not found "file:///blah"`)
+    await testModuleFail(makeModule(), `[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
+    await testModuleFail(makeModule(), `[use "./blah"]`,       `missing module source URL at [object Module]`)
+    await testModuleFail(makeModule(), `[use "../blah"]`,      `missing module source URL at [object Module]`)
+    await testModuleFail(makeModule(), `[use "/blah"]`,        `Module not found "file:///blah"`)
+    await testModuleFail(makeModule(), `[use "file:///blah"]`, `Module not found "file:///blah"`)
   })
 
   await t.test(async function test_fail_with_module_url() {
@@ -126,7 +132,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
   // })
 
   await t.test(async function test_valid() {
-    const srcUrlStr = new jm.Url(`../test_files/test_simple.jisp`, import.meta.url).href
+    const srcUrlStr = new URL(`test_simple.jisp`, tu.TEST_SRC_URL).href
     await fail(srcUrlStr, `missing FS at [object Root]`)
 
     const fs = jdft.makeTestFs()
@@ -141,7 +147,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     const tarStr = await root.reqModuleReadyTarUrlStr(srcUrlStr)
     a.reqValidStr(tarStr)
 
-    const tarUrl = new jm.Url(tarStr)
+    const tarUrl = new URL(tarStr)
     const tarText = await fs.read(tarUrl)
 
     tu.testCompiled(tarText, `

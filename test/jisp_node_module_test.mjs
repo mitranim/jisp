@@ -3,7 +3,6 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jdft from './jisp_deno_fs_test.mjs'
-import * as jm from '../js/jisp_misc.mjs'
 import * as jcpd from '../js/jisp_code_printed.mjs'
 import * as jnm from '../js/jisp_node_module.mjs'
 import * as jnst from '../js/jisp_node_str.mjs'
@@ -21,7 +20,7 @@ class PrintableModule extends jcpd.MixOwnCodePrinted.goc(jnm.Module) {}
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
   const fs = jdft.makeTestFs()
   const mod = new PrintableModule()
-  const src = await fs.read(new jm.Url(`../test_files/test_builtins.jisp`, import.meta.url))
+  const src = await fs.read(new URL(`test_builtins.jisp`, tu.TEST_SRC_URL))
 
   mod.parse(src)
 

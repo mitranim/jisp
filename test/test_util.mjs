@@ -3,13 +3,10 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
 
+export const TEST_SRC_URL = new URL(`../test_files/`, import.meta.url)
 export const TEST_TAR_NAME = `.tmp`
-
 export const TEST_TAR_URL = new URL(`../.tmp/`, import.meta.url)
-
-export const SRC_TEXT = Deno.readTextFileSync(
-  new URL(`../test_files/test_code.jisp`, import.meta.url)
-).trim()
+export const SRC_TEXT = Deno.readTextFileSync(new URL(`test_code.jisp`, TEST_SRC_URL)).trim()
 
 export const SRC_TEXT_SHORT = `
 10 20
