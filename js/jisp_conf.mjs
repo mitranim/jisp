@@ -14,6 +14,10 @@ export const conf = new class Conf extends a.Emp {
   setDebug(val) {return this.#debug = a.reqBool(val), this}
   getDebug() {return this.#debug}
 
+  /*
+  Import paths starting with this scheme are resolved relatively to the source
+  directory of the compiler (same directory where you're reading this).
+  */
   #urlScheme = `jisp:`
   setUrlScheme(val) {return this.#urlScheme = a.reqValidStr(val), this}
   getUrlScheme() {return this.#urlScheme}

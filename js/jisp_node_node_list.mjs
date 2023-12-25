@@ -67,18 +67,20 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
     const val = this.constructor.macroNode(this.reqChildAt(ind))
     if (a.isPromise(val)) return this.replaceChildAsyncAt(ind, val)
     this.replaceChildAt(ind, val)
-    return undefined
+    return this
   }
 
   macroSyncAt(ind) {
     this.replaceChildAt(ind, this.constructor.macroNodeSync(this.reqChildAt(ind)))
+    return this
   }
 
   async macroAsyncAt(ind) {
     this.replaceChildAt(ind, await this.constructor.macroNodeAsync(this.reqChildAt(ind)))
+    return this
   }
 
-  async replaceChildAsyncAt(ind, val) {this.replaceChildAt(ind, await val)}
+  async replaceChildAsyncAt(ind, val) {return this.replaceChildAt(ind, await val)}
 
   reqEveryChildNotCosmetic() {
     let ind = 0

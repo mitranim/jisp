@@ -1,0 +1,12 @@
+; Intended for testing transitive imports. This should be directly imported by a
+; test, and should import `./test_import_two.jisp` which should NOT be directly
+; imported by a test. After resolving this file to disk (compiling it), the
+; other file should already be resolved to disk (compiled), and both should be
+; immediately importable in JS.
+
+[use `jisp:prelude.mjs` jp]
+
+[jp.import `./test_import_two.jisp` dep]
+
+; Should produce an exception and fail the test if the export is missing.
+[dep.someFunc]

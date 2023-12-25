@@ -2,10 +2,6 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
-/*
-FIXME consider:
-  * `optRef` or `ownRef` that returns `IdentUnqual`.
-*/
 export class Const extends jnlm.ListMacro {
   pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}

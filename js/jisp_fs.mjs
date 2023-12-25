@@ -31,7 +31,8 @@ export class Fs extends a.Emp {
   }
 
   async read() {throw jm.errMeth(`read`, this)}
-  async checksum() {throw jm.errMeth(`checksum`, this)}
+  async write() {throw jm.errMeth(`write`, this)}
+  async timestamp() {throw jm.errMeth(`timestamp`, this)}
 }
 
 export class MixOwnFsed extends a.DedupMixinCache {

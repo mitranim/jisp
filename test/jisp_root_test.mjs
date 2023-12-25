@@ -53,20 +53,20 @@ async function testSingleFileCompilation(src, exp) {
 
 await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_without_module_url() {
-    await testModuleFail(`[use "blah"]`,         `missing module URL at [object Module]`)
-    await testModuleFail(`[use "./blah"]`,       `missing module URL at [object Module]`)
-    await testModuleFail(`[use "../blah"]`,      `missing module URL at [object Module]`)
+    await testModuleFail(`[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
+    await testModuleFail(`[use "./blah"]`,       `missing module source URL at [object Module]`)
+    await testModuleFail(`[use "../blah"]`,      `missing module source URL at [object Module]`)
     await testModuleFail(`[use "/blah"]`,        `Module not found "file:///blah"`)
     await testModuleFail(`[use "file:///blah"]`, `Module not found "file:///blah"`)
   })
 
   await t.test(async function test_fail_with_module_url() {
     async function fail(src, msg) {
-      const mod = makeModule().setUrl(`file:///one/two/three`).parse(src)
+      const mod = makeModule().setSrcUrlStr(`file:///one/two/three`).parse(src)
       await t.throws(async () => mod.macro(), je.CodeErr, msg)
     }
 
-    await fail(`[use "blah"]`,         `Module not found "file:///one/two/blah"`)
+    await fail(`[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
     await fail(`[use "./blah"]`,       `Module not found "file:///one/two/blah"`)
     await fail(`[use "../blah"]`,      `Module not found "file:///one/blah"`)
     await fail(`[use "/blah"]`,        `Module not found "file:///blah"`)
@@ -75,7 +75,7 @@ await t.test(async function test_Use_import_resolution() {
 
   await t.test(async function test_success_with_module_url() {
     async function test(src, exp) {
-      const mod = makeModule().setUrl(import.meta.url).parse(src)
+      const mod = makeModule().setSrcUrlStr(import.meta.url).parse(src)
       await mod.macro()
       tu.testCompiled(mod.compile(), exp)
     }
@@ -104,25 +104,30 @@ performed only once.
 await t.test(async function test_Root_resolution_and_compilation() {
   async function fail(src, msg) {
     const root = new jr.Root()
-    await t.throws(async () => root.resolveLangFile(src), Error, msg)
+    await t.throws(async () => root.reqModuleReadyTarUrlStr(src), Error, msg)
   }
 
   // await t.test(async function test_invalid() {
-  //   await fail(undefined,             `expected variant of isCanonicalModuleUrl, got undefined`)
-  //   await fail(10,                    `expected variant of isCanonicalModuleUrl, got 10`)
-  //   await fail(`https://example.com`, `expected variant of isCanonicalModuleUrl, got "https://example.com"`)
-  //   await fail(`https://example.com`, `expected variant of isCanonicalModuleUrl, got "https://example.com"`)
+  //   await fail(undefined,             `expected variant of isCanonicalModuleUrlStr, got undefined`)
+  //   await fail(10,                    `expected variant of isCanonicalModuleUrlStr, got 10`)
+  //   await fail(`https://example.com`, `expected variant of isCanonicalModuleUrlStr, got "https://example.com"`)
   // })
 
   await t.test(async function test_invalid() {
-    await fail(undefined,             `Invalid URL`)
-    await fail(10,                    `Invalid URL`)
+    await fail(undefined,             `expected variant of isCanonicalModuleUrlStr, got undefined`)
+    await fail(10,                    `expected variant of isCanonicalModuleUrlStr, got 10`)
     await fail(`https://example.com`, `missing FS at [object Root]`)
   })
 
+  // await t.test(async function test_invalid() {
+  //   await fail(undefined,             `Invalid URL`)
+  //   await fail(10,                    `Invalid URL`)
+  //   await fail(`https://example.com`, `missing FS at [object Root]`)
+  // })
+
   await t.test(async function test_valid() {
-    const srcUrl = new jm.Url(`../test_files/test_simple.jisp`, import.meta.url)
-    await fail(srcUrl, `missing FS at [object Root]`)
+    const srcUrlStr = new jm.Url(`../test_files/test_simple.jisp`, import.meta.url).href
+    await fail(srcUrlStr, `missing FS at [object Root]`)
 
     const fs = jdft.makeTestFs()
     const root = new jr.Root().setFs(fs)
@@ -133,12 +138,13 @@ await t.test(async function test_Root_resolution_and_compilation() {
     file URL to the compiled file, suitable for FS access and use with the
     native pseudo-function `import`.
     */
-    const out = await root.resolveLangFile(srcUrl)
-    t.inst(out, URL)
+    const tarStr = await root.reqModuleReadyTarUrlStr(srcUrlStr)
+    a.reqValidStr(tarStr)
 
-    const outText = await fs.read(out)
+    const tarUrl = new jm.Url(tarStr)
+    const tarText = await fs.read(tarUrl)
 
-    tu.testCompiled(outText, `
+    tu.testCompiled(tarText, `
 const someConst = \`some_const_value\`;
 function someFunc() {
 \`some_func_value\`;
@@ -152,7 +158,7 @@ function someFunc() {
     const hash = await jm.strToHash(`../test_files`)
 
     t.is(
-      io.paths.relTo(out.pathname, io.cwd()),
+      io.paths.relTo(tarUrl.pathname, io.cwd()),
       io.paths.join(tu.TEST_TAR_NAME, hash, `test_simple.mjs`),
     )
   })

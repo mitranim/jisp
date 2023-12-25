@@ -24,7 +24,7 @@ export class ListMacro extends jnnl.NodeList {
       throw this.err(`internal error: the superclass ${a.show(ListMacro)} assumes all subclasses to use instances of ${a.show(jnnl.NodeList)} as their source node, but macro node ${a.show(this)} expects to use ${a.show(cls)} which may not be a node list`)
     }
     if (!a.isInst(src, cls)) {
-      throw this.err(`macro ${a.show(this)} requires the source node to be an instance of ${a.show(cls)}, got ${a.show(src)}`)
+      throw this.err(`${a.show(this)} requires the source node to be an instance of ${a.show(cls)}, got ${a.show(src)}`)
     }
 
     /*
@@ -48,14 +48,19 @@ export class ListMacro extends jnnl.NodeList {
     return super.setSrcNode(src)
   }
 
-  /*
-  TODO consider moving to `MixParentOneToMany` or `NodeList` and adding the
-  appropriate "opt" and "only" methods for symmetry.
-  */
+  // TODO consider moving to `MixParentOneToMany` or `NodeList`.
   reqChildInstAt(ind, cls) {
     const out = this.reqChildAt(ind)
     if (a.isInst(out, cls)) return out
     throw out.err(`${a.show(this)} requires the child node at index ${ind} to be an instance of ${a.show(cls)}, found ${a.show(out)}`)
+  }
+
+  // TODO consider moving to `MixParentOneToMany` or `NodeList`.
+  optChildInstAt(ind, cls) {
+    const out = this.optChildAt(ind)
+    if (a.isNil(out)) return undefined
+    if (a.isInst(out, cls)) return out
+    throw out.err(`${a.show(this)} requires the child node at index ${ind} to be either nil or an instance of ${a.show(cls)}, found ${a.show(out)}`)
   }
 }
 

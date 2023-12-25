@@ -15,8 +15,7 @@ export function renderErr(val) {return (a.isErr(val) && val.message) || a.render
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
-export function isImportResolver(val) {return a.hasMeth(val, `resolveImport`)}
-export function isLangFileResolver(val) {return a.hasMeth(val, `resolveLangFile`)}
+export function toJSON(val) {return val.toJSON()}
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function ownNsLexCall(src) {
@@ -88,6 +87,10 @@ export function isAbsFileUrl(val) {
 
 export function isAbsNetworkUrl(val) {
   return a.isInst(val, URL) && val.protocol !== `file:` && !!val.hostname
+}
+
+export function isCanonicalModuleSrcUrlStr(val) {
+  return isCanonicalModuleUrlStr(val) && p.posix.ext(val) === jc.conf.getFileExtSrc()
 }
 
 // SYNC[canonical_module_url]
@@ -236,7 +239,7 @@ export function toPosixRel(val) {
   return val
 }
 
-export function optCompilerImportPathToCompilerUrl(src) {
+export function optCompilerImportUrl(src) {
   if (!a.optStr(src)) return undefined
 
   const sch = jc.conf.getUrlScheme()
@@ -250,10 +253,22 @@ export function optUrlExt(val) {
   return p.posix.ext(val.pathname)
 }
 
+// export class TypedWeakMap extends WeakMap {
+//   reqKey() {throw l.errImpl()}
+//   reqVal() {throw l.errImpl()}
+//   set(key, val) {return super.set(this.reqKey(key), this.reqVal(val))}
+//   setted(key, val) {return this.set(key, val).get(key)}
+// }
+
 export class PromiseMap extends a.TypedMap {
   reqKey(key) {return a.reqValidStr(key)}
   reqVal(val) {return a.reqPromise(val)}
 }
+
+// export class PromiseWeakMap extends TypedWeakMap {
+//   reqKey() {return a.reqValidStr(key)}
+//   reqVal() {return a.reqPromise(val)}
+// }
 
 // // FIXME use or remove.
 // export class NativeModuleMap extends a.TypedMap {
@@ -344,6 +359,21 @@ export class Url extends URL {
     if (this.port !== tar.port) return undefined
     return p.posix.relTo(this.pathname, tar.pathname)
   }
+
+  reqRelTo(val) {
+    a.reqInst(val, URL)
+
+    return (
+      this.optRelTo(val) ??
+      a.panic(Error(`unable to make URL ${a.show(this.href)} relative to URL ${a.show(val.href)}`))
+    )
+  }
+
+  /*
+  Not equivalent to `toUrlOpt`. When the source value is non-nil, this always
+  generates a new instance.
+  */
+  static opt(val) {return a.isNil(val) ? undefined : new this(val)}
 }
 
 // /*

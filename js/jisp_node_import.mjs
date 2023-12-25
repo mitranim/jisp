@@ -1,7 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
-import * as jnm from './jisp_node_module.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
@@ -26,12 +25,12 @@ unqualified names.
 */
 export class Import extends jnib.ImportBase {
   async macroDestNil() {
-    await this.optResolveTarAddr()
+    await this.resolve()
     return super.macroDestNil()
   }
 
   async macroDestName() {
-    await this.optResolveTarAddr()
+    await this.resolve()
     return super.macroDestName()
   }
 
@@ -45,15 +44,16 @@ export class Import extends jnib.ImportBase {
   }
 
   /*
-  Technical note. Regardless of the quote syntax found in `.reqAddr`, this
-  should normalize quotes into single quotes or double quotes for compatibility
-  with the `import` statement, which allow only single and double quotes. The
-  JS pseudo-function `import` allows all quotes, but it's simpler to always use
-  quotes compatible with the `import` statement.
+  Technical note. Regardless of the quote syntax found in `.reqAddr`, this is
+  allowed to output only double quotes or single quotes, for compatibility with
+  the JS `import` statement, which allows only double quotes or single quotes.
+  The JS pseudo-function `import` allows an arbitrary expression which may be a
+  backtick-quoted string, but it's simpler to always use quotes compatible with
+  the `import` statement.
   */
   compileAddr() {
     return JSON.stringify(a.reqStr(
-      this.optTarAddr() ?? this.reqAddr().reqVal()
+      this.optTarPathRel() ?? this.optTarPathAbs() ?? this.reqSrcPath()
     ))
   }
 
@@ -64,33 +64,5 @@ export class Import extends jnib.ImportBase {
     const addr = this.compileAddr()
     if (name) return `import * as ${a.reqStr(name.compile())} from ${a.reqStr(addr)}`
     return `import ${a.reqStr(addr)}`
-  }
-
-  #tarAddr = undefined
-  setTarAddr(val) {return this.#tarAddr = a.optValidStr(val), this}
-  optTarAddr() {return this.#tarAddr}
-
-  async optResolveTarAddr() {
-    const mod = this.optAncMatch(jnm.Module)
-    if (!mod) return this
-
-    const moduleTarUrl = await mod.optTarUrl()
-    if (!moduleTarUrl) return this
-
-    const importSrcStr = this.reqAddr().reqVal()
-    const importSrcUrl = mod.optImportSrcPathToImportSrcUrl(importSrcStr)
-    if (!importSrcUrl) return this
-
-    // FIXME unfuck.
-    //
-    // Incomplete stopgap solution. This is in the wrong place, and prevents us
-    // from having cyclic dependencies between modules, which are natively
-    // supported in JS and sometimes useful.
-    if (importSrcUrl.hasExtSrc()) await this.reqResolveImport()
-
-    const importTarUrl = await mod.srcUrlToTarUrl(importSrcUrl)
-    const importTarRel = jm.toPosixRel(importTarUrl.optRelTo(moduleTarUrl.clone().toDir()))
-    this.setTarAddr(importTarRel)
-    return this
   }
 }

@@ -1,3 +1,7 @@
+## TODO
+
+In import/module/root code, consider renaming "resolve" to "ready".
+
 ## Lisps
 
 Truly beautiful homoiconicity requires 1-1 equality between the following sets of types:

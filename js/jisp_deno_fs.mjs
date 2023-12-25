@@ -30,12 +30,24 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
 
   cwdUrl() {return new jm.Url(io.paths.dirLike(io.cwd()), `file:`)}
 
+  /*
+  TODO: when not found, include path into error message.
+  At the time of writing, Deno fails to do that.
+  */
   async read(path) {return Deno.readTextFile(path)}
-  async checksum(path) {return (await Deno.stat(path)).mtime}
 
   async write(path, body) {
     await this.mkdirForFile(path)
     await Deno.writeTextFile(path, body)
+  }
+
+  async timestamp(path) {
+    const stat = a.reqObj(await Deno.stat(path))
+    const mtime = stat.mtime
+    if (!a.isFin(mtime)) {
+      throw TypeError(`unexpected non-finite modification time in stat ${a.show(stat)} for path ${a.show(a.render(path))}`)
+    }
+    return mtime
   }
 
   async mkdirForFile(path) {

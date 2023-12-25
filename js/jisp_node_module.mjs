@@ -13,25 +13,110 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   // Used by `.parse`. May be overridden by subclasses.
   get Lexer() {return jl.Lexer}
 
-  pk() {return this.reqUrl()}
+  pk() {return this.reqSrcUrlStr()}
 
-  // TODO rename from "url" to "url str" for consistency with other code.
-  #url = undefined
-  setUrl(val) {return this.#url = this.req(val, jm.isCanonicalModuleUrlStr), this}
-  optUrl() {return this.#url}
-  reqUrl() {return this.optUrl() ?? this.throw(`missing module URL at ${a.show(this)}`)}
+  // Stored as string, rather than `URL` object, to avoid mutation by errant callers.
+  #srcUrlStr = undefined
+  setSrcUrlStr(val) {return this.#srcUrlStr = this.req(val, jm.isCanonicalModuleUrlStr), this}
+  optSrcUrlStr() {return this.#srcUrlStr}
+  reqSrcUrlStr() {return this.optSrcUrlStr() ?? this.throw(`missing module source URL at ${a.show(this)}`)}
 
-  #optTarUrlPromise = undefined
-  optTarUrl() {return this.#optTarUrlPromise ??= this.#optTarUrl()}
+  optSrcUrl() {return jm.Url.opt(this.optSrcUrlStr())}
+  reqSrcUrl() {return new jm.Url(this.reqSrcUrlStr())}
 
-  #reqTarUrlPromise = undefined
-  reqTarUrl() {return this.#reqTarUrlPromise ??= this.#reqTarUrl()}
+  // Stored as string, rather than `URL` object, to avoid mutation by errant callers.
+  #tarUrlStr = undefined
+  setTarUrlStr(val) {return this.#tarUrlStr = this.req(val, jm.isCanonicalModuleUrlStr), this}
+  optTarUrlStr() {return this.#tarUrlStr}
+  reqTarUrlStr() {return this.optTarUrlStr() ?? this.throw(`missing module target URL at ${a.show(this)}`)}
+
+  optTarUrl() {return jm.Url.opt(this.optTarUrlStr())}
+  reqTarUrl() {return new jm.Url(this.reqTarUrlStr())}
+
+  /*
+  Semi-placeholder. TODO better ancestor search or better assertion.
+  This doesn't search by instance of `Root` because it would involve
+  an import cycle, which is likely to cause issues.
+  */
+  reqRoot() {return this.reqParent()}
+  optRoot() {return this.optParent()}
+
+  /*
+  Caution: this doesn't wait for dependencies. FIXME wait for dependencies.
+  Requires us to register dependency information during macroing. Detecting
+  cycles and deadlocks can be done at the step of "waiting for dependencies".
+
+  FIXME: if possible, detect if the module is already cached to disk and fresh,
+  and avoid performing the read-macro-compile-write-wait-for-deps sequence if so.
+
+  Determining freshness:
+
+  * Own target timestamp > own source timestamp.
+
+  * Own target timestamp > target timestamp of each compile-time dependency
+    (dependencies used by `Use`) and their runtime dependencies. In other
+    words, it's `>` than each compile-time dependency's total timestamp or
+    biggest timestamp.
+
+  For dependencies (any dependencies), we only check target timestamps, not
+  source timestamps. If target file does not exist (typically because it comes
+  from a Jisp source), then timestamp is `undefined`.
+
+  Concept: "timestamp max". Equals:
+
+    bigger(
+      "timestamp tar",
+      (select max("timestamp max") from dependencies)
+    )
+
+  "Max timestamp" can be determined for any target. It's determined only from
+  target files, and never from source files. However, this does require access
+  to source URLs of dependencies where possible, because that's how we obtain
+  their own dependency info. For targets with no dependencies of their own
+  (typically when the target doesn't have a corresponding Jisp source), it's
+  just the timestamp of the target file. If the target has some dependencies,
+  it's the max of any of the max timestamps, recursively.
+  */
+  ready() {return this.#ready ??= this.readyUncached()}
+  #ready = undefined
+
+  async readyUncached() {
+    await this.init()
+    await this.read()
+    await this.macro()
+    await this.write()
+
+    // await this.initOnce()
+    // await this.readOnce()
+    // await this.macroOnce()
+    // await this.compileOnce()
+    // await this.writeOnce()
+
+    return this
+  }
+
+  // initOnce() {return this.#init ??= this.init()}
+  // #init = undefined
+
+  async init() {
+    return this.setTarUrlStr(await this.reqRoot().srcUrlStrToTarUrlStr(this.reqSrcUrlStr()))
+  }
+
+  // readOnce() {return this.#read ??= this.read()}
+  // #read = undefined
+
+  async read() {
+    return this.parse(await this.reqRoot().reqFs().read(this.reqSrcUrl()))
+  }
 
   parse(src) {
     this.initSpan().init(src)
     this.setChildren(...new this.Lexer().initFromStr(src))
     return this
   }
+
+  // macroOnce() {return this.#macro ??= this.macro()}
+  // #macro = undefined
 
   /*
   Immediate children of a module typically begin with `Use`, whose macro
@@ -43,9 +128,23 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   macroImpl() {return this.macroFrom(0)}
 
+  // compileOnce() {return this.#compile ??= this.compile()}
+  // #compile = undefined
+
   compile() {return this.reqCodePrinter().compileStatements(this.childIter())}
 
-  isChildStatement() {return true}
+  // writeOnce() {return this.#write ??= this.write()}
+  // #write = undefined
+
+  // async write() {
+  //   await this.reqRoot().reqFs().write(this.reqTarUrl(), this.compileOnce())
+  //   return this
+  // }
+
+  async write() {
+    await this.reqRoot().reqFs().write(this.reqTarUrl(), this.compile())
+    return this
+  }
 
   /*
   Override for `Node..err` to avoid using `CodeErr`. A module span always points
@@ -57,30 +156,7 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   err(...val) {return new je.Err(...val)}
 
-  /*
-  Import resolution should be implemented at two levels: `Module` and `Root`.
-
-  At the level of `Root`, we should accept only absolute file URLs, and handle
-  only conversion of Jisp files to JS files, which involves deduplication,
-  deadlock prevention, and caching.
-
-  At the level of `Module`, we should handle all other cases, including but not
-  limited to the following:
-
-    * Handling `jisp:`-scheme imports, which allow user code to import arbitrary
-      files from the Jisp compiler.
-    * Converting relative paths to absolute paths.
-    * Handling any non-Jisp imports.
-    * Detecting Jisp imports and using `Root` for those.
-  */
-  resolveImport(src) {
-    const url = this.reqImportSrcPathToImportSrcUrl(src)
-    this.reqInst(url, jm.Url)
-    if (url.hasExtSrc()) {
-      return this.reqAncFind(jm.isLangFileResolver).resolveLangFile(url)
-    }
-    return url
-  }
+  isChildStatement() {return true}
 
   /*
   Takes an import address string, the kind that would occur in import
@@ -93,9 +169,8 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   This should NOT rewrite Jisp extensions to JS extensions, and should NOT
   trigger compilation of Jisp files at the level of `Root`. If the import
   address points to a Jisp file, then it requires additional processing which
-  is out of scope for this function. See `.resolveLangFile`. For non-Jisp
-  imports, the resulting URL should be suitable for use with the native
-  pseudo-function `import`.
+  is out of scope for this function. For non-Jisp imports, the resulting URL
+  should be suitable for use with the native pseudo-function `import`.
 
   The following examples assume that the current module URL is
   `file:///project/module.jisp`:
@@ -112,10 +187,10 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
 
   The scheme `jisp:` is treated specially. It resolves to the directory
   containing the source files of the Jisp compiler. In other words, to the
-  directory containing this very source file. If the compiler code is located
-  at the example location `file:///jisp`, then see the examples below. The
-  returned URL should be suitable for use with the native pseudo-function
-  `import`.
+  directory containing this very source file. The returned URL should be
+  suitable for use with the native pseudo-function `import`. The examples
+  below assume that the compiler code is located at the example location
+  `file:///jisp`.
 
     `jisp:prelude.mjs`   -> `file:///jisp/js/prelude.mjs`
     `jisp:one/two.three` -> `file:///jisp/js/one/two.three`
@@ -123,67 +198,86 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   TODO convert examples to tests.
   */
   reqImportSrcPathToImportSrcUrl(src) {
-    return (
-      this.optImportSrcPathToImportSrcUrl(src) ??
-      /*
-      At this step, we're resolving a relative path, so we actually require
-      the module URL. Other cases that don't require the module URL should
-      be handled first. This is convenient for testing, and may be useful
-      in some other cases.
-      */
-      new jm.Url(src, this.reqUrl())
-    )
-  }
-
-  optImportSrcPathToImportSrcUrl(src) {
-    /*
-    Assume that the URL is already absolute. This may mishandle relative file
-    URLs. However, that's a user mistake. Avoid relative file URLs.
-    */
+    // If a URL is provided, assume it's already absolute.
     if (a.isInst(src, URL)) return src
     this.req(src, a.isStr)
 
     {
-      const tar = jm.optCompilerImportPathToCompilerUrl(src)
+      const tar = jm.optCompilerImportUrl(src)
       if (tar) return tar
     }
 
     if (jm.hasScheme(src)) return new jm.Url(src)
+
+    /*
+    Note: JS imports always use Posix-style paths, even on Windows systems.
+    If the user wishes to use an absolute FS path on Windows, they have to
+    describe it similarly to a Posix path, without a volume letter.
+    */
     if (p.posix.isAbs(src)) return new jm.Url(src, `file:`)
 
-    const url = this.optUrl()
-    return url && new jm.Url(src, url)
+    /*
+    At this step, we're resolving a relative path, so we actually require the
+    module URL. Other cases that don't require the module URL should be handled
+    first. This is convenient for testing, and may be useful in some other
+    cases.
+    */
+    return new jm.Url(src, this.reqSrcUrlStr())
+  }
+
+  optTarUrlToTarAddr(src) {
+    this.reqInst(src, jm.Url)
+    return jm.toPosixRel(src.optRelTo(this.optTarUrl()?.toDir()))
+  }
+
+  // Unused, TODO drop.
+  reqTarUrlToTarAddr(src) {
+    this.reqInst(src, jm.Url)
+    return jm.toPosixRel(src.reqRelTo(this.reqTarUrl().toDir()))
   }
 
   /*
-  Takes an absolute URL pointing to the source location of an imported file, the
-  kind that is returned by `.reqImportSrcPathToImportSrcUrl`. Returns an
-  absolute URL pointing to the eventual target location of the imported file.
-
-  For non-Jisp files, this returns the source URL as-is. Non-Jisp files stay
-  where they are.
-
-  For Jisp files, the source URL may point to an arbitrary location, and must
-  have the extension `.jisp`. The target URL points to a location inside the
-  target directory provided to `Fs`, and the file extension is changed to
-  `.mjs`. (`Fs` is obtained from an ancestor, typically from `Root`.)
+  Standard JS interface.
+  Should be used for serializing module metadata to disk.
+  FIXME: should we bother storing timestamps? Which: source or target or both?
   */
-  srcUrlToTarUrl(src) {
-    return this.reqParent().srcUrlToTarUrl(src)
+  toJSON() {
+    return {
+      srcUrlStr: this.optSrcUrlStr(),
+      tarUrlStr: this.optTarUrlStr(),
+      deps: a.map(this.optDeps(), jm.toJSON),
+    }
   }
 
-  // Parent must be `Root`. TODO consider using `.optAncFind`.
-  async #optTarUrl() {
-    const src = this.optUrl()
-    return src && this.optParent()?.srcUrlToTarUrl(src)
+  /*
+  Not a standard JS interface.
+  Should be used when deserializing module metadata from disk.
+  */
+  fromJSON(src) {
+    this.req(src, a.isDict)
+    {
+      const val = src.srcUrlStr
+      if (a.isSome(val)) this.setSrcUrlStr(val)
+    }
+    {
+      const val = src.tarUrlStr
+      if (a.isSome(val)) this.setTarUrlStr(val)
+    }
+    {
+      const val = src.deps
+      if (a.isSome(val)) this.setDeps(val)
+    }
+    return this
   }
 
-  // Parent must be `Root`. TODO consider using `.reqAncFind`.
-  async #reqTarUrl() {
-    return this.reqParent().srcUrlToTarUrl(this.reqUrl())
-  }
 
   [ji.symInsp](tar) {
-    return super[ji.symInsp](tar.funs(this.optUrl, this.optNsLex))
+    return super[ji.symInsp](tar.funs(this.optSrcUrlStr, this.optNsLex))
   }
+}
+
+export class ModuleColl extends a.Coll {
+  // These methods are invoked by `a.TypedMap` used by `a.Coll`.
+  reqKey(key) {return a.reqValidStr(key)}
+  reqVal(val) {return a.reqInst(val, Module)}
 }

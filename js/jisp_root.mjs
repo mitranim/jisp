@@ -43,59 +43,87 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   }
 
   /*
-  FIXME:
-
-    * Deadlock detection.
-    * Persistent FS caching. (Reused between different `Root` runs.)
-      * Requires dependency graph for detecting outdated.
+  Must synchronously return a `Module` corresponding to this source URL string,
+  if one has already been created and cached. Must not create any new objects.
   */
-  resolveLangFile(src) {
-    src = new jm.Url(src).toCanonical()
-    const key = src.href
-    const tar = this.initImportCache()
-    return tar.get(key) ?? tar.setted(key, this.resolveLangFileUncached(src))
+  optModule(src) {
+    this.opt(src, jm.isCanonicalModuleUrlStr)
+    return src && this.#optModuleColl()?.get(src)
   }
 
-  async resolveLangFileUncached(srcUrl) {
-    const tarUrl = await this.srcUrlToTarUrl(srcUrl)
-    const fs = this.reqFs()
-    const srcText = await fs.read(srcUrl)
-
-    const mod = new this.Module()
-      .setParent(this)
-      .setUrl(srcUrl.href)
-      .parse(srcText)
-
-    await mod.macro()
-    const tarText = mod.compile()
-
-    await fs.write(tarUrl, tarText)
-    return tarUrl
+  /*
+  Must synchronously return a `Module` corresponding to this source URL string,
+  creating and caching one if necessary. Must always return the same value for
+  the same key.
+  */
+  reqModule(src) {
+    return (
+      this.optModule(src) ??
+      this.#initModuleColl().setted(src, new this.Module().setParent(this).setSrcUrlStr(src))
+    )
   }
 
-  srcUrlToTarUrl(src) {
-    src = new jm.Url(src).toCanonical()
-    const key = src.href
-    const tar = this.#initSrcUrlToTarUrl()
-    return tar.get(key) ?? tar.setted(key, this.srcUrlToTarUrlUncached(src))
+  #moduleColl = undefined
+  #initModuleColl() {return this.#moduleColl ??= new jnm.ModuleColl()}
+  #optModuleColl() {return this.#moduleColl}
+
+  async reqModuleReadyTarUrlStr(src) {
+    return (await this.reqModule(src).ready()).reqTarUrlStr()
+  }
+
+  /*
+  Takes an absolute URL string pointing to the source location of an imported
+  file. Returns an absolute URL string pointing to the eventual target location
+  of the imported file.
+
+  For non-Jisp files, this returns the source URL as-is. Non-Jisp files stay
+  where they are.
+
+  For Jisp files, the source URL may point to an arbitrary location, and must
+  have the extension `.jisp`. The target URL points to a location inside the
+  target directory provided to `Fs` provided to `Root`, and the file extension
+  is changed to `.mjs`.
+
+  This involves caching, and more specifically promise caching, for several
+  reasons.
+
+    * Caching potentially allows the algorithm that converts source URLs to
+      target URLs to be non-deterministic, for example by using random salts
+      rather than hashes. Storing the mapping from source URLs to target URLs
+      allows us to pretend that this conversion is a pure function.
+
+    * Promises are forced here by the native crypto API, which we use for
+      hashing.
+
+    * This conversion involves the native crypto API and multiple operations
+      with the native `URL` API. All of those are on a slow side.
+  */
+  srcUrlStrToTarUrlStr(src) {
+    this.req(src, jm.isCanonicalModuleUrlStr)
+    const tar = this.#initSrcUrlStrToTarUrlStr()
+    return tar.get(src) ?? tar.setted(src, this.srcUrlStrToTarUrlStrUncached(src))
   }
 
   /*
   Mostly for private use. May also be overridden by subclasses. Callers should
-  use `.srcUrlToTarUrl`.
-
-  FIXME consider returning string instead of URL object to avoid accidental
-  mutation by errant callers.
+  use `.srcUrlStrToTarUrlStr`.
 
   FIXME: opt-in overrides: mapping specific source dirs or paths to specific
   intermediary paths, replacing the default hash.
   */
-  async srcUrlToTarUrlUncached(src) {
-    this.reqInst(src, jm.Url)
-    if (!src.hasExtSrc()) return src
+  async srcUrlStrToTarUrlStrUncached(src) {
+    this.req(src, jm.isCanonicalModuleUrlStr)
 
+    /*
+    For non-Jisp files, absolute source URL and absolute target URL are always
+    the same. For Jisp files, they're always different.
+    */
+    if (!jm.isCanonicalModuleSrcUrlStr(src)) return src
+
+    src = new jm.Url(src)
     const tarUrl = this.reqFs().reqTarUrl()
 
+    // FIXME move to smaller method to make it easier to implement overrides.
     const hash = await jm.strToHash(
       src.clone().toDir().optRelTo(tarUrl) ??
       src.href
@@ -104,48 +132,11 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
     const tarName = src.getBaseNameWithoutExt() + a.reqStr(jc.conf.getFileExtTar())
     const tarPath = p.posix.join(hash, tarName)
 
-    return new jm.Url(tarPath, tarUrl)
+    return new jm.Url(tarPath, tarUrl).href
   }
 
-  /*
-  This caching is used for several reasons.
-
-  This potentially allows the algorithm that converts source URLs to target URLs
-  to be non-deterministic, for example by using random salts rather than
-  hashes. Storing the mapping from source URLs to target URLs allows us to
-  pretend that this conversion is a pure function.
-
-  This conversion may involve using the native crypto API for hashing, and many
-  operations wiht the native `URL` API, all of which are on a slow side.
-  */
-  #srcUrlToTarUrl = undefined
-  #initSrcUrlToTarUrl() {return this.#srcUrlToTarUrl ??= new jm.PromiseMap()}
-
-  #importCache = undefined
-  initImportCache() {return this.#importCache ??= new jm.PromiseMap()}
-  optImportCache() {return this.#importCache}
-
-/*
-  async resolveLangFileUncached(key) {
-    const nativeUrl = new jm.Url(a.reqStr(key) + `.native` + jc.conf.getFileExtTar())
-    const headerUrl = new jm.Url(a.reqStr(key) + `.header` + jc.conf.getFileExtTar())
-
-    // FIXME skip on 404.
-    const [native, header] = await Promise.all([
-      this.reqFs().read(nativeUrl),
-      this.reqFs().read(headerUrl),
-    ])
-
-    if (native && header) {
-      // FIXME cache invalidation:
-      //   * Header stores checksums.
-      //   * Header stores dependency list.
-      //   * Compare to checksums for:
-      //     * Requested module.
-      //     * Dependencies.
-    }
-  }
-*/
+  #srcUrlStrToTarUrlStr = undefined
+  #initSrcUrlStrToTarUrlStr() {return this.#srcUrlStrToTarUrlStr ??= new jm.PromiseMap()}
 
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }

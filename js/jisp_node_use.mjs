@@ -50,17 +50,19 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnib.ImportBa
     return this
   }
 
+  /*
+  Technical note. When reading this code, it may be unclear how this allows
+  identifiers referencing our declaration to gain access to the live value of
+  the imported module. This works because this code indirectly invokes
+  `Node..declareLex`, which adds the current node to the nearest lexical
+  namespace, and because this class implements the method `.optResolveLiveVal`,
+  which is a common interface used by various other classes, particularly by
+  `Ident`. When an identifier finds this node `Use` in a lexical namespace, it
+  will call `Use..optResolveLiveVal` to obtain the live value. Also see
+  `Ident..optResolveLiveVal`.
+  */
   async macroDestName() {
     await this.reqImport()
-
-    /*
-    Technical note. When reading this code, it may be unclear how this allows
-    identifiers referencing our declaration to gain access to the live value of
-    the imported module. This works because this class implements the method
-    `.optResolveLiveVal`, which is a common interface used by various other
-    classes. When an identifier finds this node in a lexical namespace, it will
-    call this to obtain the live value. See `Ident..optResolveLiveVal`.
-    */
     return super.macroDestName()
   }
 
@@ -83,7 +85,9 @@ export class Use extends jns.MixOwnNsLived.goc(jv.MixOwnValued.goc(jnib.ImportBa
   }
 
   async reqImport() {
-    return this.setVal(await import(await this.reqResolveImport()))
+    await this.resolve()
+    await this.ready()
+    return this.setVal(await import(this.reqTarPathAbs()))
   }
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optVal)}
