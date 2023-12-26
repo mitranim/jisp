@@ -35,8 +35,12 @@ export function isFullMatch(src, reg) {
   return reg.exec(src)?.[0] === src
 }
 
-class StrSet extends a.TypedSet {
+export class StrSet extends a.TypedSet {
   reqVal(val) {return a.reqStr(val)}
+}
+
+export class ValidStrSet extends a.TypedSet {
+  reqVal(val) {return a.reqValidStr(val)}
 }
 
 /*

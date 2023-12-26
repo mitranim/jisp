@@ -8,10 +8,10 @@ compile-time evaluation.
 
 FIXME support optional compile-time importing, controlled by additional
 configuration property on `Conf.main`. When enabled, causes `Import` to import
-target module at compile time and validate that all referenced identifiers are
-actually exported by target module.
+the target module at compile time and validate that all referenced identifiers
+are actually exported.
 
-FIXME support "mixin" imports. They should cause `Import` to import target
+FIXME support "mixin" imports. They should cause `Import` to import the target
 module at compile time regardless of `Conf.main` configuration, in order to
 obtain knowledge of exported identifiers, which allows us to resolve
 unqualified names.

@@ -80,8 +80,13 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
     return undefined
   }
 
+  /*
+  Collection of "references": identifier nodes that refer to names in this
+  namespace. May be used to find if the namespace is used at all, or which
+  names are used.
+  */
   #refs = undefined
-  #initRefs() {return this.#refs ??= new jni.IdentSet()}
+  initRefs() {return this.#refs ??= new jni.IdentSet()}
   optRefs() {return this.#refs}
 
   addRef(val) {
@@ -92,7 +97,7 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
       throw this.err(`invalid addition of reference ${a.show(val)} with name ${a.show(key)} to namespace ${a.show(this)} which does not declare this name`)
     }
 
-    this.#initRefs().add(val)
+    this.initRefs().add(val)
     return this
   }
 
@@ -119,6 +124,29 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
 }
 
 /*
+Short for "namespace with predeclared names".
+Intended for declaring JS globals.
+TODO better name.
+*/
+/*
+export class NsPredecl extends NsBase {
+  #set = undefined
+  initSet() {return this.#set ??= new jm.ValidStrSet()}
+  optSet() {return this.#set}
+
+  has(key) {return !!this.optSet()?.has(key)}
+  add(key) {return this.initSet().add(key), this}
+
+  addMany(...val) {
+    for (val of val) this.add(val)
+    return this
+  }
+
+  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optSet))}
+}
+*/
+
+/*
 Short for "namespace lexical". Unlike `NsBase` and `NsLive`, this namespace
 is mutable.
 
@@ -138,7 +166,7 @@ code span in error messages. Relevant sample of removed code:
 */
 export class NsLex extends jmi.MixMixable.goc(NsBase) {
   #decls = undefined
-  #initDecls() {return this.#decls ??= new jn.NodeColl()}
+  initDecls() {return this.#decls ??= new jn.NodeColl()}
   optDecls() {return this.#decls}
 
   has(key) {
@@ -149,6 +177,14 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
   optGet(key) {
     this.req(key, a.isValidStr)
     return this.#decls?.get(key)
+  }
+
+  // Draft. May be a dumb idea.
+  addEmpty(key) {
+    a.reqValidStr(key)
+    const tar = this.initDecls()
+    if (!tar.has(key)) Map.prototype.set.call(tar, key, undefined)
+    return this
   }
 
   // TODO: would be ideal if these error messages referenced the code where this
@@ -165,7 +201,7 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
       throw node.err(`redundant declaration of ${a.show(key)} in namespace ${a.show(this)}`)
     }
 
-    this.#initDecls().add(node)
+    this.initDecls().add(node)
     return this
   }
 
@@ -192,12 +228,13 @@ considered to have its own lexical namespace. Also see `MixNsLexed`.
 export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLexed extends je.MixErrer.goc(cls) {
+      get NsLex() {return NsLex}
       #nsLex = undefined
       ownNsLex() {return this.initNsLex()}
       optNsLex() {return this.#nsLex}
       reqNsLex() {return this.optNsLex() ?? this.throw(`missing own lexical namespace at ${a.show(this)}`)}
       initNsLex() {return this.#nsLex ??= this.makeNsLex()}
-      makeNsLex() {return new NsLex()}
+      makeNsLex() {return new this.NsLex()}
     }
   }
 }
@@ -205,12 +242,13 @@ export class MixOwnNsLexed extends a.DedupMixinCache {
 export class MixOwnNsLived extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLived extends je.MixErrer.goc(cls) {
+      get NsLive() {return NsLive}
       #nsLive = undefined
       ownNsLive() {return this.initNsLive()}
       optNsLive() {return this.#nsLive}
       reqNsLive() {return this.optNsLive() ?? this.throw(`missing own live namespace at ${a.show(this)}`)}
       initNsLive() {return this.#nsLive ??= this.makeNsLive()}
-      makeNsLive() {return new NsLive()}
+      makeNsLive() {return new this.NsLive()}
     }
   }
 }

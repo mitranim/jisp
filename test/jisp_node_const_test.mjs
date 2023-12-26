@@ -12,7 +12,7 @@ await t.test(async function test_Const() {
 [use "jisp:prelude.mjs" "*"]
 [const]
 `,
-    `[object Const] expected exactly 3 children, got 1`,
+    `[object Const] expects exactly 3 children, got 1`,
   )
 
   await jrt.testModuleFail(
@@ -21,7 +21,7 @@ await t.test(async function test_Const() {
 [use "jisp:prelude.mjs" "*"]
 [const one]
 `,
-    `[object Const] expected exactly 3 children, got 2`,
+    `[object Const] expects exactly 3 children, got 2`,
   )
 
   await jrt.testModuleFail(
@@ -30,7 +30,7 @@ await t.test(async function test_Const() {
 [use "jisp:prelude.mjs" "*"]
 [const one two three]
     `,
-    `[object Const] expected exactly 3 children, got 4`,
+    `[object Const] expects exactly 3 children, got 4`,
   )
 
   await jrt.testModuleFail(

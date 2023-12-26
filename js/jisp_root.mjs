@@ -28,21 +28,6 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   get Module() {return jnm.Module}
 
   /*
-  Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited by
-  all modules in this root. This is where we add globally predeclared names.
-  The default implementation should contain exactly one declaration: `use`.
-  Other common built-ins should be provided by the prelude module, which should
-  be imported via `use`.
-  */
-  makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
-
-  makeNsMixin() {
-    const tar = a.npo()
-    tar.use = jnu.Use
-    return new jns.NsLive().setVal(tar)
-  }
-
-  /*
   Must synchronously return a `Module` corresponding to this source URL string,
   if one has already been created and cached. Must not create any new objects.
   */
@@ -137,6 +122,21 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
 
   #srcUrlStrToTarUrlStr = undefined
   #initSrcUrlStrToTarUrlStr() {return this.#srcUrlStrToTarUrlStr ??= new jm.PromiseMap()}
+
+  /*
+  Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited by
+  all modules in this root. This is where we add globally predeclared names.
+  The default implementation should contain exactly one declaration: `use`.
+  Other common built-ins should be provided by the prelude module, which should
+  be imported via `use`.
+  */
+  makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
+
+  makeNsMixin() {
+    const tar = a.npo()
+    tar.use = jnu.Use
+    return new jns.NsLive().setVal(tar)
+  }
 
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }
