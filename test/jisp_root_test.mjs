@@ -43,18 +43,17 @@ await t.test(async function test_compilation_with_prelude_named() {
   )
 })
 
-async function testSingleFileCompilation(src, exp) {
+export async function testSingleFileCompilation(src, exp) {
   const fs = jdft.makeTestFs()
-  const srcText = a.trim(await fs.read(src))
-  const expText = a.trim(await fs.read(exp))
   const root = new jr.Root().setFs(fs)
-  const mod = new jnm.Module()
 
-  mod.setParent(root)
-  mod.parse(srcText)
-  await mod.macro()
+  const mod = root.reqModule(src.href)
+  await mod.ready()
 
-  tu.testCompiled(mod.compile(), expText)
+  const tarText = a.trim(await fs.read(mod.reqTarUrl()))
+  const expText = a.trim(await fs.read(exp))
+
+  tu.testCompiled(tarText, expText)
 }
 
 await t.test(async function test_Use_import_resolution() {

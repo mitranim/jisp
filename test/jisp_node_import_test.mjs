@@ -8,27 +8,67 @@ import * as jm from '../js/jisp_misc.mjs'
 import * as jr from '../js/jisp_root.mjs'
 import * as jnm from '../js/jisp_node_module.mjs'
 
-await t.test(async function test_Import_as_statement() {
+await t.test(async function test_Import_statement_unnamed() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
-
 [import "some_import_path"]
-[import "some_import_path" mod0]
-
 [import "one://two/three.four"]
-[import "one://two/three.four" mod1]
 `,
 `
 import "some_import_path";
-import * as mod0 from "some_import_path";
 import "one://two/three.four";
+`)
+})
+
+await t.test(async function test_Import_statement_named() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" "*"]
+[import "some_import_path" mod0]
+[import "one://two/three.four" mod1]
+`,
+`
+import * as mod0 from "some_import_path";
 import * as mod1 from "one://two/three.four";
 `)
 })
 
-await t.test(async function test_Import_as_expression() {
+await t.test(async function test_Import_statement_mixin() {
+  await t.test(async function test_invalid() {
+    const mod = jrt.makeModule().parse(`
+[use "jisp:prelude.mjs" "*"]
+
+[import "some_import_path" "*"]
+`)
+
+    /*
+    This failure and corresponding error message verifies that our "*"-style
+    import statement actually does try to import the target at compile time,
+    or rather at macro time.
+    */
+    await t.throws(async () => mod.macro(), Error, `Relative import path "some_import_path" not prefixed`)
+  })
+
+  await jrt.testSingleFileCompilation(
+    new URL(`test_import_star_empty.jisp`, tu.TEST_SRC_URL),
+    new URL(`test_import_star_empty.mjs`,  tu.TEST_SRC_URL),
+  )
+
+  await jrt.testSingleFileCompilation(
+    new URL(`test_import_star_using_one.jisp`, tu.TEST_SRC_URL),
+    new URL(`test_import_star_using_one.mjs`,  tu.TEST_SRC_URL),
+  )
+
+  await jrt.testSingleFileCompilation(
+    new URL(`test_import_star_using_two.jisp`, tu.TEST_SRC_URL),
+    new URL(`test_import_star_using_two.mjs`,  tu.TEST_SRC_URL),
+  )
+})
+
+await t.test(async function test_Import_expression() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `

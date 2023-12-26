@@ -1,0 +1,9 @@
+[use `jisp:prelude.mjs` jp]
+
+[jp.import `./test_exports_more.jisp` `*`]
+[jp.import `./test_exports_less.jisp` `*`]
+
+; Both of these names should be detected in `./test_exports_more.jisp`
+; because it's imported first and exports both.
+someConst0
+someConst1

@@ -8,7 +8,6 @@ usable value, particularly for those which derive their value from an ancestor.
 export class MixValued extends a.DedupMixinCache {
   static make(cls) {
     return class MixValued extends je.MixErrer.goc(cls) {
-      ownVal() {}
       optVal() {}
       reqVal() {
         return (

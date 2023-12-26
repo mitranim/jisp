@@ -1,0 +1,12 @@
+[use `jisp:prelude.mjs` jp]
+
+[jp.import `./test_exports_less.jisp` `*`]
+[jp.import `./test_exports_more.jisp` `*`]
+
+; Should be detected in `./test_exports_less.jisp` because it's imported first
+; and does export this name.
+someConst0
+
+; Should be detected in `./test_exports_more.jisp`, even though it's imported
+; second, because the other module does not export this name.
+someConst1

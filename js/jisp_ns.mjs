@@ -88,6 +88,7 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
   #refs = undefined
   initRefs() {return this.#refs ??= new jni.IdentSet()}
   optRefs() {return this.#refs}
+  hasRefs() {return this.#refs?.size > 0}
 
   addRef(val) {
     this.reqInst(val, jni.Ident)
@@ -121,6 +122,16 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
   }
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optVal))}
+}
+
+/*
+Encapsulates a live object, such as a native imported module, and inspects its
+properties at runtime to provide compile-time declarations. Can be used to
+implement "*"-style imports that compile to explicit named imports in JS.
+Can be used to detect missing exports at compile time.
+*/
+export class NsLivePseudo extends NsLive {
+  isLive() {return false}
 }
 
 /*
@@ -168,6 +179,7 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
   #decls = undefined
   initDecls() {return this.#decls ??= new jn.NodeColl()}
   optDecls() {return this.#decls}
+  hasDecls() {return this.#decls?.size > 0}
 
   has(key) {
     this.req(key, a.isValidStr)
@@ -228,13 +240,13 @@ considered to have its own lexical namespace. Also see `MixNsLexed`.
 export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLexed extends je.MixErrer.goc(cls) {
-      get NsLex() {return NsLex}
       #nsLex = undefined
       ownNsLex() {return this.initNsLex()}
       optNsLex() {return this.#nsLex}
       reqNsLex() {return this.optNsLex() ?? this.throw(`missing own lexical namespace at ${a.show(this)}`)}
       initNsLex() {return this.#nsLex ??= this.makeNsLex()}
       makeNsLex() {return new this.NsLex()}
+      get NsLex() {return NsLex}
     }
   }
 }
@@ -242,13 +254,13 @@ export class MixOwnNsLexed extends a.DedupMixinCache {
 export class MixOwnNsLived extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLived extends je.MixErrer.goc(cls) {
-      get NsLive() {return NsLive}
       #nsLive = undefined
-      ownNsLive() {return this.initNsLive()}
+      ownNsLive() {return this.#nsLive}
       optNsLive() {return this.#nsLive}
       reqNsLive() {return this.optNsLive() ?? this.throw(`missing own live namespace at ${a.show(this)}`)}
       initNsLive() {return this.#nsLive ??= this.makeNsLive()}
       makeNsLive() {return new this.NsLive()}
+      get NsLive() {return NsLive}
     }
   }
 }

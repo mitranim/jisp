@@ -1,0 +1,7 @@
+[use `jisp:prelude.mjs` `*`]
+
+[const someConst0 `some_const_value_0`]
+[export someConst0]
+
+[fn someFunc0 [] [ret `some_func_value_0`]]
+[export someFunc0]

@@ -1,10 +1,12 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as ji from './jisp_insp.mjs'
+import * as jns from './jisp_ns.mjs'
+import * as jnm from './jisp_node_module.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
-import * as jnm from './jisp_node_module.mjs'
 
 /*
 Base class for node classes that deal with imports. See subclasses `Use` and
@@ -138,8 +140,12 @@ limited to the following:
   * Handling any non-Jisp imports.
 
   * Detecting Jisp imports and using `Root` for those.
+
+---
+
+FIXME when used in expression mode, enforce exactly 2 children, not 3.
 */
-export class ImportBase extends jnlm.ListMacro {
+export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   pk() {return this.reqDestName().reqName()}
 
   /*
@@ -235,30 +241,30 @@ export class ImportBase extends jnlm.ListMacro {
     this.reqChildCountBetween(2, 3)
     this.reqAddr()
 
-    if (!this.optDest()) return this.macroDestNil()
-    if (this.optDestName()) return this.macroDestName()
-    if (this.optDestStr()) return this.macroDestStr()
+    if (!this.optDest()) return this.macroModeUnnamed()
+    if (this.optDestName()) return this.macroModeNamed()
+    if (this.optDestStr()) return this.macroModeStr()
 
     throw this.err(`${a.reqStr(this.msgArgDest())}; found unrecognized node ${a.show(this.reqDest())}`)
   }
 
-  macroDestNil() {return this}
+  macroModeUnnamed() {return this}
 
-  macroDestName() {
+  macroModeNamed() {
     this.declareLex()
     return this
   }
 
-  macroDestStr() {
+  macroModeStr() {
     const val = this.reqDestStr().ownVal()
     const exp = this.mixinStr()
     if (val !== exp) {
       throw this.err(`${a.reqStr(this.msgArgDest())}; found unsupported string ${a.show(val)}`)
     }
-    return this.macroDestMixin()
+    return this.macroModeMixin()
   }
 
-  macroDestMixin() {throw jm.errMeth(`macroDestMixin`, this)}
+  macroModeMixin() {throw jm.errMeth(`macroModeMixin`, this)}
 
   msgArgDest() {
     return `${a.show(this)} requires the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
@@ -340,4 +346,53 @@ export class ImportBase extends jnlm.ListMacro {
     this.setTarPathRel(this.optModule()?.optTarUrlToTarAddr(srcUrl))
     return this
   }
+
+  /*
+  These methods are an interface known to some other code. May be used by
+  `IdentAccess` and `DelimNodeList` when this node is used as an expression
+  rather than a module-level statement. At the time of writing, such usage
+  would generate an exception during macroing, because this node's method
+  `.macro` returns a promise, and async macroing is supported only at the
+  module level. However, we may be able to lift that limitation in the future.
+  Maybe we already have. TODO write a test.
+  */
+  optResolveLiveVal() {return this.optNsLive()?.optVal()}
+  reqResolveLiveVal() {return this.reqNsLive().reqVal()}
+
+  /*
+  May be used by subclasses to import the target at compile time.
+  The imported module may be considered "live" and used for immediate
+  compile-time evaluation / node replacement, also known as macroing.
+  The imported module may also be considered non-live and used for
+  compile-time validation of imported and exported names. Subclasses
+  are free to override the getter `.NsLive` to modify the behavior
+  of the resulting namespace.
+
+  Should be kept in sync with `.optImport`.
+  */
+  async reqImport() {
+    await this.resolve()
+    await this.ready()
+
+    const val = await import(this.reqTarPathAbs())
+    this.initNsLive().setVal(val)
+
+    return this
+  }
+
+  // Should be kept in sync with `.reqImport`.
+  async optImport() {
+    await this.resolve()
+    await this.ready()
+
+    const tar = this.optTarPathAbs()
+    if (!tar) return this
+
+    const val = await import(tar)
+    this.initNsLive().setVal(val)
+
+    return this
+  }
+
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optNsLive)}
 }
