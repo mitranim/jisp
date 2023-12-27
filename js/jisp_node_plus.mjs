@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jnoi from './jisp_node_oper_infix.mjs'
+import * as jnom from './jisp_node_oper_macro.mjs'
 
-export class Plus extends jnoi.OperInfix {
+export class Plus extends jnom.OperMacro {
   /*
   In unary mode, explicit `+` ensures that the operand is converted to a number.
   This would be unnecessary if the operand was always a number, but JS allows

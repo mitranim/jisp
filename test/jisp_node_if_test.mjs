@@ -72,9 +72,9 @@ else 30;;
 [const someConst3 [if 10 20 30]]
 `,
 `
-const someConst1 = 10 ? undefined : undefined;
-const someConst2 = 10 ? 20 : undefined;
-const someConst3 = 10 ? 20 : 30;
+const someConst1 = (10 ? undefined : undefined);
+const someConst2 = (10 ? 20 : undefined);
+const someConst3 = (10 ? 20 : 30);
 `)
   })
 })

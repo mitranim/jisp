@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jnoi from './jisp_node_oper_infix.mjs'
+import * as jnom from './jisp_node_oper_macro.mjs'
 
-export class Aster extends jnoi.OperInfix {
+export class Aster extends jnom.OperMacro {
   compileUnary(src) {
     return `1 * ` + a.reqStr(src.compile())
   }

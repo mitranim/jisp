@@ -54,12 +54,15 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   compileExpression() {
-    return a.spaced(
-      a.reqValidStr(this.compileExpressionTest()),
-      `?`,
-      a.reqValidStr(this.compileExpressionThen()),
-      `:`,
-      a.reqValidStr(this.compileExpressionElse()),
+    return (
+      ``
+      + `(`
+      + a.reqValidStr(this.compileExpressionTest())
+      + ` ? `
+      + a.reqValidStr(this.compileExpressionThen())
+      + ` : `
+      + a.reqValidStr(this.compileExpressionElse())
+      + `)`
     )
   }
 

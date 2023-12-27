@@ -2,18 +2,14 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 /*
-Base class for macros that implement JS infix operators.
+Base class for macros that implement JS operators.
 
-Note that many such operators can be either unary or binary in JS, and in our
-system, they tend to be variadic. This class supports both unary and binary
-modes.
-
-For some JS operators, JS supports only the binary mode (2 or more operands),
-but we also support an unary mode (1 operand), if we can define a sensible
-behavior. However, we usually can't define a sensible default behavior with 0
-operands.
+JS operators tend to be unary or binary. Our equivalent macros tend to be
+variadic. This class supports unary and variadic forms. Nullary forms are not
+supported because they're not particularly useful, and for some JS operators,
+there is no sensible "fallback" value.
 */
-export class OperInfix extends jnlm.ListMacro {
+export class OperMacro extends jnlm.ListMacro {
   macroImpl() {
     this.reqChildCountMin(2)
     return this.macroFrom(1)

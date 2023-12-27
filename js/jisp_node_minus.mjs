@@ -1,8 +1,8 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jnoi from './jisp_node_oper_infix.mjs'
+import * as jnom from './jisp_node_oper_macro.mjs'
 
 // See `Plus` for some comments and explanations.
-export class Minus extends jnoi.OperInfix {
+export class Minus extends jnom.OperMacro {
   compileUnary(src) {
     return `- ` + a.reqStr(src.compile())
   }
