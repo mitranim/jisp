@@ -15,5 +15,8 @@ await import(`./jisp_node_fn_test.mjs`)
 await import(`./jisp_node_import_test.mjs`)
 await import(`./jisp_node_if_test.mjs`)
 await import(`./jisp_node_const_test.mjs`)
+await import(`./jisp_node_plus_test.mjs`)
+await import(`./jisp_node_minus_test.mjs`)
+await import(`./jisp_node_aster_test.mjs`)
 
 if (import.meta.main) ti.flush()

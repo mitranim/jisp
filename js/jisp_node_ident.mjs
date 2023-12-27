@@ -9,6 +9,13 @@ import * as jnnu from './jisp_node_num.mjs'
 /*
 Base class for identifiers.
 
+The syntax / format of Jisp identifiers should match the syntax / format of JS
+identifiers. The set of all possible Jisp identifiers should exactly match the
+set of all possible identifiers which can be used in JS as property names
+without quotes. Note that some of those names are also reserved keywords in JS.
+In modern JS, reserved keywords can be used as property names (qualified
+identifiers), but not as variable names (unqualified identifiers).
+
 Most of the code in this class assumes that it represents an unqualified
 identifier. Subclasses that represent a qualified identifier, such as access
 via dot operator, may need to override some methods. Our tokenizer must

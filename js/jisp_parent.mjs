@@ -124,7 +124,8 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       This has "opt" in the name because we could also define a method
       `.reqChildSlice` which would validate that the exact start and next
       indexes are actually present in the child list, producing a return value
-      with the length equal to `next - start`.
+      with the length equal to `next - start`. This name doesn't mean that the
+      output could be nil; the output is always an array.
       */
       optChildSlice(start, next) {
         this.opt(start, a.isNat)

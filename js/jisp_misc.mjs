@@ -209,38 +209,13 @@ export function hasFileScheme(val) {
 }
 
 /*
-Short for "is strictly relative". Similar to the functions `p.posix.isRel` and
-`p.windows.isRel`, but more restrictive than both. Requires the path to have NO
-special prefix. Must be used for paths in `jisp:<path>`.
-
-FIXME rename to "implicit relative" or "relative implicit" and add a function
-that answers if the path is explicitly relative. FIXME consider moving to
-`@mitranim/js`.
-
-FIXME consider dropping.
-*/
-export function isStrictRelPathStr(val) {
-  return (
-    a.isStr(val) &&
-    !val.startsWith(`/`) &&
-    !val.startsWith(`\\`) &&
-    !val.startsWith(`./`) &&
-    !val.startsWith(`.\\`) &&
-    !hasScheme(val) &&
-    !isAbsUrlStr(val)
-  )
-}
-
-/*
 Opposite of `p.paths.clean`. Instead of cleaning the path, it "uncleans" the
 path, prepending `./` when the path is strictly relative.
-
-FIXME consider dropping.
 */
 export function toPosixRel(val) {
   if (!a.optStr(val)) return undefined
   a.reqStr(val)
-  if (isStrictRelPathStr(val)) return p.posix.relPre() + val
+  if (p.posix.isRelImplicit(val)) return p.posix.relPre() + val
   return val
 }
 

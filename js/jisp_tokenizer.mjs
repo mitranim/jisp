@@ -11,6 +11,7 @@ import * as jnsp from './jisp_node_space.mjs'
 import * as jnco from './jisp_node_comment.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 import * as jnst from './jisp_node_str.mjs'
+import * as jnio from './jisp_node_ident_oper.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnia from './jisp_node_ident_access.mjs'
 
@@ -64,6 +65,7 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
       jnnu.Num.parse(span) ??
       jnst.StrBacktick.parse(span) ??
       jnst.StrDouble.parse(span) ??
+      jnio.IdentOper.parse(span) ??
       jniu.IdentUnqual.parse(span) ??
       jnia.IdentAccess.parse(span) ??
       undefined
