@@ -11,7 +11,7 @@ await t.test(async function test_Slash() {
 
 [/]
 `,
-    `[object Slash] expects at least 2 children, got 1 children`,
+    `[object Slash] expects at least 3 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,17 @@ await t.test(async function test_Slash() {
 
 [const someConst [/]]
 `,
-    `[object Slash] expects at least 2 children, got 1 children`,
+    `[object Slash] expects at least 3 children, got 1 children`,
+  )
+
+  await jrt.testModuleFail(
+      jrt.makeModule(),
+`
+[use "jisp:ops.mjs" "*"]
+
+[/ 10]
+`,
+    `[object Slash] expects at least 3 children, got 2 children`,
   )
 
   await jrt.testModuleCompile(
@@ -30,28 +40,22 @@ await t.test(async function test_Slash() {
 `
 [use "jisp:ops.mjs" "*"]
 
-[/ 10]
 [/ 10 20]
 [/ 10 20 30]
 
-[/ [/ 10]]
-[/ [/ 10 20]]
-[/ [/ 10 20 30]]
+[/ [/ 10 20] [/ 30 40]]
+[/ [/ 10 20 30] [/ 40 50 60]]
 
-[/ "some_val" [/ 10]]
-[/ "some_val" [/ 10 20]]
-[/ "some_val" [/ 10 20 30]]
+[/ 10 [/ 20 30]]
+[/ 10 20 [/ 30 40]]
 `,
 `
-10 / 1;
 10 / 20;
 10 / 20 / 30;
-(10 / 1) / 1;
-(10 / 20) / 1;
-(10 / 20 / 30) / 1;
-"some_val" / (10 / 1);
-"some_val" / (10 / 20);
-"some_val" / (10 / 20 / 30);
+(10 / 20) / (30 / 40);
+(10 / 20 / 30) / (40 / 50 / 60);
+10 / (20 / 30);
+10 / 20 / (30 / 40);
 `,
   )
 })
