@@ -37,8 +37,7 @@ import * as mod1 from "one://two/three.four";
 })
 
 await t.test(async function test_Import_statement_mixin() {
-  // FIXME: this test can be run only in non-watch mode.
-  return
+  if (ti.WATCH) return
 
   await t.test(async function test_invalid() {
     const mod = jrt.makeModule().parse(`
@@ -68,6 +67,11 @@ await t.test(async function test_Import_statement_mixin() {
   await jrt.testSingleFileCompilation(
     new URL(`test_import_star_using_two.jisp`, tu.TEST_SRC_URL),
     new URL(`test_import_star_using_two.mjs`,  tu.TEST_SRC_URL),
+  )
+
+  await jrt.testSingleFileCompilation(
+    new URL(`test_import_star_using_two_repeatedly.jisp`, tu.TEST_SRC_URL),
+    new URL(`test_import_star_using_two_repeatedly.mjs`,  tu.TEST_SRC_URL),
   )
 })
 

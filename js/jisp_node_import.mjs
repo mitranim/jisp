@@ -59,7 +59,7 @@ export class Import extends jnib.ImportBase {
     const prn = this.reqCodePrinter()
     const name = this.optDestName()
     const addr = this.compileAddr()
-    const refs = a.map(this.optNsLive()?.optRefs(), a.pk).join(`, `)
+    const refs = jm.mapUniq(this.optNsLive()?.optRefs(), a.pk).join(`, `)
 
     const named = name ? (
       `import * as ${a.reqStr(name.compile())} from ${a.reqStr(addr)}`

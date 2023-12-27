@@ -396,3 +396,14 @@ export async function strToHash(src) {
   const outBuf = await crypto.subtle.digest(`sha-256`, srcArr)
   return a.arrHex(new Uint8Array(outBuf))
 }
+
+// Suboptimal, needs tuning.
+// TODO move to `@mitranim/js` and revise.
+export function mapUniq(src, fun) {
+  src = a.map(src, fun)
+  switch (src.length) {
+    case 0: return src
+    case 1: return src
+    default: return [...new Set(src)]
+  }
+}

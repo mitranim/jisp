@@ -2,7 +2,7 @@ import * as jns from './jisp_ns.mjs'
 import * as jnu from './jisp_node_use.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
 
-export class DeclareFrom extends jnib.ImportBase {
+export class Declare extends jnib.ImportBase {
   get NsLive() {return jns.NsLivePseudo}
 
   async macroImpl() {

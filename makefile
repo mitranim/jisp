@@ -26,13 +26,13 @@ endif
 
 # TODO also watch files read by tests, in addition to imported by tests.
 test.w:
-	$(DENO) --watch $(TEST)
+	$(DENO) --watch $(TEST) --watch
 
 test:
 	$(DENO) $(TEST)
 
 bench.w:
-	$(DENO) --watch $(BENCH)
+	$(DENO) --watch $(BENCH) --watch
 
 bench:
 	$(DENO) $(BENCH)

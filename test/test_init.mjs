@@ -18,6 +18,12 @@ export const BENCH = cli.boolOpt(`bench`)
 export const VERB = cli.boolOpt(`verb`)
 export const RUN = cli.get(`run`)
 
+/*
+Should be duplicated from Deno flags. Allows us to disable some tests that cause
+infinite restarting in watch mode.
+*/
+export const WATCH = cli.boolOpt(`watch`)
+
 if (VERB) t.conf.testRep = t.ConsoleStartEndAvgReporter.with(t.tsMilli)
 
 if (TEST) t.conf.setTestFilter(RUN)
