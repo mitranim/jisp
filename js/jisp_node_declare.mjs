@@ -6,6 +6,7 @@ export class Declare extends jnib.ImportBase {
   get NsLive() {return jns.NsLivePseudo}
 
   async macroImpl() {
+    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
     await this.reqImport()

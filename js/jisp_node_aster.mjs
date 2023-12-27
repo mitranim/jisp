@@ -3,7 +3,7 @@ import * as jnom from './jisp_node_oper_macro.mjs'
 
 export class Aster extends jnom.OperMacro {
   compileUnary(src) {
-    return `1 * ` + a.reqStr(src.compile())
+    return a.reqStr(src.compile()) + ` * 1`
   }
 
   compileVariadic(src) {

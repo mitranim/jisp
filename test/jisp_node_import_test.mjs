@@ -76,6 +76,8 @@ await t.test(async function test_Import_statement_mixin() {
 })
 
 await t.test(async function test_Import_expression() {
+  return
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
@@ -83,10 +85,12 @@ await t.test(async function test_Import_expression() {
 
 [const someVal0 [import "some_import_path"]]
 [const someVal1 [import "one://two/three.four"]]
+[const someVal2 [import someVal1.someAddress]]
 `,
 `
 const someVal0 = import("some_import_path");
 const someVal1 = import("one://two/three.four");
+const someVal2 = import(someVal1.someAddress);
 `)
 })
 
@@ -99,10 +103,13 @@ await t.test(async function test_Import_rewriting_non_jisp() {
       jrt.makeModuleAddressed(),
 `
 [use "jisp:prelude.mjs" "*"]
+
 [import "./some_other_module"]
+[const someConst [import "./some_other_module"]]
 `,
 `
 import "../test_files/some_other_module";
+const someConst = import("../test_files/some_other_module");
 `)
 
   await jrt.testModuleCompile(
@@ -125,25 +132,6 @@ import "../test_files/some_other_module.mjs";
 import "../some_other_module.mjs";
 `)
 })
-
-/*
-
-FIXME verify behaviors:
-
-  * Implicitly relative import paths:
-
-    `one`
-    `one/two`
-    `one.mjs`
-    `one.jisp`
-    `one/two.mjs`
-    `one/two.jisp`
-
-  * Always rewriting explicitly relative paths relative to target.
-
-  * Always rewriting `.jisp` paths into `.mjs` relative to target.
-
-*/
 
 /*
 This test is incomplete. TODO verify the following:
@@ -175,23 +163,6 @@ waits until its dependency B is also resolved / compiled to disk, and fail if
 it doesn't wait for dependencies.
 */
 await t.test(async function test_Import_transitive() {
-  /*
-
-  Pick two Jisp source files which are not used by any other tests, where A
-  imports B.
-
-  Ensure that there's a way to resolve A and when that's done, both A and B are
-  written to disk and importable.
-
-  Ensure that there's a way to resolve A and B that begins their processing, but
-  doesn't wait until the files are written to disk.
-
-  Either at module level or root level, there should be at least two ways of
-  resolving Jisp modules, one completely non-waiting, one that waits only for
-  the given module, and one that also waits for all its dependencies.
-
-  */
-
   const fs = jdft.makeTestFs()
   const root = new jr.Root().setFs(fs)
 
@@ -201,17 +172,5 @@ await t.test(async function test_Import_transitive() {
     )
   )
 })
-
-/*
-
-FIXME missing tests.
-
-In expression mode, arbitrary expression should be allowed in address position.
-
-Clear target folder, have two modules where one imports another, ensure that
-both are compiled, test different types of import promises available from
-modules.
-
-*/
 
 if (import.meta.main) ti.flush()

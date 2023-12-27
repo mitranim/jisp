@@ -7,13 +7,12 @@ export class Plus extends jnom.OperMacro {
   This would be unnecessary if the operand was always a number, but JS allows
   to convert an arbitrary expression to a number by using `+`, invoking
   `.valueOf` methods where relevant, parsing numeric strings, and falling back
-  on `0` when everything else fails. This is even a common idiom in some
-  codebases.
+  on `0` when everything else fails. Some consider this an anti-pattern. Some
+  encourage this. Our job is to make this possible to use.
 
   The preceding space prevents the operator from accidentally merging with the
   compiled child expression. If the child expression also begins with an unary
-  operator, then without a space or paren wrapping, operator characters would
-  merge and cause a JS syntax error.
+  operator, then without a delimiter, we might get a JS syntax error.
   */
   compileUnary(src) {
     return `+ ` + a.reqStr(src.compile())

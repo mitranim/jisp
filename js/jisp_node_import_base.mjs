@@ -164,14 +164,16 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   arbitrary expression. Requiring the address to be a literal string should be
   done only in statement mode.
   */
+  optAddr() {return this.optChildInstAt(1, jnst.Str)}
   reqAddr() {return this.reqChildInstAt(1, jnst.Str)}
-  reqDest() {return this.reqChildAt(2)}
+  optSrcPath() {return this.optAddr()?.reqVal()}
+  reqSrcPath() {return this.reqAddr().reqVal()}
   optDest() {return this.optChildAt(2)}
+  reqDest() {return this.reqChildAt(2)}
   optDestName() {return this.optChildAt(2)?.asOnlyInst(jniu.IdentUnqual)}
   reqDestName() {return this.reqChildInstAt(2, jniu.IdentUnqual)}
   optDestStr() {return this.optChildAt(2)?.asOnlyInst(jnst.Str)}
   reqDestStr() {return this.reqChildInstAt(2, jnst.Str)}
-  reqSrcPath() {return this.reqAddr().reqVal()}
 
   /*
   When the import source path is for a Jisp file (has extension `.jisp`), then
