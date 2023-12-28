@@ -17,12 +17,11 @@ export class OperMacro extends jnlm.ListMacro {
   }
 
   compile() {
-    const out = a.reqStr(
+    return this.compileStatementOrExpression(
       this.childCount() === 2
       ? this.compileUnary(this.reqChildAt(1))
       : this.compileVariadic(this.optChildSlice(1))
     )
-    return this.isExpression() ? `(` + out + `)` : out
   }
 
   compileUnary() {throw jm.errMeth(`compileUnary`, this)}

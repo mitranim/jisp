@@ -144,6 +144,16 @@ export class Node extends (
   }
 
   /*
+  Minor shortcut for subclasses that may compile either in expression mode or in
+  statement mode. Many expressions need to be parenthesized to ensure correct
+  grouping without dealing with precedence rules.
+  */
+  compileStatementOrExpression(val) {
+    val = a.reqStr(val)
+    return this.isExpression() ? `(` + val + `)` : val
+  }
+
+  /*
   Subclasses may override this to allow some children to behave as statements.
   For example, statements are allowed in module roots, function bodies, blocks,
   and so on.
