@@ -29,8 +29,6 @@ Non-exhaustive list of missing keywords and operators:
 
   Misc:
 
-    new
-    new.target
     import.meta
     async
     async*

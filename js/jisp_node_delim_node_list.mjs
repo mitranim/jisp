@@ -53,14 +53,16 @@ export class DelimNodeList extends jnnl.NodeList {
   }
 
   compile() {
-    const src = a.filter(this.reqChildArr(), jm.isNotCosmetic)
-    if (!src.length) {
+    const head = this.optChildAt(0)
+    if (!head) {
       throw this.err(`unable to usefully compile empty node list ${a.show(this)}`)
     }
 
+    const tail = this.optChildSlice(1)
+
     return (
-      a.reqStr(a.head(src).compile()) +
-      a.reqStr(this.reqCodePrinter().compileParensWithExpressions(a.tail(src)))
+      a.reqStr(head.compile()) +
+      a.reqStr(this.reqCodePrinter().compileParensWithExpressions(tail))
     )
   }
 }
