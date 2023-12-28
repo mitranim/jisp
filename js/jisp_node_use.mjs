@@ -6,9 +6,9 @@ This class implements compile-time imports of live modules, which are used for
 compile-time replacement of AST nodes, also known as macroing. Compare class
 `Import` which is used for runtime imports.
 
-This should be the ONLY member of the root scope / namespace. All other
-identifier declarations that come with the language should be part of the
-"prelude" module which should be imported via `Use`.
+This should be the ONLY member of the root scope / namespace. All other name
+declarations that come with the language should be part of the "prelude" module
+which should be imported via `Use`.
 */
 export class Use extends jnib.ImportBase {
   async macroModeUnnamed() {
@@ -20,7 +20,7 @@ export class Use extends jnib.ImportBase {
   Technical note. When reading this code, it may be unclear how this allows
   identifiers referencing our declaration to gain access to the live value of
   the imported module. This works because this code indirectly invokes
-  `Node..declareLex`, which adds the current node to the nearest lexical
+  `Node..reqDeclareLex`, which adds the current node to the nearest lexical
   namespace, and because this class inherits the method `.optResolveLiveVal`,
   which is a common interface used by various other classes, particularly by
   `Ident`. When an identifier finds this node `Use` in a lexical namespace, it

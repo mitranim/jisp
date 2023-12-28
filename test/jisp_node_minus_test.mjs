@@ -11,7 +11,7 @@ await t.test(async function test_Minus() {
 
 [-]
 `,
-    `[object Minus] expects at least 2 children, got 1 children`,
+    `[object Minus] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Minus() {
 
 [const someConst [-]]
 `,
-    `[object Minus] expects at least 2 children, got 1 children`,
+    `[object Minus] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleCompile(

@@ -44,27 +44,33 @@ export class ValidStrSet extends a.TypedSet {
 }
 
 /*
+Should exactly match the set of non-contextual keywords in ES5+. Should not
+include any non-keywords. Should not include any contextual keywords such as
+`async`. Reserved names which aren't keywords should be in `jsReservedNames`.
+
 Reference:
 
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
-
-Set of names which are reserved in JS in ES6+ strict mode in all contexts. We
-compile to native JS modules, which require ES6+ and use strict mode. We're
-free to ignore older JS versions and loose mode.
-
-Note that JS also has contextual keywords such as `async`, which can also be
-used as identifiers. This set should NOT include them.
-
-Most of these names are keywords, and attempting to use them as identifiers in
-JS produces a syntax error. Some of these names are not keywords but rather
-predeclared identifiers, typically contextual, such as `arguments`.
-
-One special exception is `undefined`. It's actually NOT reserved in JS, and may
-be redefined, even in ES6+ strict mode. However, we ourselves reserve it to
-avoid such insanity, and to avoid collisions with the output of our macro
-`nil`.
 */
-export const jsReservedNames = new StrSet([`arguments`, `await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `eval`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `this`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
+export const jsKeywordNames = new StrSet([`await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
+
+/*
+Should exactly match the set of reserved names in ES5+ which aren't keywords.
+Unlike keywords, but just like regular names, these names can be used in
+expression positions. However, unlike regular names, these names can't be
+declared. Attempting to use any of these names in a declaration position causes
+a syntax error in JS. Since we can easily detect invalid usage of reserved
+names at compile time, we should do so.
+
+Notably, this does not include `undefined` because at the time of writing, it is
+NOT a reserved name in ES. It's a regular predeclared identifier. In ES5+, the
+predeclared `undefined` in root scope can't be reassigned; any such attempt is
+ignored in loose mode and causes a runtime exception in strict mode. However,
+assigning to `undefined` is not a syntax error, and user code is allowed to
+redeclare `undefined` locally, so it's a regular identifier for all intents and
+purposes.
+*/
+export const jsReservedNames = new StrSet([`arguments`, `eval`, `this`])
 
 export function isNativeModule(val) {
   return a.isNpo(val) && val[Symbol.toStringTag] === `Module`

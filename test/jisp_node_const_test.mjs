@@ -12,7 +12,7 @@ await t.test(async function test_Const() {
 [use "jisp:prelude.mjs" "*"]
 [const]
 `,
-    `[object Const] expects exactly 3 children, got 1`,
+    `[object Const] expected exactly 3 children, got 1`,
   )
 
   await jrt.testModuleFail(
@@ -21,29 +21,29 @@ await t.test(async function test_Const() {
 [use "jisp:prelude.mjs" "*"]
 [const one]
 `,
-    `[object Const] expects exactly 3 children, got 2`,
+    `[object Const] expected exactly 3 children, got 2`,
   )
 
   await jrt.testModuleFail(
     jrt.makeModule(),
-    `
+`
 [use "jisp:prelude.mjs" "*"]
 [const one two three]
-    `,
-    `[object Const] expects exactly 3 children, got 4`,
+`,
+    `[object Const] expected exactly 3 children, got 4`,
   )
 
   await jrt.testModuleFail(
     jrt.makeModule(),
-    `
+`
 [use "jisp:prelude.mjs" "*"]
 [const 10 20]
-    `,
-    `[object Const] requires the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+`,
+    `[object Const] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleCompile(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [const one 10]

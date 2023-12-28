@@ -11,7 +11,7 @@ await t.test(async function test_Slash() {
 
 [/]
 `,
-    `[object Slash] expects at least 3 children, got 1 children`,
+    `[object Slash] expected at least 3 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Slash() {
 
 [const someConst [/]]
 `,
-    `[object Slash] expects at least 3 children, got 1 children`,
+    `[object Slash] expected at least 3 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -32,7 +32,7 @@ await t.test(async function test_Slash() {
 
 [/ 10]
 `,
-    `[object Slash] expects at least 3 children, got 2 children`,
+    `[object Slash] expected at least 3 children, got 2 children`,
   )
 
   await jrt.testModuleCompile(

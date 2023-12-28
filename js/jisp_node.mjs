@@ -95,16 +95,16 @@ export class Node extends (
 
   Must start search at the parent because some macro nodes, such as `Fn`, define
   their own namespace. If we didn't use the parent here, the default behavior
-  would be to add the declaration to own namespace, not to an ancestor
+  would be to add the declaration to the own namespace, not to an ancestor
   namespace, which would be incorrect in several ways. For example, the
   resulting declaration would be unknown/unavailable to sibling nodes, breaking
   a lot of code. Some nodes may override this behavior. For example, when `Fn`
-  is used as an expression, it should add itself to own namespace, but NOT to
-  an ancestor namespace.
+  is used as an expression, it should add itself to its own namespace, but NOT
+  to an ancestor namespace.
 
   TODO consider renaming to "reqX". May add an "opt" version later.
   */
-  declareLex() {return this.reqParent().reqNsLex().addNode(this)}
+  reqDeclareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
   macro() {return this.withToErr(this.macroImpl)}
   macroImpl() {throw jm.errMeth(`macroImpl`, this)}

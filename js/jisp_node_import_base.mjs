@@ -164,10 +164,11 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   arbitrary expression. Requiring the address to be a literal string should be
   done only in statement mode.
   */
-  optAddr() {return this.optChildInstAt(1, jnst.Str)}
-  reqAddr() {return this.reqChildInstAt(1, jnst.Str)}
-  optSrcPath() {return this.optAddr()?.reqVal()}
-  reqSrcPath() {return this.reqAddr().reqVal()}
+  reqAddr() {return this.reqChildAt(1)}
+  optAddrStr() {return a.onlyInst(this.optChildAt(1), jnst.Str)}
+  reqAddrStr() {return this.reqChildInstAt(1, jnst.Str)}
+  optSrcPath() {return this.optAddrStr()?.reqVal()}
+  reqSrcPath() {return this.reqAddrStr().reqVal()}
   optDest() {return this.optChildAt(2)}
   reqDest() {return this.reqChildAt(2)}
   optDestName() {return this.optChildAt(2)?.asOnlyInst(jniu.IdentUnqual)}
@@ -240,8 +241,9 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
 
   macroImpl() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(2, 3)
-    this.reqAddr()
+
+    if (this.isExpression()) this.validateExpression()
+    else this.validateStatement()
 
     if (!this.optDest()) return this.macroModeUnnamed()
     if (this.optDestName()) return this.macroModeNamed()
@@ -250,10 +252,30 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     throw this.err(`${a.reqStr(this.msgArgDest())}; found unrecognized node ${a.show(this.reqDest())}`)
   }
 
+  /*
+  In expression mode, we don't validate the type of the child in the address
+  position, because it's allowed to be an arbitrary expression. If the address
+  is a literal string, we should handle it exactly like in statement mode.
+  Otherwise we should leave the address expression as-is.
+  */
+  validateExpression() {
+    this.reqChildCount(2)
+    this.reqAddr()
+  }
+
+  /*
+  In statement mode, the address must be a literal string, because that's the
+  only syntax supported by JS import statements.
+  */
+  validateStatement() {
+    this.reqChildCountBetween(2, 3)
+    this.reqAddrStr()
+  }
+
   macroModeUnnamed() {return this}
 
   macroModeNamed() {
-    this.declareLex()
+    this.reqDeclareLex()
     return this
   }
 
@@ -269,7 +291,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   macroModeMixin() {throw jm.errMeth(`macroModeMixin`, this)}
 
   msgArgDest() {
-    return `${a.show(this)} requires the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
+    return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
   }
 
   /*
@@ -299,7 +321,8 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   ready() {return this.optDepModule()?.ready()}
 
   async resolve() {
-    const srcPath = this.reqSrcPath()
+    const srcPath = this.optSrcPath()
+    if (a.isNil(srcPath)) return this
 
     /*
     See the comment on `.setTarPathAbs` for an explanation on implicitly

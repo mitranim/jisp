@@ -5,28 +5,28 @@ import * as jrt from './jisp_root_test.mjs'
 
 await t.test(async function test_Aster() {
   await jrt.testModuleFail(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 
 [*]
 `,
-    `[object Aster] expects at least 2 children, got 1 children`,
+    `[object Aster] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [use "jisp:ops.mjs" "*"]
 
 [const someConst [*]]
 `,
-    `[object Aster] expects at least 2 children, got 1 children`,
+    `[object Aster] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleCompile(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 

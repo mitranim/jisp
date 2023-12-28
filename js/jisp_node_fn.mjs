@@ -4,7 +4,6 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
-import * as jnt from './jisp_node_this.mjs'
 
 export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   pk() {return this.reqIdent().reqName()}
@@ -18,20 +17,33 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   makeNsMixin() {
     const tar = a.npo()
     tar.ret = jnr.Ret
-    tar.this = jnt.This
+
+    /*
+    In a "live" namespace, nil values act as predeclarations without live
+    semantics. Unlike `ret` which must be a macro, these names only need to be
+    predeclared, but don't need to be macros. We compile them as-is.
+
+    TODO consider adding these names to the own lexical namespace created by
+    `Fn`, instead of using a quirk of `NsLive`. At the time of writing, `NsLex`
+    requires its entries to be instances of `Node`. We may have to change that.
+    */
+    tar.this = undefined
+    tar.arguments = undefined
+
     return new jns.NsLive().setVal(tar)
   }
 
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(3)
-    this.declareLex()
+    this.reqIdent().reqCanDeclare()
+    this.reqDeclareLex()
     this.declareParams()
     return this.macroFrom(3)
   }
 
-  // Override for `Node..declareLex`.
-  declareLex() {
+  // Override for `Node..reqDeclareLex`.
+  reqDeclareLex() {
     if (this.isExpression()) {
       return this.ownNsLex().addNode(this)
     }
@@ -40,7 +52,7 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   declareParams() {
     for (const val of this.reqParams().childIter()) {
-      val.asReqInst(jniu.IdentUnqual).declareLex()
+      val.asReqInst(jniu.IdentUnqual).reqDeclareLex()
     }
   }
 

@@ -39,21 +39,16 @@ export class Import extends jnib.ImportBase {
     return this.compileStatement()
   }
 
-  /*
-  Technical note. Regardless of the quote syntax found in `.reqAddr`, this is
-  allowed to output only double quotes or single quotes, for compatibility with
-  the JS `import` statement, which allows only double quotes or single quotes.
-  The JS pseudo-function `import` allows an arbitrary expression which may be a
-  backtick-quoted string, but it's simpler to always use quotes compatible with
-  the `import` statement.
-  */
-  compileAddr() {
-    return JSON.stringify(a.reqStr(
-      this.optTarPathRel() ?? this.optTarPathAbs() ?? this.reqSrcPath()
-    ))
-  }
+  compileExpression() {
+    const path = this.optTarPathRel() ?? this.optTarPathAbs()
 
-  compileExpression() {return `import(` + a.reqStr(this.compileAddr()) + `)`}
+    return (
+      ``
+      + `import(`
+      + (a.isSome(path) ? JSON.stringify(a.reqStr(path)) : a.reqStr(this.reqAddr().compile()))
+      + `)`
+    )
+  }
 
   compileStatement() {
     const prn = this.reqCodePrinter()
@@ -73,6 +68,20 @@ export class Import extends jnib.ImportBase {
     if (named) return named
     if (reffed) return reffed
     return `import ${a.reqStr(addr)}`
+  }
+
+  /*
+  Intended for statement mode only. This should output a double-quoted or
+  single-quoted string for compatibility with the JS `import` statement, which
+  allows only double quotes or single quotes.
+
+  Compare with the JS pseudo-function `import`, where the address may be an
+  arbitrary expression.
+  */
+  compileAddr() {
+    return JSON.stringify(a.reqStr(
+      this.optTarPathRel() ?? this.optTarPathAbs() ?? this.reqSrcPath()
+    ))
   }
 
   async resolve() {

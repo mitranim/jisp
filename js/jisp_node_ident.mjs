@@ -39,7 +39,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
 
   optResolveNs() {
     const key = this.reqName()
-    return this.optAncProcure(function optResolveNs(val) {
+    return this.reqParent().optAncProcure(function optResolveNs(val) {
       return jm.ownNsLexCall(val)?.optResolve(key)
     })
   }
@@ -53,7 +53,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   reqResolveNs() {
     return (
       this.optResolveNs() ??
-      this.throw(`missing declaration of ${a.show(this.optName())} at ${a.show(this)}`)
+      this.throw(`unable to find declaration of ${a.show(this.optName())} at ${a.show(this)}`)
     )
   }
 
@@ -87,33 +87,51 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     if (src.isLive()) return this.optDerefLiveVal(src.ownVal())
 
     /*
-    Example where this is relevant:
+    The declared value may be used to indirectly obtain a live value. See
+    below.
+
+    The type of this value is unknown / arbitrary. If the namespace is an
+    instance of `NsLex`, then the value must be an instance of `Node`. In the
+    future, we may consider stricter rules.
+
+    Values declared in namespaces, such as this value, may optionally implement
+    the method `.optResolveLiveVal` which may return a live value. This may
+    seem redundant with the clause above where we check if the declaring
+    namespace is live. However, there are cases where a non-live declaration,
+    in a non-live namespace, eventually resolves to a live declaration in a
+    live namespace. One common use case is the following:
 
       [use `jisp:prelude.mjs` jp]
       jp.nil
 
-    In this example, the local lexical namespace has an entry for `jp`, where
-    the value is an instance of `Use` created after macroing the list that
-    describes the `use` call. This instance of `Use` implements
-    `optResolveLiveVal` which returns the module that it imported. As a result,
-    the identifier `jp` resolves to the live value of the imported module,
-    which is our prelude, and the expression `jp.nil`, which is an instance of
-    `IdentAccess`, is able to find `Nil`.
-
-    Since our system is open-ended, it's possible to create other macro classes
-    using this functionality.
+    After "macroing" the first statement, the local lexical namespace, which is
+    non-live, has an entry for `jp`. The value of that entry is an instance of
+    `Node`. More specifically, it's the instance of `Use` created by macroing
+    the first statement. `Use` implements the method `.optResolveLiveVal`,
+    which returns the native JS module object obtained by importing the
+    requested file. By following from the non-live declaration of `jp` to `Use`
+    to its live value, we obtain the imported module. The expression `jp.nil`,
+    which is an instance of `IdentAccess`, is able to obtain the class `Nil`
+    by accessing the property `.nil` on that imported module, which is resolved
+    from the `IdentUnqual` `jp`.
     */
-    return jm.optResolveLiveValCall(src.optGet(key))
+    const val = src.optGet(key)
+
+    // This occurs in function parameters, and possibly in other places.
+    if (val === this) return undefined
+
+    return jm.optResolveLiveValCall(val)
   }
 
+  // See comments in `.optResolveLiveVal`.
   reqResolveLiveVal() {
     const src = this.reqResolveNs()
     if (src.isLive()) return this.reqDerefLiveVal(src.ownVal())
 
     const key = this.reqName()
     const val = src.reqGet(key)
+    if (val === this) return undefined
 
-    // See the comment in `.optResolveLiveVal`.
     const tar = jm.optResolveLiveValCall(val)
     if (a.isSome(tar)) return tar
 
@@ -153,34 +171,69 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     return val
   }
 
-  // FIXME unfuck inefficiency: involves searching for the declaring namespace twice.
   macroImpl() {
-    this.reqResolveNs().addRef(this)
-    const val = this.optResolveLiveVal()
+    const nsp = this.reqResolveNs()
+    nsp.addRef(this)
+
+    /*
+    Caution. This could have been written differently, producing a different
+    behavior:
+
+      if (nsp.isLive()) {
+        return this.macroWithLiveVal(this.reqDerefLiveVal(nsp.ownVal()))
+      }
+
+    In the implementation above, if the declaring namespace is live, we would
+    require the declared value to be usable, which means the value must be a
+    subclass of `Node`. A nil value would generate a compile-time error.
+
+    Instead of that, we intentionally allow "live" namespaces to declare
+    properties with nil values, and treat such properties as regular non-live
+    declarations. This may seem roundabout, but this makes it easy to provide
+    macros AND JS predeclared names in one namespace. `Fn` uses this behavior.
+    */
+    const val = nsp.isLive() ? this.optDerefLiveVal(nsp.ownVal()) : undefined
     if (a.isSome(val)) return this.macroWithLiveVal(val)
+
     return this
   }
 
   /*
-  FIXME support renaming reserved JS names. May require knowledge of all
-  unqualified names used in the same scope (which scope? all of them?).
-  May require storing some data in the nearest lexical namespace.
+  TODO consider supporting renaming reserved JS names. May require knowledge of
+  all unqualified names used in the same scope (which scope? all of them?). May
+  require storing some data in the nearest lexical namespace.
 
-  Note: some subclasses such as `IdentAccess` must override this and avoid
-  calling `.reqNotReserved`. In ES5+, reserved names can be used as property
-  names.
+  The default implementation requires the identifier to not be a keyword, which
+  is useful for unqualified identifiers. However, some subclasses such as
+  `IdentAccess` must override this to permit keywords. In ES5+, keywords may be
+  used as property names.
   */
-  compile() {return this.reqNotReserved().decompile()}
+  compile() {return this.reqNotKeyword().decompile()}
 
-  reqNotReserved() {
-    const name = this.optName()
-    if (this.isJsReservedName(name)) {
-      throw this.err(`${a.show(name)} is a reserved name in JS; this would generate invalid JS that doesn't run; please rename`)
-    }
+  reqDeclareLex() {
+    this.reqCanDeclare()
+    return super.reqDeclareLex()
+  }
+
+  reqCanDeclare() {
+    this.reqNotKeyword()
+    this.reqNotReserved()
     return this
   }
 
-  isJsReservedName(val) {return jm.jsReservedNames.has(val)}
+  reqNotKeyword() {
+    if (!this.isKeyword()) return this
+    throw this.err(`${a.show(this.optName())} is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
+  }
+
+  isKeyword() {return jm.jsKeywordNames.has(this.optName())}
+
+  reqNotReserved() {
+    if (!this.isReserved()) return this
+    throw this.err(`${a.show(this.optName())} is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
+  }
+
+  isReserved() {return jm.jsReservedNames.has(this.optName())}
 
   static toValidDictKey(val) {
     a.reqStr(val)

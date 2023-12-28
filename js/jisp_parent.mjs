@@ -243,7 +243,7 @@ class MixParentCommon extends a.DedupMixinCache {
         this.req(exp, a.isNat)
         const len = this.childCount()
         if (exp !== len) {
-          throw this.err(`${a.show(this)} expects exactly ${exp} children, got ${len} children`)
+          throw this.err(`${a.show(this)} expected exactly ${exp} children, got ${len} children`)
         }
         return this
       }
@@ -252,7 +252,7 @@ class MixParentCommon extends a.DedupMixinCache {
         this.req(exp, a.isNat)
         const len = this.childCount()
         if (!(exp <= len)) {
-          throw this.err(`${a.show(this)} expects at least ${exp} children, got ${len} children`)
+          throw this.err(`${a.show(this)} expected at least ${exp} children, got ${len} children`)
         }
         return this
       }
@@ -261,7 +261,7 @@ class MixParentCommon extends a.DedupMixinCache {
         this.req(exp, a.isNat)
         const len = this.childCount()
         if (!(len <= exp)) {
-          throw this.err(`${a.show(this)} expects no more than ${exp} children, got ${len} children`)
+          throw this.err(`${a.show(this)} expected no more than ${exp} children, got ${len} children`)
         }
         return this
       }
@@ -271,7 +271,7 @@ class MixParentCommon extends a.DedupMixinCache {
         this.req(max, a.isNat)
         const len = this.childCount()
         if (!(min <= len) || !(len <= max)) {
-          throw this.err(`${a.show(this)} expects between ${min} and ${max} children, got ${len} children`)
+          throw this.err(`${a.show(this)} expected between ${min} and ${max} children, got ${len} children`)
         }
         return this
       }

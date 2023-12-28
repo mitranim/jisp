@@ -11,12 +11,20 @@ the resulting token is just the dot-ident, without the preceding source
 expression. When lexing, we combine this with the preceding source expression,
 and this becomes its parent.
 
-TODO generalize. Currently this supports only access via dot operator with
-hardcoded identifier. In a more general case, the "key" could be an arbitrary
-expression, and compiled code may need to use square brackets. When the key
-expression is not a hardcoded identifier, this precludes us from compile-time
-lookup, but is otherwise valid. Due to syntactic and semantic differences, that
-probably requires a different class.
+TODO generalize. Currently this supports only the following style:
+
+  .someProperty
+
+However, at the time of writing, JS has the following:
+
+  .someProperty
+  ?.someProperty
+  [`someProperty`]
+  ?.[`someProperty`]
+
+This class may be extended to support `?.`. The "square brackets" version
+requires a different class, because square brackets are useful when the "key"
+is an arbitrary expression, not a hardcoded identifier.
 */
 export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   // Allows the tokenizer to parse text like `.someIdent` into this, but without

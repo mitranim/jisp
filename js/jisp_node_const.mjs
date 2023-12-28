@@ -10,7 +10,8 @@ export class Const extends jnlm.ListMacro {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
-    this.declareLex()
+    this.reqIdent().reqCanDeclare()
+    this.reqDeclareLex()
     return this.macroFrom(2)
   }
 

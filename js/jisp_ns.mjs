@@ -66,7 +66,7 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
 
   reqGet(key) {
     if (!this.has(key)) {
-      throw this.err(`missing declaration of ${a.show(key)} in namespace ${a.show(this)}`)
+      throw this.err(`unable to find declaration of ${a.show(key)} in namespace ${a.show(this)}`)
     }
 
     const tar = this.optGet(key)

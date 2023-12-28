@@ -5,38 +5,38 @@ import * as jrt from './jisp_root_test.mjs'
 
 await t.test(async function test_Bang() {
   await jrt.testModuleFail(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 
 [!]
 `,
-    `[object Bang] expects exactly 2 children, got 1 children`,
+    `[object Bang] expected exactly 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:prelude.mjs" "*"]
 [use "jisp:ops.mjs" "*"]
 
 [const someConst [!]]
 `,
-    `[object Bang] expects exactly 2 children, got 1 children`,
+    `[object Bang] expected exactly 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 
 [! 10 20]
 `,
-    `[object Bang] expects exactly 2 children, got 3 children`,
+    `[object Bang] expected exactly 2 children, got 3 children`,
   )
 
   await jrt.testModuleCompile(
-      jrt.makeModule(),
+    jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 
