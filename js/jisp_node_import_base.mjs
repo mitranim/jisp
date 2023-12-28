@@ -288,7 +288,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     return this.macroModeMixin()
   }
 
-  macroModeMixin() {throw jm.errMeth(`macroModeMixin`, this)}
+  macroModeMixin() {throw this.errMeth(`macroModeMixin`)}
 
   msgArgDest() {
     return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`

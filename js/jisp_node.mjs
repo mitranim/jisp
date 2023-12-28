@@ -107,7 +107,7 @@ export class Node extends (
   reqDeclareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
   macro() {return this.withToErr(this.macroImpl)}
-  macroImpl() {throw jm.errMeth(`macroImpl`, this)}
+  macroImpl() {throw this.errMeth(`macroImpl`)}
 
   /*
   Should be used by node subclasses which are able to "dereference" to a live
@@ -131,7 +131,7 @@ export class Node extends (
     return val
   }
 
-  compile() {throw jm.errMeth(`compile`, this)}
+  compile() {throw this.errMeth(`compile`)}
 
   // FIXME consider moving `MixOwnNodeSourced` from `Node` elsewhere,
   // and removing this override. However, this may require updates to
@@ -149,8 +149,9 @@ export class Node extends (
   grouping without dealing with precedence rules.
   */
   compileStatementOrExpression(val) {
-    val = a.reqStr(val)
-    return this.isExpression() ? `(` + val + `)` : val
+    a.reqStr(val)
+    if (!val || this.isStatement()) return val
+    return `(` + val + `)`
   }
 
   /*

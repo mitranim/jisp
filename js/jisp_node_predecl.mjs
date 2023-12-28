@@ -58,7 +58,7 @@ following ways:
   * Automatically rename keyword identifiers to non-keywords.
 */
 export class Predecl extends jn.Node {
-  getCompiledName() {throw jm.errMeth(`getCompiledName`, this)}
+  getCompiledName() {throw this.errMeth(`getCompiledName`)}
   macro() {return this}
   compile() {return this.req(this.getCompiledName(), a.isValidStr)}
 }

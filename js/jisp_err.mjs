@@ -30,6 +30,8 @@ export class MixErrer extends a.DedupMixinCache {
       // information, such as references to source code.
       err(...val) {return super.err?.(...val) || new Err(...val)}
 
+      errMeth(name) {throw this.err(jm.msgMeth(name, this))}
+
       // Useful in expressions. Prefer normal `throw` in statements.
       throw(...val) {throw this.err(...val)}
 

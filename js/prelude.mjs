@@ -1,19 +1,25 @@
-export {Nil     as nil}     from './jisp_node_nil.mjs'
-export {Null    as null}    from './jisp_node_null.mjs'
-export {No      as no}      from './jisp_node_no.mjs'
-export {Ok      as ok}      from './jisp_node_ok.mjs'
-export {Nan     as nan}     from './jisp_node_nan.mjs'
-export {Inf     as inf}     from './jisp_node_inf.mjs'
-export {Global  as global}  from './jisp_node_global.mjs'
-export {Import  as import}  from './jisp_node_import.mjs'
-export {Export  as export}  from './jisp_node_export.mjs'
-export {Const   as const}   from './jisp_node_const.mjs'
-export {Fn      as fn}      from './jisp_node_fn.mjs'
-export {If      as if}      from './jisp_node_if.mjs'
-export {Throw   as throw}   from './jisp_node_throw.mjs'
-export {Comment as comment} from './jisp_node_comment_macro.mjs'
-export {Declare as declare} from './jisp_node_declare.mjs'
-export {And     as and}     from './jisp_node_and.mjs'
-export {Or      as or}      from './jisp_node_or.mjs'
-export {Arr     as array}   from './jisp_node_arr.mjs'
-export {Await   as await}   from './jisp_node_await.mjs'
+export {Import       as import}  from './jisp_node_import.mjs'
+export {Export       as export}  from './jisp_node_export.mjs'
+export {Const        as const}   from './jisp_node_const.mjs'
+export {Fn           as fn}      from './jisp_node_fn.mjs'
+export {If           as if}      from './jisp_node_if.mjs'
+export {Throw        as throw}   from './jisp_node_throw.mjs'
+export {CommentMacro as comment} from './jisp_node_comment_macro.mjs'
+export {Declare      as declare} from './jisp_node_declare.mjs'
+export {Arr          as array}   from './jisp_node_arr.mjs'
+
+export {
+  Nil     as nil,
+  Null    as null,
+  No      as no,
+  Ok      as ok,
+  Nan     as nan,
+  Inf     as inf,
+  Global  as global,
+} from './jisp_nodes_predecl.mjs'
+
+export {
+  And   as and,
+  Or    as or,
+  Await as await,
+} from './jisp_nodes_keyword_expr.mjs'
