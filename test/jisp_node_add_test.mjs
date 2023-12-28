@@ -3,15 +3,15 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
-await t.test(async function test_Minus() {
+await t.test(async function test_Add() {
   await jrt.testModuleFail(
       jrt.makeModule(),
 `
 [use "jisp:ops.mjs" "*"]
 
-[-]
+[+]
 `,
-    `[object Minus] expected at least 2 children, got 1 children`,
+    `[object Add] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -20,9 +20,9 @@ await t.test(async function test_Minus() {
 [use "jisp:prelude.mjs" "*"]
 [use "jisp:ops.mjs" "*"]
 
-[const someConst [-]]
+[const someConst [+]]
 `,
-    `[object Minus] expected at least 2 children, got 1 children`,
+    `[object Add] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleCompile(
@@ -30,28 +30,28 @@ await t.test(async function test_Minus() {
 `
 [use "jisp:ops.mjs" "*"]
 
-[- 10]
-[- 10 20]
-[- 10 20 30]
+[+ 10]
+[+ 10 20]
+[+ 10 20 30]
 
-[- [- 10]]
-[- [- 10 20]]
-[- [- 10 20 30]]
+[+ [+ 10]]
+[+ [+ 10 20]]
+[+ [+ 10 20 30]]
 
-[- "some_val" [- 10]]
-[- "some_val" [- 10 20]]
-[- "some_val" [- 10 20 30]]
+[+ "some_val" [+ 10]]
+[+ "some_val" [+ 10 20]]
+[+ "some_val" [+ 10 20 30]]
 `,
 `
-- 10;
-10 - 20;
-10 - 20 - 30;
-- (- 10);
-- (10 - 20);
-- (10 - 20 - 30);
-"some_val" - (- 10);
-"some_val" - (10 - 20);
-"some_val" - (10 - 20 - 30);
++ 10;
+10 + 20;
+10 + 20 + 30;
++ (+ 10);
++ (10 + 20);
++ (10 + 20 + 30);
+"some_val" + (+ 10);
+"some_val" + (10 + 20);
+"some_val" + (10 + 20 + 30);
 `,
   )
 })

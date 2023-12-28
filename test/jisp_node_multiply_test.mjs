@@ -3,7 +3,7 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
-await t.test(async function test_Aster() {
+await t.test(async function test_Multiply() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
@@ -11,7 +11,7 @@ await t.test(async function test_Aster() {
 
 [*]
 `,
-    `[object Aster] expected at least 2 children, got 1 children`,
+    `[object Multiply] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Aster() {
 
 [const someConst [*]]
 `,
-    `[object Aster] expected at least 2 children, got 1 children`,
+    `[object Multiply] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleCompile(

@@ -19,7 +19,13 @@ export {
 } from './jisp_nodes_predecl.mjs'
 
 export {
-  And   as and,
-  Or    as or,
-  Await as await,
+  Equal      as eq,
+  NotEqual   as neq,
+  And        as and,
+  Or         as or,
+  In         as in,
+  Typeof     as typeof,
+  Instanceof as instanceof,
+  Void       as void,
+  Await      as await,
 } from './jisp_nodes_keyword_expr.mjs'

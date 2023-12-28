@@ -74,6 +74,30 @@ export class KeywordExprMacro_1 extends KeywordExprMacro {
   }
 }
 
+export class KeywordExprMacro_0_2 extends KeywordExprMacro {
+  macroImpl() {
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCountBetween(1, 3)
+    return this.macroFrom(1)
+  }
+}
+
+export class KeywordExprMacro_2 extends KeywordExprMacro {
+  macroImpl() {
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCount(3)
+    return this.macroFrom(1)
+  }
+
+  compile() {
+    return this.compileStatementOrExpression(a.spaced(
+      a.reqStr(this.reqChildAt(1).compile()),
+      a.reqStr(this.binaryInfix()),
+      a.reqStr(this.reqChildAt(2).compile()),
+    ))
+  }
+}
+
 export class KeywordExprMacro_1_N extends KeywordExprMacro {
   macroImpl() {
     this.reqEveryChildNotCosmetic()

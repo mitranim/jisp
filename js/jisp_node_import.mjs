@@ -12,6 +12,9 @@ configuration property on `Conf.main`. When enabled, causes `Import` to import
 the target module at compile time and validate that all referenced identifiers
 are actually exported. This should piggyback on the mechanism already used
 for "star" / "mixin" imports.
+
+FIXME support `import.meta`, preferably in a generalized form that may work
+for other properties of `import`.
 */
 export class Import extends jnib.ImportBase {
   async macroModeUnnamed() {
