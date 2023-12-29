@@ -26,6 +26,7 @@ export class Export extends jnlm.ListMacro {
   optTar() {return this.optChildInstAt(2, jniu.IdentUnqual)}
 
   macroImpl() {
+    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
     this.reqSrc()
@@ -34,8 +35,6 @@ export class Export extends jnlm.ListMacro {
   }
 
   compile() {
-    this.reqStatement()
-
     const src = this.reqSrc().compile()
     const tar = this.optTar()?.compile()
 

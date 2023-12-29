@@ -151,7 +151,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
 
     tu.testCompiled(tarText, `
 const someConst = \`some_const_value\`;
-function someFunc() {
+function someFunc () {
 \`some_func_value\`;
 };
 `)

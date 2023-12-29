@@ -17,6 +17,12 @@ export class CodeErr extends Err {
   static atNode(node, msg) {return new this(msg, {span: node.optSpan()})}
 }
 
+// Placed here, rather than in the tokenizer file, to minimize cyclic imports.
+export class TokenizerErr extends CodeErr {}
+
+// Placed here, rather than in the lexer file, to minimize cyclic imports.
+export class LexerErr extends CodeErr {}
+
 /*
 Provides shortcuts for throwing errors with additional contextual information,
 such as errors pointing to source code.

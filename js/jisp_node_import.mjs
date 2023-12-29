@@ -2,6 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
+import * as jnp from './jisp_node_predecl.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
@@ -17,6 +18,8 @@ FIXME support `import.meta`, preferably in a generalized form that may work
 for other properties of `import`.
 */
 export class Import extends jnib.ImportBase {
+  static get meta() {return ImportMeta}
+
   async macroModeUnnamed() {
     await this.resolve()
     return super.macroModeUnnamed()
@@ -38,19 +41,8 @@ export class Import extends jnib.ImportBase {
   get NsLive() {return jns.NsLivePseudo}
 
   compile() {
-    if (this.isExpression()) return this.compileExpression()
-    return this.compileStatement()
-  }
-
-  compileExpression() {
-    const path = this.optTarPathRel() ?? this.optTarPathAbs()
-
-    return (
-      ``
-      + `import(`
-      + (a.isSome(path) ? JSON.stringify(a.reqStr(path)) : a.reqStr(this.reqAddr().compile()))
-      + `)`
-    )
+    if (this.isStatement()) return this.compileStatement()
+    return this.compileExpression()
   }
 
   compileStatement() {
@@ -71,6 +63,17 @@ export class Import extends jnib.ImportBase {
     if (named) return named
     if (reffed) return reffed
     return `import ${a.reqStr(addr)}`
+  }
+
+  compileExpression() {
+    const path = this.optTarPathRel() ?? this.optTarPathAbs()
+
+    return (
+      ``
+      + `import(`
+      + (a.isSome(path) ? JSON.stringify(a.reqStr(path)) : a.reqStr(this.reqAddr().compile()))
+      + `)`
+    )
   }
 
   /*
@@ -99,4 +102,8 @@ export class Import extends jnib.ImportBase {
     mod.addDep(dep)
     return this
   }
+}
+
+export class ImportMeta extends jnp.Predecl {
+  getCompiledName() {return `import.meta`}
 }

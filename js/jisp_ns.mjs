@@ -109,7 +109,7 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
   isLive() {return true}
 
   // Override for `MixOwnValued`.
-  setVal(val) {return super.setVal(this.req(val, a.isObj))}
+  setVal(val) {return super.setVal(this.req(val, a.isComp))}
 
   has(key) {
     this.req(key, a.isValidStr)

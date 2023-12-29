@@ -15,8 +15,6 @@ import * as jnio from './jisp_node_ident_oper.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnia from './jisp_node_ident_access.mjs'
 
-export class TokenizerErr extends je.CodeErr {}
-
 /*
 Parses source code, generating a stream of tokens. The output is typically fed
 into a `Lexer` which converts a stream of tokens into a tree of AST nodes.
@@ -111,7 +109,7 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   err(msg, opt) {
     opt = a.laxDict(opt)
     opt.span = this.optSpan()
-    return new TokenizerErr(msg, opt)
+    return new je.TokenizerErr(msg, opt)
   }
 
   reqFound(node) {

@@ -139,12 +139,21 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   optDerefLiveVal(src) {
-    if (!a.isObj(src)) return undefined
+    if (a.isNil(src)) return undefined
 
+    /*
+    This questionable special case allows live namespaces to include non-live
+    declarations. Any declaration whose value is nil is considered to be
+    present, but is not required to be a live value. Instead it's treated as a
+    name which is expected to be available in JS at runtime. This behavior is
+    used for some contextual names such as `arguments` and `this`.
+
+    May reconsider in the future.
+    */
     const key = this.optName()
-    if (!key || !(key in src)) return undefined
+    if (key && key in src && a.isNil(src[key])) return undefined
 
-    return src[key]
+    return this.reqDerefLiveVal(src)
   }
 
   /*
@@ -155,17 +164,17 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   reqDerefLiveVal(src) {
     const key = this.reqName()
 
-    if (!a.isObj(src)) {
-      throw this.err(`unable to dereference ${a.show(key)} in invalid live val ${a.show(src)}`)
+    if (!a.isComp(src)) {
+      throw this.err(`unable to dereference ${a.show(key)} in invalid live value ${a.show(src)}`)
     }
 
     if (!(key in src)) {
-      throw this.err(`missing property ${a.show(key)} in live val ${a.show(src)}`)
+      throw this.err(`missing property ${a.show(key)} in live value ${a.show(src)}`)
     }
 
     const val = src[key]
     if (a.isNil(val)) {
-      throw this.err(`unexpected nil property ${a.show(key)} in live val ${a.show(src)}`)
+      throw this.err(`unexpected nil property ${a.show(key)} in live value ${a.show(src)}`)
     }
 
     return val

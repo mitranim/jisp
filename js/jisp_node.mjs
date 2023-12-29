@@ -182,19 +182,19 @@ export class Node extends (
     return !!a.onlyInst(this.optParent(), Node)?.isChildStatement(this)
   }
 
-  isExpression() {return !this.isStatement()}
-
   // Used by some "macro" node types.
   reqStatement() {
-    if (this.isExpression()) {
+    if (!this.isStatement()) {
       throw this.err(`${a.show(this)} can only be used as a statement`)
     }
     return this
   }
 
+  // FIXME use.
   isInModuleRoot() {return false}
+
+  // FIXME use.
   isExportable() {return this.isStatement() && this.isInModuleRoot()}
-  isCalled() {return false}
 
   // Some node types may override this to indicate that they may be safely
   // elided from the AST when tokenizing or lexing.

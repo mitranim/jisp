@@ -20,6 +20,7 @@ export class ListMacro extends jnnl.NodeList {
   */
   setSrcNode(src) {
     const cls = this.constructor.macroSrcCls()
+
     if (!a.isSubCls(cls, jnnl.NodeList)) {
       throw this.err(`internal error: the superclass ${a.show(ListMacro)} assumes all subclasses to use instances of ${a.show(jnnl.NodeList)} as their source node, but macro node ${a.show(this)} expects to use ${a.show(cls)} which may not be a node list`)
     }

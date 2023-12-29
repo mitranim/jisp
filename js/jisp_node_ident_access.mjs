@@ -8,14 +8,14 @@ import * as jni from './jisp_node_ident.mjs'
 Represents an expression like `.someIdent` combined with a preceding source
 expression. The dot-access syntax is identical in Jisp and JS. When tokenizing,
 the resulting token is just the dot-ident, without the preceding source
-expression. When lexing, we combine this with the preceding source expression,
-and this becomes its parent.
+expression. When lexing, this node takes over the preceding source expression,
+if any, becoming its parent.
 
 TODO generalize. Currently this supports only the following style:
 
   .someProperty
 
-However, at the time of writing, JS has the following:
+At the time of writing, JS has the following:
 
   .someProperty
   ?.someProperty
@@ -27,16 +27,26 @@ requires a different class, because square brackets are useful when the "key"
 is an arbitrary expression, not a hardcoded identifier.
 */
 export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
-  // Allows the tokenizer to parse text like `.someIdent` into this, but without
-  // the preceding source expression.
+  /*
+  Used by `Ident..parse`, which is called by the tokenizer. We parse text like
+  `.someIdent` as its own atomic token. We combine it with the preceding
+  expression when lexing, see below.
+  */
   static regexp() {return this.regexpIdentAccess()}
 
+  /*
+  Should be called by the lexer. Should `IdentAccess` with the preceding
+  expression. This is right-associative, which is arguably somewhat heretical
+  as far as Lisp syntax is concerned.
+  */
   static lexNext(lex, prev) {
     const span = lex.reqSpan()
 
-    // This skipping is a symptom that our lexing interface is imperfect.
-    // Ideally, we would reorder nodes, moving cosmetic nodes to just before
-    // this expression.
+    /*
+    This skipping is a symptom that our lexing interface is imperfect.
+    Ideally, we would reorder nodes, moving cosmetic nodes to just before
+    this expression.
+    */
     span.skipWhile(jm.isCosmetic)
 
     const next = span.optHead()
@@ -74,11 +84,27 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   }
 
   // Override for `Ident..optResolveLiveVal`.
-  optResolveLiveVal() {return this.optDerefLiveVal(this.optResolveLiveValSrc())}
+  optResolveLiveVal() {
+    return this.optDerefLiveVal(this.optResolveLiveValSrc())
+  }
 
   // Override for `Ident..optResolveLiveValSrc`.
   optResolveLiveValSrc() {
+    return (
+      this.optFirstChild()
+      ? this.optResolveLiveValSrcFromChild()
+      : this.reqResolveLiveValSrcFromAnc()
+    )
+  }
+
+  optResolveLiveValSrcFromChild() {
     return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optResolveLiveVal()
+  }
+
+  optResolveLiveValSrcFromAnc() {
+    const key = this.optName()
+    if (!key) return undefined
+    return this.optParent()?.optAncFind(function test(val) {return key in val})
   }
 
   // Override for `Ident..reqResolveLiveVal`.
@@ -86,7 +112,23 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
 
   // Override for `Ident..reqResolveLiveValSrc`.
   reqResolveLiveValSrc() {
+    return (
+      this.optFirstChild()
+      ? this.reqResolveLiveValSrcFromChild()
+      : this.reqResolveLiveValSrcFromAnc()
+    )
+  }
+
+  reqResolveLiveValSrcFromChild() {
     return this.reqFirstChild().asReqInst(jni.Ident).reqResolveLiveVal()
+  }
+
+  reqResolveLiveValSrcFromAnc() {
+    const key = this.reqName()
+    return (
+      this.optResolveLiveValSrcFromAnc() ??
+      this.throw(`unable to find ancestor with property ${a.show(key)} at descendant ${a.show(this)}`)
+    )
   }
 
   macroImpl() {

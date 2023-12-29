@@ -48,6 +48,12 @@ Should exactly match the set of non-contextual keywords in ES5+. Should not
 include any non-keywords. Should not include any contextual keywords such as
 `async`. Reserved names which aren't keywords should be in `jsReservedNames`.
 
+The keyword `super` is contextual in a way opposite to `async`. By default,
+`super` is a forbidden keyword in most contexts. However, calling `super` and
+accessing its properties is allowed in class instance methods. This means we
+should also treat it as a forbidden keyword, and make it contextually available
+in class instance methods, using a macro if necessary.
+
 Reference:
 
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words

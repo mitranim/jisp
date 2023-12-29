@@ -173,4 +173,31 @@ await t.test(async function test_Import_transitive() {
   )
 })
 
+await t.test(async function test_Import_meta() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" "*"]
+
+import.meta
+[const someConst import.meta]
+`,
+`
+import.meta;
+const someConst = import.meta;
+`)
+})
+
+await t.test(async function test_Import_unknown_field() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" "*"]
+
+import.unknownField
+`,
+    `missing property "unknownField" in live value [function Import]`,
+  )
+})
+
 if (import.meta.main) ti.flush()

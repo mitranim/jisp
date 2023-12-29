@@ -7,13 +7,13 @@ export class Throw extends jnlm.ListMacro {
   reqVal() {return this.optChildAt(1)}
 
   macroImpl() {
+    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
     return this.macroFrom(1)
   }
 
   compile() {
-    this.reqStatement()
     return `throw ` + a.reqStr(this.reqVal().compile())
   }
 }

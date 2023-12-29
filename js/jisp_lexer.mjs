@@ -9,8 +9,6 @@ import * as jnbrk from './jisp_node_brackets.mjs'
 import * as jnpar from './jisp_node_parens.mjs'
 import * as jnia from './jisp_node_ident_access.mjs'
 
-export class LexerErr extends je.CodeErr {}
-
 export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
   get Tokenizer() {return jt.Tokenizer}
   get Span() {return jsp.ArrSpan}
@@ -64,6 +62,6 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
 
   reqAdvanced(pos, node) {
     if (this.reqSpan().ownPos() > pos) return
-    throw LexerErr.atNode(node, `failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
+    throw je.LexerErr.atNode(node, `failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
   }
 }

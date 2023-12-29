@@ -4,7 +4,7 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
-await t.test(async function test_Const() {
+await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
@@ -52,7 +52,7 @@ new undefined();
 new 10();
 new 10(20);
 new 10(20, 30);
-function SomeName() {};
+function SomeName () {};
 new SomeName();
 new SomeName(10);
 new SomeName(10, 20);

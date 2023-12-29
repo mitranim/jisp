@@ -6,15 +6,16 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
 
 export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
-  pk() {return this.reqIdent().reqName()}
+  pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
   body() {return this.optChildSlice(3)}
 
   // Override for `MixOwnNsLexed`.
   makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
+  makeNsMixin() {return new jns.NsLive().setVal(this.makeNsLiveVal())}
 
-  makeNsMixin() {
+  makeNsLiveVal() {
     const tar = a.npo()
     tar.ret = jnr.Ret
 
@@ -29,14 +30,12 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     */
     tar.this = undefined
     tar.arguments = undefined
-
-    return new jns.NsLive().setVal(tar)
+    return tar
   }
 
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(3)
-    this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     this.declareParams()
     return this.macroFrom(3)
@@ -44,10 +43,10 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   // Override for `Node..reqDeclareLex`.
   reqDeclareLex() {
-    if (this.isExpression()) {
-      return this.ownNsLex().addNode(this)
+    if (this.isStatement()) {
+      return this.reqParent().reqNsLex().addNode(this)
     }
-    return this.reqParent().reqNsLex().addNode(this)
+    return this.ownNsLex().addNode(this)
   }
 
   declareParams() {
@@ -57,16 +56,26 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   compile() {
-    const prn = this.reqCodePrinter()
-
-    return (
-      ``
-      + `function `
-      + a.reqStr(this.reqIdent().compile())
-      + a.reqStr(prn.compileParensWithExpressions(this.reqParams().childIter()))
-      + ` `
-      + a.reqStr(prn.compileBracesWithStatements(this.body()))
+    return a.spaced(
+      a.reqStr(this.compilePrefix()),
+      a.reqStr(this.compileName()),
+      a.reqStr(this.compileParams()),
+      a.reqStr(this.compileBody()),
     )
+  }
+
+  compilePrefix() {return `function`}
+
+  compileName() {
+    return this.reqIdent().compile()
+  }
+
+  compileParams() {
+    return this.reqCodePrinter().compileParensWithExpressions(this.reqParams().childIter())
+  }
+
+  compileBody() {
+    return this.reqCodePrinter().compileBracesWithStatements(this.body())
   }
 
   isChildStatement(val) {

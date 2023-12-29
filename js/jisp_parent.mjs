@@ -113,6 +113,7 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       the original array, but that would also penalize performance elsewhere.
       */
       reqChildArr() {return this.#initChildren()}
+      optChildArr() {return this.#chi}
 
       setChildArr(val) {
         this.#chi = this.opt(val, a.isTrueArr)
@@ -136,7 +137,6 @@ export class MixParentOneToMany extends a.DedupMixinCache {
   }
 }
 
-// TODO consider support for splicing, like `DocumentFragment`.
 export class MixParentOneToOne extends a.DedupMixinCache {
   static make(cls) {
     return class MixParentOneToOne extends MixParentCommon.goc(MixParent.goc(cls)) {

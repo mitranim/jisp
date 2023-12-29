@@ -3,24 +3,29 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 export class Const extends jnlm.ListMacro {
-  pk() {return this.reqIdent().reqName()}
+  pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqChildAt(2)}
 
   macroImpl() {
+    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
-    this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     return this.macroFrom(2)
   }
 
-  macroVal() {return this.macroAt(2)}
-
   compile() {
-    this.reqStatement()
-    const name = this.reqIdent().compile()
-    const val = this.reqVal().compile()
-    return `const ${a.reqStr(name)} = ${a.reqStr(val)}`
+    return a.spaced(
+      a.reqStr(this.compilePrefix()),
+      a.reqStr(this.compileName()),
+      a.reqStr(this.compileInfix()),
+      a.reqStr(this.compileVal()),
+    )
   }
+
+  compilePrefix() {return `const`}
+  compileName() {return this.reqIdent().compile()}
+  compileInfix() {return `=`}
+  compileVal() {return this.reqVal().compile()}
 }

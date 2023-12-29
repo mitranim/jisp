@@ -10,13 +10,13 @@ export class Ret extends jnlm.ListMacro {
   reqVal() {return this.reqChildAt(1)}
 
   macroImpl() {
+    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(1, 2)
     return this.macroFrom(1)
   }
 
   compile() {
-    this.reqStatement()
     const val = this.optVal()
     if (val) return `return ` + a.reqStr(val.compile())
     return `return`

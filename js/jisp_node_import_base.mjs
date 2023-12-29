@@ -242,14 +242,23 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
 
-    if (this.isExpression()) this.validateExpression()
-    else this.validateStatement()
+    if (this.isStatement()) this.validateStatement()
+    else this.validateExpression()
 
     if (!this.optDest()) return this.macroModeUnnamed()
     if (this.optDestName()) return this.macroModeNamed()
     if (this.optDestStr()) return this.macroModeStr()
 
     throw this.err(`${a.reqStr(this.msgArgDest())}; found unrecognized node ${a.show(this.reqDest())}`)
+  }
+
+  /*
+  In statement mode, the address must be a literal string, because that's the
+  only syntax supported by JS import statements.
+  */
+  validateStatement() {
+    this.reqChildCountBetween(2, 3)
+    this.reqAddrStr()
   }
 
   /*
@@ -261,15 +270,6 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   validateExpression() {
     this.reqChildCount(2)
     this.reqAddr()
-  }
-
-  /*
-  In statement mode, the address must be a literal string, because that's the
-  only syntax supported by JS import statements.
-  */
-  validateStatement() {
-    this.reqChildCountBetween(2, 3)
-    this.reqAddrStr()
   }
 
   macroModeUnnamed() {return this}

@@ -129,13 +129,20 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   The default implementation should contain exactly one declaration: `use`.
   Other common built-ins should be provided by the prelude module, which should
   be imported via `use`.
+
+  TODO consider removing the root namespace or removing `use` from here.
+  Instead of predeclaring `use` in the root namespace, we can define the
+  getter `.use` on the class `Module` and access it contextually via the
+  orphan form of `IdentAccess`.
   */
   makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
+  makeNsMixin() {return new jns.NsLive().setVal(this.makeNsLiveVal())}
 
-  makeNsMixin() {
+  // May override in subclass.
+  makeNsLiveVal() {
     const tar = a.npo()
     tar.use = jnu.Use
-    return new jns.NsLive().setVal(tar)
+    return tar
   }
 
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}

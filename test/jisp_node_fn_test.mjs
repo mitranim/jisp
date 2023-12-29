@@ -25,7 +25,7 @@ await t.test(async function test_Fn_arguments_predeclared() {
 [fn someFunc [] arguments]
 `,
 `
-function someFunc() {
+function someFunc () {
 arguments;
 };
 `)
@@ -67,10 +67,10 @@ await t.test(async function test_Fn_ret_predecladed() {
 [fn someFunc1 [] [ret 10]]
 `,
 `
-function someFunc0() {
+function someFunc0 () {
 return;
 };
-function someFunc1() {
+function someFunc1 () {
 return 10;
 };
 `)
@@ -105,7 +105,7 @@ await t.test(async function test_Fn_redeclare_ret() {
 ]
 `,
 `
-function someFunc() {
+function someFunc () {
 const ret = 10;
 ret(20);
 };
@@ -133,7 +133,7 @@ await t.test(async function test_Fn_this_predeclared() {
 [fn someFunc [] this]
 `,
 `
-function someFunc() {
+function someFunc () {
 this;
 };
 `)
@@ -162,7 +162,7 @@ await t.test(async function test_Fn_with_parameters() {
 [fn someFunc [one]]
 `,
 `
-function someFunc(one) {};
+function someFunc (one) {};
 `)
 
   await jrt.testModuleCompile(
@@ -173,7 +173,7 @@ function someFunc(one) {};
 [fn someFunc [one] one]
 `,
 `
-function someFunc(one) {
+function someFunc (one) {
 one;
 };
 `)
@@ -186,7 +186,7 @@ one;
 [fn someFunc [one] one one]
 `,
 `
-function someFunc(one) {
+function someFunc (one) {
 one;
 one;
 };
@@ -200,7 +200,7 @@ one;
 [fn someFunc [one] [ret one]]
 `,
 `
-function someFunc(one) {
+function someFunc (one) {
 return one;
 };
 `)
@@ -213,7 +213,7 @@ return one;
 [fn someFunc [one] [ret one] one]
 `,
 `
-function someFunc(one) {
+function someFunc (one) {
 return one;
 one;
 };
@@ -227,7 +227,7 @@ one;
 [fn someFunc [one] one [ret one]]
 `,
 `
-function someFunc(one) {
+function someFunc (one) {
 one;
 return one;
 };
@@ -241,7 +241,7 @@ return one;
 [fn someFunc [one two]]
 `,
 `
-function someFunc(one, two) {};
+function someFunc (one, two) {};
 `)
 
   await jrt.testModuleCompile(
@@ -252,7 +252,7 @@ function someFunc(one, two) {};
 [fn someFunc [one two] one]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 };
 `)
@@ -265,7 +265,7 @@ one;
 [fn someFunc [one two] two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 two;
 };
 `)
@@ -278,7 +278,7 @@ two;
 [fn someFunc [one two] one two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 two;
 };
@@ -292,7 +292,7 @@ two;
 [fn someFunc [one two] one one two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 one;
 two;
@@ -307,7 +307,7 @@ two;
 [fn someFunc [one two] one one two two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 one;
 two;
@@ -323,7 +323,7 @@ two;
 [fn someFunc [one two] [ret one] one two two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 return one;
 one;
 two;
@@ -339,7 +339,7 @@ two;
 [fn someFunc [one two] one [ret one] two two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 return one;
 two;
@@ -355,7 +355,7 @@ two;
 [fn someFunc [one two] one one [ret two] two]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 one;
 return two;
@@ -371,13 +371,35 @@ two;
 [fn someFunc [one two] one one two [ret two]]
 `,
 `
-function someFunc(one, two) {
+function someFunc (one, two) {
 one;
 one;
 two;
 return two;
 };
 `)
+})
+
+await t.test(async function test_Fn_name_invalid() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" "*"]
+
+[fn await []]
+`,
+    `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" "*"]
+
+[fn eval []]
+`,
+    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
+  )
 })
 
 if (import.meta.main) ti.flush()
