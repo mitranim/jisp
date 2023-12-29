@@ -3,7 +3,7 @@ import * as jnib from './jisp_node_import_base.mjs'
 
 /*
 This class implements compile-time imports of live modules, which are used for
-compile-time replacement of AST nodes, also known as macroing. Compare class
+compile-time execution / replacement of AST nodes / macroing. Compare class
 `Import` which is used for runtime imports.
 
 This should be the ONLY member of the root scope / namespace. All other name

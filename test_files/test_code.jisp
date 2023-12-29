@@ -1,4 +1,4 @@
-[use `jisp:prelude.mjs` `*`]
+[use `jisp:prelude.mjs` *]
 [use `jisp:prelude.mjs` jp]
 [use `./test_macros.jisp` m]
 

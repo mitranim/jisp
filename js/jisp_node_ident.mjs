@@ -199,7 +199,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     Instead of that, we intentionally allow "live" namespaces to declare
     properties with nil values, and treat such properties as regular non-live
     declarations. This may seem roundabout, but this makes it easy to provide
-    macros AND JS predeclared names in one namespace. `Fn` uses this behavior.
+    macros AND predeclared JS names in one namespace. `Fn` uses this behavior.
     */
     const val = nsp.isLive() ? this.optDerefLiveVal(nsp.ownVal()) : undefined
     if (a.isSome(val)) return this.macroWithLiveVal(val)

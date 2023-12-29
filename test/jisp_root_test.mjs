@@ -86,7 +86,7 @@ await t.test(async function test_Use_import_resolution() {
     }
 
     await test(`
-[use "../js/prelude.mjs" "*"]
+[use "../js/prelude.mjs" *]
 global
 `,
 `globalThis;`)

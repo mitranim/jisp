@@ -8,7 +8,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [new]
 `,
@@ -18,7 +18,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [new SomeName]
 `,
@@ -28,7 +28,7 @@ await t.test(async function test_New() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [new nil]
 [new 10]

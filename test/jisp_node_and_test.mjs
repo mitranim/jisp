@@ -8,7 +8,7 @@ await t.test(async function test_And() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [and]
 [and 10]

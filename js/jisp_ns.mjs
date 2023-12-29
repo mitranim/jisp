@@ -127,8 +127,8 @@ export class NsLive extends jv.MixOwnValued.goc(NsBase) {
 /*
 Encapsulates a live object, such as a native imported module, and inspects its
 properties at runtime to provide compile-time declarations. Can be used to
-implement "*"-style imports that compile to explicit named imports in JS.
-Can be used to detect missing exports at compile time.
+implement *-style imports that compile to explicit named imports in JS. Can be
+used to detect missing exports at compile time.
 */
 export class NsLivePseudo extends NsLive {
   isLive() {return false}

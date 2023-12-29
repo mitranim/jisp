@@ -7,6 +7,7 @@ import * as jnm from './jisp_node_module.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnio from './jisp_node_ident_oper.mjs'
 
 /*
 Base class for node classes that deal with imports. See subclasses `Use` and
@@ -149,17 +150,6 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   pk() {return this.reqDestName().reqName()}
 
   /*
-  Indicates the expected string content used for the "star" / "mixin" import
-  form. Some other languages use special syntax, such as unquoted asterisk,
-  dot, triple dot. We use a string with a star because at the time of writing,
-  our tokenizer and AST don't have a way of parsing and representing special
-  symbols such as an unquoted star. Note that unlike traditional Lisps, we
-  restrict our identifiers to the format of valid JS identifiers. See
-  `Ident.regexpIdentUnqual`.
-  */
-  mixinStr() {return `*`}
-
-  /*
   TODO: when this is used in expression mode, allow the address to be an
   arbitrary expression. Requiring the address to be a literal string should be
   done only in statement mode.
@@ -173,8 +163,11 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   reqDest() {return this.reqChildAt(2)}
   optDestName() {return this.optChildAt(2)?.asOnlyInst(jniu.IdentUnqual)}
   reqDestName() {return this.reqChildInstAt(2, jniu.IdentUnqual)}
-  optDestStr() {return this.optChildAt(2)?.asOnlyInst(jnst.Str)}
-  reqDestStr() {return this.reqChildInstAt(2, jnst.Str)}
+  optDestOper() {return this.optChildAt(2)?.asOnlyInst(jnio.IdentOper)}
+  reqDestOper() {return this.reqChildInstAt(2, jnio.IdentOper)}
+
+  // Indicates the expected operator name used for the "star" / "mixin" form.
+  mixinName() {return `*`}
 
   /*
   When the import source path is for a Jisp file (has extension `.jisp`), then
@@ -247,7 +240,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
 
     if (!this.optDest()) return this.macroModeUnnamed()
     if (this.optDestName()) return this.macroModeNamed()
-    if (this.optDestStr()) return this.macroModeStr()
+    if (this.optDestOper()) return this.macroModeOper()
 
     throw this.err(`${a.reqStr(this.msgArgDest())}; found unrecognized node ${a.show(this.reqDest())}`)
   }
@@ -279,11 +272,13 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     return this
   }
 
-  macroModeStr() {
-    const val = this.reqDestStr().ownVal()
-    const exp = this.mixinStr()
-    if (val !== exp) {
-      throw this.err(`${a.reqStr(this.msgArgDest())}; found unsupported string ${a.show(val)}`)
+  macroModeOper() {
+    const src = this.reqDestOper()
+    const key = src.reqName()
+    const exp = this.mixinName()
+
+    if (key !== exp) {
+      throw this.err(`${a.reqStr(this.msgArgDest())}; found unsupported string ${a.show(key)}`)
     }
     return this.macroModeMixin()
   }
@@ -291,7 +286,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   macroModeMixin() {throw this.errMeth(`macroModeMixin`)}
 
   msgArgDest() {
-    return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; string containing exactly ${a.show(this.mixinStr())}`
+    return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; operator ${a.show(this.mixinName())}`
   }
 
   /*

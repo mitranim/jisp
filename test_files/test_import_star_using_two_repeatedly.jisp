@@ -1,7 +1,7 @@
 [use `jisp:prelude.mjs` jp]
 
-[jp.import `./test_exports_less.jisp` `*`]
-[jp.import `./test_exports_more.jisp` `*`]
+[jp.import `./test_exports_less.jisp` *]
+[jp.import `./test_exports_more.jisp` *]
 
 someConst0
 someConst1

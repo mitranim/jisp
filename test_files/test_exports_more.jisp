@@ -1,4 +1,4 @@
-[use `jisp:prelude.mjs` `*`]
+[use `jisp:prelude.mjs` *]
 
 [const someConst0 `some_const_value_0`]
 [export someConst0]

@@ -1,4 +1,4 @@
-[use `jisp:prelude.mjs` `*`]
+[use `jisp:prelude.mjs` *]
 
 nil
 null

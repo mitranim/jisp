@@ -7,7 +7,7 @@ await t.test(async function test_BoolNot() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:ops.mjs" "*"]
+[use "jisp:ops.mjs" *]
 
 [! 10 20]
 `,
@@ -17,7 +17,7 @@ await t.test(async function test_BoolNot() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:ops.mjs" "*"]
+[use "jisp:ops.mjs" *]
 
 [!]
 [! 10]

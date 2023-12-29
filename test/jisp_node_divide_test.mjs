@@ -7,7 +7,7 @@ await t.test(async function test_Divide() {
   await jrt.testModuleFail(
       jrt.makeModule(),
 `
-[use "jisp:ops.mjs" "*"]
+[use "jisp:ops.mjs" *]
 
 [/]
 `,
@@ -17,8 +17,8 @@ await t.test(async function test_Divide() {
   await jrt.testModuleFail(
       jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
-[use "jisp:ops.mjs" "*"]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [const someConst [/]]
 `,
@@ -28,7 +28,7 @@ await t.test(async function test_Divide() {
   await jrt.testModuleFail(
       jrt.makeModule(),
 `
-[use "jisp:ops.mjs" "*"]
+[use "jisp:ops.mjs" *]
 
 [/ 10]
 `,
@@ -38,7 +38,7 @@ await t.test(async function test_Divide() {
   await jrt.testModuleCompile(
       jrt.makeModule(),
 `
-[use "jisp:ops.mjs" "*"]
+[use "jisp:ops.mjs" *]
 
 [/ 10 20]
 [/ 10 20 30]

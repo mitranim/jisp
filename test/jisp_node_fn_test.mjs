@@ -8,7 +8,7 @@ await t.test(async function test_Fn_arguments_not_predecladed_in_root_scope() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 arguments
 `,
@@ -20,7 +20,7 @@ await t.test(async function test_Fn_arguments_predeclared() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [] arguments]
 `,
@@ -35,7 +35,7 @@ await t.test(async function test_Fn_arguments_redeclaration() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc []
   [const arguments 10]
@@ -49,7 +49,7 @@ await t.test(async function test_Fn_ret_not_predecladed_in_root_scope() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 ret
 `,
@@ -61,7 +61,7 @@ await t.test(async function test_Fn_ret_predecladed() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc0 [] [ret]]
 [fn someFunc1 [] [ret 10]]
@@ -80,7 +80,7 @@ await t.test(async function test_Fn_ret_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [] [ret 10 20]]
 `,
@@ -97,7 +97,7 @@ await t.test(async function test_Fn_redeclare_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc []
   [const ret 10]
@@ -116,7 +116,7 @@ await t.test(async function test_Fn_this_not_predecladed_in_root_scope() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 this
 `,
@@ -128,7 +128,7 @@ await t.test(async function test_Fn_this_predeclared() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [] this]
 `,
@@ -143,7 +143,7 @@ await t.test(async function test_Fn_this_redeclaration() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc []
   [const this 10]
@@ -157,7 +157,7 @@ await t.test(async function test_Fn_with_parameters() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one]]
 `,
@@ -168,7 +168,7 @@ function someFunc (one) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one]
 `,
@@ -181,7 +181,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one one]
 `,
@@ -195,7 +195,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] [ret one]]
 `,
@@ -208,7 +208,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] [ret one] one]
 `,
@@ -222,7 +222,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one [ret one]]
 `,
@@ -236,7 +236,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two]]
 `,
@@ -247,7 +247,7 @@ function someFunc (one, two) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one]
 `,
@@ -260,7 +260,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] two]
 `,
@@ -273,7 +273,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one two]
 `,
@@ -287,7 +287,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two]
 `,
@@ -302,7 +302,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two two]
 `,
@@ -318,7 +318,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] [ret one] one two two]
 `,
@@ -334,7 +334,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one [ret one] two two]
 `,
@@ -350,7 +350,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one [ret two] two]
 `,
@@ -366,7 +366,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two [ret two]]
 `,
@@ -384,7 +384,7 @@ await t.test(async function test_Fn_name_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn await []]
 `,
@@ -394,7 +394,7 @@ await t.test(async function test_Fn_name_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" "*"]
+[use "jisp:prelude.mjs" *]
 
 [fn eval []]
 `,
