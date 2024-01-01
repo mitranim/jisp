@@ -5,7 +5,7 @@
 
 [.use `jisp:prelude.mjs` jp]
 
-[jp.fn someFunc [] `some_func_value`]
+[jp.func someFunc [] `some_func_value`]
 
 ; TODO drop after implementing automatic function exports.
 [jp.export someFunc]

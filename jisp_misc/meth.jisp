@@ -43,7 +43,7 @@ one (two three four five) (six seven)
 one (two three) (four five six) seven
 
 one:   two three four five six seven
-↑↑↑ fn ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ args
+↑↑↑ func ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ args
 
 
 
@@ -116,7 +116,7 @@ pre[.const blah 123]
   [extend [MixInsp.goc a.Emp]]
 
   [prototype
-    [fn callOptFromStr [src]
+    [func callOptFromStr [src]
       [const mat [[this.req src a.isStr].split ` `]]
       [const syntax ...]
       [const time ...]
@@ -134,7 +134,7 @@ pre[.const blah 123]
       ]
     ]
 
-    [fn callOptFromStr [src]
+    [func callOptFromStr [src]
       [const mat [this.req src a.isStr].[split ` `]]
       [const syntax ...]
       [const time ...]
@@ -148,7 +148,7 @@ pre[.const blah 123]
       .[setCallOut out]
     ]
 
-    [fn callOptFromStr [src]
+    [func callOptFromStr [src]
       [const mat [this.req src a.isStr] [.split ` `]]
       [const syntax ...]
       [const time ...]
@@ -162,7 +162,7 @@ pre[.const blah 123]
       [.setCallOut out]
     ]
 
-    [fn callOptFromStr [src]
+    [func callOptFromStr [src]
       [const mat [this.req src a.isStr] [←.split ` `]]
       [const syntax ...]
       [const time ...]
@@ -176,7 +176,7 @@ pre[.const blah 123]
       [↑.setCallOut out]
     ]
 
-    [fn callOptFromStr [src]
+    [func callOptFromStr [src]
       [const mat [this.req src a.isStr] [.split ` `]]
       [const syntax ...]
       [const time ...]
@@ -191,7 +191,7 @@ pre[.const blah 123]
       ]
     ]
 
-    fn [callOptFromStr [src]
+    func [callOptFromStr [src]
       const [mat this.req [src a.isStr] .split [` `]]
       const [syntax ...]
       const [time ...]

@@ -2,10 +2,10 @@
 
 [class Text
   [extend Node]
-  [fn_static reg [] [throw [errMeth `regexp` this]]]
-  [fn_static match [src] [[this.reg].exec [a.reqStr src]]]
+  [func_static reg [] [throw [errMeth `regexp` this]]]
+  [func_static match [src] [[this.reg].exec [a.reqStr src]]]
 
-  [fn_static parse [span] 
+  [func_static parse [span]
     ; Must return if the variable's value is nil.
     [guard_some [const mat [this.match [span.rem]]]]
 
@@ -54,7 +54,7 @@
     tar
   ]
 
-  [fn fromMatch [mat]
+  [func fromMatch [mat]
     [[this.getSpan].setLen [indexGet mat 0].length]
     this
   ]
@@ -109,9 +109,9 @@ class Text
   ; Equivalent.
   ; ↓↓↓↓↓↓
 
-  ; public static async fn blah [] []
+  ; public static async func blah [] []
 
-  fn
+  func
   .name
     reg
   .static
@@ -119,7 +119,7 @@ class Text
     errMeth `regexp` this
     throw ←
 
-  fn_static
+  func_static
     reg
     []
     throw
@@ -127,51 +127,51 @@ class Text
         `regexp`
         this
 
-  fn_static reg [] [errMeth `regexp` this, throw ←]
+  func_static reg [] [errMeth `regexp` this, throw ←]
 
-  fn_static reg []
+  func_static reg []
     errMeth `regexp` this
     throw ←
 
-  [fn_static reg, [], errMeth `regexp` this, throw ←]
+  [func_static reg, [], errMeth `regexp` this, throw ←]
 
   ; ↑↑↑↑↑↑
 
   ; ↓↓↓↓↓↓
 
-  fn
+  func
   .name match
   .static
   .body [this.reg.exec $0]
 
-  fn
+  func
   .name match
   .static
   .args String
   .body [this.reg.exec $0]
 
-  fn
+  func
   .name match
   .static
   .args src
   .body [this.reg.exec src]
 
-  fn_static match [src] [this.reg.exec src]
+  func_static match [src] [this.reg.exec src]
 
-  fn_static
+  func_static
     match
     [src]
     this.reg.exec
       src
 
-  fn_static: match, [src]
+  func_static: match, [src]
     this.reg.exec: src
 
-  fn_static: match, [src], this.reg.exec: src
+  func_static: match, [src], this.reg.exec: src
 
   ; ↑↑↑↑↑↑
 
-  fn
+  func
   .name
     parse
   .static
@@ -187,20 +187,20 @@ class Text
 
   ; ↓↓↓↓↓↓
 
-  fn fromMatch [mat] this.span.get [mat.get 0].len
+  func fromMatch [mat] this.span.get [mat.get 0].len
 
-  fn fromMatch [mat]
+  func fromMatch [mat]
     this.span.get [mat.get 0].len
 
-  fn fromMatch [mat]
+  func fromMatch [mat]
     mat.get 0
     .len
     this.span.get ←
 
-  fn fromMatch [mat]
+  func fromMatch [mat]
     this.span.get [mat.get 0, ←.len]
 
-  fn
+  func
   .name
     fromMatch
   .args
@@ -229,7 +229,7 @@ class Text
     ; ↑↑↑↑↑↑
     this
 
-  fn
+  func
   .name
     fromMatch
   .args
@@ -238,7 +238,7 @@ class Text
     this.span.len [mat.get 0].len
     this
 
-  fn
+  func
     fromMatch
     [mat]
     this.span.len
@@ -247,7 +247,7 @@ class Text
       .len
     this
 
-  fn
+  func
   .name
     fromMatch
   .args
@@ -259,18 +259,18 @@ class Text
       .len
     this
 
-  fn
+  func
   .name: fromMatch
   .args: mat
   .body
     this span len: [mat get: 0] .len
     this
 
-  fn: fromMatch, [mat]
+  func: fromMatch, [mat]
     this.span.len: mat.get: 0; .len
     this
 
-  fn: fromMatch, [mat]
+  func: fromMatch, [mat]
     this.span.len: [mat.get: 0], .len
 
     this.span.len: mat.get: 0; .len
@@ -372,7 +372,7 @@ class Text
 
     this
 
-  fn: fromMatch, [mat], this.span.len: mat.get 0, .len, this
+  func: fromMatch, [mat], this.span.len: mat.get 0, .len, this
 
   ; ↑↑↑↑↑↑
 

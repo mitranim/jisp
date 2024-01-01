@@ -91,7 +91,7 @@ SomeCls[].property.method[].method[]
 
 const[someVar 123]
 
-fn[someFunc [someArg] +[someArg 10 20]]
+func[someFunc [someArg] +[someArg 10 20]]
 
 if[one two three]
 ```

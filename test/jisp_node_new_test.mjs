@@ -34,7 +34,7 @@ await t.test(async function test_New() {
 [new 10 20]
 [new 10 20 30]
 
-[fn SomeName []]
+[func SomeName []]
 
 [new SomeName]
 [new SomeName 10 ]

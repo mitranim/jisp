@@ -2,4 +2,4 @@
 
 [jp.import `https://example.com/some_js_module.mjs` someLib]
 [jp.const someConst `some_const_value`]
-[jp.fn someFunc [] `some_func_value`]
+[jp.func someFunc [] `some_func_value`]

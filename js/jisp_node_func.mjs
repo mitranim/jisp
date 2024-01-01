@@ -4,8 +4,7 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
-// FIXME rename to `Func` for better consistency.
-export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
+export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
@@ -64,4 +63,12 @@ export class Fn extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       && val !== this.optChildAt(2)
     )
   }
+}
+
+/*
+Intended for class instance methods and for object literal methods.
+For our purposes, they're identical.
+*/
+export class MethodFunc extends Func {
+  compilePrefix() {return ``}
 }

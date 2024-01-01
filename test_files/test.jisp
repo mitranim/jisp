@@ -11,16 +11,16 @@
 someVal
 
 ; Compile error.
-; [fn someFunc0 [] someArg]
+; [func someFunc0 [] someArg]
 
 ; OK.
-[fn someFunc1 [someArg] someArg]
+[func someFunc1 [someArg] someArg]
 
 ; Must generate a runtime call without "new".
 [someFunc1 10 20 30]
 
 ; OK.
-[fn someFunc2 [] someVal]
+[func someFunc2 [] someVal]
 
 [callSyntax `list run new val` someFunc2]
 
@@ -36,7 +36,7 @@ someVal
 
 ; FIXME implement.
 ; FIXME exclude from compiled code, unless used by non-macros.
-[fn astMacro []
+[func astMacro []
   ; Shadowing must work.
   [const g global]
   [g.console.log `executing AST macro`]
@@ -55,7 +55,7 @@ someVal
 
 [astMacro 10 20 30]
 
-[fn valMacro []
+[func valMacro []
   ; Shadowing must work.
   [const g global]
   [g.console.log `executing val macro`]

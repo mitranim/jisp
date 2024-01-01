@@ -139,11 +139,7 @@ used to detect missing exports at compile time.
 export class NsLivePseudo extends NsLive {
   hasLiveVal() {return false}
   optLiveVal() {}
-
-  // FIXME unfuck.
-  // The need for such overrides indicates a design problem.
-  optGet() {throw this.errMeth(`optGet`, this)}
-  reqGet() {throw this.errMeth(`reqGet`, this)}
+  optGet() {}
 }
 
 /*
@@ -185,7 +181,7 @@ namespace to "inherit" names from multiple other namespaces. When resolving a
 name in a lexical namespace, we check its own declarations, then check mixins.
 This allows us to implement "star"-imports; see `ImportBase` and its
 subclasses. This also makes it easier to implement namespaces with multiple
-components, such as combining live and non-live namespaces into one; see `Fn`.
+components, such as combining live and non-live namespaces into one; see `Func`.
 
 TODO: consider also storing the node that declares this namespace, and using its
 code span in error messages. Relevant sample of removed code:

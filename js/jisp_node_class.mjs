@@ -1,7 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
-import * as jnf from './jisp_node_fn.mjs'
+import * as jnf from './jisp_node_func.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnl from './jisp_node_let.mjs'
 import * as jnb from './jisp_node_block.mjs'
@@ -15,7 +15,7 @@ orphan form of `IdentAccess`. Examples:
 
   [class SomeSubClass
     [.extend SomeSuperClass]
-    [.fn someMethod []]
+    [.func someMethod []]
     [.let someField someValue]
   ]
 */
@@ -29,7 +29,7 @@ export class Class extends jnlm.ListMacro {
   */
   static makeLiveVal() {
     const tar = a.npo()
-    tar.fn = ClassFn
+    tar.func = jnf.MethodFunc
     tar.let = ClassLet
     tar.do = ClassBlock
     tar.extend = ClassExtend
@@ -48,7 +48,7 @@ export class Class extends jnlm.ListMacro {
   }
 
   // Override for `Node..reqDeclareLex`.
-  reqDeclareLex() {return jnf.Fn.prototype.reqDeclareLex.call(this)}
+  reqDeclareLex() {return jnf.Func.prototype.reqDeclareLex.call(this)}
 
   compile() {
     return a.spaced(
@@ -80,11 +80,6 @@ export class ClassExtend extends jnlm.ListMacro {
   This macro is used purely for side effects.
   */
   compile() {return ``}
-}
-
-// FIXME rename to `MethodFunc`.
-export class ClassFn extends jnf.Fn {
-  compilePrefix() {return ``}
 }
 
 /*

@@ -8,7 +8,7 @@
 
 ; FIXME implement.
 ; FIXME exclude from compiled code, unless used by non-macros.
-[fn astMacro []
+[func astMacro []
   ; Masking must work.
   [const g global]
   [g.console.log `executing AST macro`]
@@ -26,7 +26,7 @@ astMacro
 ; Must be compile error if enabled.
 ; [astMacro 10 20 30]
 
-[fn valMacro []
+[func valMacro []
   ; Masking must work.
   [const g global]
   [g.console.log `executing val macro`]

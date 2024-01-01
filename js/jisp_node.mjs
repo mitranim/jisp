@@ -96,17 +96,17 @@ export class Node extends (
   current node must implement method `.pk`, which must return a string
   representing an unqualified identifier, typically coming from some
   `IdentUnqual`. Method `.pk` must be implemented by `Ident` and all node
-  subclasses that represent a named declaration such as `Const` or `Fn`. For
-  other node classes, this should cause an exception.
+  subclasses that represent a named declaration such as `Const` or `Func`.
+  For other node classes, this should cause an exception.
 
-  Must start search at the parent because some macro nodes, such as `Fn`, define
-  their own namespace. If we didn't use the parent here, the default behavior
-  would be to add the declaration to the own namespace, not to an ancestor
-  namespace, which would be incorrect in several ways. For example, the
-  resulting declaration would be unknown/unavailable to sibling nodes, breaking
-  a lot of code. Some nodes may override this behavior. For example, when `Fn`
-  is used as an expression, it should add itself to its own namespace, but NOT
-  to an ancestor namespace.
+  Must start search at the parent because some macro nodes, such as `Func`,
+  define their own namespace. If we didn't use the parent here, the default
+  behavior would be to add the declaration to the own namespace, not to an
+  ancestor namespace, which would be incorrect in several ways. For example,
+  the resulting declaration would be unknown/unavailable to sibling nodes,
+  breaking a lot of code. Some nodes may override this behavior. For example,
+  when `Func` is used as an expression, it should add itself to its own
+  namespace, but NOT to an ancestor namespace.
 
   TODO consider renaming to "reqX". May add an "opt" version later.
   */
