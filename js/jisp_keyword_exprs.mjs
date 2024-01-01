@@ -29,7 +29,6 @@ Non-exhaustive list of missing keywords and operators:
 
   Misc:
 
-    import.meta
     async
     async*
     yield
@@ -73,14 +72,24 @@ export class LesserOrEqual extends jnkem.KeywordExprMacro_2 {
 }
 
 /*
-This supports unary, binary, and variadic modes, because in JS, the operator `+`
-is also overloaded to have both unary and binary modes. In unary mode, explicit
-`+` ensures that the operand is converted to a number. This would be
-unnecessary if the operand was always a number, but JS allows to convert an
-arbitrary expression to a number by using `+`, invoking `.valueOf` methods
-where relevant, parsing numeric strings, and falling back on `NaN` when
-conversion fails. Some consider this an anti-pattern. Some encourage this. Our
-job is to make this possible to use.
+The Jisp version of `+` can be unary, binary, and variadic, but not nullary.
+In JS, the operator `+` is overloaded on both arity and types.
+
+The unary mode of the `+` operator converts the operand to a floating point
+number, using a variety of special cases like invoking `.valueOf` methods,
+parsing numeric strings, and more. Pretty much a stereotypical example of weak
+typing in action. Many programmers consider this an anti-pattern. In any case,
+this is part of JS and sometimes useful, so we support the unary form.
+
+The binary form of the `+` operator supports at least the following:
+
+  * Concatenating strings.
+  * Adding floating point numbers.
+  * Adding big integers.
+  * (Secretly) Adding 32-bit integers.
+
+The type overloads prevent us from having a nullary form of this macro, because
+there is no single sensible fallback value.
 */
 export class Add extends jnkem.KeywordExprMacro_1_N {
   unaryPrefix() {return `+`}

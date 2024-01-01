@@ -13,6 +13,14 @@ export {CommentMacro as comment} from './jisp_node_comment_macro.mjs'
 export {Declare      as declare} from './jisp_node_declare.mjs'
 export {Arr          as array}   from './jisp_node_arr.mjs'
 
+/*
+Redundancies. TODO choose one style and dedup.
+
+  `eq`   <->  `ops.mjs` → `===`
+  `neq`  <->  `ops.mjs` → `!==`
+  `and`  <->  `ops.mjs` → `&&`
+  `or`   <->  `ops.mjs` → `||`
+*/
 export {
   Equal      as eq,
   NotEqual   as neq,
@@ -23,4 +31,4 @@ export {
   Instanceof as instanceof,
   Void       as void,
   Await      as await,
-} from './jisp_nodes_keyword_expr.mjs'
+} from './jisp_keyword_exprs.mjs'
