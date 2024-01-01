@@ -12,18 +12,16 @@ export class MixParent extends a.DedupMixinCache {
   static make(cls) {
     return class MixParent extends je.MixErrer.goc(cls) {
       toValidChild(val) {
+        val = this.reqValidChild(val)
         val.setParent(this)
-        this.reqValidChild(val)
-        return val
-      }
-
-      reqValidChild(val) {
         if (jc.conf.getDebug()) return this.reqChildParentMatch(val)
         return val
       }
 
+      reqValidChild(val) {return val}
+
       reqChildParentMatch(val) {
-        const par = val.ownParent()
+        const par = val.optParent()
         if (par !== this) {
           throw this.err(`parent-child mismatch: expected child ${a.show(val)} to have parent ${a.show(this)}, found ${a.show(par)}`)
         }

@@ -141,10 +141,6 @@ limited to the following:
   * Handling any non-Jisp imports.
 
   * Detecting Jisp imports and using `Root` for those.
-
----
-
-FIXME when used in expression mode, enforce exactly 2 children, not 3.
 */
 export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   pk() {return this.reqDestName().reqName()}
@@ -166,7 +162,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   optDestOper() {return this.optChildAt(2)?.asOnlyInst(jnio.IdentOper)}
   reqDestOper() {return this.reqChildInstAt(2, jnio.IdentOper)}
 
-  // Indicates the expected operator name used for the "star" / "mixin" form.
+  // Indicates the expected operator name for the "star" / "mixin" form.
   mixinName() {return `*`}
 
   /*
@@ -233,10 +229,19 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   reqTarPathAbs() {return this.optTarPathAbs() ?? this.throw(`missing absolute target path at ${a.show(this)}`)}
 
   macroImpl() {
-    this.reqEveryChildNotCosmetic()
+    if (this.isStatement()) return this.macroStatement()
+    return this.macroExpression()
+  }
 
-    if (this.isStatement()) this.validateStatement()
-    else this.validateExpression()
+  macroStatement() {
+    this.reqEveryChildNotCosmetic()
+    this.reqChildCountBetween(2, 3)
+
+    /*
+    In statement mode, the address must be a literal string, because that's the
+    only syntax supported by JS import statements.
+    */
+    this.reqAddrStr()
 
     if (!this.optDest()) return this.macroModeUnnamed()
     if (this.optDestName()) return this.macroModeNamed()
@@ -246,23 +251,17 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   }
 
   /*
-  In statement mode, the address must be a literal string, because that's the
-  only syntax supported by JS import statements.
+  In expression mode, we require exactly one argument, which is the address.
+  Unlike in statement mode, the address may be an arbitrary expression, because
+  that's allowed by the JS pseudo-function `import`. If the address is a
+  literal string, we should handle it exactly like in statement mode. Otherwise
+  we should leave the address expression as-is, but don't forget to macro it.
   */
-  validateStatement() {
-    this.reqChildCountBetween(2, 3)
-    this.reqAddrStr()
-  }
-
-  /*
-  In expression mode, we don't validate the type of the child in the address
-  position, because it's allowed to be an arbitrary expression. If the address
-  is a literal string, we should handle it exactly like in statement mode.
-  Otherwise we should leave the address expression as-is.
-  */
-  validateExpression() {
+  macroExpression() {
+    this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
-    this.reqAddr()
+    if (this.optAddrStr()) return this.macroModeUnnamed()
+    return this.macroFrom(1)
   }
 
   macroModeUnnamed() {return this}
@@ -368,16 +367,12 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   }
 
   /*
-  These methods are an interface known to some other code. May be used by
+  These methods implement an interface used by some other code. May be used by
   `IdentAccess` and `DelimNodeList` when this node is used as an expression
-  rather than a module-level statement. At the time of writing, such usage
-  would generate an exception during macroing, because this node's method
-  `.macro` returns a promise, and async macroing is supported only at the
-  module level. However, we may be able to lift that limitation in the future.
-  Maybe we already have. TODO write a test.
+  rather than a module-level statement.
   */
-  optResolveLiveVal() {return this.optNsLive()?.optVal()}
-  reqResolveLiveVal() {return this.reqNsLive().reqVal()}
+  optLiveVal() {return this.optNsLive()?.optLiveVal()}
+  reqLiveVal() {return this.reqNsLive().reqLiveVal()}
 
   /*
   May be used by subclasses to import the target at compile time.
@@ -395,7 +390,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     await this.ready()
 
     const val = await import(this.reqTarPathAbs())
-    this.initNsLive().setVal(val)
+    this.initNsLive().setLiveVal(val)
 
     return this
   }
@@ -409,7 +404,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     if (!tar) return this
 
     const val = await import(tar)
-    this.initNsLive().setVal(val)
+    this.initNsLive().setLiveVal(val)
 
     return this
   }

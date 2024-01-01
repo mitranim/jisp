@@ -45,11 +45,11 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   compileStatementThen() {
-    return this.reqCodePrinter().compileStatement(this.optThen())
+    return this.reqPrn().compileStatement(this.optThen())
   }
 
   compileStatementElse() {
-    const tar = a.reqStr(this.reqCodePrinter().compileStatement(this.optElse()))
+    const tar = a.reqStr(this.reqPrn().compileStatement(this.optElse()))
     return tar && (`else ` + tar)
   }
 
@@ -67,13 +67,13 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   // TODO consider additional parentheses.
-  compileExpressionTest() {return this.reqTest().compile()}
+  compileExpressionTest() {return this.reqPrn().compile(this.reqTest())}
 
   // TODO consider additional parentheses.
-  compileExpressionThen() {return this.optThen()?.compile() ?? `undefined`}
+  compileExpressionThen() {return this.reqPrn().compile(this.optThen()) || `undefined`}
 
   // TODO consider additional parentheses.
-  compileExpressionElse() {return this.optElse()?.compile() ?? `undefined`}
+  compileExpressionElse() {return this.reqPrn().compile(this.optElse()) || `undefined`}
 
   isChildStatement(val) {
     super.isChildStatement(val)

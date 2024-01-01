@@ -14,6 +14,6 @@ export class Throw extends jnlm.ListMacro {
   }
 
   compile() {
-    return `throw ` + a.reqStr(this.reqVal().compile())
+    return `throw ` + a.reqStr(this.reqPrn().compile(this.reqVal()))
   }
 }

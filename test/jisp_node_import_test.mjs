@@ -12,7 +12,7 @@ await t.test(async function test_Import_statement_unnamed() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [import "some_import_path"]
 [import "one://two/three.four"]
@@ -27,7 +27,7 @@ await t.test(async function test_Import_statement_named() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [import "some_import_path" mod0]
 [import "one://two/three.four" mod1]
@@ -43,7 +43,7 @@ await t.test(async function test_Import_statement_mixin() {
 
   await t.test(async function test_invalid() {
     const mod = jrt.makeModule().parse(`
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [import "some_import_path" *]
 `)
@@ -78,10 +78,20 @@ await t.test(async function test_Import_statement_mixin() {
 })
 
 await t.test(async function test_Import_expression() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[const someVal [import failingExpression]]
+`,
+    `unable to find declaration of "failingExpression" at [object IdentUnqual]`,
+  )
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [const someVal0 [import "some_import_path"]]
 [const someVal1 [import "one://two/three.four"]]
@@ -102,7 +112,7 @@ await t.test(async function test_Import_rewriting_non_jisp() {
   await jrt.testModuleCompile(
     jrt.makeModuleAddressed(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [import "./some_other_module"]
 [const someConst [import "./some_other_module"]]
@@ -115,7 +125,7 @@ const someConst = import("../test_files/some_other_module");
   await jrt.testModuleCompile(
     jrt.makeModuleAddressed(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 [import "./some_other_module.mjs"]
 `,
 `
@@ -125,7 +135,7 @@ import "../test_files/some_other_module.mjs";
   await jrt.testModuleCompile(
     jrt.makeModuleAddressed(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 [import "../some_other_module.mjs"]
 `,
 `
@@ -144,7 +154,7 @@ await t.test(async function test_Import_self() {
   await jrt.testModuleCompile(
     jrt.makeModuleAddressed(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [import "./test.jisp"]
 [import "./test.jisp" self]
@@ -173,14 +183,19 @@ await t.test(async function test_Import_transitive() {
   )
 })
 
+/*
+Imperfect behavior. In Jisp, this requires a function call, whereas in JS, it
+doesn't. Ideally, this would not require a function call in Jisp. Solving this
+may require restoring support for "bare" macro calls, which has been removed.
+*/
 await t.test(async function test_Import_meta() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
-import.meta
-[const someConst import.meta]
+[import.meta]
+[const someConst [import.meta]]
 `,
 `
 import.meta;
@@ -192,7 +207,7 @@ await t.test(async function test_Import_unknown_field() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 import.unknownField
 `,

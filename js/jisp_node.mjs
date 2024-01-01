@@ -11,6 +11,7 @@ import * as jsn from './jisp_spanned.mjs'
 import * as jnsd from './jisp_node_sourced.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
 import * as jnsl from './jisp_ns_lexed.mjs'
+import * as jlv from './jisp_live_valued.mjs'
 
 /*
 Base class for all AST nodes.
@@ -47,14 +48,16 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 nodes, they must prevent cycles too.
 */
 export class Node extends (
-  jnsl.MixNsLexed.goc(
-    jcpd.MixCodePrinted.goc(
-      jnsd.MixOwnNodeSourced.goc(
-        jsn.MixOwnSpanned.goc(
-          jp.MixParent.goc(
-            jch.MixChild.goc(
-              ji.MixInsp.goc(
-                a.Emp
+  jlv.MixLiveValued.goc(
+    jnsl.MixNsLexed.goc(
+      jcpd.MixCodePrinted.goc(
+        jnsd.MixOwnNodeSourced.goc(
+          jsn.MixOwnSpanned.goc(
+            jp.MixParent.goc(
+              jch.MixChild.goc(
+                ji.MixInsp.goc(
+                  a.Emp
+                )
               )
             )
           )
@@ -70,8 +73,11 @@ export class Node extends (
   get CodeErr() {return je.CodeErr}
 
   err(msg, opt) {
+    const span = this.optSpan()
+    if (!span) return super.err(msg, opt)
+
     opt = a.laxDict(opt)
-    opt.span = this.optSpan()
+    opt.span = span
     return new this.CodeErr(msg, opt)
   }
 
@@ -81,7 +87,7 @@ export class Node extends (
   `CodeErr`.
   */
   toErr(err) {
-    if (a.isInst(err, je.CodeErr) || !this.optSpan()) return err
+    if ((a.isInst(err, je.CodeErr) && err.span) || !this.optSpan()) return err
     return this.err(jm.renderErrLax(err), {cause: err})
   }
 
@@ -106,36 +112,34 @@ export class Node extends (
   */
   reqDeclareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
+  /*
+  FIXME move this `.withToErr` wrapper to `Node.macroNode`, remove this wrapper
+  method, and rename `.macroImpl` to `.macro` everywhere.
+
+  Note that `.compile` should be symmetric: we should ensure that we call
+  `.compile` with similar wrapping for every node everywhere, producing errors
+  that point to failing nodes. That's currently done at the level of
+  `CodePrinter..compile`.
+  */
   macro() {return this.withToErr(this.macroImpl)}
+
   macroImpl() {throw this.errMeth(`macroImpl`)}
 
   /*
-  Should be used by node subclasses which are able to "dereference" to a live
-  value, typically identifiers such as `Ident`.
+  Default "nop" implementation of macroing a list, which represents a "call" in
+  our Lispy syntax. This is always invoked by `DelimNodeList` on its first
+  element. This default implementation does not support macro calling. See
+  `Ident..macroList` for an override that does.
   */
-  macroWithLiveVal(src) {
-    if (!a.isCls(src)) {
-      throw this.err(`expected live value to be a class, found ${a.show(src)}`)
-    }
-    if (!a.isSubCls(src, Node)) {
-      throw this.err(`expected live value to be a subclass of ${a.show(Node)}, found ${a.show(src)}`)
-    }
-
-    const val = new src()
-
-    // Partially redundant with `Node..replace`. However, this must be done both
-    // before and after macroing this node. Dedup might not be possible.
-    val.setParent(this.ownParent())
-    val.setSrcNode(this)
-
-    return val
-  }
+  macroList(val) {return val}
 
   compile() {throw this.errMeth(`compile`)}
 
-  // FIXME consider moving `MixOwnNodeSourced` from `Node` elsewhere,
-  // and removing this override. However, this may require updates to
-  // `.macroWithLiveVal` and `Node.replace`.
+  /*
+  TODO consider moving `MixOwnNodeSourced` from `Node` elsewhere, and removing
+  this override. However, this may require updates to `.macroWithLiveVal` and
+  `Node.replace`.
+  */
   decompile() {
     return a.laxStr(
       this.optSrcNode()?.decompile() ??
@@ -200,18 +204,6 @@ export class Node extends (
   // elided from the AST when tokenizing or lexing.
   isCosmetic() {return false}
 
-  /*
-  Indicates the base class for the input that must be replaced by this node.
-  For usage, see the override in `ListMacro` and special support in
-  `DelimNodeList..macroImpl`.
-  */
-  static macroSrcCls() {return Node}
-
-  /*
-  TODO: implement similar fancy dynamic switching in `NodeList`, to make it
-  possible to use async macros anywhere without slowing down absolutely
-  everything.
-  */
   static macroNode(prev) {
     if (!a.optInst(prev, Node)) return undefined
     const next = prev.macro()
@@ -219,15 +211,12 @@ export class Node extends (
     return this.macroNodeWith(prev, next)
   }
 
-  static macroNodeWith(node, next) {
-    a.reqInst(node, Node)
-    if (a.isNil(next)) return undefined
-
+  static macroNodeWith(prev, next) {
+    a.reqInst(prev, Node)
     // This convention is used by "nop" implementations of the `.macro` method.
     // For example, this is used by all nodes representing primitive literals.
-    if (next === node) return node
-
-    return this.macroNode(this.replace(node, next))
+    if (prev === next) return prev
+    return this.macroNode(this.replace(prev, next))
   }
 
   static macroNodeSync(prev) {
@@ -239,11 +228,10 @@ export class Node extends (
     return this.macroNodeSyncWith(prev, next)
   }
 
-  static macroNodeSyncWith(node, next) {
-    a.reqInst(node, Node)
-    if (a.isNil(next)) return undefined
-    if (next === node) return node
-    return this.macroNodeSync(this.replace(node, next))
+  static macroNodeSyncWith(prev, next) {
+    a.reqInst(prev, Node)
+    if (prev === next) return prev
+    return this.macroNodeSync(this.replace(prev, next))
   }
 
   static async macroNodeAsync(prev) {
@@ -253,41 +241,39 @@ export class Node extends (
     return this.macroNodeAsyncWith(prev, next)
   }
 
-  static async macroNodeAsyncWith(node, next) {
-    a.reqInst(node, Node)
+  static async macroNodeAsyncWith(prev, next) {
+    a.reqInst(prev, Node)
     if (a.isPromise(next)) next = await next
-    if (a.isNil(next)) return undefined
-    if (next === node) return node
-    return this.macroNodeAsync(this.replace(node, next))
+    if (next === prev) return prev
+    return this.macroNodeAsync(this.replace(prev, next))
   }
 
   static replace(prev, next) {
     a.reqInst(prev, Node)
-    prev.optInst(next, Node)
-
-    if (!next) return undefined
-    if (prev === next) {
-      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in the compiler or macros`)
+    if (a.isNil(next)) {
+      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with nil`)
     }
-
-    next.setParent(prev.reqParent())
-    next.setSrcNode(prev)
-
-    // FIXME drop this and update the comment on `Node` about child-to-parent
-    // relations.
-    prev.setParent(next)
-
-    return next
+    if (!a.isInst(next, Node)) {
+      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with non-node ${a.show(next)}`)
+    }
+    if (prev === next) {
+      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in macro-related code`)
+    }
+    return next.setParent(prev.optParent()).setSrcNode(prev)
   }
 
   [ji.symInsp](tar) {return tar.funs(this.decompile)}
 
   /*
-  Placeholder. FIXME: this must be exactly copy-pasted into EVERY subclass and
-  descendant class. This should be used for "repr" functionality, which should
-  be implemented in this base class, and used by the "quote" macro. This
-  property must always be "own". Anything else should cause an exception when
-  repring.
+  Placeholder for hypothetical support for Lisp-style quoting and unquoting of
+  code, which would require is to implement "repr" functionality for all AST
+  node classes, which would require us to add appropriate imports to the
+  generated code. Repr should be implemented in this base class, and used by
+  the "quote" macro.
+
+  This property must always be "own". Anything else should cause an exception
+  when repring. This line must be EXACTLY copy-pasted into EVERY subclass and
+  descendant class.
   */
   static moduleUrl = import.meta.url
 }

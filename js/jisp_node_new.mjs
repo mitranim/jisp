@@ -1,9 +1,11 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnp from './jisp_node_predecl.mjs'
 
-// FIXME missing feature: `new.target`.
 export class New extends jnlm.ListMacro {
+  static get target() {return NewTarget}
+
   macroImpl() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(2)
@@ -11,10 +13,16 @@ export class New extends jnlm.ListMacro {
   }
 
   compile() {
+    const prn = this.reqPrn()
+
     return (
       `new `
-      + a.reqStr(this.reqChildAt(1).compile())
-      + a.reqStr(this.reqCodePrinter().compileParensWithExpressions(this.optChildSlice(2)))
+      + a.reqStr(prn.compile(this.reqChildAt(1)))
+      + a.reqStr(prn.compileParensWithExpressions(this.optChildSlice(2)))
     )
   }
+}
+
+export class NewTarget extends jnp.Predecl {
+  getCompiledName() {return `new.target`}
 }

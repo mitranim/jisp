@@ -3,24 +3,21 @@ import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
 
 /*
-Used for stacking namespaces via star-imports. When a file uses multiple
-star-imports, then to resolve any given unqualified name, we must search for
-that name in every star-imported namespace. This base class implements storage
-and some utility methods for such a feature, in a somewhat generalized form
-that could also be used for other similar concepts.
+Used for combining namespaces. See `NsLex`. This tool implements some relevant
+shortcuts in a somewhat generalized form.
 */
 export class MixMixable extends a.DedupMixinCache {
   static make(cls) {
     return class MixMixable extends je.MixErrer.goc(cls) {
       #mixins = undefined
-      ownMixins() {return this.#mixins ??= new Set()}
+      initMixins() {return this.#mixins ??= new Set()}
       optMixins() {return this.#mixins}
-      hasMixins() {return !!this.#mixins?.size}
+      hasMixins() {return this.#mixins?.size > 0}
       hasMixin(val) {return !!this.#mixins?.has(val)}
 
       addMixin(val) {
         if (this.hasMixin(val)) return this
-        this.ownMixins().add(this.reqValidMixin(val))
+        this.initMixins().add(this.reqValidMixin(val))
         return this
       }
 

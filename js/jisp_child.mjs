@@ -13,13 +13,19 @@ export class MixChild extends a.DedupMixinCache {
   static make(cls) {
     return class MixChild extends je.MixErrer.goc(cls) {
       #parent = undefined
-      ownParent() {return this.#parent}
       optParent() {return this.#parent}
 
       setParent(val) {
         if (jc.conf.getDebug()) this.reqValidParent(val)
         this.#parent = val
         return this
+      }
+
+      reqParent() {
+        return (
+          this.optParent() ??
+          this.throw(`missing parent at ${a.show(this)}`)
+        )
       }
 
       reqValidParent(par) {
@@ -35,13 +41,6 @@ export class MixChild extends a.DedupMixinCache {
         }
 
         return par
-      }
-
-      reqParent() {
-        return (
-          this.optParent() ??
-          this.throw(`missing parent at ${a.show(this)}`)
-        )
       }
 
       // TODO better naming. This starts search at the current node, not at the

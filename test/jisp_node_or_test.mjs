@@ -8,7 +8,7 @@ await t.test(async function test_Or() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [or]
 [or 10]

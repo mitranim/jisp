@@ -15,16 +15,19 @@ the correct methods.
 export class CodePrinter extends a.Emp {
   mapCompact(src, fun) {return a.compact(a.arr(src).map(fun, this))}
 
+  // FIXME move to `jisp_misc.mjs` and make symmetric with a similar function
+  // for macroing.
   compile(src) {
     if (a.isNil(src)) return ``
-    return a.reqStr(src.compile())
+    try {return a.reqStr(src.compile())}
+    catch (err) {throw src.toErr(err)}
   }
 
   mapCompile(src) {return this.mapCompact(src, this.compile)}
 
   compileNotCosmetic(src) {
     if (a.isNil(src) || src.isCosmetic()) return ``
-    return a.reqStr(src.compile())
+    return this.compile(src)
   }
 
   mapCompileNotCosmetic(src) {

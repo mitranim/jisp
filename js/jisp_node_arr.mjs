@@ -10,7 +10,7 @@ export class Arr extends jnlm.ListMacro {
     return (
       ``
       + `[`
-      + a.reqStr(this.reqCodePrinter().compileExpressions(this.optChildSlice(1)))
+      + a.reqStr(this.reqPrn().compileExpressions(this.optChildSlice(1)))
       + `]`
     )
   }

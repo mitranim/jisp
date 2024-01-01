@@ -8,8 +8,22 @@ import * as jns from './jisp_ns.mjs'
 import * as jl from './jisp_lexer.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
+import * as jnu from './jisp_node_use.mjs'
 
 export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
+  /*
+  Override for `MixLiveValued`. Any live properties added here are contextually
+  available to all code in all modules, by using the orphan form of
+  `IdentAccess`. The typical use case is the following:
+
+    [.use `jisp:prelude.mjs` *]
+  */
+  static makeLiveVal() {
+    const tar = a.npo()
+    tar.use = jnu.Use
+    return tar
+  }
+
   // Used by `.parse`. May be overridden by subclasses.
   get Lexer() {return jl.Lexer}
 
@@ -98,13 +112,6 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     await this.read()
     await this.macro()
     await this.write()
-
-    // await this.initOnce()
-    // await this.readOnce()
-    // await this.macroOnce()
-    // await this.compileOnce()
-    // await this.writeOnce()
-
     return this
   }
 
@@ -146,18 +153,12 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return this
   }
 
-  // initOnce() {return this.#init ??= this.init()}
-  // #init = undefined
-
   async init() {
     if (!this.optTarUrlStr()) {
       this.setTarUrlStr(await this.reqRoot().srcUrlStrToTarUrlStr(this.reqSrcUrlStr()))
     }
     return this
   }
-
-  // readOnce() {return this.#read ??= this.read()}
-  // #read = undefined
 
   async read() {
     return this.parse(await this.reqRoot().reqFs().read(this.reqSrcUrl()))
@@ -169,9 +170,6 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return this
   }
 
-  // macroOnce() {return this.#macro ??= this.macro()}
-  // #macro = undefined
-
   /*
   Immediate children of a module typically begin with `Use`, whose macro
   implementation is async. As a result, module macroing is almost always
@@ -182,18 +180,7 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   macroImpl() {return this.macroFrom(0)}
 
-  // compileOnce() {return this.#compile ??= this.compile()}
-  // #compile = undefined
-
-  compile() {return this.reqCodePrinter().compileStatements(this.childIter())}
-
-  // writeOnce() {return this.#write ??= this.write()}
-  // #write = undefined
-
-  // async write() {
-  //   await this.reqRoot().reqFs().write(this.reqTarUrl(), this.compileOnce())
-  //   return this
-  // }
+  compile() {return this.reqPrn().compileStatements(this.childIter())}
 
   async write() {
     await this.reqRoot().reqFs().write(this.reqTarUrl(), this.compile())
@@ -288,7 +275,6 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     }
     return this
   }
-
 
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar.funs(this.optSrcUrlStr, this.optNsLex))

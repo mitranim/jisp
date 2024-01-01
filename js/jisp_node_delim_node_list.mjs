@@ -42,15 +42,12 @@ export class DelimNodeList extends jnnl.NodeList {
 
   macroImpl() {
     this.reqEveryChildNotCosmetic()
-
-    const head = this.optFirstChild()
-    const live = jm.optResolveLiveValCall(head)
-
-    if (a.isSubCls(live, jn.Node) && a.isSubCls(live.macroSrcCls(), jnnl.NodeList)) {
-      return this.macroWithLiveVal(live)
-    }
-    return this.macroFrom(0)
+    const out = this.reqFirstChild().macroList(this)
+    if (out !== this) return out
+    return this.macroFallback()
   }
+
+  macroFallback() {return this.macroFrom(0)}
 
   compile() {
     const head = this.optChildAt(0)
@@ -59,10 +56,11 @@ export class DelimNodeList extends jnnl.NodeList {
     }
 
     const tail = this.optChildSlice(1)
+    const prn = this.reqPrn()
 
     return (
-      a.reqStr(head.compile()) +
-      a.reqStr(this.reqCodePrinter().compileParensWithExpressions(tail))
+      a.reqStr(prn.compile(head)) +
+      a.reqStr(prn.compileParensWithExpressions(tail))
     )
   }
 }

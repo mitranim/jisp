@@ -24,8 +24,8 @@ export function ownNsLexCall(src) {
 }
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
-export function optResolveLiveValCall(src) {
-  return a.isObj(src) && `optResolveLiveVal` in src ? src.optResolveLiveVal() : undefined
+export function optLiveValCall(src) {
+  return a.isObj(src) && `optLiveVal` in src ? src.optLiveVal() : undefined
 }
 
 export function isFullMatch(src, reg) {
@@ -33,6 +33,13 @@ export function isFullMatch(src, reg) {
   a.reqReg(reg)
   reg.lastIndex = 0
   return reg.exec(src)?.[0] === src
+}
+
+// Same as `a.str` but stricter. Every value must be a string already.
+export function str(...src) {
+  let out = ``
+  for (src of src) out += a.reqStr(src)
+  return out
 }
 
 export class StrSet extends a.TypedSet {
@@ -44,39 +51,63 @@ export class ValidStrSet extends a.TypedSet {
 }
 
 /*
-Should exactly match the set of non-contextual keywords in ES5+. Should not
-include any non-keywords. Should not include any contextual keywords such as
-`async`. Reserved names which aren't keywords should be in `jsReservedNames`.
+Should exactly match the set of names which, in ES5+, require special syntax.
+Such names can't be used on their own as expressions. Non-exhaustive examples:
 
-The keyword `super` is contextual in a way opposite to `async`. By default,
-`super` is a forbidden keyword in most contexts. However, calling `super` and
-accessing its properties is allowed in class instance methods. This means we
-should also treat it as a forbidden keyword, and make it contextually available
-in class instance methods, using a macro if necessary.
+  * Reserved but not implemented (at the time of writing) names such as `enum`.
+  * Declaration keywords such as `function`.
+  * Unary keywords such as `typeof`.
+  * Binary keywords such as `in`.
+
+Should NOT include nullary keywords which can be used on their own as
+expressions. Examples include `null`, `false`, `true`, and possibly more.
+Such keywords should be placed in `jsReservedNames`.
 
 Reference:
 
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
 */
-export const jsKeywordNames = new StrSet([`await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `export`, `extends`, `false`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `null`, `package`, `private`, `protected`, `public`, `return`, `static`, `super`, `switch`, `throw`, `true`, `try`, `typeof`, `undefined`, `var`, `void`, `while`, `with`, `yield`])
+export const jsKeywordNames = new StrSet([`await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `export`, `extends`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `package`, `private`, `protected`, `public`, `return`, `static`, `switch`, `throw`, `try`, `typeof`, `var`, `void`, `while`, `with`, `yield`])
 
 /*
-Should exactly match the set of reserved names in ES5+ which aren't keywords.
-Unlike keywords, but just like regular names, these names can be used in
-expression positions. However, unlike regular names, these names can't be
-declared. Attempting to use any of these names in a declaration position causes
-a syntax error in JS. Since we can easily detect invalid usage of reserved
-names at compile time, we should do so.
+Should exactly match the set of names which, in ES5+, can be used on their own
+as expressions, but can not be redeclared. Attempting to redeclare such names
+typically causes a syntax error in ES.
 
-Notably, this does not include `undefined` because at the time of writing, it is
-NOT a reserved name in ES. It's a regular predeclared identifier. In ES5+, the
-predeclared `undefined` in root scope can't be reassigned; any such attempt is
-ignored in loose mode and causes a runtime exception in strict mode. However,
-assigning to `undefined` is not a syntax error, and user code is allowed to
-redeclare `undefined` locally, so it's a regular identifier for all intents and
-purposes.
+Some of these names may be declared in module scope. We provide an easy way via
+the following statement:
+
+  [declare `jisp:global.mjs`]
+
+Some of these names can be used only in specific contexts. Examples include
+`arguments` and `super`. It's worth understanding that even names which are
+only available contextually are still reserved globally. At the time of
+writing, this rule holds for all contextual names and keywords in ES. This
+prevents contextually-provided names and keywords from accidentally masking
+user-defined names, because user-defined names are not allowed to match any
+keywords or reserved names.
+
+In Jisp, we should NOT implicitly add names to any non-root scope. That's
+because Jisp does not have keywords or reserved names. If, for example, we
+implicitly declared `arguments` and `this` in scopes of regular functions,
+there's a possibility that in some cases, these names would accidentally mask
+identical names already in scope. We prevent user code from using ES keywords
+and reserved names in declarations, but they can be used in exports. So for
+example it's possible to export a macro named `this`, import it via the "star"
+form of the `use` macro, and refer to it in Jisp code. Implicitly declaring
+`this` in function scopes would mask that name, breaking user expectations. The
+conclusion is that languages without keywords or reserved names should avoid
+the (anti-) pattern of implicitly-added names.
+
+Notably, this set does not include `undefined` because at the time of writing,
+it is NOT a reserved name in ES. It's a regular predeclared identifier. In
+ES5+, the predeclared `undefined` in root scope can't be reassigned; any such
+attempt is ignored in loose mode and causes a runtime exception in strict mode.
+However, assigning to `undefined` is not a syntax error, and user code is
+allowed to redeclare `undefined` locally. For all intents and purposes,
+`undefined` is a regular identifier.
 */
-export const jsReservedNames = new StrSet([`arguments`, `eval`, `this`])
+export const jsReservedNames = new StrSet([`arguments`, `eval`, `false`, `null`, `super`, `this`, `true`])
 
 export function isNativeModule(val) {
   return a.isNpo(val) && val[Symbol.toStringTag] === `Module`
@@ -128,11 +159,13 @@ export function isStrWithUrlDecorations(val) {
   return a.isStr(val) && (val.includes(`?`) || val.includes(`#`))
 }
 
-// export function stripUrlDecorations(val) {
-//   val = sliceUntil(val, `#`)
-//   val = sliceUntil(val, `?`)
-//   return val
-// }
+/*
+export function stripUrlDecorations(val) {
+  val = sliceUntil(val, `#`)
+  val = sliceUntil(val, `?`)
+  return val
+}
+*/
 
 /*
 export function replaceExt(src, exp) {
@@ -418,4 +451,11 @@ export function mapUniq(src, fun) {
     case 1: return src
     default: return [...new Set(src)]
   }
+}
+
+export function own(tar, key) {
+  a.reqComp(tar)
+  a.reqValidStr(key)
+  if (a.hasOwn(tar, key)) return
+  Object.defineProperty(tar, key, {writable: true})
 }

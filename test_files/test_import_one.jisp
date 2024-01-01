@@ -4,9 +4,9 @@
 ; other file should already be resolved to disk (compiled), and both should be
 ; immediately importable in JS.
 
-[use `jisp:prelude.mjs` jp]
+[.use `jisp:prelude.mjs` jp]
 
 [jp.import `./test_import_two.jisp` dep]
 
-; Should produce an exception and fail the test if the export is missing.
+; If the export is missing, this should produce an exception and fail the test.
 [dep.someFunc]

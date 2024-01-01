@@ -25,7 +25,7 @@ export class Const extends jnlm.ListMacro {
   }
 
   compilePrefix() {return `const`}
-  compileName() {return this.reqIdent().compile()}
+  compileName() {return this.reqPrn().compile(this.reqIdent())}
   compileInfix() {return `=`}
-  compileVal() {return this.reqVal().compile()}
+  compileVal() {return this.reqPrn().compile(this.reqVal())}
 }

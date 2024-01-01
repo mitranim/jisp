@@ -8,7 +8,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [new]
 `,
@@ -18,7 +18,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [new SomeName]
 `,
@@ -28,9 +28,8 @@ await t.test(async function test_New() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
-[new nil]
 [new 10]
 [new 10 20]
 [new 10 20 30]
@@ -48,7 +47,6 @@ await t.test(async function test_New() {
 [new SomeName.OtherName 10 20 30]
 `,
 `
-new undefined();
 new 10();
 new 10(20);
 new 10(20, 30);
@@ -62,6 +60,38 @@ new SomeName.OtherName(10);
 new SomeName.OtherName(10, 20);
 new SomeName.OtherName(10, 20, 30);
 `,
+  )
+})
+
+/*
+Imperfect behavior. In Jisp, this requires a function call, whereas in JS, it
+doesn't. Ideally, this would not require a function call in Jisp. Solving this
+may require restoring support for "bare" macro calls, which has been removed.
+*/
+await t.test(async function test_New_target() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[new.target]
+[const someConst [new.target]]
+`,
+`
+new.target;
+const someConst = new.target;
+`)
+})
+
+await t.test(async function test_New_unknown_field() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+new.unknownField
+`,
+    `missing property "unknownField" in live value [function New]`,
   )
 })
 

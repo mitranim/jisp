@@ -2,24 +2,12 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
-import * as jv from './jisp_valued.mjs'
 import * as jmi from './jisp_mixable.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
 /*
 Base class for all namespaces.
-
-A non-"live" namespace stores compile-time declarations, used for static
-analysis and compilation.
-
-A "live" namespace provides access to the properties of a "live" object,
-intended for immediate compile-time usage. At the time of writing, we plan to
-support exactly one interface for compile-time usage of imported live values:
-they must be subclasses of `Node`. Any reference to a live value assumes that
-it's a node class, instantiates it, and replaces the reference with the
-resulting node instance. In the future, we may consider supporting other ways
-of using live values.
 
 Some namespaces are used lexically, in a hierarchy of AST nodes. See the class
 `NsLex`. This gives birth to scoping. The concept of a "scope" emerges from
@@ -29,31 +17,38 @@ writing), the two most common scoping approaches are dynamic scoping and
 lexical scoping. In both lexical and dynamic scoping, any given namespace
 should be accessible only to the current-level node and descendants, but not to
 ancestors. Every language has dynamic scoping, either first-class, or possible
-to hack it in. Most languages have lexical scoping, and it tends to be
-preferred. Jisp deals only with lexical scoping, because dynamic scoping is a
-runtime-only feature which is out of scope for our compiler.
+to implement with hacks. Most languages have lexical scoping, and it tends to
+be preferred. Jisp deals only with lexical scoping, because dynamic scoping is
+a runtime-only feature which is out of scope for our compiler.
 
 This is called "namespace" rather than "scope" because the term "scope" refers
 to the extent in which a given name is declared, often encompassing several
 layers in an AST. An individual namespace, as implemented here, is "flat",
 having no ancestors or descendants of its own.
 
-In our system, a namespace is simultaneously a definition of this namespace at
-the eventual runtime of the compiled program, and an instance of this namespace
-at compile time. Non-live namespaces describe an eventual runtime state, and do
-not participate in immediate compile-time evaluation. Live namespaces refer to
-live values intended for immediate compile-time evaluation / node replacement,
-also known as macroexpansion or macroing.
+In our system, any given namespace object is simultaneously a definition of a
+namespace at the eventual runtime of the compiled program, and an instance of
+this namespace at compile time. Non-live namespaces describe an eventual
+runtime state, and do not participate in immediate compile-time evaluation.
+Live namespaces refer to live values intended for immediate compile-time
+evaluation / node replacement, also known as macroexpansion or macroing.
 
 In the future, we may consider adding another namespace variant used for
 validating imports (for class `Import`), which would contain information
 about exports provided by the given module, without providing access to
 live values. In a more general case, it could provide comprehensive type
 information, but type analysis is out of scope of this project, for now.
+
+A namespace may contain a "live value": an arbitrary JS value intended for
+immediate compile-time execution, which is typically done by calling the
+methods of the live value. In this case, the names in the namespace must
+reflect the properties of the live value, which is typically done by
+inspecting the live value. This approach is implemented by `NsLive`.
+
+A regular namespace without a "live value" is meant only for static analysis,
+without immediate compile-time execution.
 */
 export class NsBase extends je.MixErrer.goc(a.Emp) {
-  isLive() {return false}
-
   has(key) {
     this.req(key, a.isValidStr)
     return false
@@ -61,7 +56,7 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
 
   optGet(key) {
     this.req(key, a.isValidStr)
-    return false
+    return undefined
   }
 
   reqGet(key) {
@@ -102,27 +97,38 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
     return this
   }
 
+  hasLiveVal() {return false}
+  optLiveVal() {}
+  reqLiveVal() {return this.optLiveVal() ?? this.throw(`missing live value in namespace ${a.show(this)}`)}
+
   [ji.symInsp](tar) {return tar.funs(this.optRefs)}
 }
 
-export class NsLive extends jv.MixOwnValued.goc(NsBase) {
-  isLive() {return true}
-
-  // Override for `MixOwnValued`.
-  setVal(val) {return super.setVal(this.req(val, a.isComp))}
+export class NsLive extends NsBase {
+  #val = undefined
+  setLiveVal(val) {return this.#val = this.req(val, a.isComp), this}
+  optLiveVal() {return this.#val}
+  hasLiveVal() {return a.isSome(this.#val)}
 
   has(key) {
     this.req(key, a.isValidStr)
-    return a.hasIn(this.optVal(), key)
+    const src = this.#val
+    return a.isComp(src) && key in src
   }
 
   optGet(key) {
-    if (this.has(key)) return this.reqVal()[key]
-    return undefined
+    const src = this.#val
+    return (a.isComp(src) && key in src) ? src[key] : undefined
   }
 
-  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optVal))}
+  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optLiveVal))}
 }
+
+/*
+Variant of `NsLive` that doesn't store references. Unlike regular `NsLive`, this
+may be suitable for cases where a namespace can be allocated once and reused.
+*/
+export class NsLiveUnref extends NsLive {addRef() {}}
 
 /*
 Encapsulates a live object, such as a native imported module, and inspects its
@@ -131,8 +137,21 @@ implement *-style imports that compile to explicit named imports in JS. Can be
 used to detect missing exports at compile time.
 */
 export class NsLivePseudo extends NsLive {
-  isLive() {return false}
+  hasLiveVal() {return false}
+  optLiveVal() {}
+
+  // FIXME unfuck.
+  // The need for such overrides indicates a design problem.
+  optGet() {throw this.errMeth(`optGet`, this)}
+  reqGet() {throw this.errMeth(`reqGet`, this)}
 }
+
+/*
+Variant of `NsLivePseudo` that doesn't store references. Unlike regular
+`NsLivePseudo`, this may be suitable for cases where a namespace can be
+allocated once and reused.
+*/
+export class NsLivePseudoUnref extends NsLivePseudo {addRef() {}}
 
 /*
 Short for "namespace with predeclared names".
@@ -159,7 +178,14 @@ export class NsPredecl extends NsBase {
 
 /*
 Short for "namespace lexical". Unlike `NsBase` and `NsLive`, this namespace
-is mutable.
+is mutable and supports mixins.
+
+Namespace mixins are conceptually similar to multiple inheritance. They allow a
+namespace to "inherit" names from multiple other namespaces. When resolving a
+name in a lexical namespace, we check its own declarations, then check mixins.
+This allows us to implement "star"-imports; see `ImportBase` and its
+subclasses. This also makes it easier to implement namespaces with multiple
+components, such as combining live and non-live namespaces into one; see `Fn`.
 
 TODO: consider also storing the node that declares this namespace, and using its
 code span in error messages. Relevant sample of removed code:
@@ -199,8 +225,10 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
     return this
   }
 
-  // TODO: would be ideal if these error messages referenced the code where this
-  // namespace was originally declared. See comment above.
+  /*
+  TODO: would be ideal if these error messages referenced the code where this
+  namespace was originally declared. See comment above.
+  */
   addNode(node) {
     this.reqInst(node, jn.Node)
 
@@ -224,6 +252,7 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
 
   optResolve(key) {return super.optResolve(key) ?? this.resolveMixinOpt(key)}
 
+  // FIXME iterate in reverse or add mixins in reverse.
   resolveMixinOpt(key) {
     const src = this.optMixins()
     if (src) for (const val of src) if (val.optResolve(key)) return val
@@ -241,9 +270,9 @@ export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLexed extends je.MixErrer.goc(cls) {
       #nsLex = undefined
-      ownNsLex() {return this.initNsLex()}
       optNsLex() {return this.#nsLex}
-      reqNsLex() {return this.optNsLex() ?? this.throw(`missing own lexical namespace at ${a.show(this)}`)}
+      ownNsLex() {return this.initNsLex()}
+      reqNsLex() {return this.initNsLex()}
       initNsLex() {return this.#nsLex ??= this.makeNsLex()}
       makeNsLex() {return new this.NsLex()}
       get NsLex() {return NsLex}
@@ -255,9 +284,8 @@ export class MixOwnNsLived extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLived extends je.MixErrer.goc(cls) {
       #nsLive = undefined
-      ownNsLive() {return this.#nsLive}
       optNsLive() {return this.#nsLive}
-      reqNsLive() {return this.optNsLive() ?? this.throw(`missing own live namespace at ${a.show(this)}`)}
+      reqNsLive() {return this.initNsLive()}
       initNsLive() {return this.#nsLive ??= this.makeNsLive()}
       makeNsLive() {return new this.NsLive()}
       get NsLive() {return NsLive}

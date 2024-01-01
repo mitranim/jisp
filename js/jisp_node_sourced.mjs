@@ -13,7 +13,6 @@ export class MixOwnNodeSourced extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNodeSourced extends je.MixErrer.goc(cls) {
       #srcNode = undefined
-      ownSrcNode() {return this.#srcNode}
       optSrcNode() {return this.#srcNode}
 
       setSrcNode(val) {

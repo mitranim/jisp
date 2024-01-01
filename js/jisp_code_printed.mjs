@@ -14,6 +14,8 @@ export class MixCodePrinted extends a.DedupMixinCache {
           this.throw(`missing code printer at ${a.show(this)}`)
         )
       }
+
+      reqPrn() {return this.reqCodePrinter()}
     }
   }
 }
@@ -32,8 +34,10 @@ export class MixOwnCodePrinted extends a.DedupMixinCache {
       get CodePrinter() {return jcp.CodePrinter}
       #prn = undefined
       setCodePrinter(val) {return this.#prn = this.reqInst(val, this.CodePrinter), this}
-      ownCodePrinter() {return this.#prn ??= new this.CodePrinter()}
+      initCodePrinter() {return this.#prn ??= new this.CodePrinter()}
+      ownCodePrinter() {return this.initCodePrinter()}
       optCodePrinter() {return this.#prn}
+      reqCodePrinter() {return this.initCodePrinter()}
     }
   }
 }

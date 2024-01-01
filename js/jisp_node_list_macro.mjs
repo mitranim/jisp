@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 /*
@@ -8,32 +9,29 @@ referencing identifier.
 */
 export class ListMacro extends jnnl.NodeList {
   /*
-  Override for `Node.macroSrcCls`. Indicates the base class for the input
-  that must be replaced by this node. Used by `DelimNodeList..macroImpl`.
-  */
-  static macroSrcCls() {return jnnl.NodeList}
-
-  /*
-  Override for `MixOwnNodeSourced` used by the base class `Node`. This method is
-  invoked in preparation for replacing a previously-existing AST node with this
-  node, and before invoking this node's `.macro` method.
+  Override for `MixOwnNodeSourced` used by the base class `Node`. This method
+  should be invoked in preparation for replacing a previous node, and before
+  invoking this node's `.macro` method, as part of recursive macroing. See
+  `Node..macroNode` and `Node..replace`.
   */
   setSrcNode(src) {
-    const cls = this.constructor.macroSrcCls()
+    const errer = this.optSpan()
+      ? this
+      : a.isInst(src, jn.Node) && src.optSpan()
+      ? src
+      : this
 
-    if (!a.isSubCls(cls, jnnl.NodeList)) {
-      throw this.err(`internal error: the superclass ${a.show(ListMacro)} assumes all subclasses to use instances of ${a.show(jnnl.NodeList)} as their source node, but macro node ${a.show(this)} expects to use ${a.show(cls)} which may not be a node list`)
-    }
+    const cls = jnnl.NodeList
     if (!a.isInst(src, cls)) {
-      throw this.err(`${a.show(this)} expected the source node to be an instance of ${a.show(cls)}, got ${a.show(src)}`)
+      throw errer.err(`${a.show(this)} expected the source node to be an instance of ${a.show(cls)}, got ${a.show(src)}`)
     }
 
     /*
-    TODO consider if we can avoid copying children. This has a performance cost
-    but also some minor advantages. If this macro class changes the list
-    structure during macroing, this allows the original source list node to
-    retain the original structure. Benefits include allowing `.optSpan` and
-    `.decompile` to work properly.
+    TODO consider if we should copy children or reuse the child array without
+    copying. The copying has a performance cost but also some minor advantages.
+    If this macro class changes the list structure during macroing, this allows
+    the original source list node to retain the original structure. Benefits
+    include allowing `.optSpan` and `.decompile` to work properly.
 
     The implementation of `.setChildren` should also change each child's parent
     to the current node, which is essential for some of our functionality, such

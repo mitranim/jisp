@@ -4,23 +4,26 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
-await t.test(async function test_Fn_arguments_not_predecladed_in_root_scope() {
+await t.test(async function test_Fn_arguments() {
+  /*
+  We don't automatically declare `arguments` in function scope.
+  For the explanation why, see the comment on `jsReservedNames`.
+  */
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
-arguments
+[fn someFunc [] arguments]
 `,
-    `unable to find declaration of "arguments"`,
-)
-})
+    `unable to find declaration of "arguments" at [object IdentUnqual]`,
+  )
 
-await t.test(async function test_Fn_arguments_predeclared() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
+[declare "jisp:global.mjs"]
 
 [fn someFunc [] arguments]
 `,
@@ -28,59 +31,104 @@ await t.test(async function test_Fn_arguments_predeclared() {
 function someFunc () {
 arguments;
 };
-`)
+`,
+  )
 })
 
 await t.test(async function test_Fn_arguments_redeclaration() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc []
   [const arguments 10]
 ]
 `,
     `"arguments" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
-)
-})
-
-await t.test(async function test_Fn_ret_not_predecladed_in_root_scope() {
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-ret
-`,
-    `unable to find declaration of "ret" at [object IdentUnqual]`,
   )
 })
 
-await t.test(async function test_Fn_ret_predecladed() {
+await t.test(async function test_Fn_this() {
+  /*
+  We don't automatically declare `this` in function scope.
+  For the explanation why, see the comment on `jsReservedNames`.
+  */
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[fn someFunc [] this]
+`,
+    `unable to find declaration of "this" at [object IdentUnqual]`,
+  )
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
+[declare "jisp:global.mjs"]
 
+[fn someFunc [] this]
+`,
+`
+function someFunc () {
+this;
+};
+`,
+  )
+})
+
+await t.test(async function test_Fn_this_redeclaration() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[fn someFunc []
+  [const this 10]
+]
+`,
+    `"this" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
+  )
+})
+
+/*
+Declaring `ret` in prelude may seem dirty. It would seem more natural to declare
+it in function scope. However, we should avoid implicitly adding names to scopes
+because of possible collisions. See the comment on `jsReservedNames` for
+explanations.
+*/
+await t.test(async function test_Fn_ret() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[ret]
+[ret 10]
 [fn someFunc0 [] [ret]]
 [fn someFunc1 [] [ret 10]]
 `,
 `
+return;
+return 10;
 function someFunc0 () {
 return;
 };
 function someFunc1 () {
 return 10;
 };
-`)
+`,
+  )
 })
 
 await t.test(async function test_Fn_ret_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [] [ret 10 20]]
 `,
@@ -97,7 +145,7 @@ await t.test(async function test_Fn_redeclare_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc []
   [const ret 10]
@@ -112,52 +160,11 @@ ret(20);
 `)
 })
 
-await t.test(async function test_Fn_this_not_predecladed_in_root_scope() {
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-this
-`,
-    `unable to find declaration of "this"`,
-)
-})
-
-await t.test(async function test_Fn_this_predeclared() {
-  await jrt.testModuleCompile(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[fn someFunc [] this]
-`,
-`
-function someFunc () {
-this;
-};
-`)
-})
-
-await t.test(async function test_Fn_this_redeclaration() {
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[fn someFunc []
-  [const this 10]
-]
-`,
-    `"this" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
-)
-})
-
 await t.test(async function test_Fn_with_parameters() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one]]
 `,
@@ -168,7 +175,7 @@ function someFunc (one) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one]
 `,
@@ -181,7 +188,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one one]
 `,
@@ -195,7 +202,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] [ret one]]
 `,
@@ -208,7 +215,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] [ret one] one]
 `,
@@ -222,7 +229,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one] one [ret one]]
 `,
@@ -236,7 +243,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two]]
 `,
@@ -247,7 +254,7 @@ function someFunc (one, two) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one]
 `,
@@ -260,7 +267,7 @@ one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] two]
 `,
@@ -273,7 +280,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one two]
 `,
@@ -287,7 +294,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two]
 `,
@@ -302,7 +309,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two two]
 `,
@@ -318,7 +325,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] [ret one] one two two]
 `,
@@ -334,7 +341,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one [ret one] two two]
 `,
@@ -350,7 +357,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one [ret two] two]
 `,
@@ -366,7 +373,7 @@ two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn someFunc [one two] one one two [ret two]]
 `,
@@ -384,7 +391,7 @@ await t.test(async function test_Fn_name_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn await []]
 `,
@@ -394,7 +401,7 @@ await t.test(async function test_Fn_name_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[use "jisp:prelude.mjs" *]
+[.use "jisp:prelude.mjs" *]
 
 [fn eval []]
 `,

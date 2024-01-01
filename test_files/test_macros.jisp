@@ -1,7 +1,7 @@
-[use `jisp:prelude.mjs` *]
+[.use `jisp:prelude.mjs` *]
 
 ; FIXME must be compile error due to cyclic dependency.
-; [use `./test_code.jisp` *]
+; [.use `./test_code.jisp` *]
 
 ; "global" must be declared in prelude.
 [const g global]

@@ -8,14 +8,14 @@ import * as jnp from './jisp_node_predecl.mjs'
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
 compile-time evaluation.
 
-FIXME support optional compile-time importing, controlled by an additional
-configuration property on `Conf.main`. When enabled, causes `Import` to import
-the target module at compile time and validate that all referenced identifiers
-are actually exported. This should piggyback on the mechanism already used
-for "star" / "mixin" imports.
-
-FIXME support `import.meta`, preferably in a generalized form that may work
-for other properties of `import`.
+FIXME support verifying exports at compile time for the "named" form of this
+macro, similarly to what is done by the "star" form of this macro. It should be
+opt-in, and might be controlled by an additional configuration property on
+`Conf.main`, or simply by a static boolean property on this class. When
+enabled, it should cause `Import` to import the target module at compile time
+and use `NsLivePseudo` to create a namespace for it, which should allow our
+system to validate that all references to the names in this module / properties
+of this module refer to its actual exports.
 */
 export class Import extends jnib.ImportBase {
   static get meta() {return ImportMeta}
@@ -46,15 +46,19 @@ export class Import extends jnib.ImportBase {
   }
 
   compileStatement() {
-    const prn = this.reqCodePrinter()
+    const prn = this.reqPrn()
     const name = this.optDestName()
     const addr = this.compileAddr()
     const refs = jm.mapUniq(this.optNsLive()?.optRefs(), a.pk).join(`, `)
 
     const named = name ? (
-      `import * as ${a.reqStr(name.compile())} from ${a.reqStr(addr)}`
+      `import * as ${a.reqStr(prn.compile(name))} from ${a.reqStr(addr)}`
     ) : ``
 
+    /*
+    Known bug: when ref names are JS keywords such as `null`, this generates
+    invalid code that causes a syntax error. TODO where should we handle this?
+    */
     const reffed = refs ? (
       `import {${a.reqStr(refs)}} from ${a.reqStr(addr)}`
     ) : ``
@@ -71,7 +75,11 @@ export class Import extends jnib.ImportBase {
     return (
       ``
       + `import(`
-      + (a.isSome(path) ? JSON.stringify(a.reqStr(path)) : a.reqStr(this.reqAddr().compile()))
+      + a.reqStr(
+        a.isSome(path)
+        ? JSON.stringify(a.reqStr(path))
+        : this.reqPrn().compile(this.reqAddr())
+      )
       + `)`
     )
   }

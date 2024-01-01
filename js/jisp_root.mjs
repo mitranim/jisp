@@ -6,7 +6,7 @@ import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jfs from './jisp_fs.mjs'
-import * as jns from './jisp_ns.mjs'
+// import * as jns from './jisp_ns.mjs'
 import * as jcp from './jisp_code_printer.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
 import * as jnu from './jisp_node_use.mjs'
@@ -20,7 +20,19 @@ TODO:
   * Use header files.
   * Use cached files, invalidate by own and dependency checksums.
 */
-export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCodePrinted.goc(jp.MixParent.goc(ji.MixInsp.goc(a.Emp))))) {
+export class Root extends (
+  // jns.MixOwnNsLexed.goc(
+    jfs.MixOwnFsed.goc(
+      jcpd.MixOwnCodePrinted.goc(
+        jp.MixParent.goc(
+          ji.MixInsp.goc(
+            a.Emp
+          )
+        )
+      )
+    )
+  // )
+) {
   /*
   Used for parsing and compiling Jisp sources.
   May override in superclass.
@@ -123,27 +135,27 @@ export class Root extends jns.MixOwnNsLexed.goc(jfs.MixOwnFsed.goc(jcpd.MixOwnCo
   #srcUrlStrToTarUrlStr = undefined
   #initSrcUrlStrToTarUrlStr() {return this.#srcUrlStrToTarUrlStr ??= new jm.PromiseMap()}
 
-  /*
-  Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited by
-  all modules in this root. This is where we add globally predeclared names.
-  The default implementation should contain exactly one declaration: `use`.
-  Other common built-ins should be provided by the prelude module, which should
-  be imported via `use`.
+  // /*
+  // Override for `MixOwnNsLexed`. The resulting lexical namespace is inherited
+  // by all modules in this root. This is where we add globally predeclared names.
+  // The default implementation should contain exactly one declaration: `use`.
+  // Other common built-ins should be provided by the prelude module, which should
+  // be imported via `use`.
+  //
+  // TODO consider removing the root namespace or removing `use` from here.
+  // Instead of predeclaring `use` in the root namespace, we can define the
+  // getter `.use` on the class `Module` and access it contextually via the
+  // orphan form of `IdentAccess`.
+  // */
+  // makeNsLex() {return super.makeNsLex().addMixin(this.makeNsLive())}
 
-  TODO consider removing the root namespace or removing `use` from here.
-  Instead of predeclaring `use` in the root namespace, we can define the
-  getter `.use` on the class `Module` and access it contextually via the
-  orphan form of `IdentAccess`.
-  */
-  makeNsLex() {return super.makeNsLex().addMixin(this.makeNsMixin())}
-  makeNsMixin() {return new jns.NsLive().setVal(this.makeNsLiveVal())}
+  // makeNsLive() {return new jns.NsLiveUnref().setLiveVal(this.makeNsLiveVal())}
 
-  // May override in subclass.
-  makeNsLiveVal() {
-    const tar = a.npo()
-    tar.use = jnu.Use
-    return tar
-  }
+  // makeNsLiveVal() {
+  //   const tar = a.npo()
+  //   tar.use = jnu.Use
+  //   return tar
+  // }
 
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }

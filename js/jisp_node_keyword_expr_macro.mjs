@@ -21,7 +21,6 @@ that may want to specialize.
 export class KeywordExprMacro extends jnlm.ListMacro {
   macroImpl() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(1)
     return this.macroFrom(1)
   }
 
@@ -42,13 +41,13 @@ export class KeywordExprMacro extends jnlm.ListMacro {
   compileUnary(src) {
     return a.spaced(
       a.reqStr(this.unaryPrefix()),
-      a.reqStr(src.compile()),
+      a.reqStr(this.reqPrn().compile(src)),
       a.reqStr(this.unarySuffix()),
     )
   }
 
   compileVariadic(src) {
-    return this.reqCodePrinter()
+    return this.reqPrn()
       .mapCompile(src)
       .join(` ` + a.reqStr(this.binaryInfix()) + ` `)
   }
@@ -90,10 +89,11 @@ export class KeywordExprMacro_2 extends KeywordExprMacro {
   }
 
   compile() {
+    const prn = this.reqPrn()
     return this.compileStatementOrExpression(a.spaced(
-      a.reqStr(this.reqChildAt(1).compile()),
+      a.reqStr(prn.compile(this.reqChildAt(1))),
       a.reqStr(this.binaryInfix()),
-      a.reqStr(this.reqChildAt(2).compile()),
+      a.reqStr(prn.compile(this.reqChildAt(2))),
     ))
   }
 }

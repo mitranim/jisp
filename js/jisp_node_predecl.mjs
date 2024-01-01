@@ -3,16 +3,29 @@ import * as jm from './jisp_misc.mjs'
 import * as jn from './jisp_node.mjs'
 
 /*
+FIXME consider removing. This became less useful after the removal of "bare"
+macro calling, and we've uncovered issues in the implementation. The comment is
+useful, move it elsewhere.
+
+Note that the comment fails to mention, and the implementation fails to address,
+a notable problem with predeclarations that rename one identifier to another.
+The problem is the possibility of collisions. For example, if you have a
+subclass of `Predecl` referenced as `nil` that generates `undefined`, it would
+produce incorrect behavior if `undefined` is already redeclared in the current
+scope.
+
+---
+
 Shortcut for node classes that compile to a fixed, predeclared JS name. Used for
 JS language constants such as `undefined` or `false`, and for other names
 predeclared in JS, whether globally or contextually.
 
-JS uses reserved keywords or predeclared identifiers for its built-ins. Many
-traditional Lisps do similar things. In contrast, Jisp has no keywords,
-predeclares only one identifier (`use`), and requires user code to import other
-built-ins from the prelude module. We implement many Jisp built-ins as macros
-whose only function is to compile to a specific name of a JS built-in such as
-`false`. This superclass makes them easier to implement.
+JS uses a mixture of reserved keywords and predeclared identifiers for its
+built-ins. Many traditional Lisps do similar things. In contrast, Jisp has no
+keywords, no predeclared names, and requires explicit imports or declarations
+for all names. We implement many Jisp built-ins as macros whose only function
+is to compile to a specific name of a JS built-in such as `false`. This
+superclass makes them easier to implement.
 
 Many JS built-ins could be obtained without macros. We could provide a JS module
 with various JS built-ins, and user code would use a regular runtime import to

@@ -22,9 +22,10 @@ At the time of writing, JS has the following:
   [`someProperty`]
   ?.[`someProperty`]
 
-This class may be extended to support `?.`. The "square brackets" version
-requires a different class, because square brackets are useful when the "key"
-is an arbitrary expression, not a hardcoded identifier.
+In the future, this class may be extended / subclassed to support `?.`.
+The "square brackets" version requires a different class, because square
+brackets are useful when the "key" is an arbitrary expression, not a hardcoded
+identifier.
 */
 export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   /*
@@ -37,7 +38,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   /*
   Should be called by the lexer. Should `IdentAccess` with the preceding
   expression. This is right-associative, which is arguably somewhat heretical
-  as far as Lisp syntax is concerned.
+  for a Lispy syntax.
   */
   static lexNext(lex, prev) {
     const span = lex.reqSpan()
@@ -59,7 +60,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   }
 
   // Override for `MixNamed`.
-  optName() {return a.stripPre(this.decompileOwn(), this.separator())}
+  optName() {return a.stripPre(this.decompileOwn(), this.constructor.separator())}
 
   decompileOwn() {return super.decompile()}
 
@@ -72,76 +73,97 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   }
 
   /*
-  TODO consistent naming scheme for spans generated from combining expressions.
-  It would be simpler to just override `.optSpan` or replace `.ownSpan`, but we
-  ALSO need access to the original `.ownSpan`.
+  This node has two forms: orphan and non-orphan. The orphan form is allowed
+  only in a call position; that case is handled by the method `.macroList`,
+  which is invoked by `DelimNodeList`. When this node is macroed by itself, it
+  must be non-orphan. This means we should look for a live value explicitly on
+  the source expression (which must be present), and avoid calling
+  `.optLiveValSrc`, which could fall back on resolving a live value from
+  ancestor nodes.
   */
-  optSpanRange() {
-    const spanSrc = this.optFirstChild()?.optSpan()
-    const spanOwn = this.ownSpan()
-    if (spanSrc && spanOwn) return this.Span.range(spanSrc, spanOwn)
-    return spanOwn
-  }
-
-  // Override for `Ident..optResolveLiveVal`.
-  optResolveLiveVal() {
-    return this.optDerefLiveVal(this.optResolveLiveValSrc())
-  }
-
-  // Override for `Ident..optResolveLiveValSrc`.
-  optResolveLiveValSrc() {
-    return (
-      this.optFirstChild()
-      ? this.optResolveLiveValSrcFromChild()
-      : this.reqResolveLiveValSrcFromAnc()
-    )
-  }
-
-  optResolveLiveValSrcFromChild() {
-    return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optResolveLiveVal()
-  }
-
-  optResolveLiveValSrcFromAnc() {
-    const key = this.optName()
-    if (!key) return undefined
-    return this.optParent()?.optAncFind(function test(val) {return key in val})
-  }
-
-  // Override for `Ident..reqResolveLiveVal`.
-  reqResolveLiveVal() {return this.reqDerefLiveVal(this.reqResolveLiveValSrc())}
-
-  // Override for `Ident..reqResolveLiveValSrc`.
-  reqResolveLiveValSrc() {
-    return (
-      this.optFirstChild()
-      ? this.reqResolveLiveValSrcFromChild()
-      : this.reqResolveLiveValSrcFromAnc()
-    )
-  }
-
-  reqResolveLiveValSrcFromChild() {
-    return this.reqFirstChild().asReqInst(jni.Ident).reqResolveLiveVal()
-  }
-
-  reqResolveLiveValSrcFromAnc() {
-    const key = this.reqName()
-    return (
-      this.optResolveLiveValSrcFromAnc() ??
-      this.throw(`unable to find ancestor with property ${a.show(key)} at descendant ${a.show(this)}`)
-    )
-  }
-
   macroImpl() {
-    const val = this.optResolveLiveVal()
-    if (a.isSome(val)) return this.macroWithLiveVal(val)
+    const src = this.optResolveLiveValFromChild()
+    if (a.isSome(src)) return this.macroWithLiveValSrc(src)
     this.setChild(this.constructor.macroNodeSync(this.reqFirstChild()))
     return this
   }
 
   compile() {
     return (
-      a.reqStr(this.reqFirstChild().compile()) +
-      a.reqStr(this.decompileOwn())
+      ``
+      + a.reqStr(this.reqPrn().compile(this.reqFirstChild()))
+      + a.reqStr(this.decompileOwn())
+    )
+  }
+
+  /*
+  TODO consistent naming scheme for spans generated from combining expressions.
+  It would be simpler to just override `.optSpan` or replace `.ownSpan`, but we
+  ALSO need access to the original `.ownSpan`.
+  */
+  optSpanRange() {
+    const spanOwn = this.ownSpan()
+    if (!spanOwn) return undefined
+
+    const spanSrc = this.optFirstChild()?.optSpan()
+    if (!spanSrc) return spanOwn
+
+    return this.Span.range(spanSrc, spanOwn)
+  }
+
+  /*
+  Override for `Ident..optLiveVal`. This override changes where we resolve the
+  name. The base method is meant for unqualified identifiers, which are always
+  resolved from lexical namespaces. In contrast, qualified identifiers are
+  never resolved from lexical namespaces.
+  */
+  optLiveVal() {return this.optDerefLiveVal(this.optLiveValSrc())}
+
+  // Override for `Ident..optLiveValSrc`. See the comment on `.optLiveVal`.
+  optLiveValSrc() {
+    return (
+      this.optFirstChild()
+      ? this.optResolveLiveValFromChild()
+      : this.reqResolveLiveValFromAnc()
+    )
+  }
+
+  optResolveLiveValFromChild() {
+    return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optLiveVal()
+  }
+
+  optResolveLiveValFromAnc() {
+    const key = this.optName()
+    if (!key) return undefined
+
+    return this.optParent()?.optAncProcure(function optResolveLiveVal(val) {
+      val = jm.optLiveValCall(val)
+      if (a.isComp(val) && key in val) return val
+      return undefined
+    })
+  }
+
+  // Override for `Ident..reqLiveVal`. See the comment on `.optLiveVal`.
+  reqLiveVal() {return this.reqDerefLiveVal(this.reqLiveValSrc())}
+
+  // Override for `Ident..reqLiveValSrc`. See the comment on `.optLiveVal`.
+  reqLiveValSrc() {
+    return (
+      this.optFirstChild()
+      ? this.reqResolveLiveValFromChild()
+      : this.reqResolveLiveValFromAnc()
+    )
+  }
+
+  reqResolveLiveValFromChild() {
+    return this.reqFirstChild().asReqInst(jni.Ident).reqLiveVal()
+  }
+
+  reqResolveLiveValFromAnc() {
+    const key = this.reqName()
+    return (
+      this.optResolveLiveValFromAnc() ??
+      this.throw(`unable to find ancestral live value with property ${a.show(key)} at descendant ${a.show(this)}`)
     )
   }
 

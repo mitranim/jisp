@@ -73,7 +73,7 @@ one.two.three.four
 
 [SomeCls.property blah]
 
-[use `jisp:prelude.mjs` p]
+[.use `jisp:prelude.mjs` p]
 
 
 p.global.console.log

@@ -4,6 +4,8 @@ In import/module/root code, consider renaming "resolve" to "ready".
 
 ## Lisps
 
+### Homo
+
 Truly beautiful homoiconicity requires 1-1 equality between the following sets of types:
 
 * Types that can exactly represent code.
@@ -14,6 +16,16 @@ Truly beautiful homoiconicity requires 1-1 equality between the following sets o
 * Types that can exist at runtime.
 
 Most Lisps violate this. The set of types that can exactly represent code must include whitespace and comments, but the reader drops them, and the language doesn't provide types for them. The set of types that can be evaluated is usually equal to the set of types that can exist at runtime, which usually includes compiled functions, which can not be serialized into code.
+
+### Special
+
+Traditional Lisps have something called "special forms". The most minimal set of "special forms" typically consists of the following: `lambda`, `set`, `if`.
+
+What makes them "special" and distinct from other definitions is that each of them, in order to function correctly, needs several components: how to handle the provided AST nodes at compile time; how to evaluate at runtime; how to compile. This power is traditionally not available to user code, which can define only forms with _one_ component. User macros define compile-time AST transforms. User functions define runtime execution. User code can't define new "special" forms with multiple components. That's a fundamental mistake.
+
+Jisp makes the power of "special forms" available to users. The traditional macro approach is also available, but it's merely a less-powerful shortcut.
+
+The power comes at a cost. It requires us to replace simple "macro functions" with objects, methods, and interfaces. Making it possible (and easy) to define new "special forms" that combine custom "macro" behavior and custom "compile" behavior requires a more powerful AST. This is one of the reasons why in Jisp, AST consists of special `Node` objects, instead of nested arrays and primitive values.
 
 ## Imports
 

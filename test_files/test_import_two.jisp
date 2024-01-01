@@ -3,8 +3,9 @@
 ; After resolving `./test_import_one.jisp` to disk (compiling it), this file
 ; should also be resolved to disk (compiled) and importable in JS.
 
-[use `jisp:prelude.mjs` jp]
+[.use `jisp:prelude.mjs` jp]
 
 [jp.fn someFunc [] `some_func_value`]
 
+; TODO drop after implementing automatic function exports.
 [jp.export someFunc]

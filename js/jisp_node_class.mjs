@@ -1,31 +1,40 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jns from './jisp_ns.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnf from './jisp_node_fn.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnl from './jisp_node_let.mjs'
 import * as jnb from './jisp_node_block.mjs'
-import * as jnp from './jisp_node_predecl.mjs'
 
+/*
+Macro that implements definition and compilation of JS classes.
+
+Defining a class requires using contextual sub-macros, which are available on
+this AST node as properties or methods. Descendant code can access them via the
+orphan form of `IdentAccess`. Examples:
+
+  [class SomeSubClass
+    [.extend SomeSuperClass]
+    [.fn someMethod []]
+    [.let someField someValue]
+  ]
+*/
 export class Class extends jnlm.ListMacro {
-  /*
-  These properties provide contextual access to sub-macros specific to `Class`.
-  Child nodes and descendant nodes can access these sub-macros by using the
-  orphan form of `IdentAccess`. Examples:
-
-    [class SomeSubClass
-      [.extend SomeSuperClass]
-      [.fn someMethod []]
-    ]
-  */
-  get extend() {return ClassExtend}
-  get fn() {return ClassFn}
-  get let() {return ClassLet}
-  get do() {return ClassBlock}
-
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+
+  /*
+  Override for `MixLiveValued`. Indirectly used by the orphan form of
+  `IdentAccess` to obtain contextual sub-macros.
+  */
+  static makeLiveVal() {
+    const tar = a.npo()
+    tar.fn = ClassFn
+    tar.let = ClassLet
+    tar.do = ClassBlock
+    tar.extend = ClassExtend
+    return tar
+  }
 
   #extend = undefined
   setExtend(val) {return this.#extend = this.reqInst(val, jn.Node), this}
@@ -51,19 +60,9 @@ export class Class extends jnlm.ListMacro {
   }
 
   compilePrefix() {return `class`}
-
-  compileName() {return this.reqIdent().compile()}
-
-  compileExtend() {
-    return a.optPre(this.optExtend()?.compile(), `extends `)
-  }
-
-  compileBody() {
-    return this.reqCodePrinter().compileBracesWithStatements(
-      this.optChildSlice(2)
-    )
-  }
-
+  compileName() {return this.reqPrn().compile(this.reqIdent())}
+  compileExtend() {return a.optPre(this.reqPrn().compile(this.optExtend()), `extends `)}
+  compileBody() {return this.reqPrn().compileBracesWithStatements(this.optChildSlice(2))}
   isChildStatement() {return true}
 }
 
@@ -83,15 +82,9 @@ export class ClassExtend extends jnlm.ListMacro {
   compile() {return ``}
 }
 
-// TODO: add "super" to scope.
+// FIXME rename to `MethodFunc`.
 export class ClassFn extends jnf.Fn {
   compilePrefix() {return ``}
-
-  makeNsLiveVal() {
-    const tar = super.makeNsLiveVal()
-    tar.super = Super
-    return tar
-  }
 }
 
 /*
@@ -116,12 +109,4 @@ export class ClassBlock extends jnb.Block {
   }
 
   compile() {return `static ` + a.reqStr(this.compileStatement())}
-}
-
-/*
-This involves a macro, instead of an empty declaration like for `arguments` and
-`this`, because `super` is a keyword in JS.
-*/
-export class Super extends jnp.Predecl {
-  getCompiledName() {return `super`}
 }
