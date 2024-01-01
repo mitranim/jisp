@@ -4,7 +4,7 @@ import * as jnc from './jisp_node_const.mjs'
 export class Let extends jnc.Const {
   optVal() {return this.optChildAt(2)}
 
-  macroImpl() {
+  macro() {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)

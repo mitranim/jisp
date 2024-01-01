@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jns from './jisp_ns.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
@@ -12,7 +13,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
   body() {return this.optChildSlice(3)}
 
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(3)
     this.reqDeclareLex()
@@ -45,7 +46,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   compilePrefix() {return `function`}
 
-  compileName() {return this.reqPrn().compile(this.reqIdent())}
+  compileName() {return jn.compileNode(this.reqIdent())}
 
   compileParams() {
     return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())

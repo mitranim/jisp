@@ -228,7 +228,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   optTarPathAbs() {return this.#tarPathAbs}
   reqTarPathAbs() {return this.optTarPathAbs() ?? this.throw(`missing absolute target path at ${a.show(this)}`)}
 
-  macroImpl() {
+  macro() {
     if (this.isStatement()) return this.macroStatement()
     return this.macroExpression()
   }

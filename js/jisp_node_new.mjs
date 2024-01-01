@@ -6,7 +6,7 @@ import * as jnp from './jisp_node_predecl.mjs'
 export class New extends jnlm.ListMacro {
   static get target() {return NewTarget}
 
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(2)
     return this.macroFrom(1)

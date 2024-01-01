@@ -16,14 +16,14 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
   }
 
   /*
-  This class should avoid defining `.macroImpl`. It should use `Node`'s default
+  This class should avoid defining `.macro`. It should use `Node`'s default
   implementation that throws an exception. That's because different subclasses
   of this class have different notions of how macroing should work. Having a
   working default implementation would produce unexpected or confusing behavior
   when a subclass doesn't have a sensible override. This is particularly
   notable for subclasses of `ListMacro`.
 
-  macroImpl() {throw this.errMeth(`macroImpl`)}
+  macro() {throw this.errMeth(`macro`)}
   */
 
   /*
@@ -37,7 +37,7 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
     this.req(ind, a.isNat)
 
     while (ind < this.childCount()) {
-      const val = this.constructor.macroNode(this.reqChildAt(ind))
+      const val = jn.macroNode(this.reqChildAt(ind))
       if (a.isPromise(val)) return this.macroAsyncWith(ind, val)
       this.replaceChildAt(ind, val)
       ind++
@@ -64,19 +64,19 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
   }
 
   macroAt(ind) {
-    const val = this.constructor.macroNode(this.reqChildAt(ind))
+    const val = jn.macroNode(this.reqChildAt(ind))
     if (a.isPromise(val)) return this.replaceChildAsyncAt(ind, val)
     this.replaceChildAt(ind, val)
     return this
   }
 
   macroSyncAt(ind) {
-    this.replaceChildAt(ind, this.constructor.macroNodeSync(this.reqChildAt(ind)))
+    this.replaceChildAt(ind, jn.macroNodeSync(this.reqChildAt(ind)))
     return this
   }
 
   async macroAsyncAt(ind) {
-    this.replaceChildAt(ind, await this.constructor.macroNodeAsync(this.reqChildAt(ind)))
+    this.replaceChildAt(ind, await jn.macroNode(this.reqChildAt(ind)))
     return this
   }
 

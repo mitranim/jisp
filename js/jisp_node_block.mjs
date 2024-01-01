@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jns from './jisp_ns.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 /*
@@ -7,7 +8,7 @@ TODO: this should declare a namespace only in statement mode, but not in
 expression mode, unless it uses an IIFE. See `.compileExpression` below.
 */
 export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     return this.macroFrom(1)
   }
@@ -28,7 +29,7 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   compileExpression() {
     const len = this.childCount()
     if (len <= 1) return `undefined`
-    if (len === 2) return this.reqPrn().compile(this.reqChildAt(1))
+    if (len === 2) return jn.compileNode(this.reqChildAt(1))
     return this.reqPrn().compileParensWithExpressions(this.optChildSlice(1))
   }
 

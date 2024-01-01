@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
@@ -25,7 +26,7 @@ export class Export extends jnlm.ListMacro {
   reqSrc() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   optTar() {return this.optChildInstAt(2, jniu.IdentUnqual)}
 
-  macroImpl() {
+  macro() {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
@@ -35,9 +36,8 @@ export class Export extends jnlm.ListMacro {
   }
 
   compile() {
-    const prn = this.reqPrn()
-    const src = prn.compile(this.reqSrc())
-    const tar = prn.compile(this.optTar())
+    const src = jn.compileNode(this.reqSrc())
+    const tar = jn.compileNode(this.optTar())
 
     if (tar) {
       return `export {` + a.reqStr(src) + ` as ` + a.reqStr(tar) + `}`

@@ -12,7 +12,7 @@ export class ListMacro extends jnnl.NodeList {
   Override for `MixOwnNodeSourced` used by the base class `Node`. This method
   should be invoked in preparation for replacing a previous node, and before
   invoking this node's `.macro` method, as part of recursive macroing. See
-  `Node..macroNode` and `Node..replace`.
+  functions `macroNode` and `replaceNode`.
   */
   setSrcNode(src) {
     const errer = this.optSpan()

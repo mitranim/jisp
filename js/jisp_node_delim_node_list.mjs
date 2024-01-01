@@ -41,7 +41,7 @@ export class DelimNodeList extends jnnl.NodeList {
     throw je.LexerErr.atNode(span.reqLast(), `missing closing ${a.show(suf)}`)
   }
 
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     const out = this.reqFirstChild().macroList(this)
     if (out !== this) return out

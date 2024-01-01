@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
@@ -7,7 +8,7 @@ export class Const extends jnlm.ListMacro {
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqChildAt(2)}
 
-  macroImpl() {
+  macro() {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
@@ -25,7 +26,7 @@ export class Const extends jnlm.ListMacro {
   }
 
   compilePrefix() {return `const`}
-  compileName() {return this.reqPrn().compile(this.reqIdent())}
+  compileName() {return jn.compileNode(this.reqIdent())}
   compileInfix() {return `=`}
-  compileVal() {return this.reqPrn().compile(this.reqVal())}
+  compileVal() {return jn.compileNode(this.reqVal())}
 }

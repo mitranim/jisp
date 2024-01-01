@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 /*
@@ -19,7 +20,7 @@ This base class assumes arity 0-N, and provides various shortcuts for subclasses
 that may want to specialize.
 */
 export class KeywordExprMacro extends jnlm.ListMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     return this.macroFrom(1)
   }
@@ -41,7 +42,7 @@ export class KeywordExprMacro extends jnlm.ListMacro {
   compileUnary(src) {
     return a.spaced(
       a.reqStr(this.unaryPrefix()),
-      a.reqStr(this.reqPrn().compile(src)),
+      a.reqStr(jn.compileNode(src)),
       a.reqStr(this.unarySuffix()),
     )
   }
@@ -58,7 +59,7 @@ export class KeywordExprMacro extends jnlm.ListMacro {
 }
 
 export class KeywordExprMacro_0_1 extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(1, 2)
     return this.macroFrom(1)
@@ -66,7 +67,7 @@ export class KeywordExprMacro_0_1 extends KeywordExprMacro {
 }
 
 export class KeywordExprMacro_1 extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
     return this.macroFrom(1)
@@ -74,7 +75,7 @@ export class KeywordExprMacro_1 extends KeywordExprMacro {
 }
 
 export class KeywordExprMacro_0_2 extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(1, 3)
     return this.macroFrom(1)
@@ -82,24 +83,23 @@ export class KeywordExprMacro_0_2 extends KeywordExprMacro {
 }
 
 export class KeywordExprMacro_2 extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
     return this.macroFrom(1)
   }
 
   compile() {
-    const prn = this.reqPrn()
     return this.compileStatementOrExpression(a.spaced(
-      a.reqStr(prn.compile(this.reqChildAt(1))),
+      a.reqStr(jn.compileNode(this.reqChildAt(1))),
       a.reqStr(this.binaryInfix()),
-      a.reqStr(prn.compile(this.reqChildAt(2))),
+      a.reqStr(jn.compileNode(this.reqChildAt(2))),
     ))
   }
 }
 
 export class KeywordExprMacro_1_N extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(2)
     return this.macroFrom(1)
@@ -107,7 +107,7 @@ export class KeywordExprMacro_1_N extends KeywordExprMacro {
 }
 
 export class KeywordExprMacro_2_N extends KeywordExprMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(3)
     return this.macroFrom(1)

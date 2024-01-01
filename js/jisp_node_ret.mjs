@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 // Short for "return". Compiles to the JS `return` statement.
@@ -6,7 +7,7 @@ export class Ret extends jnlm.ListMacro {
   optVal() {return this.optChildAt(1)}
   reqVal() {return this.reqChildAt(1)}
 
-  macroImpl() {
+  macro() {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(1, 2)
@@ -15,7 +16,7 @@ export class Ret extends jnlm.ListMacro {
 
   compile() {
     const val = this.optVal()
-    if (val) return `return ` + a.reqStr(this.reqPrn().compile(val))
+    if (val) return `return ` + a.reqStr(jn.compileNode(val))
     return `return`
   }
 }

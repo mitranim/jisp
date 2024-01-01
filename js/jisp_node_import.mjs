@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
 import * as jnp from './jisp_node_predecl.mjs'
 
@@ -46,13 +47,12 @@ export class Import extends jnib.ImportBase {
   }
 
   compileStatement() {
-    const prn = this.reqPrn()
     const name = this.optDestName()
     const addr = this.compileAddr()
     const refs = jm.mapUniq(this.optNsLive()?.optRefs(), a.pk).join(`, `)
 
     const named = name ? (
-      `import * as ${a.reqStr(prn.compile(name))} from ${a.reqStr(addr)}`
+      `import * as ${a.reqStr(jn.compileNode(name))} from ${a.reqStr(addr)}`
     ) : ``
 
     /*
@@ -78,7 +78,7 @@ export class Import extends jnib.ImportBase {
       + a.reqStr(
         a.isSome(path)
         ? JSON.stringify(a.reqStr(path))
-        : this.reqPrn().compile(this.reqAddr())
+        : jn.compileNode(this.reqAddr())
       )
       + `)`
     )

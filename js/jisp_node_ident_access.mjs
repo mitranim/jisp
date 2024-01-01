@@ -2,6 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
 /*
@@ -81,17 +82,17 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   `.optLiveValSrc`, which could fall back on resolving a live value from
   ancestor nodes.
   */
-  macroImpl() {
+  macro() {
     const src = this.optResolveLiveValFromChild()
     if (a.isSome(src)) return this.macroWithLiveValSrc(src)
-    this.setChild(this.constructor.macroNodeSync(this.reqFirstChild()))
+    this.setChild(jn.macroNodeSync(this.reqFirstChild()))
     return this
   }
 
   compile() {
     return (
       ``
-      + a.reqStr(this.reqPrn().compile(this.reqFirstChild()))
+      + a.reqStr(jn.compileNode(this.reqFirstChild()))
       + a.reqStr(this.decompileOwn())
     )
   }

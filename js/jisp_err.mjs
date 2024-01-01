@@ -76,29 +76,6 @@ export class MixErrer extends a.DedupMixinCache {
       mismatch. Provided for consistency with `.asReqInst`.
       */
       asOnlyInst(cls) {return a.onlyInst(this, cls)}
-
-      // TODO better naming.
-      withToErr(method) {
-        try {
-          const val = method.call(this)
-          if (a.isPromise(val)) return this.withToErrAsync(val)
-          return val
-        }
-        catch (err) {throw this.toErr(err)}
-      }
-
-      // TODO better naming.
-      withToErrSync(method) {
-        try {return method.call(this)}
-        catch (err) {throw this.toErr(err)}
-      }
-
-      // TODO better naming.
-      async withToErrAsync(val) {
-        if (jc.conf.getDebug()) this.req(val, a.isPromise)
-        try {return await val}
-        catch (err) {throw this.toErr(err)}
-      }
     }
   }
 }

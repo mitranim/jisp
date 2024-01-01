@@ -144,7 +144,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     return fun.apply(src, list.optChildArr())
   }
 
-  macroImpl() {
+  macro() {
     const nsp = this.reqResolveNs()
     nsp.addRef(this)
 

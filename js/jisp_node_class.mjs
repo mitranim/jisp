@@ -40,7 +40,7 @@ export class Class extends jnlm.ListMacro {
   setExtend(val) {return this.#extend = this.reqInst(val, jn.Node), this}
   optExtend() {return this.#extend}
 
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(2)
     this.reqDeclareLex()
@@ -60,14 +60,14 @@ export class Class extends jnlm.ListMacro {
   }
 
   compilePrefix() {return `class`}
-  compileName() {return this.reqPrn().compile(this.reqIdent())}
-  compileExtend() {return a.optPre(this.reqPrn().compile(this.optExtend()), `extends `)}
+  compileName() {return jn.compileNode(this.reqIdent())}
+  compileExtend() {return a.optPre(jn.compileNode(this.optExtend()), `extends `)}
   compileBody() {return this.reqPrn().compileBracesWithStatements(this.optChildSlice(2))}
   isChildStatement() {return true}
 }
 
 export class ClassExtend extends jnlm.ListMacro {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
     this.macroSyncFrom(1)
@@ -82,12 +82,8 @@ export class ClassExtend extends jnlm.ListMacro {
   compile() {return ``}
 }
 
-/*
-TODO: after we define `Let`, switch the base class to `Let` and drop the
-overrides other than `macroImpl`.
-*/
 export class ClassLet extends jnl.Let {
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
     this.reqIdent()
@@ -98,9 +94,9 @@ export class ClassLet extends jnl.Let {
 }
 
 export class ClassBlock extends jnb.Block {
-  macroImpl() {
+  macro() {
     this.reqStatement()
-    return super.macroImpl()
+    return super.macro()
   }
 
   compile() {return `static ` + a.reqStr(this.compileStatement())}

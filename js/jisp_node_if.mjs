@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 /*
@@ -22,7 +23,7 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   optThen() {return this.optChildAt(2)}
   optElse() {return this.optChildAt(3)}
 
-  macroImpl() {
+  macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 4)
     return this.macroFrom(1)
@@ -67,13 +68,13 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   // TODO consider additional parentheses.
-  compileExpressionTest() {return this.reqPrn().compile(this.reqTest())}
+  compileExpressionTest() {return jn.compileNode(this.reqTest())}
 
   // TODO consider additional parentheses.
-  compileExpressionThen() {return this.reqPrn().compile(this.optThen()) || `undefined`}
+  compileExpressionThen() {return jn.compileNode(this.optThen()) || `undefined`}
 
   // TODO consider additional parentheses.
-  compileExpressionElse() {return this.reqPrn().compile(this.optElse()) || `undefined`}
+  compileExpressionElse() {return jn.compileNode(this.optElse()) || `undefined`}
 
   isChildStatement(val) {
     super.isChildStatement(val)

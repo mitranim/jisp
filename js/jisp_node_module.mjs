@@ -178,7 +178,7 @@ export class Module extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   into async mode when necessary. The super method `NodeList..macroFrom`
   should support both modes.
   */
-  macroImpl() {return this.macroFrom(0)}
+  macro() {return this.macroFrom(0)}
 
   compile() {return this.reqPrn().compileStatements(this.childIter())}
 

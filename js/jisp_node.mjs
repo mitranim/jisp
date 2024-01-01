@@ -112,18 +112,7 @@ export class Node extends (
   */
   reqDeclareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
-  /*
-  FIXME move this `.withToErr` wrapper to `Node.macroNode`, remove this wrapper
-  method, and rename `.macroImpl` to `.macro` everywhere.
-
-  Note that `.compile` should be symmetric: we should ensure that we call
-  `.compile` with similar wrapping for every node everywhere, producing errors
-  that point to failing nodes. That's currently done at the level of
-  `CodePrinter..compile`.
-  */
-  macro() {return this.withToErr(this.macroImpl)}
-
-  macroImpl() {throw this.errMeth(`macroImpl`)}
+  macro() {return this.errMeth(`macro`)}
 
   /*
   Default "nop" implementation of macroing a list, which represents a "call" in
@@ -204,64 +193,6 @@ export class Node extends (
   // elided from the AST when tokenizing or lexing.
   isCosmetic() {return false}
 
-  static macroNode(prev) {
-    if (!a.optInst(prev, Node)) return undefined
-    const next = prev.macro()
-    if (a.isPromise(next)) return this.macroNodeAsyncWith(prev, next)
-    return this.macroNodeWith(prev, next)
-  }
-
-  static macroNodeWith(prev, next) {
-    a.reqInst(prev, Node)
-    // This convention is used by "nop" implementations of the `.macro` method.
-    // For example, this is used by all nodes representing primitive literals.
-    if (prev === next) return prev
-    return this.macroNode(this.replace(prev, next))
-  }
-
-  static macroNodeSync(prev) {
-    if (!a.optInst(prev, Node)) return undefined
-    const next = prev.macro()
-    if (a.isPromise(next)) {
-      throw prev.err(`expected node ${a.show(prev)} to macro synchronously, but received a promise`)
-    }
-    return this.macroNodeSyncWith(prev, next)
-  }
-
-  static macroNodeSyncWith(prev, next) {
-    a.reqInst(prev, Node)
-    if (prev === next) return prev
-    return this.macroNodeSync(this.replace(prev, next))
-  }
-
-  static async macroNodeAsync(prev) {
-    if (!a.optInst(prev, Node)) return undefined
-    let next = prev.macro()
-    if (a.isPromise(next)) next = await next
-    return this.macroNodeAsyncWith(prev, next)
-  }
-
-  static async macroNodeAsyncWith(prev, next) {
-    a.reqInst(prev, Node)
-    if (a.isPromise(next)) next = await next
-    if (next === prev) return prev
-    return this.macroNodeAsync(this.replace(prev, next))
-  }
-
-  static replace(prev, next) {
-    a.reqInst(prev, Node)
-    if (a.isNil(next)) {
-      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with nil`)
-    }
-    if (!a.isInst(next, Node)) {
-      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with non-node ${a.show(next)}`)
-    }
-    if (prev === next) {
-      throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in macro-related code`)
-    }
-    return next.setParent(prev.optParent()).setSrcNode(prev)
-  }
-
   [ji.symInsp](tar) {return tar.funs(this.decompile)}
 
   /*
@@ -289,4 +220,83 @@ implement such a method. Only some subclasses do.
 */
 export class NodeColl extends a.Coll {
   reqVal(val) {return a.reqInst(val, Node)}
+}
+
+export function compileNode(src) {
+  if (a.isNil(src)) return ``
+  a.reqInst(src, Node)
+  try {return a.reqStr(src.compile())}
+  catch (err) {throw src.toErr(err)}
+}
+
+/*
+Takes a node and performs recursive macroing, taking care to convert arbitrary
+errors to node-specific errors, terminate when relevant, and switch between
+synchronous and asynchronous mode when needed. Also see `macroNodeSync` which
+enforces synchronous mode.
+
+Implementation notes.
+
+Macroing stops when a node returns itself. This convention is used by all "nop"
+macro implementations such as those on primitive literals. It's also used by
+macro implementations that perform side effects without replacing the node,
+which is common for identifiers.
+
+This could be implemented either with a loop or with recursive calls.
+The current implementation uses recursive calls because in case of
+accidental infinite recursion, this causes an immediate stack overflow
+exception instead of looping forever, at least in synchronous mode.
+*/
+export function macroNode(prev) {
+  if (a.isNil(prev)) return undefined
+  a.reqInst(prev, Node)
+
+  let next
+  try {next = prev.macro()}
+  catch (err) {throw prev.toErr(err)}
+
+  if (a.isPromise(next)) return macroNodeAsyncWith(prev, next)
+  if (prev === next) return prev
+  return macroNode(replaceNode(prev, next))
+}
+
+export function macroNodeSync(prev) {
+  if (a.isNil(prev)) return undefined
+  a.reqInst(prev, Node)
+
+  let next
+  try {next = prev.macro()}
+  catch (err) {throw prev.toErr(err)}
+
+  if (a.isPromise(next)) throw prev.err(msgMacroNodeSync(prev))
+  if (prev === next) return prev
+  return macroNode(replaceNode(prev, next))
+}
+
+function msgMacroNodeSync(val) {
+  return `expected node ${a.show(val)} to macro synchronously, but received a promise`
+}
+
+async function macroNodeAsyncWith(prev, next) {
+  a.reqInst(prev, Node)
+
+  try {next = await next}
+  catch (err) {throw prev.toErr(err)}
+
+  if (prev === next) return prev
+  return macroNode(replaceNode(prev, next))
+}
+
+export function replaceNode(prev, next) {
+  a.reqInst(prev, Node)
+  if (a.isNil(next)) {
+    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with nil`)
+  }
+  if (!a.isInst(next, Node)) {
+    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with non-node ${a.show(next)}`)
+  }
+  if (prev === next) {
+    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in macro-related code`)
+  }
+  return next.setParent(prev.optParent()).setSrcNode(prev)
 }

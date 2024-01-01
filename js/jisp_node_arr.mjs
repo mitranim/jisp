@@ -4,7 +4,7 @@ import * as jns from './jisp_ns.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 export class Arr extends jnlm.ListMacro {
-  macroImpl() {return this.macroFrom(1)}
+  macro() {return this.macroFrom(1)}
 
   compile() {
     return (

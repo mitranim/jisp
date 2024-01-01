@@ -5,7 +5,7 @@ import * as jnib from './jisp_node_import_base.mjs'
 export class Declare extends jnib.ImportBase {
   get NsLive() {return jns.NsLivePseudo}
 
-  async macroImpl() {
+  async macro() {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
