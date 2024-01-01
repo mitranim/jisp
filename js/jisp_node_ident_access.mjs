@@ -137,8 +137,19 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     if (!key) return undefined
 
     return this.optParent()?.optAncProcure(function optResolveLiveVal(val) {
+      /*
+      This questionable special case prevents infinite recursion when an orphan
+      `IdentAccess` is a child of another `IdentAccess`, like this:
+
+        [.inner.outer]
+
+      TODO more general solution.
+      */
+      if (a.isInst(val, jni.Ident)) return undefined
+
       val = jm.optLiveValCall(val)
       if (a.isComp(val) && key in val) return val
+
       return undefined
     })
   }

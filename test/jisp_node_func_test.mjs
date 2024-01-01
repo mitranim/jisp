@@ -409,4 +409,26 @@ await t.test(async function test_Func_name_invalid() {
   )
 })
 
+await t.test(async function test_Func_async() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func.async someFunc []
+  [await 10]
+  [ret 20]
+  [ret [await 30]]
+]
+`,
+`
+async function someFunc () {
+await 10;
+return 20;
+return (await 30);
+};
+`,
+  )
+})
+
 if (import.meta.main) ti.flush()

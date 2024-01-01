@@ -5,6 +5,8 @@ import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
+  static get async() {return FuncAsync}
+
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
@@ -65,10 +67,19 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 }
 
+export class FuncAsync extends Func {
+  compilePrefix() {return `async function`}
+}
+
 /*
 Intended for class instance methods and for object literal methods.
 For our purposes, they're identical.
 */
 export class MethodFunc extends Func {
+  static get async() {return MethodFuncAsync}
   compilePrefix() {return ``}
+}
+
+export class MethodFuncAsync extends MethodFunc {
+  compilePrefix() {return `async`}
 }
