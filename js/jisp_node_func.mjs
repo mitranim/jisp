@@ -8,6 +8,7 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   static get async() {return FuncAsync}
 
+  // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}

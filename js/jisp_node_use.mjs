@@ -2,8 +2,8 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
 
 /*
-This class implements compile-time imports of live modules, which are used for
-compile-time execution / replacement of AST nodes / macroing. Compare class
+This class implements macro-time imports of live modules, which are used for
+macro-time execution / replacement of AST nodes / macroing. Compare class
 `Import` which is used for runtime imports.
 
 If we predeclare any names in root or module scope, at all, then this macro
@@ -32,15 +32,8 @@ export class Use extends jnib.ImportBase {
     return super.macroModeNamed()
   }
 
-  // TODO maybe dedup with equivalent code in `Import`.
-  async macroModeMixin() {
-    await this.reqImport()
-    this.reqNsLex().addMixin(this.reqNsLive())
-    return this
-  }
-
   /*
-  This node is for compile-time imports only. When used as a statement, we can
+  This node is for macro-time imports only. When used as a statement, we can
   simply exclude it from the compiled code. Also, this may be used as an
   expression, if the parent node avoids calling this node's compilation method,
   and excludes it from the compiled code in some other way. Otherwise, an
@@ -49,5 +42,15 @@ export class Use extends jnib.ImportBase {
   compile() {
     if (this.isStatement()) return ``
     throw this.err(`unexpected attempt to compile macro node ${a.show(this)} in an expression position`)
+  }
+
+  /*
+  Compare `Import..reqResolve` which registers the imported module as a
+  dependency of the source file, not a dependency of the target file.
+  */
+  async reqResolve() {
+    await super.reqResolve()
+    this.reqModule().addSrcDep(this.reqDepModule())
+    return this
   }
 }

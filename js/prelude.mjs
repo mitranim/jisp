@@ -31,4 +31,6 @@ export {
   Instanceof as instanceof,
   Void       as void,
   Await      as await,
+  IsNil      as isNil,
+  IsSome     as isSome,
 } from './jisp_keyword_exprs.mjs'

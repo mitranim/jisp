@@ -15,7 +15,6 @@ export function renderErr(val) {return (a.isErr(val) && val.message) || a.render
 export function renderErrLax(val) {return (a.isErr(val) && val.message) || a.renderLax(val)}
 export function isNotCosmetic(val) {return a.isSome(val) && !val.isCosmetic()}
 export function isCosmetic(val) {return val?.isCosmetic()}
-export function toJsonCall(val) {return val.toJSON()}
 export function readyCall(val) {return val.ready()}
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
@@ -115,10 +114,10 @@ export function isNativeModule(val) {
 export function reqNativeModule(val) {return a.req(val, isNativeModule)}
 export function optNativeModule(val) {return a.opt(val, isNativeModule)}
 
-// SYNC[canonical_module_url]
-export function isCanonicalModuleFileUrl(val) {
-  return isAbsFileUrl(val) && isCanonicalModuleUrl(val)
-}
+// // SYNC[canonical_module_url]
+// export function isCanonicalModuleFileUrl(val) {
+//   return isAbsFileUrl(val) && isCanonicalModuleUrl(val)
+// }
 
 // SYNC[canonical_module_url]
 export function isCanonicalModuleUrl(val) {
@@ -129,30 +128,56 @@ export function isAbsUrl(val) {
   return isAbsFileUrl(val) || isAbsNetworkUrl(val)
 }
 
+export function isFileUrl(val) {
+  return a.isInst(val, URL) && val.protocol === `file:`
+}
+
 export function isAbsFileUrl(val) {
-  return a.isInst(val, URL) && val.protocol === `file:` && !val.hostname
+  return isFileUrl(val) && !val.hostname
 }
 
 export function isAbsNetworkUrl(val) {
-  return a.isInst(val, URL) && val.protocol !== `file:` && !!val.hostname
+  return a.isInst(val, URL) && !isFileUrl(val) && !!val.hostname
 }
 
 export function isCanonicalModuleSrcUrlStr(val) {
   return isCanonicalModuleUrlStr(val) && p.posix.ext(val) === jc.conf.getFileExtSrc()
 }
 
-// SYNC[canonical_module_url]
-export function isCanonicalModuleFileUrlStr(val) {
-  return isAbsFileUrlStr(val) && isCanonicalModuleUrlStr(val)
+export function isCanonicalModuleTarUrlStr(val) {
+  return isCanonicalModuleUrlStr(val) && p.posix.ext(val) === jc.conf.getFileExtTar()
 }
+
+// // SYNC[canonical_module_url]
+// export function isCanonicalModuleFileUrlStr(val) {
+//   return isAbsFileUrlStr(val) && isCanonicalModuleUrlStr(val)
+// }
 
 // SYNC[canonical_module_url]
 export function isCanonicalModuleUrlStr(val) {
   return a.isStr(val) && !isStrWithUrlDecorations(val) && isAbsUrlStr(val)
 }
 
-export function reqCanonicalModuleUrlStr(val) {
-  return a.req(val, isCanonicalModuleUrlStr)
+// export function reqCanonicalModuleUrlStr(val) {
+//   return a.req(val, isCanonicalModuleUrlStr)
+// }
+
+// TODO better name.
+export function isRelImplicitStr(val) {
+  return a.isStr(val) && !hasScheme(val) && p.posix.isRelImplicit(val)
+}
+
+// TODO better name.
+export function isCanonicalRelImplicitStr(val) {
+  return isRelImplicitStr(val) && !isStrWithUrlDecorations(val)
+}
+
+/*
+See the comment on `ImportBase` for the various formats of import paths that
+we support.
+*/
+export function isCanonicalModulePath(val) {
+  return isCanonicalRelImplicitStr(val) || isCanonicalModuleUrlStr(val)
 }
 
 export function isStrWithUrlDecorations(val) {
@@ -305,6 +330,7 @@ export function toUrl(val) {return a.toInst(val, Url)}
 export function toUrlOpt(val) {return a.toInstOpt(val, Url)}
 
 export class Url extends URL {
+  // Used by `a.pk` and `a.Coll`.
   pk() {
     if (this.isCanonical()) return this.href
     throw Error(`unable to get primary key of non-canonical URL ${a.show(this.href)}; only canonical URLs may considered to be primary keys`)
@@ -459,3 +485,43 @@ export function own(tar, key) {
   if (a.hasOwn(tar, key)) return
   Object.defineProperty(tar, key, {writable: true})
 }
+
+// export function after(prev, next) {
+//   if (a.isPromise(prev)) return afterAsync(prev, next)
+//   return next
+// }
+
+// export async function afterAsync(prev, next) {
+//   await prev
+//   return next
+// }
+
+// // Suboptimal but far from our bottlenecks.
+// export function optMax(src) {
+//   src = a.filter(src, a.isSome)
+//   switch (src.length) {
+//     case 0: return undefined
+//     case 1: return src[0]
+//     default: return Math.max(...src)
+//   }
+// }
+
+// // Similar to `a.compact` but uses nilness instead of truthiness.
+// export function compact(src) {return a.filter(src, a.isSome)}
+
+// export function optMax(src) {return a.fold(src, undefined, optMax2)}
+
+// /*
+// Similar to `Math.max` with the following differences:
+//
+//   * Strong typing rather than weak typing. Inputs must be nil or finite.
+//   * No `NaN` or `Infinity`. Inputs must be nil or finite.
+//   * Treats nil inputs as non-existent, ignoring them.
+//   * The fallback is `undefined` rather than `NaN`.
+// */
+// export function optMax2(one, two) {
+//   if (a.isNil(one) && a.isNil(two)) return undefined
+//   if (a.isNil(one)) return a.reqFin(two)
+//   if (a.isNil(two)) return a.reqFin(one)
+//   return a.reqFin(Math.max(a.reqFin(one), a.reqFin(two)))
+// }

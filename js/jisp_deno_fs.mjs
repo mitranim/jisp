@@ -30,11 +30,29 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
 
   cwdUrl() {return new jm.Url(io.paths.dirLike(io.cwd()), `file:`)}
 
-  /*
-  TODO: when not found, include path into error message.
-  At the time of writing, Deno fails to do that.
-  */
-  async read(path) {return Deno.readTextFile(path)}
+  canReach(val) {
+    if (a.isStr(val)) return true
+    if (a.isInst(val, URL)) return jm.isFileUrl(val)
+    throw TypeError(`${a.show(this)} is unable to reach path ${showPath(val)}`)
+  }
+
+  async read(path) {
+    try {
+      return await Deno.readTextFile(path)
+    }
+    catch (err) {
+      /*
+      Motive: at the time of writing, Deno does not include path into error
+      message for "not found" errors.
+      */
+      throw Error(`unable to read ${showPath(path)}`, {cause: err})
+    }
+  }
+
+  readOpt(path) {
+    if (!this.canReach(path)) return undefined
+    return skipNotFound(Deno.readTextFile(path))
+  }
 
   async write(path, body) {
     await this.mkdirForFile(path)
@@ -42,12 +60,16 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   }
 
   async timestamp(path) {
-    const stat = a.reqObj(await Deno.stat(path))
-    const mtime = stat.mtime
-    if (!a.isFin(mtime)) {
-      throw TypeError(`unexpected non-finite modification time in stat ${a.show(stat)} for path ${a.show(a.render(path))}`)
+    if (!this.canReach(path)) return undefined
+
+    const stat = await skipNotFound(Deno.stat(path))
+    if (a.isNil(stat)) return undefined
+
+    const out = stat.mtime?.valueOf()
+    if (!a.isFin(out)) {
+      throw TypeError(`unexpected non-finite modification time ${a.show(out)} in stat ${a.show(stat)} for path ${showPath(path)}`)
     }
-    return mtime
+    return out
   }
 
   async mkdirForFile(path) {
@@ -70,4 +92,18 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   }
 
   [ji.symInsp](tar) {return tar.funs(this.ownSrc, this.ownTar)}
+}
+
+async function skipNotFound(val) {
+  try {
+    return await val
+  }
+  catch (err) {
+    if (a.isInst(err, Deno.errors.NotFound)) return undefined
+    throw err
+  }
+}
+
+function showPath(val) {
+  return a.isScalar(val) ? a.show(a.render(val)) : a.show(val)
 }

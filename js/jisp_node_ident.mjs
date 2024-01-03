@@ -74,7 +74,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   static regexpIdentAccess() {return /^[.][A-Za-z$_][\w$]*/}
   static separator() {return `.`}
 
-  // Interface used by `a.Coll` and some of our collections that subclass it.
+  // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqName()}
 
   // Override for `MixNamed`.

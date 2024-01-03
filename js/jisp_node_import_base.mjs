@@ -3,7 +3,8 @@ import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jns from './jisp_ns.mjs'
-import * as jnm from './jisp_node_module.mjs'
+import * as jpa from './jisp_pathed.mjs'
+import * as jmo from './jisp_module.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
@@ -31,10 +32,10 @@ For any import path with the scheme `jisp:`, we resolve it relatively to the
 directory containing the source files of the Jisp compiler. In other words,
 relative to the same directory where you're reading this. The resolved URL
 should be suitable for use with the native pseudo-function `import`. This is
-intended only for compile-time importing, and should not be included in any
-compiled code. See the class `Use` which performs immediate compile-time
-imports and does not generate runtime import statements. The examples below
-assume that the compiler repo is located at example location `file:///jisp`.
+intended only for macro-time importing, and should not be included in any
+compiled code. See the class `Use` which performs immediate macro-time imports
+and does not generate runtime import statements. The examples below assume that
+the compiler repo is located at example location `file:///jisp`.
 
   import path        | target absolute path
   --------------------------------------------------
@@ -142,7 +143,16 @@ limited to the following:
 
   * Detecting Jisp imports and using `Root` for those.
 */
-export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
+export class ImportBase extends (
+  jns.MixOwnNsLived.goc(
+    jpa.MixTarPathAbsed.goc(
+      jpa.MixSrcPathAbsed.goc(
+        jnlm.ListMacro
+      )
+    )
+  )
+) {
+  // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqDestName().reqName()}
 
   /*
@@ -166,36 +176,6 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   mixinName() {return `*`}
 
   /*
-  When the import source path is for a Jisp file (has extension `.jisp`), then
-  this should eventually contain a URL of that Jisp file, typically a file URL
-  such as `file:///one/two/three.jisp`. The resulting URL must be in canonical
-  form; see the function `isCanonicalModuleUrlStr`.
-
-  When the import source path is not for a Jisp file, or is implicitly relative,
-  then this should be nil. We could also say that in all such cases, the source
-  URL is the same as the target URL, but skipping it is more convenient for
-  code that only wants this URL for Jisp source files.
-
-  This URL may be used to obtain the corresponding `Module` object from `Root`.
-  The resulting module object, if found, allows us to wait until it's compiled
-  to disk, along with its runtime dependencies, and ready to be imported. This
-  functionality is necessary for the subclass `Use`, which wants to import the
-  target immediately at compile time, but may have to trigger the target's
-  compilation and wait until it's compiled.
-
-  In principle, the target `Module` may also be used to obtain metadata such as
-  the set of exported identifiers. In the future, we may use this to detect
-  missing exports.
-
-  Should be generated and set by one of the internal methods in this node class,
-  typically when macroing it.
-  */
-  #srcUrlStr = undefined
-  setSrcUrlStr(val) {return this.#srcUrlStr = a.optValidStr(val), this}
-  optSrcUrlStr() {return this.#srcUrlStr}
-  reqSrcUrlStr() {return this.optSrcUrlStr() ?? this.throw(`missing source URL string at ${a.show(this)}`)}
-
-  /*
   Should contain a rewritten import path intended for compilation into the final
   JS code of this module. Whenever possible, the resulting path must be
   relative. Compiling imports to relative paths, rather than absolute paths,
@@ -211,22 +191,6 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   setTarPathRel(val) {return this.#tarPathRel = a.optValidStr(val), this}
   optTarPathRel() {return this.#tarPathRel}
   reqTarPathRel() {return this.optTarPathRel() ?? this.throw(`missing relative target path at ${a.show(this)}`)}
-
-  /*
-  Should contain a rewritten import path intended for dynamic imports at compile
-  time. In other words, intended for use with the native pseudo-function
-  `import`. This must be one of: absolute URL; absolute FS path; implicitly
-  relative path such as `blah`. See the main comment on `ImportBase` for an
-  explanation on why implicitly relative paths are considered equivalent to
-  absolute paths.
-
-  Should be generated and set by one of the internal methods in this node class,
-  typically when macroing it.
-  */
-  #tarPathAbs = undefined
-  setTarPathAbs(val) {return this.#tarPathAbs = a.optValidStr(val), this}
-  optTarPathAbs() {return this.#tarPathAbs}
-  reqTarPathAbs() {return this.optTarPathAbs() ?? this.throw(`missing absolute target path at ${a.show(this)}`)}
 
   macro() {
     if (this.isStatement()) return this.macroStatement()
@@ -282,63 +246,98 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     return this.macroModeMixin()
   }
 
-  macroModeMixin() {throw this.errMeth(`macroModeMixin`)}
+  /*
+  Implemented in the base class because the behavior is exactly the same for all
+  subclasses. Even `Import`, which is intended for runtime-only imports, needs
+  to import the target at compile time in order to support this mode.
+  */
+  async macroModeMixin() {
+    await this.reqImport()
+    this.reqNsLex().addMixin(this.reqNsLive())
+    return this
+  }
 
   msgArgDest() {
     return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; operator ${a.show(this.mixinName())}`
   }
 
   /*
-  This is implemented here rather than in `Node` because moving this to `Node`
-  would create an import cycle, which would cause module initialization issues,
-  and most node subclasses don't need this.
+  Implemented here, rather than in `Node`, because moving this to `Node` would
+  create an import cycle, which would cause module initialization issues, and
+  most node subclasses don't need this.
   */
-  optModule() {return this.optAncMatch(jnm.Module)}
-  reqModule() {return this.reqAncMatch(jnm.Module)}
+  optModule() {return this.optAncMatch(jmo.Module)}
+  reqModule() {return this.reqAncMatch(jmo.Module)}
 
   /*
-  Short for "optional dependency module". Returns a module corresponding to the
-  imported Jisp module, if any. Returns nil if the import does not point at a
-  Jisp file, or has not yet been resolved via `ImportBase..resolve`.
+  Short for "optional dependency module". Returns the `Module` instance for the
+  current import, if the import has already been resolved, and the current node
+  has the appropriate module and root ancestors. Otherwise returns nil.
   */
   optDepModule() {
-    const key = a.optValidStr(this.optSrcUrlStr())
-    return key && this.optModule()?.optRoot()?.reqModule(key)
+    const key = this.optSrcPathAbs()
+    return key ? this.optModule()?.optRoot()?.reqModule(key) : undefined
+  }
+
+  /*
+  Short for "require dependency module". Returns the `Module` instance for the
+  current import, or an exception if the import hasn't been resolved or if the
+  current node doesn't have the appropriate module and root ancestors.
+  */
+  reqDepModule() {
+    const key = this.reqSrcPathAbs()
+    return this.reqModule().reqRoot().reqModule(key)
   }
 
   /*
   Waits until the target is importable. Non-Jisp targets are importable
   immediately. Jisp targets are importable after they're compiled to disk,
-  along with their runtime dependencies. Intended mainly for compile-time
+  along with their runtime dependencies. Intended mainly for macro-time
   imports.
   */
-  ready() {return this.optDepModule()?.ready()}
+  optReady() {return this.optDepModule()?.ready()}
+  reqReady() {return this.reqDepModule().ready()}
 
-  async resolve() {
-    const srcPath = this.optSrcPath()
-    if (a.isNil(srcPath)) return this
+  /*
+  Intended for cases when the import source path is optional. The most typical
+  example is import expressions with arbitrary source expressions, which can be
+  compiled to the JS pseudo-function `import`, which also allows arbitrary
+  source expressions. In such cases, we can't resolve the import, and leave it
+  entirely to the compiled code.
+  */
+  async optResolve() {
+    if (!this.optSrcPath()) return this
+    return this.reqResolve()
+  }
+
+  /*
+  Intended for cases when the import must be resolved at macro time. The most
+  typical example is `Use`, which must perform an immediate macro-time import.
+  */
+  async reqResolve() {
+    const srcPath = this.reqSrcPath()
 
     /*
     See the comment on `.setTarPathAbs` for an explanation on implicitly
     relative import paths, and why they're considered to be equivalent to
     absolute paths in JS modules.
     */
-    if (!jm.hasScheme(srcPath) && p.posix.isRelImplicit(srcPath)) {
+    if (jm.isRelImplicitStr(srcPath)) {
+      this.setSrcPathAbs(srcPath)
       this.setTarPathAbs(srcPath)
       return this
     }
 
-    const mod = this.optModule()
-    if (!mod) return this
-
-    const srcUrl = mod.reqImportSrcPathToImportSrcUrl(srcPath)
+    const srcUrl = this.reqModule().reqImportSrcPathToImportSrcUrl(srcPath)
     if (srcUrl.hasExtSrc()) return this.resolveExtSrc(srcUrl)
     return this.resolveExtAny(srcUrl)
   }
 
   async resolveExtSrc(srcUrl) {
+    this.reqInst(srcUrl, URL)
+
     const srcUrlStr = srcUrl.href
-    this.setSrcUrlStr(srcUrlStr)
+    this.setSrcPathAbs(srcUrlStr)
 
     const mod = this.reqModule()
 
@@ -352,7 +351,7 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
       similar edge cases.
       */
       ? mod.reqTarUrlStr()
-      : await mod.reqRoot().srcUrlStrToTarUrlStr(srcUrlStr)
+      : (await mod.reqRoot().srcUrlStrToTarUrlStr(srcUrlStr))
     )
 
     this.setTarPathAbs(tarUrlStr)
@@ -361,7 +360,10 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   }
 
   resolveExtAny(srcUrl) {
-    this.setTarPathAbs(srcUrl.href)
+    this.reqInst(srcUrl, URL)
+    const path = srcUrl.href
+    this.setSrcPathAbs(path)
+    this.setTarPathAbs(path)
     this.setTarPathRel(this.optModule()?.optTarUrlToTarAddr(srcUrl))
     return this
   }
@@ -374,31 +376,10 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
   optLiveVal() {return this.optNsLive()?.optLiveVal()}
   reqLiveVal() {return this.reqNsLive().reqLiveVal()}
 
-  /*
-  May be used by subclasses to import the target at compile time.
-  The imported module may be considered "live" and used for immediate
-  compile-time evaluation / node replacement, also known as macroing.
-  The imported module may also be considered non-live and used for
-  compile-time validation of imported and exported names. Subclasses
-  are free to override the getter `.NsLive` to modify the behavior
-  of the resulting namespace.
-
-  Should be kept in sync with `.optImport`.
-  */
-  async reqImport() {
-    await this.resolve()
-    await this.ready()
-
-    const val = await import(this.reqTarPathAbs())
-    this.initNsLive().setLiveVal(val)
-
-    return this
-  }
-
   // Should be kept in sync with `.reqImport`.
   async optImport() {
-    await this.resolve()
-    await this.ready()
+    await this.optResolve()
+    await this.optReady()
 
     const tar = this.optTarPathAbs()
     if (!tar) return this
@@ -409,5 +390,31 @@ export class ImportBase extends jns.MixOwnNsLived.goc(jnlm.ListMacro) {
     return this
   }
 
-  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optNsLive)}
+  /*
+  May be used by subclasses to import the target at macro time. The imported
+  module may be considered "live" and used immediately for further macroing.
+  The imported module may also be considered non-live and used for macro-time
+  validation of imported and exported names. Subclasses are free to override
+  the getter `.NsLive` to modify the behavior of the resulting namespace.
+
+  Should be kept in sync with `.optImport`.
+  */
+  async reqImport() {
+    await this.reqResolve()
+    await this.reqReady()
+
+    const val = await import(this.reqTarPathAbs())
+    this.initNsLive().setLiveVal(val)
+
+    return this
+  }
+
+  [ji.symInsp](tar) {
+    return super[ji.symInsp](tar).funs(
+      this.optSrcPathAbs,
+      this.optTarPathRel,
+      this.optTarPathAbs,
+      this.optNsLive,
+    )
+  }
 }

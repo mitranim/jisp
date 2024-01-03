@@ -10,7 +10,7 @@ import * as jfs from './jisp_fs.mjs'
 import * as jcp from './jisp_code_printer.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
 import * as jnu from './jisp_node_use.mjs'
-import * as jnm from './jisp_node_module.mjs'
+import * as jmo from './jisp_module.mjs'
 
 /*
 TODO:
@@ -37,14 +37,14 @@ export class Root extends (
   Used for parsing and compiling Jisp sources.
   May override in superclass.
   */
-  get Module() {return jnm.Module}
+  get Module() {return jmo.Module}
 
   /*
   Must synchronously return a `Module` corresponding to this source URL string,
   if one has already been created and cached. Must not create any new objects.
   */
   optModule(src) {
-    this.opt(src, jm.isCanonicalModuleUrlStr)
+    this.opt(src, jm.isCanonicalModulePath)
     return src && this.#optModuleColl()?.get(src)
   }
 
@@ -56,16 +56,25 @@ export class Root extends (
   reqModule(src) {
     return (
       this.optModule(src) ??
-      this.#initModuleColl().setted(src, new this.Module().setParent(this).setSrcUrlStr(src))
+      this.#initModuleColl().setted(src, this.makeModule().setSrcPathAbs(src))
     )
   }
 
+  makeModule() {return new this.Module().setParent(this)}
+
+  reqModuleNorm(val) {
+    this.reqInst(val, this.Module)
+    const tar = this.#initModuleColl()
+    const key = a.pk(val)
+    return tar.get(key) ?? tar.setted(key, val.setParent(this))
+  }
+
   #moduleColl = undefined
-  #initModuleColl() {return this.#moduleColl ??= new jnm.ModuleColl()}
+  #initModuleColl() {return this.#moduleColl ??= new jmo.ModuleColl()}
   #optModuleColl() {return this.#moduleColl}
 
-  async reqModuleReadyTarUrlStr(src) {
-    return (await this.reqModule(src).ready()).reqTarUrlStr()
+  async reqModuleReadyPath(src) {
+    return (await this.reqModule(src).ready()).reqTarPathAbs()
   }
 
   /*

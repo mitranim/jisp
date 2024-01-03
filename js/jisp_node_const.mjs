@@ -4,6 +4,7 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 export class Const extends jnlm.ListMacro {
+  // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqVal() {return this.reqChildAt(2)}

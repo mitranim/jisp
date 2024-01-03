@@ -31,7 +31,13 @@ export class Fs extends a.Emp {
   }
 
   async read() {throw jm.errMeth(`read`, this)}
+
+  // TODO consider renaming to `optRead` for consistency.
+  async readOpt() {throw jm.errMeth(`readOpt`, this)}
+
   async write() {throw jm.errMeth(`write`, this)}
+
+  // TODO rename to `optTimestamp` for consistency.
   async timestamp() {throw jm.errMeth(`timestamp`, this)}
 }
 

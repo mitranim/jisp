@@ -45,9 +45,9 @@ difficult to distinguish "source" names from "target" names and to avoid
 conflicts with user-defined names in the same scope.
 
 Note: subclasses may define `.ownVal` which for any given predeclared identifier
-should return its "runtime" value at compile time. For example, `.ownVal` of
-the Jisp node class `Ok` should be JS `true`. Our code currently does not use
-this, but this may be useful to user-defined code.
+should return its eventual "runtime" value. For example, `.ownVal` of the Jisp
+node class `Ok` should be JS `true`. Our code currently does not use this, but
+this may be useful to user-defined code.
 
 TODO: automatically avoid conflicts with user-defined names that match our
 `.getCompiledName`. We don't really need this for JS keywords (see below), but
@@ -67,7 +67,7 @@ compile to invalid JS that fails to parse. We may resolve this in any of the
 following ways:
 
   * Don't do anything special. Generate invalid JS and allow it to fail.
-  * Generate compile-time exceptions, warning the user.
+  * Generate macro-time or compile-time exceptions, warning the user.
   * Automatically rename keyword identifiers to non-keywords.
 */
 export class Predecl extends jn.Node {

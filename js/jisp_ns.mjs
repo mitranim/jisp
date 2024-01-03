@@ -26,12 +26,13 @@ to the extent in which a given name is declared, often encompassing several
 layers in an AST. An individual namespace, as implemented here, is "flat",
 having no ancestors or descendants of its own.
 
-In our system, any given namespace object is simultaneously a definition of a
-namespace at the eventual runtime of the compiled program, and an instance of
-this namespace at compile time. Non-live namespaces describe an eventual
-runtime state, and do not participate in immediate compile-time evaluation.
-Live namespaces refer to live values intended for immediate compile-time
-evaluation / node replacement, also known as macroexpansion or macroing.
+In our system, any given namespace object is simultaneously a DEFINITION of a
+namespace at the eventual runtime of the compiled program, and an INSTANCE of
+this namespace during compiler execution. Non-live namespaces describe only the
+eventual runtime state of the compiled code, and are used only for tracking
+names to their declarations. Live namespaces also describe the current runtime
+state during compiler execution, and provide live values intended for immediate
+macro-time execution, also known as macros, macro functions, macro classes.
 
 In the future, we may consider adding another namespace variant used for
 validating imports (for class `Import`), which would contain information
@@ -40,13 +41,13 @@ live values. In a more general case, it could provide comprehensive type
 information, but type analysis is out of scope of this project, for now.
 
 A namespace may contain a "live value": an arbitrary JS value intended for
-immediate compile-time execution, which is typically done by calling the
-methods of the live value. In this case, the names in the namespace must
-reflect the properties of the live value, which is typically done by
-inspecting the live value. This approach is implemented by `NsLive`.
+immediate macro-time execution, which is typically done by calling the methods
+of the live value. In this case, the names in the namespace must reflect the
+properties of the live value, which is typically done by inspecting the live
+value. This approach is implemented by `NsLive`.
 
 A regular namespace without a "live value" is meant only for static analysis,
-without immediate compile-time execution.
+without immediate macro-time execution.
 */
 export class NsBase extends je.MixErrer.goc(a.Emp) {
   has(key) {
@@ -131,10 +132,11 @@ may be suitable for cases where a namespace can be allocated once and reused.
 export class NsLiveUnref extends NsLive {addRef() {}}
 
 /*
-Encapsulates a live object, such as a native imported module, and inspects its
-properties at runtime to provide compile-time declarations. Can be used to
-implement *-style imports that compile to explicit named imports in JS. Can be
-used to detect missing exports at compile time.
+Encapsulates a live object, such as a native imported module, and interprets the
+set of its properties as the set of names declared in this namespace, without
+accessing or exposing the property values. Can be used to implement *-style
+imports that compile to explicit named imports in JS. Can be used to detect
+missing exports at macro time.
 */
 export class NsLivePseudo extends NsLive {
   hasLiveVal() {return false}

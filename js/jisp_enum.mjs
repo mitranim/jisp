@@ -1,6 +1,8 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 
 /*
+Unused. FIXME remove.
+
 Internal tool, used for some macro-related features. Helps emulate something
 similar to enums, which tend to be a built-in feature in sensible languages.
 

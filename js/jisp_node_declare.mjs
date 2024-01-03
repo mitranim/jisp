@@ -1,8 +1,7 @@
 import * as jns from './jisp_ns.mjs'
 import * as jnu from './jisp_node_use.mjs'
-import * as jnib from './jisp_node_import_base.mjs'
 
-export class Declare extends jnib.ImportBase {
+export class Declare extends jnu.Use {
   get NsLive() {return jns.NsLivePseudo}
 
   async macro() {
@@ -13,6 +12,4 @@ export class Declare extends jnib.ImportBase {
     this.reqNsLex().addMixin(await this.reqNsLive())
     return this
   }
-
-  compile() {return jnu.Use.prototype.compile.call(this)}
 }

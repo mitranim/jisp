@@ -8,7 +8,6 @@ import * as jdft from './jisp_deno_fs_test.mjs'
 import * as jm from '../js/jisp_misc.mjs'
 import * as je from '../js/jisp_err.mjs'
 import * as jr from '../js/jisp_root.mjs'
-import * as jnm from '../js/jisp_node_module.mjs'
 
 export async function testModuleFail(mod, src, msg) {
   mod.parse(src)
@@ -21,12 +20,12 @@ export async function testModuleCompile(mod, src, exp) {
   tu.testCompiled(mod.compile(), exp)
 }
 
-export function makeModule() {return new jnm.Module().setParent(new jr.Root())}
+export function makeModule() {return new jr.Root().makeModule()}
 
 export function makeModuleAddressed() {
   return makeModule()
-    .setSrcUrlStr(new URL(`test.jisp`, tu.TEST_SRC_URL).href)
-    .setTarUrlStr(new URL(`test.mjs`, tu.TEST_TAR_URL).href)
+    .setSrcPathAbs(new URL(`test.jisp`, tu.TEST_SRC_URL).href)
+    .setTarPathAbs(new URL(`test.mjs`, tu.TEST_TAR_URL).href)
 }
 
 await t.test(async function test_compilation_with_prelude_star() {
@@ -59,15 +58,15 @@ export async function testSingleFileCompilation(src, exp) {
 await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_without_module_url() {
     await testModuleFail(makeModule(), `[.use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
-    await testModuleFail(makeModule(), `[.use "./blah"]`,       `missing module source URL at [object Module]`)
-    await testModuleFail(makeModule(), `[.use "../blah"]`,      `missing module source URL at [object Module]`)
+    await testModuleFail(makeModule(), `[.use "./blah"]`,       `missing source URL in [object Module]`)
+    await testModuleFail(makeModule(), `[.use "../blah"]`,      `missing source URL in [object Module]`)
     await testModuleFail(makeModule(), `[.use "/blah"]`,        `Module not found "file:///blah"`)
     await testModuleFail(makeModule(), `[.use "file:///blah"]`, `Module not found "file:///blah"`)
   })
 
   await t.test(async function test_fail_with_module_url() {
     async function fail(src, msg) {
-      const mod = makeModule().setSrcUrlStr(`file:///one/two/three`).parse(src)
+      const mod = makeModule().setSrcPathAbs(`file:///one/two/three.jisp`).parse(src)
       await t.throws(async () => mod.macro(), je.CodeErr, msg)
     }
 
@@ -80,7 +79,7 @@ await t.test(async function test_Use_import_resolution() {
 
   await t.test(async function test_success_with_module_url() {
     async function test(src, exp) {
-      const mod = makeModule().setSrcUrlStr(import.meta.url).parse(src)
+      const mod = makeModuleAddressed().parse(src)
       await mod.macro()
       tu.testCompiled(mod.compile(), exp)
     }
@@ -125,26 +124,16 @@ performed only once.
 await t.test(async function test_Root_resolution_and_compilation() {
   async function fail(src, msg) {
     const root = new jr.Root()
-    await t.throws(async () => root.reqModuleReadyTarUrlStr(src), Error, msg)
+    await t.throws(async () => root.reqModuleReadyPath(src), Error, msg)
   }
 
-  // await t.test(async function test_invalid() {
-  //   await fail(undefined,             `expected variant of isCanonicalModuleUrlStr, got undefined`)
-  //   await fail(10,                    `expected variant of isCanonicalModuleUrlStr, got 10`)
-  //   await fail(`https://example.com`, `expected variant of isCanonicalModuleUrlStr, got "https://example.com"`)
-  // })
-
   await t.test(async function test_invalid() {
-    await fail(undefined,             `expected variant of isCanonicalModuleUrlStr, got undefined`)
-    await fail(10,                    `expected variant of isCanonicalModuleUrlStr, got 10`)
-    await fail(`https://example.com`, `missing FS at [object Root]`)
+    await fail(undefined,                    `expected variant of isCanonicalModulePath, got undefined`)
+    await fail(10,                           `expected variant of isCanonicalModulePath, got 10`)
+    await fail(`file://one/two/three.mjs`,   `expected variant of isCanonicalModulePath, got "file://one/two/three.mjs"`)
+    await fail(`file://one/two/three.jisp`,  `expected variant of isCanonicalModulePath, got "file://one/two/three.jisp"`)
+    await fail(`file:///one/two/three.jisp`, `missing FS at [object Root]`)
   })
-
-  // await t.test(async function test_invalid() {
-  //   await fail(undefined,             `Invalid URL`)
-  //   await fail(10,                    `Invalid URL`)
-  //   await fail(`https://example.com`, `missing FS at [object Root]`)
-  // })
 
   await t.test(async function test_valid() {
     const srcUrlStr = new URL(`test_simple.jisp`, tu.TEST_SRC_URL).href
@@ -159,7 +148,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     file URL to the compiled file, suitable for FS access and use with the
     native pseudo-function `import`.
     */
-    const tarStr = await root.reqModuleReadyTarUrlStr(srcUrlStr)
+    const tarStr = await root.reqModuleReadyPath(srcUrlStr)
     a.reqValidStr(tarStr)
 
     const tarUrl = new URL(tarStr)

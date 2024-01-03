@@ -159,9 +159,9 @@ export class Node extends (
   */
   isChildStatement(val) {
     /*
-    This is nearly identical to the implementation of the base method
-    `MixParent..reqValidChild`. We don't call it here to avoid surprising
-    behaviors in case of unusual overrides in subclasses.
+    Nearly identical to the implementation of `MixParent..reqValidChild`.
+    We don't call it here to avoid surprising behaviors in case of unusual
+    overrides in subclasses.
     */
     if (jc.conf.getDebug()) this.reqChildParentMatch(val)
     return false
@@ -240,12 +240,12 @@ Implementation notes.
 Macroing stops when a node returns itself. This convention is used by all "nop"
 macro implementations such as those on primitive literals. It's also used by
 macro implementations that perform side effects without replacing the node,
-which is common for identifiers.
+such as those on identifiers.
 
-This could be implemented either with a loop or with recursive calls.
-The current implementation uses recursive calls because in case of
-accidental infinite recursion, this causes an immediate stack overflow
-exception instead of looping forever, at least in synchronous mode.
+This could be implemented either with a loop or with recursive calls. The
+current implementation uses recursive calls because in case of accidental
+infinite recursion, this causes an immediate stack overflow exception instead
+of looping forever, at least in synchronous mode.
 */
 export function macroNode(prev) {
   if (a.isNil(prev)) return undefined

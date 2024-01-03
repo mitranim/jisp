@@ -4,30 +4,26 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jdft from './jisp_deno_fs_test.mjs'
 import * as jcpd from '../js/jisp_code_printed.mjs'
-import * as jnm from '../js/jisp_node_module.mjs'
+import * as jnmnl from '../js/jisp_node_module_node_list.mjs'
 import * as jnst from '../js/jisp_node_str.mjs'
 import * as jnnu from '../js/jisp_node_num.mjs'
 import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnia from '../js/jisp_node_ident_access.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
-/*
-Normally, a code printer is only available at `Root`.
-Here we just want to test `Module` without involving `Root`.
-*/
-class PrintableModule extends jcpd.MixOwnCodePrinted.goc(jnm.Module) {}
+class PrintableModuleNodeList extends jcpd.MixOwnCodePrinted.goc(jnmnl.ModuleNodeList) {}
 
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
   const fs = jdft.makeTestFs()
-  const mod = new PrintableModule()
+  const tar = new PrintableModuleNodeList()
   const src = await fs.read(new URL(`test_builtins.jisp`, tu.TEST_SRC_URL))
 
-  mod.parse(src)
+  tar.parse(src)
 
-  t.is(mod.childCount(), 7)
+  t.is(tar.childCount(), 7)
 
   {
-    const node = mod.reqChildAt(0)
+    const node = tar.reqChildAt(0)
     t.inst(node, jnnu.Num)
     t.is(node.decompile(), `10`)
     t.is(node.ownVal(), 10)
@@ -35,7 +31,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = mod.reqChildAt(1)
+    const node = tar.reqChildAt(1)
     t.inst(node, jnnu.Num)
     t.is(node.decompile(), `20.30`)
     t.is(node.ownVal(), 20.30)
@@ -43,7 +39,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = mod.reqChildAt(2)
+    const node = tar.reqChildAt(2)
     t.inst(node, jnst.StrBacktick)
     t.is(node.decompile(), "`string_backtick`")
     t.is(node.ownVal(), `string_backtick`)
@@ -51,7 +47,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = mod.reqChildAt(3)
+    const node = tar.reqChildAt(3)
     t.inst(node, jnst.StrDouble)
     t.is(node.decompile(), `"string_double"`)
     t.is(node.ownVal(), `string_double`)
@@ -59,14 +55,14 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = mod.reqChildAt(4)
+    const node = tar.reqChildAt(4)
     t.inst(node, jniu.IdentUnqual)
     t.is(node.decompile(), `identUnqualified`)
     t.is(node.compile(), `identUnqualified`)
   }
 
   {
-    const node = mod.reqChildAt(5)
+    const node = tar.reqChildAt(5)
     t.inst(node, jnia.IdentAccess)
 
     t.is(a.pk(node), `identQualified`)
@@ -85,13 +81,13 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
   }
 
   {
-    const node = mod.reqChildAt(6)
+    const node = tar.reqChildAt(6)
     t.inst(node, jnbrk.Brackets)
     t.is(node.decompile(), `[40 50 60]`)
     t.is(node.compile(), `40(50, 60)`)
   }
 
-  t.is(mod.compile().trim(), `
+  t.is(tar.compile().trim(), `
 10;
 20.30;
 \`string_backtick\`;
@@ -101,8 +97,8 @@ identNamespace.identQualified;
 40(50, 60);
 `.trim())
 
-  // tu.prn(`mod:`, mod)
-  // console.log(`mod:`, mod)
+  // tu.prn(`tar:`, tar)
+  // console.log(`tar:`, tar)
 })
 
 if (import.meta.main) ti.flush()

@@ -21,7 +21,7 @@ Most Lisps violate this. The set of types that can exactly represent code must i
 
 Traditional Lisps have something called "special forms". The most minimal set of "special forms" typically consists of the following: `lambda`, `set`, `if`.
 
-What makes them "special" and distinct from other definitions is that each of them, in order to function correctly, needs several components: how to handle the provided AST nodes at compile time; how to evaluate at runtime; how to compile. This power is traditionally not available to user code, which can define only forms with _one_ component. User macros define compile-time AST transforms. User functions define runtime execution. User code can't define new "special" forms with multiple components. That's a fundamental mistake.
+What makes them "special" and distinct from other definitions is that each of them, in order to function correctly, needs several components: how to handle the provided AST nodes at macro time; how to evaluate at runtime; how to compile. This power is traditionally not available to user code, which can define only forms with _one_ component. User macros define macro-time AST transforms. User functions define runtime execution. User code can't define new "special" forms with multiple components. That's a fundamental mistake.
 
 Jisp makes the power of "special forms" available to users. The traditional macro approach is also available, but it's merely a less-powerful shortcut.
 
@@ -31,11 +31,11 @@ The power comes at a cost. It requires us to replace simple "macro functions" wi
 
 There are two ways of importing: `use` and `import`.
 
-* `use` is compile-time only. It brings definitions into scope, and makes them compile-time-evaluatable by default (the internal term for this is "live value"). It does not generate a native import statement or expression.
+* `use` is macro-time only. It brings definitions into scope, and makes them macro-time-evaluatable by default (the internal term for this is "live value"). It does not generate a native import statement or expression.
 
 * `import` is runtime-only. It does not look for header files, does not import code into compiler, does not bring anything into scope other than the identifier or identifiers it declares, and does generate a native import statement or expression.
 
-The only way to evaluate something at compile time is by referencing it from another module imported by `use`.
+The only way to evaluate something at macro time is by referencing it from another module imported by `use`.
 
 ## Misc
 
@@ -73,36 +73,20 @@ Code conventions:
   * Setters are ALWAYS for own properties, named "setX".
   * Getters for own properties must be named "ownX" (not "getX").
     * They're also allowed to idempotently allocate the property.
-    * Alternatively, define additional method "initX" that idempotently
-      allocates the corresponding own property.
-  * Getters that may perform lookup on other objects, for example on parents,
-    must be named "optX" (for optional) and "reqX" (for required).
-  * Getters that may perform expensive work should avoid prefixes such as
-    "get" or "opt". Their name should be a verb to indicate work. Examples
-    include generating new data structures or iterating over data structures.
+    * Alternatively, define additional method "initX" that idempotently allocates the corresponding own property.
+  * Getters that may perform lookup on other objects, for example on parents, must be named "optX" (for optional) and "reqX" (for required).
+  * Getters that may perform expensive work should avoid prefixes such as "get" or "opt". Their name should be a verb to indicate work. Examples include generating new data structures or iterating over data structures.
   * Why:
-    * Methods are less error-prone in JS. Missing a property name produces
-      `undefined`. Missing a method name produces a runtime exception.
+    * Methods are less error-prone in JS. Missing a property name produces `undefined`. Missing a method name produces a runtime exception.
 
 Common interfaces (non-exhaustive list):
 
-* `.optSpan`. Returns `StrSpan` referring to a region of source code, or
-  `ArrSpan` referring to AST tokens. All AST nodes parsed from source must
-  have a valid `StrSpan`. All AST nodes created by macros must refer to other
-  nodes which ultimately have a valid `StrSpan`.
+* `.optSpan`. Returns `StrSpan` referring to a region of source code, or `ArrSpan` referring to AST tokens. All AST nodes parsed from source must have a valid `StrSpan`. All AST nodes created by macros must refer to other nodes which ultimately have a valid `StrSpan`.
 
-* `.optSrcNode`. Used by nodes created by macros to replace other nodes.
-  Each replacement node must use this method to refer to another node,
-  ultimately referring to a node parsed from source code.
+* `.optSrcNode`. Used by nodes created by macros to replace other nodes. Each replacement node must use this method to refer to another node, ultimately referring to a node parsed from source code.
 
-* `.ownVal`. Compile-time evaluation. Performs arbitrary compile-time
-  evaluation and returns an arbitrary value usable by macros. AST tokens
-  parsed from source may return numbers, strings, booleans, etc. Identifier
-  nodes may return the actual runtime values of declarations they refer to.
-  For example, module A declares and exports a class that's usable as a macro,
-  under name "B". Module C imports A and attempts to use B as a macro. The
-  identifier node referring to B may use `.ownVal`, in combination with
-  recursive search, to return the actual evaluated reference to that class
-  from module A, allowing us to call that macro.
+<!-- FIXME update the following ↓↓↓. The interfaces have changed. -->
+
+* `.ownVal`. Macro-time evaluation. Performs immediate evaluation and returns an arbitrary value usable by macro code. AST tokens parsed from source may return numbers, strings, booleans, etc. Identifier nodes may return the actual runtime values of declarations they refer to. For example, module A declares and exports a class that's usable as a macro, under name "B". Module C imports A and attempts to use B as a macro. The identifier node referring to B may use `.ownVal`, in combination with recursive search, to return the actual evaluated reference to that class from module A, allowing us to call that macro.
 
 * ... TODO more.

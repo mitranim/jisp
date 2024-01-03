@@ -6,7 +6,6 @@ import * as jdft from './jisp_deno_fs_test.mjs'
 import * as jrt from './jisp_root_test.mjs'
 import * as jm from '../js/jisp_misc.mjs'
 import * as jr from '../js/jisp_root.mjs'
-import * as jnm from '../js/jisp_node_module.mjs'
 
 await t.test(async function test_Import_statement_unnamed() {
   await jrt.testModuleCompile(
@@ -50,8 +49,7 @@ await t.test(async function test_Import_statement_mixin() {
 
     /*
     This failure and corresponding error message verifies that our *-style
-    import statement actually does try to import the target at compile time,
-    or rather at macro time.
+    import statement actually does try to import the target at macro time.
     */
     await t.throws(async () => mod.macro(), Error, `Relative import path "some_import_path" not prefixed`)
   })
@@ -177,7 +175,7 @@ await t.test(async function test_Import_transitive() {
   const root = new jr.Root().setFs(fs)
 
   await import(
-    await root.reqModuleReadyTarUrlStr(
+    await root.reqModuleReadyPath(
       new URL(`test_import_one.jisp`, tu.TEST_SRC_URL).href,
     )
   )

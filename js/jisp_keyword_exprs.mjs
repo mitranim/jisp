@@ -113,11 +113,12 @@ export class Multiply extends jnkem.KeywordExprMacro_1_N {
 /*
 Unlike the other arithmetic operator macros, this macro does not have an unary
 form. It must be binary or higher. That's because there is more than one way to
-define its unary behavior, with no obvious, objective way to choose one. In
-traditional Lisps, `(/ N)` becomes `1/N`, but we could also define it as `N/1`.
-Both approaches have various issues, and for the language users reading the code
-involving this macro, there would be no single, obvious way to guess which
-approach is used. It seems better to avoid implementing the unary form.
+define its unary behavior, with no obvious, objective way to choose one.
+
+In traditional Lisps, `(/ N)` becomes `1/N`, but we could also define it as
+`N/1`. Both approaches have benefits and drawbacks, and for the users reading
+the code involving this macro, there would be no single, obvious way to guess
+which approach is used. It seems better to avoid implementing the unary form.
 */
 export class Divide extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `/`}

@@ -27,9 +27,11 @@ export const WATCH = cli.boolOpt(`watch`)
 if (VERB) t.conf.testRep = t.ConsoleStartEndAvgReporter.with(t.tsMilli)
 
 if (TEST) t.conf.setTestFilter(RUN)
-else t.conf.setTestFilter(/(?!)/)
 
-t.conf.setBenchFilter(RUN)
+if (BENCH) {
+  t.conf.setTestFilter(/(?!)/)
+  t.conf.setBenchFilter(RUN)
+}
 
 // Allows to bench code in "slow mode", without much warmup.
 if (cli.boolOpt(`once`)) t.conf.benchRunner = new t.CountRunner(1)

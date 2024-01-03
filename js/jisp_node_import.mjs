@@ -7,13 +7,13 @@ import * as jnp from './jisp_node_predecl.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
-compile-time evaluation.
+macro-time evaluation.
 
-FIXME support verifying exports at compile time for the "named" form of this
+FIXME support verifying exports at macro time for the "named" form of this
 macro, similarly to what is done by the "star" form of this macro. It should be
 opt-in, and might be controlled by an additional configuration property on
 `Conf.main`, or simply by a static boolean property on this class. When
-enabled, it should cause `Import` to import the target module at compile time
+enabled, it should cause `Import` to import the target module at macro time
 and use `NsLivePseudo` to create a namespace for it, which should allow our
 system to validate that all references to the names in this module / properties
 of this module refer to its actual exports.
@@ -22,20 +22,13 @@ export class Import extends jnib.ImportBase {
   static get meta() {return ImportMeta}
 
   async macroModeUnnamed() {
-    await this.resolve()
+    await this.optResolve()
     return super.macroModeUnnamed()
   }
 
   async macroModeNamed() {
-    await this.resolve()
+    await this.optResolve()
     return super.macroModeNamed()
-  }
-
-  // TODO maybe dedup with equivalent code in `Use`.
-  async macroModeMixin() {
-    await this.reqImport()
-    this.reqNsLex().addMixin(this.reqNsLive())
-    return this
   }
 
   // Involved in `.macroModeMixin`.
@@ -98,16 +91,13 @@ export class Import extends jnib.ImportBase {
     ))
   }
 
-  async resolve() {
-    await super.resolve()
-
-    const mod = this.optModule()
-    if (!mod) return this
-
-    const dep = this.optDepModule()
-    if (!dep) return this
-
-    mod.addDep(dep)
+  /*
+  Compare `Use..reqResolve` which registers the imported module as a
+  dependency of the source file, not a dependency of the target file.
+  */
+  async reqResolve() {
+    await super.reqResolve()
+    this.reqModule().addTarDep(this.reqDepModule())
     return this
   }
 }

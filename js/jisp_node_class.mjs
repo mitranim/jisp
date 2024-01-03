@@ -20,6 +20,7 @@ orphan form of `IdentAccess`. Examples:
   ]
 */
 export class Class extends jnlm.ListMacro {
+  // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
 
