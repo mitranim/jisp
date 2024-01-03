@@ -24,11 +24,8 @@ export class Class extends jnlm.ListMacro {
   pk() {return this.reqIdent().reqCanDeclare().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
 
-  /*
-  Override for `MixLiveValued`. Indirectly used by the orphan form of
-  `IdentAccess` to obtain contextual sub-macros.
-  */
-  static makeLiveVal() {
+  // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
+  static makeLiveValInner() {
     const tar = a.npo()
     tar.func = jnf.MethodFunc
     tar.let = ClassLet

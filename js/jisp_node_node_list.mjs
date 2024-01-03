@@ -98,7 +98,7 @@ export class NodeList extends jp.MixParentOneToMany.goc(jn.Node) {
 
   [ji.symInsp](tar) {
     tar = super[ji.symInsp](tar)
-    if (this.hasChildren()) return tar.funs(this.reqChildArr)
+    if (this.hasChildren()) return tar.funs(this.optChildArr)
     return tar
   }
 }

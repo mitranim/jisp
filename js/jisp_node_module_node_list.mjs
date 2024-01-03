@@ -8,13 +8,13 @@ import * as jnu from './jisp_node_use.mjs'
 
 export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   /*
-  Override for `MixLiveValued`. Any live properties added here are contextually
-  available to all code in all modules, by using the orphan form of
-  `IdentAccess`. The typical use case is the following:
+  Override for `MixLiveValuedInner`. Any live properties added here are
+  contextually available to all code in all modules, by using the orphan
+  form of `IdentAccess`. The typical use case is the following:
 
     [.use `jisp:prelude.mjs` *]
   */
-  static makeLiveVal() {
+  static makeLiveValInner() {
     const tar = a.npo()
     tar.use = jnu.Use
     return tar

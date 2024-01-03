@@ -27,6 +27,11 @@ export function optLiveValCall(src) {
   return a.isObj(src) && `optLiveVal` in src ? src.optLiveVal() : undefined
 }
 
+// Placed in generic utils to minimize cyclic dependencies between higher-level modules.
+export function optLiveValInnerCall(src) {
+  return a.isObj(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
+}
+
 export function isFullMatch(src, reg) {
   a.reqStr(src)
   a.reqReg(reg)

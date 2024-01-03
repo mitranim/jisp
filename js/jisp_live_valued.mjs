@@ -17,3 +17,20 @@ export class MixLiveValued extends a.DedupMixinCache {
     }
   }
 }
+
+export class MixLiveValuedInner extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixLiveValuedInner extends cls {
+      #liveValInner = undefined
+      optLiveValInner() {return this.initLiveValInner() ?? this.constructor.optLiveValInner()}
+      initLiveValInner() {return this.#liveValInner ??= this.makeLiveValInner?.()}
+
+      static optLiveValInner() {return this.initLiveValInner()}
+
+      static initLiveValInner() {
+        jm.own(this, `liveValInner`)
+        return this.liveValInner ??= this.makeLiveValInner?.()
+      }
+    }
+  }
+}

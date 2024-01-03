@@ -16,7 +16,7 @@ WATCH := watchexec $(CLEAR_SHORT) -r -d=0 -n
 SRC_JS := ./js
 
 # # Disables coloring in Deno.
-# export NO_COLOR=
+# export NO_COLOR
 
 default: mock
 

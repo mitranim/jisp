@@ -148,7 +148,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
       */
       if (a.isInst(val, jni.Ident)) return undefined
 
-      val = jm.optLiveValCall(val)
+      val = jm.optLiveValInnerCall(val)
       if (a.isComp(val) && key in val) return val
 
       return undefined

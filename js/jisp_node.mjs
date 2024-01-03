@@ -48,7 +48,7 @@ must avoid cycles, forming a tree. At the time of writing, `MixChild` and
 nodes, they must prevent cycles too.
 */
 export class Node extends (
-  jlv.MixLiveValued.goc(
+  jlv.MixLiveValuedInner.goc(
     jnsl.MixNsLexed.goc(
       jcpd.MixCodePrinted.goc(
         jnsd.MixOwnNodeSourced.goc(
@@ -126,8 +126,7 @@ export class Node extends (
 
   /*
   TODO consider moving `MixOwnNodeSourced` from `Node` elsewhere, and removing
-  this override. However, this may require updates to `.macroWithLiveVal` and
-  `Node.replace`.
+  this override. May require updates to `replaceNode`.
   */
   decompile() {
     return a.laxStr(

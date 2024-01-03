@@ -4,7 +4,6 @@ export {Const        as const}   from './jisp_node_const.mjs'
 export {Let          as let}     from './jisp_node_let.mjs'
 export {Block        as do}      from './jisp_node_block.mjs'
 export {Func         as func}    from './jisp_node_func.mjs'
-export {Ret          as ret}     from './jisp_node_ret.mjs'
 export {Class        as class}   from './jisp_node_class.mjs'
 export {If           as if}      from './jisp_node_if.mjs'
 export {Throw        as throw}   from './jisp_node_throw.mjs'
@@ -16,10 +15,10 @@ export {Arr          as array}   from './jisp_node_arr.mjs'
 /*
 Redundancies. TODO choose one style and dedup.
 
-  `eq`   <->  `ops.mjs` → `===`
-  `neq`  <->  `ops.mjs` → `!==`
-  `and`  <->  `ops.mjs` → `&&`
-  `or`   <->  `ops.mjs` → `||`
+  `eq`   <->  `ops.mjs`.`===`
+  `neq`  <->  `ops.mjs`.`!==`
+  `and`  <->  `ops.mjs`.`&&`
+  `or`   <->  `ops.mjs`.`||`
 */
 export {
   Equal      as eq,

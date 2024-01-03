@@ -8,10 +8,50 @@ import * as jdft from './jisp_deno_fs_test.mjs'
 import * as jm from '../js/jisp_misc.mjs'
 import * as je from '../js/jisp_err.mjs'
 import * as jr from '../js/jisp_root.mjs'
+import * as jmo from '../js/jisp_module.mjs'
 
-export async function testModuleFail(mod, src, msg) {
-  mod.parse(src)
+/*
+This function should be written as follows:
+
+  await mod.macro()
   await t.throws(async () => mod.macro(), Error, msg)
+
+However, `t.throws` would report the return value as `[object Module]`
+without any details on the resulting state of the module. This needs to
+be fixed by making `t.throws` more extensible. Perhaps testing utils
+should be subclassable, like in Python.
+*/
+export async function testModuleFail(mod, src, msg) {
+  a.reqInst(mod, jmo.Module)
+  a.reqStr(src)
+  a.reqStr(msg)
+
+  mod.parse(src)
+
+  try {
+    await mod.macro()
+  }
+  catch (err) {
+    if (err?.message.includes(msg)) return
+
+    throw new t.AssertError(`
+${throwsMacroMsg(msg)}
+${t.throwsGotErr(err)}
+  `)
+  }
+
+  throw new t.AssertError(`
+${throwsMacroMsg(msg)}
+instead, module compiled to:
+${mod.compile()}
+`)
+}
+
+function throwsMacroMsg(msg) {
+  return `expected module macroing to produce exception with message:
+
+  ${msg}
+`
 }
 
 export async function testModuleCompile(mod, src, exp) {
@@ -172,6 +212,29 @@ function someFunc () {
       io.paths.join(tu.TEST_TAR_NAME, hash, `test_simple.mjs`),
     )
   })
+})
+
+// TODO move to more appropriate file.
+await t.test(async function test_Use_misc() {
+  await testModuleFail(
+    makeModule(),
+`
+[.use "jisp:prelude.mjs" jp]
+
+jp.someName
+`,
+    `missing property "someName" in live value`,
+  )
+
+  await testModuleFail(
+    makeModule(),
+`
+[.use "jisp:prelude.mjs" jp]
+
+jp
+`,
+    `unexpected non-call reference "jp" to live value`,
+  )
 })
 
 if (import.meta.main) ti.flush()

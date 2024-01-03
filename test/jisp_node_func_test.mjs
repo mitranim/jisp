@@ -101,19 +101,25 @@ because of possible collisions. See the comment on `jsReservedNames` for
 explanations.
 */
 await t.test(async function test_Func_ret() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[.ret 10]
+`,
+    `unable to find ancestral live value with property "ret" at descendant [object IdentAccess]`,
+  )
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
 [.use "jisp:prelude.mjs" *]
 
-[ret]
-[ret 10]
-[func someFunc0 [] [ret]]
-[func someFunc1 [] [ret 10]]
+[func someFunc0 [] [.ret]]
+[func someFunc1 [] [.ret 10]]
 `,
 `
-return;
-return 10;
 function someFunc0 () {
 return;
 };
@@ -130,37 +136,65 @@ await t.test(async function test_Func_ret_invalid() {
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [] [ret 10 20]]
+[func someFunc [] [.ret 10 20]]
 `,
     `[object Ret] expected between 1 and 2 children, got 3 children`,
   )
 })
 
 /*
-We allow redeclaration of `ret` because it's just a regular name in JS. This
-differs from our handling of `arguments` where we prevent redeclaration because
-it would generate invalid JS.
+The contextual sub-macro `.ret` is accessed through an entirely different
+mechanism than an unqualified identifier `ret`. There should be no collision.
+This test verifies that.
 */
-await t.test(async function test_Func_redeclare_ret() {
+await t.test(async function test_Func_declare_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
 [.use "jisp:prelude.mjs" *]
 
 [func someFunc []
-  [const ret 10]
+  [func ret []]
   [ret 20]
+  [.ret [ret 30]]
 ]
 `,
 `
 function someFunc () {
-const ret = 10;
+function ret () {};
 ret(20);
+return ret(30);
 };
 `)
 })
 
-await t.test(async function test_Func_with_parameters() {
+await t.test(async function test_Func_valid() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc []]
+`,
+`
+function someFunc () {};
+`)
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc []]
+someFunc
+[someFunc]
+`,
+`
+function someFunc () {};
+someFunc;
+someFunc();
+`)
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
@@ -204,7 +238,7 @@ one;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one] [ret one]]
+[func someFunc [one] [.ret one]]
 `,
 `
 function someFunc (one) {
@@ -217,7 +251,7 @@ return one;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one] [ret one] one]
+[func someFunc [one] [.ret one] one]
 `,
 `
 function someFunc (one) {
@@ -231,7 +265,7 @@ one;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one] one [ret one]]
+[func someFunc [one] one [.ret one]]
 `,
 `
 function someFunc (one) {
@@ -327,7 +361,7 @@ two;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] [ret one] one two two]
+[func someFunc [one two] [.ret one] one two two]
 `,
 `
 function someFunc (one, two) {
@@ -343,7 +377,7 @@ two;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] one [ret one] two two]
+[func someFunc [one two] one [.ret one] two two]
 `,
 `
 function someFunc (one, two) {
@@ -359,7 +393,7 @@ two;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] one one [ret two] two]
+[func someFunc [one two] one one [.ret two] two]
 `,
 `
 function someFunc (one, two) {
@@ -375,7 +409,7 @@ two;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] one one two [ret two]]
+[func someFunc [one two] one one two [.ret two]]
 `,
 `
 function someFunc (one, two) {
@@ -417,8 +451,8 @@ await t.test(async function test_Func_async() {
 
 [func.async someFunc []
   [await 10]
-  [ret 20]
-  [ret [await 30]]
+  [.ret 20]
+  [.ret [await 30]]
 ]
 `,
 `

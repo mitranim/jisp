@@ -4,9 +4,17 @@ import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnr from './jisp_node_ret.mjs'
 
 export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   static get async() {return FuncAsync}
+
+  // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
+  static makeLiveValInner() {
+    const tar = a.npo()
+    tar.ret = jnr.Ret
+    return tar
+  }
 
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqCanDeclare().reqName()}

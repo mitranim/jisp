@@ -49,7 +49,7 @@ value. This approach is implemented by `NsLive`.
 A regular namespace without a "live value" is meant only for static analysis,
 without immediate macro-time execution.
 */
-export class NsBase extends je.MixErrer.goc(a.Emp) {
+export class NsBase extends je.MixErrer.goc(ji.MixInsp.goc(a.Emp)) {
   has(key) {
     this.req(key, a.isValidStr)
     return false
@@ -98,7 +98,7 @@ export class NsBase extends je.MixErrer.goc(a.Emp) {
     return this
   }
 
-  hasLiveVal() {return false}
+  hasLiveVal() {return a.isSome(this.optLiveVal())}
   optLiveVal() {}
   reqLiveVal() {return this.optLiveVal() ?? this.throw(`missing live value in namespace ${a.show(this)}`)}
 
@@ -109,7 +109,6 @@ export class NsLive extends NsBase {
   #val = undefined
   setLiveVal(val) {return this.#val = this.req(val, a.isComp), this}
   optLiveVal() {return this.#val}
-  hasLiveVal() {return a.isSome(this.#val)}
 
   has(key) {
     this.req(key, a.isValidStr)
@@ -139,7 +138,6 @@ imports that compile to explicit named imports in JS. Can be used to detect
 missing exports at macro time.
 */
 export class NsLivePseudo extends NsLive {
-  hasLiveVal() {return false}
   optLiveVal() {}
   optGet() {}
 }

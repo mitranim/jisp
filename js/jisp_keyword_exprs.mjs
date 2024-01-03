@@ -136,9 +136,9 @@ export class BoolNot extends jnkem.KeywordExprMacro_0_1 {
 Technical note.
 
 In JS, `!!` is a combination of two occurrences of the operator `!`, and JS does
-not have an operator `!!`, `!!!`, etc. That works because in JS, operator
-parsing is based on a whitelist of special cases of "known" operators, which
-allows to stack unary operators without any intermediary delimiters.
+not have operators `!!`, `!!!`, etc. That works because in JS, operator parsing
+is based on a whitelist of special cases of "known" operators, which sometimes
+allows to stack unary operators without intermediary delimiters.
 
 In our system, operator parsing is generalized. We define a set of "operator
 characters", and any sequence of those characters without intervening
@@ -183,6 +183,11 @@ export class BitShiftRightUnsigned extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `>>>`}
 }
 
+/*
+The fallback on `true` is very questionable.
+The JS operator `&&` supports arbitrary types.
+We may consider changing the fallback to `undefined`.
+*/
 export class And extends jnkem.KeywordExprMacro {
   compileNullary() {return `true`}
   unaryPrefix() {return ``}
@@ -190,6 +195,11 @@ export class And extends jnkem.KeywordExprMacro {
   binaryInfix() {return `&&`}
 }
 
+/*
+The fallback on `false` is very questionable.
+The JS operator `||` supports arbitrary types.
+We may consider changing the fallback to `undefined`.
+*/
 export class Or extends jnkem.KeywordExprMacro {
   compileNullary() {return `false`}
   unaryPrefix() {return ``}

@@ -93,16 +93,12 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   AST as a result of macroing.
   */
   macroList(list) {
-    const src = this.optLiveValSrc()
-    if (a.isNil(src)) return list
-
-    const fun = this.reqDerefLiveVal(src)
+    const fun = this.optLiveVal()
+    if (a.isNil(fun)) return list
 
     if (!a.isFun(fun)) {
       throw this.err(`unexpected non-function live value ${a.show(fun)} in call position`)
     }
-
-    return new fun(...list.reqChildArr())
 
     /*
     Invoking macro functions with `new` allows Jisp code to directly reference
@@ -141,17 +137,40 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     methods. As a result, our system supports three different function styles
     for macros: as classes, as regular functions, and as methods.
     */
-    return fun.apply(src, list.optChildArr())
+    return fun.apply(this.optLiveValSrc(), list.optChildArr())
   }
 
-  macro() {
-    const nsp = this.reqResolveNs()
-    nsp.addRef(this)
+  /*
+  SYNC[ident_live_val].
 
+  This code is suitable only for unqualified identifiers, and must be fully
+  overridden by `IdentAccess` and any other qualified subclasses.
+  */
+  macro() {return this.macroWithNs(this.reqResolveNs())}
+
+  macroWithNs(nsp) {
+    nsp.addRef(this)
     const src = nsp.optLiveVal()
     if (a.isSome(src)) return this.macroWithLiveValSrc(src)
+    return this.macroWithNsNonLive(nsp)
+  }
 
-    return this
+  macroWithNsNonLive(nsp) {
+    // const val = this.optLiveValFromNs(nsp)
+    // if (a.isSome(val)) return this.macroWithLiveVal(val)
+
+    const key = this.reqName()
+    const dec = nsp.optGet(key)
+    if (a.isNil(dec)) return this
+
+    const val = this.optLiveValFromDec(dec)
+    if (a.isNil(val)) return this
+
+    /*
+    TODO: make reporting of source declarations consistent between `.macro` and
+    `.macroList`.
+    */
+    throw this.err(a.reqStr(this.msgUnexpectedLive(key, val)) + ` found in declaration ${a.show(dec)}`)
   }
 
   /*
@@ -178,9 +197,11 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   the compiler, and would most likely generate runnable JS.
   */
   macroWithLiveValSrc(src) {
-    const key = this.reqName()
-    const val = this.reqDerefLiveVal(src)
-    throw this.err(this.msgUnexpectedLive(key, val, src))
+    return this.macroWithLiveVal(this.reqDerefLiveVal(src), src)
+  }
+
+  macroWithLiveVal(val, src) {
+    throw this.err(this.msgUnexpectedLive(this.reqName(), val, src))
   }
 
   /*
@@ -249,8 +270,8 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   optResolveNsLive() {
-    const val = this.optResolveNs()
-    return val?.hasLiveVal() ? val : undefined
+    const src = this.optResolveNs()
+    return src.hasLiveVal() ? src : undefined
   }
 
   /*
@@ -272,6 +293,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     throw this.err(`expected the namespace declaring ${a.show(this.optName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
   }
 
+  // SYNC[ident_live_val].
   optLiveVal() {
     const key = this.optName()
     if (!key) return undefined
@@ -280,42 +302,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     if (!src) return undefined
 
     if (src.hasLiveVal()) return this.optDerefLiveVal(src.reqLiveVal())
-
-    /*
-    The declared value may be used to indirectly obtain a live value. See below.
-
-    The type of this value is unknown / arbitrary. If the namespace is an
-    instance of `NsLex`, then the value must be an instance of `Node`. In the
-    future, we may consider stricter rules.
-
-    Values declared in namespaces, such as this value, may optionally implement
-    the method `.optLiveVal` which may return a live value. This may seem
-    redundant with the clause above where we check if the declaring namespace
-    is live. However, there are cases where a non-live declaration, in a
-    non-live namespace, eventually resolves to a live declaration in a live
-    namespace. One common use case is the following:
-
-      [.use `jisp:prelude.mjs` jp]
-      [jp.and]
-
-    After macroing the first statement, the local lexical namespace, which is
-    non-live, has an entry for `jp`. The value of that entry is an AST node,
-    specifically the instance of `Use` created by macroing the first statement.
-    `Use` implements the method `.optLiveVal`, which returns the native JS
-    module object obtained by importing the requested file. By following from
-    any `jp` to its declaration, which is the `Use` instance, and requesting
-    its live value, we obtain the imported module. The expression `jp.and`,
-    which is an instance of `IdentAccess`, is able to obtain the class `And` by
-    resolving the identifier `jp` to the `Use` instance, then to the imported
-    prelude module, and accessing the property `.and` on the imported module
-    object.
-    */
-    const val = src.optGet(key)
-
-    // May occur in function parameters, and possibly in other places.
-    if (val === this) return undefined
-
-    return jm.optLiveValCall(val)
+    return this.optLiveValFromNs(src)
   }
 
   // See comments in `.optLiveVal`.
@@ -376,6 +363,51 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     }
 
     return val
+  }
+
+  /*
+  For internal use only.
+  Intended for declarations obtained from non-live namespaces.
+  */
+  optLiveValFromDec(val) {
+    if (a.isNil(val)) return undefined
+    if (val === this) return undefined
+    return jm.optLiveValCall(val)
+  }
+
+  /*
+  For internal use only. Intended for non-live namespaces.
+
+  Even if this identifier is found in a non-live namespace, the declaration
+  may be used to indirectly obtain a live value. See below.
+
+  At the time of writing, non-live namespaces are always `NsLex`, where values
+  are instances of `Node`. In the future, we may consider extending the rules.
+
+  Values declared in namespaces, such as this value, may optionally implement
+  the method `.optLiveVal` which may return a live value. This may seem with
+  the existence of live namespaces which themselves return a live value via
+  `.optLiveVal`. However, there are cases where a non-live declaration, in a
+  non-live namespace, eventually resolves to a live declaration in a live
+  namespace. One common use case is the following:
+
+    [.use `jisp:prelude.mjs` jp]
+    [jp.and]
+
+  After macroing the first statement, the local lexical namespace, which is
+  non-live, has an entry for `jp`. The value of that entry is an AST node,
+  specifically the instance of `Use` created by macroing the first statement.
+  `Use` implements the method `.optLiveVal`, which returns the native JS
+  module object obtained by importing the requested file. By following from
+  any `jp` to its declaration, which is the `Use` instance, and requesting
+  its live value, we obtain the imported module. The expression `jp.and`,
+  which is an instance of `IdentAccess`, is able to obtain the class `And` by
+  resolving the identifier `jp` to the `Use` instance, then to the imported
+  prelude module, and accessing the property `.and` on the imported module
+  object.
+  */
+  optLiveValFromNs(src) {
+    return this.optLiveValFromDec(src.optGet(this.reqName()))
   }
 
   static toValidDictKey(val) {
