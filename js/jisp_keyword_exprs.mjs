@@ -39,14 +39,6 @@ export class Assign extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `=`}
 }
 
-export class EqualLax extends jnkem.KeywordExprMacro_2 {
-  binaryInfix() {return `==`}
-}
-
-export class NotEqualLax extends jnkem.KeywordExprMacro_2 {
-  binaryInfix() {return `!=`}
-}
-
 export class Equal extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `===`}
 }
@@ -234,5 +226,23 @@ export class Void extends jnkem.KeywordExprMacro_0_1 {
 export class Await extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `undefined`}
   unaryPrefix() {return `await`}
+  unarySuffix() {return ``}
+}
+
+/*
+This is the only half-decent use of the `==` operator. We provide this
+as a special case to avoid providing `==` which is too easy to misuse.
+*/
+export class IsNil extends jnkem.KeywordExprMacro_1 {
+  unaryPrefix() {return `null ==`}
+  unarySuffix() {return ``}
+}
+
+/*
+This is the only half-decent use of the `!=` operator. We provide this
+as a special case to avoid providing `!=` which is too easy to misuse.
+*/
+export class IsSome extends jnkem.KeywordExprMacro_1 {
+  unaryPrefix() {return `null !=`}
   unarySuffix() {return ``}
 }

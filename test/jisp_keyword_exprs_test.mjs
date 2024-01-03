@@ -219,6 +219,40 @@ await t.test(async function test_Typeof() {
   await testKeyword_1_valid(`typeof`)
 })
 
+await t.test(async function test_IsNil() {
+  await testKeyword_1_invalid(`isNil`)
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[isNil 10]
+[isNil [isNil 10]]
+`,
+`
+null == 10;
+null == (null == 10);
+`)
+})
+
+await t.test(async function test_IsSome() {
+  await testKeyword_1_invalid(`isSome`)
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[isSome 10]
+[isSome [isSome 10]]
+`,
+`
+null != 10;
+null != (null != 10);
+`)
+})
+
 await t.test(async function test_Equal() {
   await testKeyword_2_invalid(`===`)
   await testKeyword_2_valid(`===`)
