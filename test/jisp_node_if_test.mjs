@@ -77,6 +77,25 @@ const someConst3 = (10 ? 20 : 30);
 `)
 })
 
+/*
+Design note.
+
+Currently, implicit return requires the last element in a function body to be an
+expression. We could support statements in this position, by adding an internal
+interface that allows a given node to compile in "return mode", using the JS
+`return` statement inside. In the `If` macro, when compiling in this mode, each
+branch would have to use `return`. This makes it possible to get return values
+out of certain macros which normally must be statements.
+
+In fact, we did implement that feature, and then ripped it out. It complicates
+the internals, and more importantly, it comes with edge cases and gotchas.
+Implementing this mode correctly requires more than just adding a method. It
+requires modifying the statement / expression mode of the last child in each
+branch in the `If` statement, the last child in the `Block` statement, and so
+on. The motivation for that feature is also shaky. Every use case that seems to
+require this feature is better solved with early return macros, which do not
+require any of this complexity.
+*/
 await t.test(async function test_If_implicit_return() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
@@ -92,31 +111,25 @@ await t.test(async function test_If_implicit_return() {
 `,
 `
 function someFunc0 () {
-if (10) return;
-return;
+return (10 ? undefined : undefined);
 };
 function someFunc1 () {
-if (10) return 20;
-return;
+return (10 ? 20 : undefined);
 };
 function someFunc2 () {
-if (10) return 20;
-return 30;
+return (10 ? 20 : 30);
 };
 function someFunc3 () {
 10;
-if (20) return;
-return;
+return (20 ? undefined : undefined);
 };
 function someFunc4 () {
 10;
-if (20) return 30;
-return;
+return (20 ? 30 : undefined);
 };
 function someFunc5 () {
 10;
-if (20) return 30;
-return 40;
+return (20 ? 30 : 40);
 };
 `)
 })

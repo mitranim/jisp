@@ -15,14 +15,6 @@ export class Ret extends jnlm.ListMacro {
 
   compile() {
     this.reqStatement()
-    return this.compileStatementReturn()
-  }
-
-  /*
-  Optional interface used by `Func` for implicit returns. The macro `Ret` is a
-  degenerate case where implicit and explicit return is exactly the same.
-  */
-  compileStatementReturn() {
     const val = this.optVal()
     if (val) return `return ` + jn.optCompileNode(val)
     return `return`

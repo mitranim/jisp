@@ -30,14 +30,6 @@ export function optLiveValInnerCall(src) {
   return a.isObj(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
 }
 
-export function compileStatementReturnImplemented(src) {
-  return a.isObj(src) && `compileStatementReturn` in src && a.isFun(src.compileStatementReturn)
-}
-
-export function compileStatementReturnCall(src) {
-  return a.isObj(src) && `compileStatementReturn` in src ? src.compileStatementReturn() : undefined
-}
-
 export function isFullMatch(src, reg) {
   a.reqStr(src)
   a.reqReg(reg)

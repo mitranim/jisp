@@ -145,6 +145,36 @@ await t.test(async function test_Func_ret() {
 `
 [.use "jisp:prelude.mjs" *]
 
+[func someFunc [] [.ret 10 20]]
+`,
+    `[object Ret] expected between 1 and 2 children, got 3 children`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc [] [.ret]]
+`,
+    `[object Ret] can only be used as a statement`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc [] [.ret 10]]
+`,
+    `[object Ret] can only be used as a statement`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
 [func someFunc []
   [const someConst [.ret 10]]
   20
@@ -158,66 +188,37 @@ await t.test(async function test_Func_ret() {
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc0 [] [.ret]]
-[func someFunc1 [] [.ret] 10]
-[func someFunc2 [] 10 [.ret]]
-[func someFunc3 [] 10 [.ret] 20]
-[func someFunc4 [] [.ret 10]]
-[func someFunc5 [] [.ret 10] 20]
-[func someFunc6 [] 10 [.ret 20]]
-[func someFunc7 [] 10 [.ret 20] 30]
-[func someFunc8 [] [.ret 10] [.ret 20]]
+[func someFunc0 [] [.ret] 10]
+[func someFunc1 [] 10 [.ret] 20]
+[func someFunc2 [] [.ret 10] 20]
+[func someFunc3 [] 10 [.ret 20] 30]
+[func someFunc4 [] [.ret 10] [.ret 20] 30]
 `,
 `
 function someFunc0 () {
 return;
+return 10;
 };
 function someFunc1 () {
+10;
 return;
-return 10;
+return 20;
 };
 function someFunc2 () {
-10;
-return;
+return 10;
+return 20;
 };
 function someFunc3 () {
-10;
-return;
-return 20;
-};
-function someFunc4 () {
-return 10;
-};
-function someFunc5 () {
-return 10;
-return 20;
-};
-function someFunc6 () {
-10;
-return 20;
-};
-function someFunc7 () {
 10;
 return 20;
 return 30;
 };
-function someFunc8 () {
+function someFunc4 () {
 return 10;
 return 20;
+return 30;
 };
 `,
-  )
-})
-
-await t.test(async function test_Func_ret_invalid() {
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[.use "jisp:prelude.mjs" *]
-
-[func someFunc [] [.ret 10 20]]
-`,
-    `[object Ret] expected between 1 and 2 children, got 3 children`,
   )
 })
 
@@ -236,6 +237,7 @@ await t.test(async function test_Func_declare_ret() {
   [func ret []]
   [ret 20]
   [.ret [ret 30]]
+  [ret 40]
 ]
 `,
 `
@@ -243,6 +245,7 @@ function someFunc () {
 function ret () {};
 ret(20);
 return ret(30);
+return ret(40);
 };
 `)
 })
@@ -317,38 +320,11 @@ return one;
 `
 [.use "jisp:prelude.mjs" *]
 
-[func someFunc [one] [.ret one]]
-`,
-`
-function someFunc (one) {
-return one;
-};
-`)
-
-  await jrt.testModuleCompile(
-    jrt.makeModule(),
-`
-[.use "jisp:prelude.mjs" *]
-
 [func someFunc [one] [.ret one] one]
 `,
 `
 function someFunc (one) {
 return one;
-return one;
-};
-`)
-
-  await jrt.testModuleCompile(
-    jrt.makeModule(),
-`
-[.use "jisp:prelude.mjs" *]
-
-[func someFunc [one] one [.ret one]]
-`,
-`
-function someFunc (one) {
-one;
 return one;
 };
 `)
@@ -482,22 +458,6 @@ return two;
 return two;
 };
 `)
-
-  await jrt.testModuleCompile(
-    jrt.makeModule(),
-`
-[.use "jisp:prelude.mjs" *]
-
-[func someFunc [one two] one one two [.ret two]]
-`,
-`
-function someFunc (one, two) {
-one;
-one;
-two;
-return two;
-};
-`)
 })
 
 await t.test(async function test_Func_name_invalid() {
@@ -528,28 +488,19 @@ await t.test(async function test_Func_async() {
 `
 [.use "jisp:prelude.mjs" *]
 
-[func.async someFunc0 []
-  [await 10]
-  [.ret 20]
-  [await 30]
-]
-
-[func.async someFunc1 []
+[func.async someFunc []
   [await 10]
   [.ret 20]
   [.ret [await 30]]
+  [await 40]
 ]
 `,
 `
-async function someFunc0 () {
+async function someFunc () {
 await 10;
 return 20;
 return (await 30);
-};
-async function someFunc1 () {
-await 10;
-return 20;
-return (await 30);
+return (await 40);
 };
 `,
   )

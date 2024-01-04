@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 
 /*
 A code printer should be owned by an ancestor of the AST hierarchy, such as
@@ -77,9 +78,6 @@ export class CodePrinter extends a.Emp {
 
   optCompileReturn(src) {
     if (a.isNil(src)) return ``
-    if (`compileStatementReturn` in src) {
-      return this.optTerminateStatement(src.compileStatementReturn())
-    }
     return this.optTerminateStatement(a.optPre(this.optCompile(src), `return `))
   }
 

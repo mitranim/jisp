@@ -92,11 +92,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       && val !== this.optChildAt(0)
       && val !== this.optChildAt(1)
       && val !== this.optChildAt(2)
-      && (
-        false
-        || val !== this.optLastChild()
-        || jm.compileStatementReturnImplemented(val)
-      )
+      && val !== this.optBodyLast()
     )
   }
 }
