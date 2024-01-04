@@ -17,7 +17,7 @@ export class New extends jnlm.ListMacro {
 
     return (
       `new `
-      + a.reqStr(prn.compile(this.reqChildAt(1)))
+      + a.reqStr(prn.optCompile(this.reqChildAt(1)))
       + a.reqStr(prn.compileParensWithExpressions(this.optChildSlice(2)))
     )
   }

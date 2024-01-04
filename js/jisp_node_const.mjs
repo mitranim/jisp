@@ -10,7 +10,6 @@ export class Const extends jnlm.ListMacro {
   reqVal() {return this.reqChildAt(2)}
 
   macro() {
-    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(3)
     this.reqIdent().reqCanDeclare()
@@ -19,6 +18,8 @@ export class Const extends jnlm.ListMacro {
   }
 
   compile() {
+    this.reqStatement()
+
     return a.spaced(
       a.reqStr(this.compilePrefix()),
       a.reqStr(this.compileName()),

@@ -54,6 +54,16 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     return tar && (`else ` + tar)
   }
 
+  // Optional interface used by `Func` for implicit returns.
+  compileStatementReturn() {
+    const prn = this.reqPrn()
+
+    return jm.joinLines(
+      a.spaced(this.compileStatementTest(), prn.reqCompileReturn(this.optThen())),
+      prn.reqCompileReturn(this.optElse()),
+    )
+  }
+
   compileExpression() {
     return (
       ``

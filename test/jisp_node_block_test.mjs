@@ -42,7 +42,7 @@ const someConst0 = 10;
 const someConst1 = 20;
 };
 `,
-)
+  )
 })
 
 await t.test(async function test_Block_expression() {
@@ -65,7 +65,7 @@ const someConst1 = 10;
 const someConst2 = (10, 20);
 const someConst3 = (10, 20, 30);
 `,
-)
+  )
 })
 
 /*

@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
@@ -21,6 +22,9 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
   body() {return this.optChildSlice(3)}
+  hasBody() {return this.childCount() > 3}
+  optBodyInit() {return this.optChildSlice(3, -1)}
+  optBodyLast() {return this.hasBody() ? this.reqLastChild() : undefined}
 
   macro() {
     this.reqEveryChildNotCosmetic()
@@ -62,9 +66,23 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())
   }
 
-  compileBody() {
+  compileBody() {return this.compileBodyWithImplicitReturn()}
+
+  compileBodyWithoutImplicitReturn() {
     return this.reqPrn().compileBracesWithStatements(this.body())
   }
+
+  compileBodyWithImplicitReturn() {
+    const prn = this.reqPrn()
+
+    return prn.wrapBraces(jm.joinLines(
+      this.compileBodyInit(),
+      prn.optTerminateStatement(this.compileBodyLast()),
+    ))
+  }
+
+  compileBodyInit() {return this.reqPrn().compileStatements(this.optBodyInit())}
+  compileBodyLast() {return this.reqPrn().optCompileReturn(this.optBodyLast())}
 
   isChildStatement(val) {
     super.isChildStatement(val)
@@ -74,6 +92,11 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       && val !== this.optChildAt(0)
       && val !== this.optChildAt(1)
       && val !== this.optChildAt(2)
+      && (
+        false
+        || val !== this.optLastChild()
+        || jm.compileStatementReturnImplemented(val)
+      )
     )
   }
 }

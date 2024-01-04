@@ -16,25 +16,35 @@ export class CodePrinter extends a.Emp {
   mapCompact(src, fun) {return a.compact(a.arr(src).map(fun, this))}
 
   /*
-  Same as `jisp_node.mjs` → `optCompileNode`.
+  Similar to `jisp_node.mjs` → `optCompileNode`.
   Duplicated here to minimize cyclic imports.
   TODO consider deduping.
   */
-  compile(src) {
+  optCompile(src) {
     if (a.isNil(src)) return ``
     try {return a.reqStr(src.compile())}
     catch (err) {throw src.toErr(err)}
   }
 
-  mapCompile(src) {return this.mapCompact(src, this.compile)}
+  /*
+  Similar to `jisp_node.mjs` → `reqCompileNode`.
+  Duplicated here to minimize cyclic imports.
+  TODO consider deduping.
+  */
+  reqCompile(src) {
+    try {return a.reqValidStr(src.compile())}
+    catch (err) {throw src.toErr(err)}
+  }
 
-  compileNotCosmetic(src) {
+  mapCompile(src) {return this.mapCompact(src, this.optCompile)}
+
+  optCompileNotCosmetic(src) {
     if (a.isNil(src) || src.isCosmetic()) return ``
-    return this.compile(src)
+    return this.optCompile(src)
   }
 
   mapCompileNotCosmetic(src) {
-    return this.mapCompact(src, this.compileNotCosmetic)
+    return this.mapCompact(src, this.optCompileNotCosmetic)
   }
 
   compileExpressions(src) {
@@ -42,24 +52,46 @@ export class CodePrinter extends a.Emp {
   }
 
   compileStatement(src) {
-    const out = a.reqStr(this.compileNotCosmetic(src))
-    return out && (out + `;`)
+    return this.optTerminateStatement(this.optCompileNotCosmetic(src))
   }
+
+  optTerminateStatement(src) {return a.optSuf(src, `;`)}
 
   mapCompileStatements(src) {
     return this.mapCompact(src, this.compileStatement)
   }
 
   compileStatements(src) {
-    const tar = this.mapCompileStatements(src).join(`\n`)
-    return tar && (`\n` + tar + `\n`)
+    return this.mapCompileStatements(src).join(`\n`)
   }
 
   compileParensWithExpressions(src) {
-    return `(` + a.reqStr(this.compileExpressions(src)) + `)`
+    return this.wrapParens(this.compileExpressions(src))
   }
 
   compileBracesWithStatements(src) {
-    return `{` + a.reqStr(this.compileStatements(src)) + `}`
+    return this.wrapBraces(this.compileStatements(src))
+  }
+
+  reqCompileReturn(src) {return this.optCompileReturn(src) || `return;`}
+
+  optCompileReturn(src) {
+    if (a.isNil(src)) return ``
+    if (`compileStatementReturn` in src) {
+      return this.optTerminateStatement(src.compileStatementReturn())
+    }
+    return this.optTerminateStatement(a.optPre(this.optCompile(src), `return `))
+  }
+
+  wrapBraces(src) {return this.wrap(`{`, src, `}`)}
+  wrapBrackets(src) {return this.wrap(`[`, src, `]`)}
+  wrapParens(src) {return `(` + a.reqStr(src) + `)`}
+
+  wrap(pre, inf, suf) {
+    a.reqStr(pre)
+    a.reqStr(inf)
+    a.reqStr(suf)
+    if (inf) return pre + `\n` + inf + `\n` + suf
+    return pre + suf
   }
 }

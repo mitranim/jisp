@@ -2,8 +2,6 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
 
-export function joinLines(...val) {return a.joinLinesOptLax(val)}
-export function joinUnderscore(...val) {return a.joinLax(val, `_`)}
 export function isStrOrArr(val) {return a.isStr(val) || a.isTrueArr(val)}
 export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
 export function preview(src) {return a.ell(src, 128)}
@@ -32,6 +30,14 @@ export function optLiveValInnerCall(src) {
   return a.isObj(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
 }
 
+export function compileStatementReturnImplemented(src) {
+  return a.isObj(src) && `compileStatementReturn` in src && a.isFun(src.compileStatementReturn)
+}
+
+export function compileStatementReturnCall(src) {
+  return a.isObj(src) && `compileStatementReturn` in src ? src.compileStatementReturn() : undefined
+}
+
 export function isFullMatch(src, reg) {
   a.reqStr(src)
   a.reqReg(reg)
@@ -39,7 +45,17 @@ export function isFullMatch(src, reg) {
   return reg.exec(src)?.[0] === src
 }
 
-// Same as `a.str` but stricter. Every value must be a string already.
+// Similar to `a.joinLinesOpt` but stricter. Every element must be a string.
+export function joinLines(...src) {
+  let out = ``
+  for (src of src) {
+    src = a.reqStr(src)
+    if (src) out += (out && `\n`) + src
+  }
+  return out
+}
+
+// Same as `a.str` but stricter. Every element must be a string.
 export function str(...src) {
   let out = ``
   for (src of src) out += a.reqStr(src)

@@ -5,7 +5,6 @@ export class Let extends jnc.Const {
   optVal() {return this.optChildAt(2)}
 
   macro() {
-    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
     this.reqIdent().reqCanDeclare()
@@ -14,6 +13,7 @@ export class Let extends jnc.Const {
   }
 
   compile() {
+    this.reqStatement()
     if (this.optVal()) return this.compileAssign()
     return this.compileDeclare()
   }

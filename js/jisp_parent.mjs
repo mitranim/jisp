@@ -125,10 +125,15 @@ export class MixParentOneToMany extends a.DedupMixinCache {
       indexes are actually present in the child list, producing a return value
       with the length equal to `next - start`. This name doesn't mean that the
       output could be nil; the output is always an array.
+
+      Caution: `Array.prototype.slice` supports negative indexes, and by
+      extension, so does this function. When callers calculate indexes by
+      using arithmetic, in particular subtraction, they must be aware of
+      this behavior.
       */
       optChildSlice(start, next) {
-        this.opt(start, a.isNat)
-        this.opt(next, a.isNat)
+        this.opt(start, a.isInt)
+        this.opt(next, a.isInt)
         return this.#chi?.slice(...arguments) ?? []
       }
     }

@@ -60,7 +60,7 @@ export class DelimNodeList extends jnnl.NodeList {
     const prn = this.reqPrn()
 
     return (
-      a.reqStr(prn.compile(head)) +
+      a.reqStr(prn.optCompile(head)) +
       a.reqStr(prn.compileParensWithExpressions(tail))
     )
   }

@@ -114,9 +114,11 @@ export class ClassLetStatic extends ClassLetBase {
 export class ClassBlock extends jnb.Block {
   macro() {
     this.reqParentMatch(Class)
-    this.reqStatement()
     return super.macro()
   }
 
-  compile() {return `static ` + a.reqStr(this.compileStatement())}
+  compile() {
+    this.reqStatement()
+    return `static ` + a.reqStr(this.compileStatement())
+  }
 }

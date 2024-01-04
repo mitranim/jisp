@@ -5,7 +5,6 @@ export class Declare extends jnu.Use {
   get NsLive() {return jns.NsLivePseudo}
 
   async macro() {
-    this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCount(2)
     await this.reqImport()

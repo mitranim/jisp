@@ -8,7 +8,10 @@ export class DebugListMacro extends jnlm.ListMacro {
     console.log(`[${this.constructor.name}] ` + a.reqStr(msg), ...src)
   }
 
-  compile() {return ``}
+  compile() {
+    this.reqStatement()
+    return ``
+  }
 }
 
 /*
@@ -46,7 +49,6 @@ export class Compiling extends DebugListMacro {
 
   macro() {
     this.log(`current module:`, a.pkOpt(this.optModule()))
-    this.reqStatement()
     this.reqChildCount(1)
     return this.macroFrom(1)
   }

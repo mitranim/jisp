@@ -26,10 +26,11 @@ export async function testModuleFail(mod, src, msg) {
   a.reqStr(src)
   a.reqStr(msg)
 
-  mod.parse(src)
-
+  let out
   try {
+    mod.parse(src)
     await mod.macro()
+    out = mod.compile()
   }
   catch (err) {
     if (err?.message.includes(msg)) return
@@ -43,7 +44,7 @@ ${t.throwsGotErr(err)}
   throw new t.AssertError(`
 ${throwsMacroMsg(msg)}
 instead, module compiled to:
-${mod.compile()}
+${out}
 `)
 }
 
@@ -197,7 +198,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     tu.testCompiled(tarText, `
 const someConst = \`some_const_value\`;
 function someFunc () {
-\`some_func_value\`;
+return \`some_func_value\`;
 };
 `)
 

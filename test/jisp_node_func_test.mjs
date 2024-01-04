@@ -4,6 +4,35 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
+await t.test(async function test_Func_implicit_return() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc0 []]
+[func someFunc1 [] 10]
+[func someFunc2 [] 10 20]
+[func someFunc3 [] 10 20 30]
+`,
+`
+function someFunc0 () {};
+function someFunc1 () {
+return 10;
+};
+function someFunc2 () {
+10;
+return 20;
+};
+function someFunc3 () {
+10;
+20;
+return 30;
+};
+`,
+  )
+})
+
 await t.test(async function test_Func_arguments() {
   /*
   We don't automatically declare `arguments` in function scope.
@@ -29,7 +58,7 @@ await t.test(async function test_Func_arguments() {
 `,
 `
 function someFunc () {
-arguments;
+return arguments;
 };
 `,
   )
@@ -74,7 +103,7 @@ await t.test(async function test_Func_this() {
 `,
 `
 function someFunc () {
-this;
+return this;
 };
 `,
   )
@@ -111,20 +140,70 @@ await t.test(async function test_Func_ret() {
     `unable to find ancestral live value with property "ret" at descendant [object IdentAccess]`,
   )
 
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc []
+  [const someConst [.ret 10]]
+  20
+]
+`,
+    `[object Ret] can only be used as a statement`,
+  )
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
 [.use "jisp:prelude.mjs" *]
 
 [func someFunc0 [] [.ret]]
-[func someFunc1 [] [.ret 10]]
+[func someFunc1 [] [.ret] 10]
+[func someFunc2 [] 10 [.ret]]
+[func someFunc3 [] 10 [.ret] 20]
+[func someFunc4 [] [.ret 10]]
+[func someFunc5 [] [.ret 10] 20]
+[func someFunc6 [] 10 [.ret 20]]
+[func someFunc7 [] 10 [.ret 20] 30]
+[func someFunc8 [] [.ret 10] [.ret 20]]
 `,
 `
 function someFunc0 () {
 return;
 };
 function someFunc1 () {
+return;
 return 10;
+};
+function someFunc2 () {
+10;
+return;
+};
+function someFunc3 () {
+10;
+return;
+return 20;
+};
+function someFunc4 () {
+return 10;
+};
+function someFunc5 () {
+return 10;
+return 20;
+};
+function someFunc6 () {
+10;
+return 20;
+};
+function someFunc7 () {
+10;
+return 20;
+return 30;
+};
+function someFunc8 () {
+return 10;
+return 20;
 };
 `,
   )
@@ -215,7 +294,7 @@ function someFunc (one) {};
 `,
 `
 function someFunc (one) {
-one;
+return one;
 };
 `)
 
@@ -229,7 +308,7 @@ one;
 `
 function someFunc (one) {
 one;
-one;
+return one;
 };
 `)
 
@@ -256,7 +335,7 @@ return one;
 `
 function someFunc (one) {
 return one;
-one;
+return one;
 };
 `)
 
@@ -294,7 +373,7 @@ function someFunc (one, two) {};
 `,
 `
 function someFunc (one, two) {
-one;
+return one;
 };
 `)
 
@@ -307,7 +386,7 @@ one;
 `,
 `
 function someFunc (one, two) {
-two;
+return two;
 };
 `)
 
@@ -321,7 +400,7 @@ two;
 `
 function someFunc (one, two) {
 one;
-two;
+return two;
 };
 `)
 
@@ -336,7 +415,7 @@ two;
 function someFunc (one, two) {
 one;
 one;
-two;
+return two;
 };
 `)
 
@@ -352,7 +431,7 @@ function someFunc (one, two) {
 one;
 one;
 two;
-two;
+return two;
 };
 `)
 
@@ -368,7 +447,7 @@ function someFunc (one, two) {
 return one;
 one;
 two;
-two;
+return two;
 };
 `)
 
@@ -384,7 +463,7 @@ function someFunc (one, two) {
 one;
 return one;
 two;
-two;
+return two;
 };
 `)
 
@@ -400,7 +479,7 @@ function someFunc (one, two) {
 one;
 one;
 return two;
-two;
+return two;
 };
 `)
 
@@ -449,14 +528,25 @@ await t.test(async function test_Func_async() {
 `
 [.use "jisp:prelude.mjs" *]
 
-[func.async someFunc []
+[func.async someFunc0 []
+  [await 10]
+  [.ret 20]
+  [await 30]
+]
+
+[func.async someFunc1 []
   [await 10]
   [.ret 20]
   [.ret [await 30]]
 ]
 `,
 `
-async function someFunc () {
+async function someFunc0 () {
+await 10;
+return 20;
+return (await 30);
+};
+async function someFunc1 () {
 await 10;
 return 20;
 return (await 30);
