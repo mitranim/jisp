@@ -1,4 +1,4 @@
-My main difficulty is the syntax for property access, method calls, method chaining.
+Thoughts on the syntax for property access, method calls, method chaining.
 
 The new compiler currently uses the `.` syntax, just like JS. The lexer supports grouping `.key` with the preceding expression into one. As a result, `<expr>.key` becomes one expression, and this expression type supports namespace lookup, macro execution, etc. Basically the compiler has this special-case support for non-Lispy infix/postfix. Property chaining is fine, but method chaining is unusable for humans.
 
@@ -113,7 +113,7 @@ func0[]
 .meth5[]
 ```
 
-We could make an infix piping operator such as `|>` unnecessary by implementing a special macro that replaces itself with the previous expression, reordering the code. Let's say `↑` is this macro:
+We could make an infix piping operator such as `|>` unnecessary by implementing a macro (either as a regular macro, or something done at the lexer level) that replaces itself with the previous expression, reordering the code. Let's say `↑` is this macro:
 
 ```
 [func0]

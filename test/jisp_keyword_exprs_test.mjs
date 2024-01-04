@@ -137,7 +137,7 @@ one.two = two.three;
   )
 })
 
-await t.test(async function test_BoolNot() {
+await t.test(async function test_Not() {
   await testKeyword_0_1_invalid(`!`)
   await testKeyword_1_valid(`!`)
 
@@ -155,7 +155,7 @@ false;
 `)
 })
 
-await t.test(async function test_BoolNotNot() {
+await t.test(async function test_NotNot() {
   await testKeyword_0_1_invalid(`!!`)
   await testKeyword_1_valid(`!!`)
 

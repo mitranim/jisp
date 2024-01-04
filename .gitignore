@@ -13,7 +13,7 @@
 !/sublime
 !/test
 !/test_files
-!/jisp_misc
+!/misc
 
 mock_*
 stash_*

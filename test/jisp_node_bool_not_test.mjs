@@ -3,7 +3,9 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
-await t.test(async function test_BoolNot() {
+// FIXME drop
+
+await t.test(async function test_Not() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
@@ -11,7 +13,7 @@ await t.test(async function test_BoolNot() {
 
 [! 10 20]
 `,
-    `[object BoolNot] expected between 1 and 2 children, got 3 children`,
+    `[object Not] expected between 1 and 2 children, got 3 children`,
   )
 
   await jrt.testModuleCompile(

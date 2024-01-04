@@ -126,7 +126,7 @@ export class Remainder extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `%`}
 }
 
-export class BoolNot extends jnkem.KeywordExprMacro_0_1 {
+export class Not extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `false`}
   unaryPrefix() {return `!`}
   unarySuffix() {return ``}
@@ -136,11 +136,11 @@ export class BoolNot extends jnkem.KeywordExprMacro_0_1 {
 Technical note.
 
 In JS, `!!` is a combination of two occurrences of the operator `!`, and JS does
-not have operators `!!`, `!!!`, etc. That works because in JS, operator parsing
+not have operators `!!`, `!!!`, etc. That works in JS because operator parsing
 is based on a whitelist of special cases of "known" operators, which sometimes
 allows to stack unary operators without intermediary delimiters.
 
-In our system, operator parsing is generalized. We define a set of "operator
+In Jisp, operator parsing is generalized. We define a set of "operator
 characters", and any sequence of those characters without intervening
 delimiters is parsed as a single operator. At the parser level, there is no
 whitelist of "known" operators. Once parsed, operators act as regular
@@ -148,7 +148,7 @@ identifiers, with regular declaration lookup. See `IdentOper`. As a result, if
 we want to use `!!` in our code, it has to be declared separately in addition
 to `!`.
 */
-export class BoolNotNot extends jnkem.KeywordExprMacro_0_1 {
+export class NotNot extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `true`}
   unaryPrefix() {return `!!`}
   unarySuffix() {return ``}

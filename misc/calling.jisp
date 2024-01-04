@@ -1,72 +1,20 @@
-; Need decent method chaining.
+; In a sensible language:
+;   * Property getters = nullary methods.
+;   * Every call is unary and doesn't need delims.
+;   * Delims are used only for grouping.
 
-[class Text
-  [extend Node]
-  [func_static reg [] [throw [errMeth `regexp` this]]]
-  [func_static match [src] [[this.reg].exec [a.reqStr src]]]
+; Separating expressions from each other on a single line:
+10, 20, 30
 
-  [func_static parse [span]
-    ; Must return if the variable's value is nil.
-    [guard_some [const mat [this.match [span.rem]]]]
-
-    [const tar [new this]]
-    [tar.setSpan [span.withLen 0]]
-    [tar.fromMatch mat]
-
-    ; Equivalent.
-    ; ↓↓↓↓↓↓
-
-    [span.skip [[tar.getSpan].getLen]]
-    [span.skip [-> tar [.getSpan] [.getLen]]]
-    [-> tar [$.getSpan] [$.getLen] [span.skip $]]
-    span.skip[tar.getSpan[].getLen[]]
-
-    ; Postfix chaining. "←" stands for prev expression.
-    ; Possible: "→" for next expression.
-
-    tar.getSpan[].getLen[] -> span.skip[←]
-
-    ; Implicit postfix chaining.
-
-    tar.getSpan[].getLen[]
-    span.skip[←]
-
-    tar.getSpan[].getLen[], span.skip[←]
-
-    ; In a sensible language:
-    ;   * Property getters = nullary methods.
-    ;   * Every call is unary and doesn't need delims.
-    ;   * Delims are used only for grouping.
-    tar.span.len, span.skip ←
-    [tar.span.len], [span.skip ←]
-    tar, ←.span, ←.len, span.skip ←
-
-    ; Separating expressions from each other on a single line:
-    10, 20, 30
-
-    ; Same but multi-line:
-    10
-    20
-    30
-
-    ; ↑↑↑↑↑↑
-
-    tar
-  ]
-
-  [func fromMatch [mat]
-    [[this.getSpan].setLen [indexGet mat 0].length]
-    this
-  ]
-]
-
-
+; Same but multi-line:
+10
+20
+30
 
 ; fun 10 20 30
 ;   40
 ;   50
 ;   60
-
 
 fun
   10
@@ -82,7 +30,6 @@ one
   four
     five
     six
-
 
 one.two.three
 

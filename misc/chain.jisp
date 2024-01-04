@@ -1,0 +1,37 @@
+
+[const tar [chain
+  [new this]
+  [.setSpan [span.withLen 0]]
+  [.setMatch mat]
+]]
+
+[span.skip [chain [tar.reqSpan] [.ownLen]]]
+
+; ---
+
+[const tar [new this]]
+[tar.setSpan [span.withLen 0]]
+[tar.setMatch mat]
+
+; ---
+
+[span.skip [[tar.getSpan].getLen]]
+[span.skip [-> tar [.getSpan] [.getLen]]]
+[-> tar [$.getSpan] [$.getLen] [span.skip $]]
+span.skip[tar.getSpan[].getLen[]]
+
+; ---
+
+; Postfix chaining. "←" stands for prev expression.
+; Possible: "→" for next expression.
+
+tar.getSpan[].getLen[] -> span.skip[←]
+
+; ---
+
+; Implicit postfix chaining.
+
+tar.getSpan[].getLen[]
+span.skip[←]
+
+tar.getSpan[].getLen[], span.skip[←]

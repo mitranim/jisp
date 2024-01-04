@@ -15,16 +15,18 @@ export {Arr          as array}   from './jisp_node_arr.mjs'
 /*
 Redundancies. TODO choose one style and dedup.
 
-  `eq`   <->  `ops.mjs`.`===`
-  `neq`  <->  `ops.mjs`.`!==`
   `and`  <->  `ops.mjs`.`&&`
   `or`   <->  `ops.mjs`.`||`
+  `not`  <->  `ops.mjs`.`!`
+  `eq`   <->  `ops.mjs`.`===`
+  `neq`  <->  `ops.mjs`.`!==`
 */
 export {
-  Equal      as eq,
-  NotEqual   as neq,
   And        as and,
   Or         as or,
+  Not        as not,
+  Equal      as eq,
+  NotEqual   as neq,
   In         as in,
   Typeof     as typeof,
   Instanceof as instanceof,

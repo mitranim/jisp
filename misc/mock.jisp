@@ -1,0 +1,41 @@
+[.use `jisp:prelude.mjs` *]
+[.use `jisp:ops.mjs` *]
+[import `jisp:alias.mjs` *]
+[import `/Users/m/code/m/js/all.mjs` a]
+[import `./jisp_misc.mjs` jm]
+[import `./jisp_node.mjs` jn]
+
+[class Text
+  [.extend jn.Node]
+
+  [.func.static regexp [] [throw [jm.errMeth `regexp` this]]]
+
+  ; Requires implicit return.
+  [.func.static match [src] [[this.regexp].exec [a.reqStr src]]]
+
+  ; Requires implicit return.
+  [.func.static parse [span]
+    ; TODO better naming.
+    ; If the assigned value is nil, this should immediately return nil.
+    [const.guard mat [this.match [span.rem]]]
+
+    [const tar [chain
+      [new this]
+      [.setSpan [span.withLen 0]]
+      [.setMatch mat]
+    ]]
+
+    [span.skip [chain [tar.reqSpan] [.ownLen]]]
+    tar
+  ]
+
+  ; Requires implicit return.
+  [.func.static isValid [val] [jm.isFullMatch val [this.regexp]]]
+
+  ; Requires implicit return.
+  [.func setMatch [mat]
+    [const len [a.reqStr [get mat 0]].length]
+    [chain [this.reqSpan] [.setLen len]]
+    this
+  ]
+]
