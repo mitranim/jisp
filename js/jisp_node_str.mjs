@@ -10,20 +10,36 @@ export class Str extends jv.MixOwnValued.goc(jnt.Text) {
 }
 
 /*
-Represents a "raw" string, like backtick strings in Go. Unlike JS, but like Go,
-Jisp needs raw string syntax. Part of the reason is that unlike JS, but like Go,
-Jisp doesn't have special syntax for regexes, and instead must use a macro that
-takes a raw string and eventually compiles to JS regex syntax. There may be
-other cases.
+Represents a "raw" string delimited by backticks. Supports resizable delimiters:
+groups of subsequent backticks form "fences" of arbitrary length.
 
-FIXME: support resizable fences. Raw strings are unusable without that.
+A "raw" string has no support for escape sequences. All inner content is taken
+as-is, exactly, without any special conversion or interpretation.
+
+Motives for "raw" strings:
+
+  * As a general case, raw strings with resizable fences are convenient for
+    embedding arbitrary syntaxes / languages. The most common example is regexp
+    syntax, see below.
+
+  * As a special case, they're convenient for regexps. Unlike JS, Jisp doesn't
+    have a built-in syntax for regexp literals. Instead, it has to use a macro
+    that takes a raw string and eventually compiles to a JS regexp literal. Go
+    and Python use similar solutions, although with runtime functions rather
+    than macros.
 */
 export class StrBacktick extends Str {
-  static regexp() {return /^`([^`]*)`/}
+  static regexp() {return /^(?:`()`(?!`)|(`+)(?!`)([^]*?)(?<!`)(\2)(?!`))/}
 
   setMatch(mat) {
     super.setMatch(mat)
-    this.setVal(mat[1])
+
+    const body = mat[1] ?? mat[3]
+    if (a.isNil(body)) {
+      throw this.err(`internal error: regexp match was found but captured content was nil`)
+    }
+
+    this.setVal(body)
     return this
   }
 
@@ -32,11 +48,8 @@ export class StrBacktick extends Str {
       ``
       + '`'
       + this.ownVal()
-        // Included for completeness. This should never occur in instances
-        // parsed from source code, but may occur if the value is set
-        // programmatically during macroing.
-        .replaceAll('`', '\\`')
         .replaceAll(`\\`, `\\\\`)
+        .replaceAll('`', '\\`')
       + '`'
     )
   }

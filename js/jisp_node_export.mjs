@@ -11,6 +11,8 @@ Usage:
 
 TODO consider a similar macro for re-exporting from another module:
 
+  [exportFrom `./some_path.some_ext` *]
+
   [exportFrom `./some_path.some_ext` someName]
 
   [exportFrom `./some_path.some_ext` [someName aliasName]]

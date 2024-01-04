@@ -13,19 +13,20 @@ export const SRC_TEXT_SHORT = `
 ; comment
 "double quoted"
 \`grave quoted\`
+* && >>>
 $long_Ident_$123
 one.two.three
 [({30})]
 `.trim()
 
 /*
-This is unnecessary for shallow structures that use `MixInsp`. However, this is
-necessary for structures that don't use `MixInsp` or for deep structures
-(because this sets an infinite depth).
+Useful for inspection printing with a description, especially for structures
+that don't use `MixInsp` or for deep structures (because this sets an infinite
+depth).
 */
-export function prn(desc, val) {
-  console.log(desc, Deno.inspect(val, inspectOpt))
-}
+export function prn(desc, val) {console.log(desc, insp(val))}
+
+export function insp(val) {return Deno.inspect(val, inspectOpt)}
 
 export const inspectOpt = {
   depth: Infinity,
@@ -55,14 +56,12 @@ export function testCompiled(act, exp) {
 mismatch of compiled text and expected text
 
 actual:
----
+
 ${act}
----
 
 expected:
----
+
 ${exp}
----
 `)
   }
 }
