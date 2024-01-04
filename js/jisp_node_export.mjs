@@ -36,8 +36,8 @@ export class Export extends jnlm.ListMacro {
   }
 
   compile() {
-    const src = jn.compileNode(this.reqSrc())
-    const tar = jn.compileNode(this.optTar())
+    const src = jn.optCompileNode(this.reqSrc())
+    const tar = jn.optCompileNode(this.optTar())
 
     if (tar) {
       return `export {` + a.reqStr(src) + ` as ` + a.reqStr(tar) + `}`

@@ -28,5 +28,6 @@ await import(`./jisp_node_and_test.mjs`)
 await import(`./jisp_node_or_test.mjs`)
 await import(`./jisp_node_arr_test.mjs`)
 await import(`./jisp_keyword_exprs_test.mjs`)
+await import(`./jisp_node_class_test.mjs`)
 
 if (import.meta.main) ti.flush()

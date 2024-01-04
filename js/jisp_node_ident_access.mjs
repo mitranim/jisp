@@ -92,7 +92,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   compile() {
     return (
       ``
-      + a.reqStr(jn.compileNode(this.reqFirstChild()))
+      + jn.reqCompileNode(this.reqFirstChild())
       + a.reqStr(this.decompileOwn())
     )
   }

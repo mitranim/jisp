@@ -8,6 +8,7 @@ export class Let extends jnc.Const {
     this.reqStatement()
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
+    this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     return this.macroFrom(2)
   }

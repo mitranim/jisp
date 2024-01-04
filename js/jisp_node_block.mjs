@@ -29,7 +29,7 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   compileExpression() {
     const len = this.childCount()
     if (len <= 1) return `undefined`
-    if (len === 2) return jn.compileNode(this.reqChildAt(1))
+    if (len === 2) return jn.optCompileNode(this.reqChildAt(1))
     return this.reqPrn().compileParensWithExpressions(this.optChildSlice(1))
   }
 

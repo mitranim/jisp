@@ -61,4 +61,12 @@ export class ListMacro extends jnnl.NodeList {
     if (a.isInst(out, cls)) return out
     throw out.err(`${a.show(this)} expected the child node at index ${ind} to be either nil or an instance of ${a.show(cls)}, found ${a.show(out)}`)
   }
+
+  // TODO consider supporting variadic input, for cases like `MethodFunc`.
+  reqParentMatch(cls) {
+    this.req(cls, a.isCls)
+    const tar = this.reqParent()
+    if (a.isInst(tar, cls)) return tar
+    throw this.err(`${a.show(this)} requires its immediate parent to be an instance of ${a.show(cls)}, got parent ${a.show(tar)}`)
+  }
 }

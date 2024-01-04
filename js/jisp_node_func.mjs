@@ -17,7 +17,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   // Used by `a.pk` and `a.Coll`.
-  pk() {return this.reqIdent().reqCanDeclare().reqName()}
+  pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
   body() {return this.optChildSlice(3)}
@@ -25,6 +25,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(3)
+    this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     this.declareParams()
     return this.macroFrom(3)
@@ -55,7 +56,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   compilePrefix() {return `function`}
 
-  compileName() {return jn.compileNode(this.reqIdent())}
+  compileName() {return jn.optCompileNode(this.reqIdent())}
 
   compileParams() {
     return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())
@@ -82,14 +83,46 @@ export class FuncAsync extends Func {
 }
 
 /*
-Intended for class instance methods and for object literal methods.
-For our purposes, they're identical.
+TODO consider using `.reqParentMatch` to ensure that the parent is either a
+class node, or an object literal node.
 */
-export class MethodFunc extends Func {
-  static get async() {return MethodFuncAsync}
+export class MethodFuncBase extends Func {
+  /*
+  Override for `Func..reqDeclareLex`.
+
+  In JS, methods can be referenced only via property access, and can't be
+  referenced via unqualified identifiers. They add themselves to the prototype
+  of the current class or to the current object literal, but not to the current
+  lexical namespace.
+
+  Note that in JS, redundant / overlapping declarations of properties / methods
+  are valid. The last one takes priority. Ideally, we should detect collisions
+  at compile time.
+  */
+  reqDeclareLex() {}
+
   compilePrefix() {return ``}
 }
 
-export class MethodFuncAsync extends MethodFunc {
+/*
+Intended for class instance methods and for object literal methods.
+For our purposes, they're identical.
+*/
+export class MethodFunc extends MethodFuncBase {
+  static get async() {return MethodFuncAsync}
+  static get static() {return MethodFuncStatic}
+  compilePrefix() {return ``}
+}
+
+export class MethodFuncAsync extends MethodFuncBase {
   compilePrefix() {return `async`}
+}
+
+export class MethodFuncStatic extends MethodFuncBase {
+  static get async() {return MethodFuncStaticAsync}
+  compilePrefix() {return `static`}
+}
+
+export class MethodFuncStaticAsync extends MethodFuncBase {
+  compilePrefix() {return `static async`}
 }

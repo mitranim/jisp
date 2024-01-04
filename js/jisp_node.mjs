@@ -221,10 +221,24 @@ export class NodeColl extends a.Coll {
   reqVal(val) {return a.reqInst(val, Node)}
 }
 
-export function compileNode(src) {
+export function optCompileNode(src) {
   if (a.isNil(src)) return ``
   a.reqInst(src, Node)
-  try {return a.reqStr(src.compile())}
+
+  const out = compileNode(src)
+  if (a.isStr(out)) return out
+  throw src.err(`expected ${a.show(src)} to compile to a string, got ${a.show(out)}`)
+}
+
+export function reqCompileNode(src) {
+  a.reqInst(src, Node)
+  const out = compileNode(src)
+  if (a.isValidStr(out)) return out
+  throw src.err(`expected ${a.show(src)} to compile to a non-empty string, got ${a.show(out)}`)
+}
+
+function compileNode(src) {
+  try {return src.compile()}
   catch (err) {throw src.toErr(err)}
 }
 

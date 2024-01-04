@@ -16,7 +16,7 @@ export class Ret extends jnlm.ListMacro {
 
   compile() {
     const val = this.optVal()
-    if (val) return `return ` + a.reqStr(jn.compileNode(val))
+    if (val) return `return ` + jn.optCompileNode(val)
     return `return`
   }
 }

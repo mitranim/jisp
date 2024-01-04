@@ -42,7 +42,7 @@ export class KeywordExprMacro extends jnlm.ListMacro {
   compileUnary(src) {
     return a.spaced(
       a.reqStr(this.unaryPrefix()),
-      a.reqStr(jn.compileNode(src)),
+      jn.optCompileNode(src),
       a.reqStr(this.unarySuffix()),
     )
   }
@@ -91,9 +91,9 @@ export class KeywordExprMacro_2 extends KeywordExprMacro {
 
   compile() {
     return this.compileStatementOrExpression(a.spaced(
-      a.reqStr(jn.compileNode(this.reqChildAt(1))),
+      jn.optCompileNode(this.reqChildAt(1)),
       a.reqStr(this.binaryInfix()),
-      a.reqStr(jn.compileNode(this.reqChildAt(2))),
+      jn.optCompileNode(this.reqChildAt(2)),
     ))
   }
 }

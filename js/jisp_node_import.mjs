@@ -45,7 +45,7 @@ export class Import extends jnib.ImportBase {
     const refs = jm.mapUniq(this.optNsLive()?.optRefs(), a.pk).join(`, `)
 
     const named = name ? (
-      `import * as ${a.reqStr(jn.compileNode(name))} from ${a.reqStr(addr)}`
+      `import * as ${jn.reqCompileNode(name)} from ${a.reqStr(addr)}`
     ) : ``
 
     /*
@@ -71,7 +71,7 @@ export class Import extends jnib.ImportBase {
       + a.reqStr(
         a.isSome(path)
         ? JSON.stringify(a.reqStr(path))
-        : jn.compileNode(this.reqAddr())
+        : jn.optCompileNode(this.reqAddr())
       )
       + `)`
     )

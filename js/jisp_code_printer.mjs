@@ -16,7 +16,7 @@ export class CodePrinter extends a.Emp {
   mapCompact(src, fun) {return a.compact(a.arr(src).map(fun, this))}
 
   /*
-  Same as `jisp_node.mjs` → `compileNode`.
+  Same as `jisp_node.mjs` → `optCompileNode`.
   Duplicated here to minimize cyclic imports.
   TODO consider deduping.
   */

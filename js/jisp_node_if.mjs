@@ -68,13 +68,13 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   // TODO consider additional parentheses.
-  compileExpressionTest() {return jn.compileNode(this.reqTest())}
+  compileExpressionTest() {return jn.optCompileNode(this.reqTest())}
 
   // TODO consider additional parentheses.
-  compileExpressionThen() {return jn.compileNode(this.optThen()) || `undefined`}
+  compileExpressionThen() {return jn.optCompileNode(this.optThen()) || `undefined`}
 
   // TODO consider additional parentheses.
-  compileExpressionElse() {return jn.compileNode(this.optElse()) || `undefined`}
+  compileExpressionElse() {return jn.optCompileNode(this.optElse()) || `undefined`}
 
   isChildStatement(val) {
     super.isChildStatement(val)

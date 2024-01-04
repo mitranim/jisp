@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as je from './jisp_err.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnf from './jisp_node_func.mjs'
@@ -21,7 +22,7 @@ orphan form of `IdentAccess`. Examples:
 */
 export class Class extends jnlm.ListMacro {
   // Used by `a.pk` and `a.Coll`.
-  pk() {return this.reqIdent().reqCanDeclare().reqName()}
+  pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
 
   // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
@@ -35,12 +36,13 @@ export class Class extends jnlm.ListMacro {
   }
 
   #extend = undefined
-  setExtend(val) {return this.#extend = this.reqInst(val, jn.Node), this}
+  setExtend(val) {return this.#extend = this.reqInst(val, ClassExtend), this}
   optExtend() {return this.#extend}
 
   macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountMin(2)
+    this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     return this.macroFrom(2)
   }
@@ -58,41 +60,60 @@ export class Class extends jnlm.ListMacro {
   }
 
   compilePrefix() {return `class`}
-  compileName() {return jn.compileNode(this.reqIdent())}
-  compileExtend() {return a.optPre(jn.compileNode(this.optExtend()), `extends `)}
+  compileName() {return jn.optCompileNode(this.reqIdent())}
+  compileExtend() {return a.laxStr(this.optExtend()?.compileExtend())}
   compileBody() {return this.reqPrn().compileBracesWithStatements(this.optChildSlice(2))}
   isChildStatement() {return true}
 }
 
 export class ClassExtend extends jnlm.ListMacro {
   macro() {
+    this.reqParentMatch(Class)
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
+    this.reqChildCountMin(2)
     this.macroSyncFrom(1)
-    this.reqAncMatch(Class).setExtend(this.reqChildAt(1))
+    this.reqAncMatch(Class).setExtend(this)
     return this
   }
 
-  /*
-  Note: the compilation of the JS "extends" clause is handled by `Class`.
-  This macro is used purely for side effects.
-  */
   compile() {return ``}
+
+  compileExtend() {
+    let prev = ``
+    let ind = 0
+    while (++ind < this.childCount()) {
+      const next = jn.reqCompileNode(this.reqChildAt(ind))
+      prev = prev ? (next + `(` + prev + `)`) : next
+    }
+    return a.optPre(prev, `extends `)
+  }
 }
 
-export class ClassLet extends jnl.Let {
+export class ClassLetBase extends jnl.Let {
   macro() {
+    this.reqParentMatch(Class)
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
     this.reqIdent()
     return this.macroFrom(2)
   }
 
+  // Override for `Node..reqDeclareLex`.
+  reqDeclareLex() {}
+}
+
+export class ClassLet extends ClassLetBase {
+  static get static() {return ClassLetStatic}
   compilePrefix() {return ``}
+}
+
+export class ClassLetStatic extends ClassLetBase {
+  compilePrefix() {return `static`}
 }
 
 export class ClassBlock extends jnb.Block {
   macro() {
+    this.reqParentMatch(Class)
     this.reqStatement()
     return super.macro()
   }
