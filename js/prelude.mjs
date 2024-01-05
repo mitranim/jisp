@@ -10,7 +10,8 @@ export {Throw        as throw}   from './jisp_node_throw.mjs'
 export {New          as new}     from './jisp_node_new.mjs'
 export {CommentMacro as comment} from './jisp_node_comment_macro.mjs'
 export {Declare      as declare} from './jisp_node_declare.mjs'
-export {Arr          as array}   from './jisp_node_arr.mjs'
+export {List         as list}    from './jisp_node_list.mjs'
+export {Dict         as dict}    from './jisp_node_dict.mjs'
 
 /*
 Redundancies. TODO choose one style and dedup.

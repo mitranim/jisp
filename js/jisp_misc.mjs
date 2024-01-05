@@ -498,3 +498,16 @@ export function own(tar, key) {
   if (a.hasOwn(tar, key)) return
   Object.defineProperty(tar, key, {writable: true})
 }
+
+export function mapPair(src, fun) {
+  src = a.arr(src)
+  a.reqFun(fun)
+
+  const len = src.length
+  if (len % 2) throw Error(`expected an even number of elements, got ${a.show(len)} elements`)
+
+  let out = []
+  let ind = 0
+  while (ind < len) out.push(fun.call(this, src[ind++], src[ind++]))
+  return out
+}

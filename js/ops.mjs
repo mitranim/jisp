@@ -14,10 +14,11 @@ module should be used with a mixin-style import (star-import), while the
 */
 
 /*
-TODO choose better character. The colon character is more suited for the object
-literal macro.
+TODO choose a better character for the list macro. The colon character is more
+suited for the object literal macro.
 */
-export {Arr as ':'} from './jisp_node_arr.mjs'
+export {List as ':'} from './jisp_node_list.mjs'
+export {Dict as '::'} from './jisp_node_dict.mjs'
 
 export {
   Assign                as '=',
