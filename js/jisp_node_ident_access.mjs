@@ -61,15 +61,13 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   }
 
   // Override for `MixNamed`.
-  optName() {return a.stripPre(this.decompileOwn(), this.constructor.separator())}
-
-  decompileOwn() {return super.decompile()}
+  optName() {return a.stripPre(this.optDecompileOwn(), this.constructor.separator())}
 
   // Override for `Node`.
   decompile() {
-    return (
+    return this.optDecompileSrcNode() ?? (
       a.laxStr(this.optFirstChild()?.decompile()) +
-      a.reqStr(this.decompileOwn())
+      a.reqStr(this.reqDecompileOwn())
     )
   }
 
@@ -93,7 +91,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     return (
       ``
       + jn.reqCompileNode(this.reqFirstChild())
-      + a.reqStr(this.decompileOwn())
+      + a.reqStr(this.reqDecompileOwn())
     )
   }
 

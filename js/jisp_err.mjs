@@ -3,25 +3,47 @@ import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 
 export class Err extends Error {
+  /*
+  Workaround for a bug in some JS engines. Allows error messages to properly
+  include the name of the current error class, in a way that works for
+  subclasses. Without this override, in some JS engines, error name is always
+  `Error`. This includes `Deno` at the time of writing, version `1.24.3`.
+  */
   get name() {return this.constructor.name}
-}
 
-// FIXME: whenever possible, this should include file path.
-export class CodeErr extends Err {
-  constructor(msg, {cause, span}) {
-    super(jm.joinLines(a.reqStr(msg), span?.context?.()), {cause})
-    this.msg = msg
-    this.span = span
+  /*
+  Should be used to indicate that the error message includes references to
+  relevant source code. This flag may be used to decide whether to "upgrade"
+  one error to another when additional context is available.
+
+  Indicating this by a dedicated error class would be "cleaner", but would make
+  error-generating code more awkward because references to source code tend to
+  be optional. We'd have to choose the right error class based on whether or
+  not we have access to source code. Not so clean after all.
+  */
+  hasCode = false
+  setHasCode(val) {return this.hasCode = a.reqBool(val), this}
+  optHasCode() {return this.hasCode}
+
+  static fromNode(node, msg, opt) {
+    return this.fromSpan(node?.optSpan(), msg, opt)
   }
 
-  static atNode(node, msg) {return new this(msg, {span: node.optSpan()})}
+  static fromSpan(span, msg, opt) {
+    if (a.isNil(span)) return new this(msg, opt)
+
+    const ctx = span.context()
+    if (!a.optStr(ctx)) return new this(msg, opt)
+
+    return new this(jm.joinParagraphs(msg, ctx), opt).setHasCode(true)
+  }
 }
 
 // Placed here, rather than in the tokenizer file, to minimize cyclic imports.
-export class TokenizerErr extends CodeErr {}
+export class TokenizerErr extends Err {}
 
 // Placed here, rather than in the lexer file, to minimize cyclic imports.
-export class LexerErr extends CodeErr {}
+export class LexerErr extends Err {}
 
 /*
 Provides shortcuts for throwing errors with additional contextual information,
@@ -34,7 +56,7 @@ export class MixErrer extends a.DedupMixinCache {
     return class MixErrer extends cls {
       // Subclasses should override this to create errors with contextual
       // information, such as references to source code.
-      err(...val) {return super.err?.(...val) || new Err(...val)}
+      err(...val) {return super.err?.(...val) || Error(...val)}
 
       errMeth(name) {throw this.err(jm.msgMeth(name, this))}
 

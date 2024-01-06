@@ -49,4 +49,4 @@ endif
 	$(OK)
 
 mock:
-	$(DENO) ./mock/mock.mjs
+	$(DENO) ./mock/run.mjs

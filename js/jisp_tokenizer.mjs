@@ -106,11 +106,7 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   //   )
   // }
 
-  err(msg, opt) {
-    opt = a.laxDict(opt)
-    opt.span = this.optSpan()
-    return new je.TokenizerErr(msg, opt)
-  }
+  err(msg, opt) {return je.TokenizerErr.fromSpan(this.optSpan(), msg, opt)}
 
   reqFound(node) {
     if (node) return

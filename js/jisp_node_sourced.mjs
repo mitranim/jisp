@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jc from './jisp_conf.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 import * as jn from './jisp_node.mjs'
 
@@ -16,7 +17,7 @@ export class MixOwnNodeSourced extends a.DedupMixinCache {
       optSrcNode() {return this.#srcNode}
 
       setSrcNode(val) {
-        a.reqInst(val, jn.Node)
+        this.reqInst(val, jn.Node)
         if (jc.conf.getDebug()) this.reqValidSrcNode(val)
         this.#srcNode = val
         return this
@@ -29,21 +30,41 @@ export class MixOwnNodeSourced extends a.DedupMixinCache {
         )
       }
 
-      reqValidSrcNode(src) {
+      reqValidSrcNode(src) {return this.reqAcyclicSrcNode(src)}
+
+      reqAcyclicSrcNode(src) {
+        this.reqInst(src, jn.Node)
         if (src === this) {
           throw this.err(`${a.show(this)} is not allowed to be its own source node`)
         }
 
-        let tar = src
-        while ((tar = optSrcNode(tar))) {
-          if (tar === this) {
-            throw this.err(`forbidden cycle between end node ${a.show(this)} and source node ${a.show(src)}`)
-          }
+        let cur = src
+        while ((cur = optSrcNode(cur))) {
+          if (cur === this) throw this.errSrcNodeCycle(src)
         }
         return src
       }
 
-      decompile() {return this.optSrcNode()?.decompile()}
+      errSrcNodeCycle(src) {
+        const tarCtx = this.context()
+        const srcCtx = src.context()
+
+        /*
+        Semi-placeholder. This error message is hard to understand due to lack
+        of visual separation between sections. TODO improve.
+        */
+        return new this.Err(jm.joinParagraphs(
+          `forbidden cycle between two nodes`,
+          a.spaced(`target node:`, a.show(this)),
+          tarCtx ? jm.joinParagraphs(`target node context:`, tarCtx) : ``,
+          a.spaced(`source node:`, a.show(src)),
+          srcCtx ? jm.joinParagraphs(`source node context:`, srcCtx) : ``,
+        )).setHasCode(!!tarCtx || !!srcCtx)
+      }
+
+      // decompile() {
+      //   return super.decompile?.() ?? this.optSrcNode()?.decompile()
+      // }
     }
   }
 }

@@ -9,7 +9,13 @@ time and validate references. Disable by default for performance. Opt-in for
 production builds.
 */
 export const conf = new class Conf extends a.Emp {
-  // TODO change to `false` by default. Set to `true` in testing.
+  /*
+  TODO rename from "debug" to something else. This setting governs various
+  internal sanity checks, which are relevant and useful for users of this
+  library. This setting can optionally be disabled for marginally better
+  performance. It does not govern debug logging which is typical for "debug"
+  options in various systems.
+  */
   #debug = true
   setDebug(val) {return this.#debug = a.reqBool(val), this}
   getDebug() {return this.#debug}

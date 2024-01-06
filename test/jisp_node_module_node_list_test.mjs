@@ -11,6 +11,15 @@ import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnia from '../js/jisp_node_ident_access.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
+/*
+This file should test only parsing and compiling, without macroing, and should
+be executed before any tests that involve macroing.
+*/
+
+/*
+We add the code printer here because `DelimNodeList` requires it,
+and normally it comes from `Root` which we don't want to involve here.
+*/
 class PrintableModuleNodeList extends jcpd.MixOwnCodePrinted.goc(jnmnl.ModuleNodeList) {}
 
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
@@ -75,7 +84,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
       t.is(src.compile(), `identNamespace`)
     }
 
-    t.is(node.decompileOwn(), `.identQualified`)
+    t.is(node.reqDecompileOwn(), `.identQualified`)
     t.is(node.decompile(), `identNamespace.identQualified`)
     t.is(node.compile(), `identNamespace.identQualified`)
   }

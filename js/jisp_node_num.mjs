@@ -4,35 +4,35 @@ import * as jnt from './jisp_node_text.mjs'
 import * as jv from './jisp_valued.mjs'
 
 /*
-FIXME support:
+TODO:
 
-  * `IntBin`
-  * `BigIntBin`
-  * `FracBin`
-  * `IntOct`
-  * `BigIntOct`
-  * `FracOct`
-  * `IntDec`
-  * `BigIntDec`
-  * `FracDec`
-  * `IntHex`
-  * `BigIntHex`
-  * `FracHex`
+  * Consider supporting arbitrary radix.
+    * Possible syntax (from Clojure):
+      * `2r01`
+      * `10r0123456789`
+      * `16r0123456789abcdef`
+    * May define a subclass with arbitrary radix support, and leave `Num` for
+      the default case of implicit radix 10.
+  * Consider separate classes and parsing for float literals (naming "float" or
+    "fract") and integer literals (naming "int").
+
+TODO: support for JS bigints (new node class).
 */
 export class Num extends jv.MixOwnValued.goc(jnt.Text) {
   static regexp() {return /^-?\d+(_\d+)*(?:[.]\d+(_\d+)*)?(?![\w$])/}
 
-  ownVal() {return super.ownVal() ?? NaN}
+  macro() {return this}
+
+  compile() {return this.decompile()}
+
   setVal(val) {return super.setVal(this.req(val, a.isFin))}
 
-  setMatch(mat) {
-    super.setMatch(mat)
-    this.setVal(this.constructor.parseFloat(a.reqStr(mat[0])))
-    return this
+  ownVal() {
+    if (a.isNil(super.ownVal())) {
+      this.setVal(this.constructor.parseFloat(this.reqDecompileOwn()))
+    }
+    return super.ownVal()
   }
-
-  macro() {return this}
-  compile() {return this.decompile()}
 
   static parseFloat(src) {
     a.reqStr(src)

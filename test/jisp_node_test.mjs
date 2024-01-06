@@ -3,84 +3,254 @@ import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jsp from '../js/jisp_span.mjs'
-import * as jnv from '../js/jisp_node_val.mjs'
-import * as jnnu from '../js/jisp_node_num.mjs'
-import * as jniu from '../js/jisp_node_ident_unqual.mjs'
+import * as jn from '../js/jisp_node.mjs'
 
-/* TODO split into test files for individual types. */
+/*
+This file should test lower-level behaviors of `Node` that don't depend on
+parsing, macroing, or compilation, but participate in those features. This
+should be executed before tests for the higher-level features.
+*/
 
-// Incomplete. TODO test termination.
-t.test(function test_Num_parse() {
-  t.is(
-    testParseFull(jnnu.Num, `-12_345.6_7_8`).ownVal(),
-    -12_345.6_7_8,
-  )
-})
+function makeSpan(src) {return new jsp.StrSpan().init(src)}
 
-function testParseFull(cls, src) {
-  const srcSpan = new jsp.StrSpan().init(src)
-  t.is(srcSpan.ownPos(), 0)
-  t.is(srcSpan.ownLen(), src.length)
+class NodeOne extends jn.Node {}
+class NodeTwo extends jn.Node {}
+class NodeThree extends jn.Node {}
 
-  const node = cls.parse(srcSpan)
-  t.is(node.reqSpan().decompile(), src)
-  t.is(srcSpan.ownPos(), src.length)
-  t.is(srcSpan.ownLen(), src.length)
+function makeNodes() {
+  const span = makeSpan(`one
+two
+three`)
 
-  return node
+  return [
+    new NodeOne().setSpan(span.withPos(0)),
+    new NodeTwo().setSpan(span.withPos(4)),
+    new NodeThree().setSpan(span.withPos(8)),
+  ]
 }
 
-t.test(function test_IdentUnqual() {
-  const cls = jniu.IdentUnqual
+t.test(function test_Node_error_with_source_context() {
+  const node = new NodeOne()
 
-  // TODO more cases.
-  t.test(function test_parse() {
-    testParseFull(cls, `one`)
-  })
+  tu.testErrWithoutCode(t.throws(() => node.macro(), Error, `method "macro" not fully implemented on [object NodeOne]`))
 
-  t.test(function test_isValid() {
-    t.ok(cls.isValid(`_`))
-    t.ok(cls.isValid(`$`))
-    t.ok(cls.isValid(`a`))
-    t.ok(cls.isValid(`abc`))
-    t.ok(cls.isValid(`_abc`))
-    t.ok(cls.isValid(`$abc`))
-    t.ok(cls.isValid(`_12`))
-    t.ok(cls.isValid(`$12`))
-    t.ok(cls.isValid(`a12`))
-    t.ok(cls.isValid(`abc12`))
+  const span = makeSpan(`some_source_code`)
+  node.setSpan(span)
 
-    t.no(cls.isValid(``))
-    t.no(cls.isValid(`12`))
-    t.no(cls.isValid(` `))
-    t.no(cls.isValid(`one.two`))
-  })
+  tu.testErrWithCode(t.throws(() => node.macro(), Error, `method "macro" not fully implemented on [object NodeOne]
+
+row:col: 1:1
+
+source code preview:
+
+some_source_code`))
+
+  tu.testErrWithCode(t.throws(() => node.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+row:col: 1:1
+
+source code preview:
+
+some_source_code`))
+
+  span.init(`
+one
+two
+three
+four
+`)
+  span.setPos(6)
+
+  tu.testErrWithCode(t.throws(() => node.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+row:col: 3:2
+
+source code preview:
+
+wo
+three
+four`))
 })
 
-t.test(function test_Val() {
-  function make(val) {return new jnv.Val().setVal(val)}
-  function test(src, exp) {t.eq(make(src).compile(), exp)}
+t.test(function test_Node_source_node_cycle_prevention() {
+  const [one, two, three] = makeNodes()
 
-  test(undefined, `undefined`)
-  test(null, `null`)
-  test(false, `false`)
-  test(true, `true`)
-  test(10, `10`)
-  test(20.30, `20.3`)
-  test(`str`, `"str"`)
-  test([], `[]`)
-  test([undefined, null, true, 10.20, `str`], `[undefined, null, true, 10.2, "str"]`)
-  test([[]], `[[]]`)
-  test([[[]]], `[[[]]]`)
-  test([{}], `[{}]`)
-  test({}, `{}`)
-  test({one: 10}, `{one: 10}`)
-  test({one: 10, two: 20}, `{one: 10, two: 20}`)
-  test({one: `two`}, `{one: "two"}`)
-  test({one: `two`, three: `four`}, `{one: "two", three: "four"}`)
-  test({12.34: 56}, `{12.34: 56}`)
-  test({'-10': 20}, `{"-10": 20}`)
-  test({'one.two': `three.four`}, `{"one.two": "three.four"}`)
+  tu.testErrWithCode(t.throws(() => one.setSrcNode(one), Error, `[object NodeOne] is not allowed to be its own source node
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three`))
+
+  tu.testErrWithCode(t.throws(() => two.setSrcNode(two), Error, `[object NodeTwo] is not allowed to be its own source node
+
+row:col: 2:1
+
+source code preview:
+
+two
+three`))
+
+  tu.testErrWithCode(t.throws(() => three.setSrcNode(three), Error, `[object NodeThree] is not allowed to be its own source node
+
+row:col: 3:1
+
+source code preview:
+
+three`))
+
+  two.setSrcNode(one)
+
+  /*
+  This verifies prevention of direct cycles.
+
+  Semi-placeholder. This error message is hard to understand due to lack of
+  visual separation between sections. TODO improve.
+  */
+  tu.testErrWithCode(t.throws(() => one.setSrcNode(two), Error, `forbidden cycle between two nodes
+
+target node: [object NodeOne]
+
+target node context:
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three
+
+source node: [object NodeTwo]
+
+source node context:
+
+row:col: 2:1
+
+source code preview:
+
+two
+three`))
+
+  t.is(one.optSrcNode(), undefined)
+
+  three.setSrcNode(two)
+
+  /*
+  This verifies prevention of indirect cycles.
+
+  Semi-placeholder. This error message is hard to understand due to lack of
+  visual separation between sections. TODO improve.
+  */
+  tu.testErrWithCode(t.throws(() => one.setSrcNode(three), Error, `forbidden cycle between two nodes
+
+target node: [object NodeOne]
+
+target node context:
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three
+
+source node: [object NodeThree]
+
+source node context:
+
+row:col: 3:1
+
+source code preview:
+
+three`))
+
+  t.is(one.optSrcNode(), undefined)
+})
+
+t.test(function test_Node_source_node_tracing_in_errors() {
+  const [one, two, three] = makeNodes()
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three`))
+
+  tu.testErrWithCode(t.throws(() => two.compile(), Error, `method "compile" not fully implemented on [object NodeTwo]
+
+row:col: 2:1
+
+source code preview:
+
+two
+three`))
+
+  tu.testErrWithCode(t.throws(() => three.compile(), Error, `method "compile" not fully implemented on [object NodeThree]
+
+row:col: 3:1
+
+source code preview:
+
+three`))
+
+  one.setSrcNode(two)
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three
+
+context of source node:
+
+row:col: 2:1
+
+source code preview:
+
+two
+three`))
+
+  two.setSrcNode(three)
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+row:col: 1:1
+
+source code preview:
+
+one
+two
+three
+
+context of source node:
+
+row:col: 2:1
+
+source code preview:
+
+two
+three
+
+context of source node:
+
+row:col: 3:1
+
+source code preview:
+
+three`))
 })
 
 if (import.meta.main) ti.flush()

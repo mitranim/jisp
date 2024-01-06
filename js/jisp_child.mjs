@@ -28,7 +28,9 @@ export class MixChild extends a.DedupMixinCache {
         )
       }
 
-      reqValidParent(par) {
+      reqValidParent(par) {return this.reqAcyclicParent(par)}
+
+      reqAcyclicParent(par) {
         if (par === this) {
           throw this.err(`${a.show(this)} is not allowed to be its own parent`)
         }

@@ -16,36 +16,70 @@ import * as jlv from './jisp_live_valued.mjs'
 /*
 Base class for all AST nodes.
 
-----
+## Features
 
-The lexer constructs an AST where all parent-child relations are bilateral:
+The base class implements "infrastructural" functionality common between all
+AST nodes, including features like referring back to source code, dealing with
+node-to-node relations, generating descriptive errors, and more. See the
+"mixin" superclasses for supported features.
 
-             parent
-  role=child ↓    ↑ role=parent
-             child0
+## Relations
 
-Somem macro operations involve replacing nodes with other nodes. In such cases,
-some relations become unilateral.
+The base class `Node` supports the following relations:
 
-  * The parent acquires a new child, bilaterally.
-  * The old child unilaterally remembers the parent.
-  * The new child unilaterally remembers the old child.
+  * `MixChild` implements relation from child to parent.
+  * `MixOwnNodeSourced` implements relation from derived node to source node.
 
-             parent
-  role=child ↓    ↑ role=parent
-             child1
+The base class does not implement relations from parent to child. Such relations
+are implemented by certain subclasses such as `NodeList`, which uses
+`MixParentOneToMany`, or `IdentAccess`, which uses `MixParentOneToOne`.
 
-             parent
-                  ↑ role=parent
-             child0
+The main purpose of our `Lexer` is to convert a flat stream of tokens into a
+tree of parent and child nodes. Each "parent node" ensures that its child nodes
+consider it their parent node, resulting in bilateral relations:
 
-             child1 → child0
-                role=src
+               parent
+  role = child ↓    ↑ role = parent
+               child
 
-Note: while the AST relations are by definition cyclic, parent→child relations
-must avoid cycles, forming a tree. At the time of writing, `MixChild` and
-`MixOwnNodeSourced` prevent cycles. If we add more common interfaces between
-nodes, they must prevent cycles too.
+During macroing, we often replace nodes with other nodes. This changes the
+parent-to-child relations, and also uses the derived-to-source relations to
+trace derived nodes back to source nodes.
+
+Example of relation changes due to macroing.
+
+Step 0.
+
+               parent
+  role = child ↓    ↑ role = parent
+               child0
+
+Step 1.
+
+Macroing `child0` causes it to replace itself with `child1`. The parent gets a
+new child, the new child gets the old parent, bilaterally.
+
+                parent
+   role = child ↓    ↑ role = parent
+                child1
+
+The new child refers to the old child as its source node, unilaterally.
+
+                child1
+  role = source ↓
+                child0
+
+The old child keeps its old parent, unilaterally.
+
+                parent
+                     ↑ role = parent
+                child0
+
+Note: each relation type must avoid cycles. At the time of writing, `MixChild`
+and `MixOwnNodeSourced` prevent cycles. `MixParentOneToOne` and
+`MixParentOneToMany` do not prevent cycles directly, but they should prevent
+cycles indirectly, by ensuring that each child node refers to the parent, which
+involves `MixChild`, which should prevent cycles.
 */
 export class Node extends (
   jlv.MixLiveValuedInner.goc(
@@ -53,6 +87,8 @@ export class Node extends (
       jcpd.MixCodePrinted.goc(
         jnsd.MixOwnNodeSourced.goc(
           jsn.MixOwnSpanned.goc(
+            // `MixParent` is added here for `.reqChildParentMatch`.
+            // It does not implement actual storage of child nodes.
             jp.MixParent.goc(
               jch.MixChild.goc(
                 ji.MixInsp.goc(
@@ -70,24 +106,30 @@ export class Node extends (
   get Span() {return jsp.StrSpan}
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
-  get CodeErr() {return je.CodeErr}
+  get Err() {return je.Err}
 
   err(msg, opt) {
-    const span = this.optSpan()
-    if (!span) return super.err(msg, opt)
+    const ctx = this.contextDeep()
+    if (!ctx) return new this.Err(msg, opt)
+    return new this.Err(jm.joinParagraphs(msg, ctx), opt).setHasCode(true)
+  }
 
-    opt = a.laxDict(opt)
-    opt.span = span
-    return new this.CodeErr(msg, opt)
+  context() {return a.laxStr(this.optSpan()?.context())}
+
+  contextDeep() {
+    const tar = this.context()
+    const src = this.optSrcNode()?.contextDeep()
+    if (!src) return tar
+    return jm.joinParagraphs(tar, jm.joinParagraphs(`context of source node:`, src))
   }
 
   /*
   Error conversion. When possible and relevant, this should adorn the error with
-  additional context. In particular, it should convert non-`CodeErr` to
-  `CodeErr`.
+  additional context.
   */
   toErr(err) {
-    if ((a.isInst(err, je.CodeErr) && err.span) || !this.optSpan()) return err
+    if (!this.optSpan()) return err
+    if (a.isInst(err, je.Err) && err.optHasCode()) return err
     return this.err(jm.renderErrLax(err), {cause: err})
   }
 
@@ -123,17 +165,13 @@ export class Node extends (
   macroList(val) {return val}
 
   compile() {throw this.errMeth(`compile`)}
+  decompile() {return a.laxStr(this.optDecompileSrcNode() ?? this.optDecompileOwn())}
 
-  /*
-  TODO consider moving `MixOwnNodeSourced` from `Node` elsewhere, and removing
-  this override. May require updates to `replaceNode`.
-  */
-  decompile() {
-    return a.laxStr(
-      this.optSrcNode()?.decompile() ??
-      this.optSpan()?.decompile()
-    )
-  }
+  optDecompileOwn() {return this.optSpan()?.decompile()}
+  reqDecompileOwn() {return a.reqStr(this.reqSpan().decompile())}
+
+  optDecompileSrcNode() {return this.optSrcNode()?.decompile()}
+  reqDecompileSrcNode() {return a.reqStr(this.reqSrcNode().decompile())}
 
   /*
   Minor shortcut for subclasses that may compile either in expression mode or in

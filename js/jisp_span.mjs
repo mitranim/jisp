@@ -86,18 +86,29 @@ export class StrSpan extends Span {
   rowCol() {return new jrc.RowCol().fromUtf16(this.ownSrc(), this.ownPos())}
 
   /*
-  FIXME:
+  TODO:
 
     * Consider including preceding code (requires highlighting).
     * Consider indentation.
     * Consider colors.
     * Consider highlighting specific region with carets.
+    * Instead of displaying only `row:col`, we should display `path:row:col`
+      when file path is available.
+
+  When we implement reporting of file paths, we should use the well-known format
+  that looks like the following examples, where `123:456` stands for `row:col`.
+
+    some/path:123:456
+    /some/path:123:456
+    file:///some/path:123:456
   */
   context() {
-    return jm.joinLines(
-      // `position (UTF-16): ` + this.ownPos(),
-      `row:col: ` + this.rowCol().strShort(),
-      `source:\n---\n` + jm.preview(this.rem()),
+    const rowCol = this.rowCol()
+    const preview = jm.preview(this.rem())
+
+    return jm.joinParagraphs(
+      `row:col: ` + rowCol.strShort(),
+      preview ? jm.joinParagraphs(`source code preview:`, preview) : ``,
     )
   }
 }

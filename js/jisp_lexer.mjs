@@ -61,7 +61,8 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
   }
 
   reqAdvanced(pos, node) {
-    if (this.reqSpan().ownPos() > pos) return
-    throw je.LexerErr.atNode(node, `failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
+    const span = this.reqSpan()
+    if (span.ownPos() > pos) return
+    throw je.LexerErr.fromSpan(span, `failed to advance position of ${a.show(this)} at node ${a.show(node)}`)
   }
 }

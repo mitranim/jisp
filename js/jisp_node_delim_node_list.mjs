@@ -20,7 +20,7 @@ export class DelimNodeList extends jnnl.NodeList {
     const head = span.optHead()
 
     if (!head) return undefined
-    if (head.decompile() === suf) throw je.LexerErr.atNode(head, `unexpected closing ${a.show(suf)}`)
+    if (head.decompile() === suf) throw je.LexerErr.fromNode(head, `unexpected closing ${a.show(suf)}`)
     if (head.decompile() !== pre) return undefined
 
     const tar = new this()
@@ -38,7 +38,7 @@ export class DelimNodeList extends jnnl.NodeList {
       tar.appendChild(lex.popNext())
     }
 
-    throw je.LexerErr.atNode(span.reqLast(), `missing closing ${a.show(suf)}`)
+    throw je.LexerErr.fromNode(span.reqLast(), `missing closing ${a.show(suf)}`)
   }
 
   macro() {

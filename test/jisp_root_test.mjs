@@ -11,20 +11,21 @@ import * as jr from '../js/jisp_root.mjs'
 import * as jmo from '../js/jisp_module.mjs'
 
 /*
-This function should be written as follows:
+This function could be written as follows:
 
   await mod.macro()
-  await t.throws(async () => mod.macro(), Error, msg)
+  await t.throws(async () => (await mod.parse(src).macro()).compile(), Error, msg)
 
-However, `t.throws` would report the return value as `[object Module]`
-without any details on the resulting state of the module. This needs to
-be fixed by making `t.throws` more extensible. Perhaps testing utils
-should be subclassable, like in Python.
+However, `t.throws` would report the return string in "code" form, with quotes
+and escape sequences, instead of including it into the error message as-is.
+In this function, we prefer to print the compiled output as-is. This needs
+to be fixed by making `t.throws` more extensible. Perhaps testing utils should
+be subclassable, like in Python.
 */
 export async function testModuleFail(mod, src, msg) {
   a.reqInst(mod, jmo.Module)
   a.reqStr(src)
-  a.reqStr(msg)
+  a.reqValidStr(msg)
 
   let out
   try {
@@ -49,7 +50,7 @@ ${out}
 }
 
 function throwsMacroMsg(msg) {
-  return `expected module macroing to produce exception with message:
+  return `expected module to produce exception with message:
 
   ${msg}
 `
@@ -108,7 +109,7 @@ await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_with_module_url() {
     async function fail(src, msg) {
       const mod = makeModule().setSrcPathAbs(`file:///one/two/three.jisp`).parse(src)
-      await t.throws(async () => mod.macro(), je.CodeErr, msg)
+      await t.throws(async () => mod.macro(), Error, msg)
     }
 
     await fail(`[.use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
@@ -213,29 +214,6 @@ return \`some_func_value\`;
       io.paths.join(tu.TEST_TAR_NAME, hash, `test_simple.mjs`),
     )
   })
-})
-
-// TODO move to more appropriate file.
-await t.test(async function test_Use_misc() {
-  await testModuleFail(
-    makeModule(),
-`
-[.use "jisp:prelude.mjs" jp]
-
-jp.someName
-`,
-    `missing property "someName" in live value`,
-  )
-
-  await testModuleFail(
-    makeModule(),
-`
-[.use "jisp:prelude.mjs" jp]
-
-jp
-`,
-    `unexpected non-call reference "jp" to live value`,
-  )
 })
 
 if (import.meta.main) ti.flush()

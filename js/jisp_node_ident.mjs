@@ -81,7 +81,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   ownName() {return this.optName()}
 
   // Override for `MixNamed`.
-  optName() {return this.decompile()}
+  optName() {return this.optDecompileOwn()}
 
   /*
   Override for `Node..macroList`. Implements calling of list-style macros.

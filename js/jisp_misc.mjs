@@ -39,12 +39,11 @@ export function isFullMatch(src, reg) {
 
 // Similar to `a.joinLinesOpt` but stricter. Every element must be a string.
 export function joinLines(...src) {
-  let out = ``
-  for (src of src) {
-    src = a.reqStr(src)
-    if (src) out += (out && `\n`) + src
-  }
-  return out
+  return a.joinOptBy(src, `\n`, a.reqStr)
+}
+
+export function joinParagraphs(...src) {
+  return a.joinOptBy(src, `\n\n`, a.reqStr)
 }
 
 // Same as `a.str` but stricter. Every element must be a string.

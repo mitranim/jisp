@@ -1,6 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
-import * as je from './jisp_err.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jl from './jisp_lexer.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
@@ -46,14 +45,15 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   isChildStatement() {return true}
 
   /*
-  Override for `Node..err` to avoid using `CodeErr`. A module span always points
-  to `row:col = 1:1`, which is not very useful. More importantly, `Node..toErr`
-  preserves instances of `CodeErr` as-is. Without this override, sometimes we
-  would generate module-level `CodeErr` with `row:col = 1:1`, which would be
-  preserved as-is by caller nodes which would otherwise generate a more specific
-  `CodeErr` pointing to the actual relevant place in the code.
+  Override for `Node..err` to avoid appending source code context to error
+  messages. A module derives its source span from the source spans of its first
+  and last child nodes. Typically, this means that the module's source context
+  points to `1:1`, which is not very useful. Without this override, sometimes
+  we would generate module-level errors with source code context for `1:1`,
+  which would be preserved as-is by caller nodes which would otherwise generate
+  a more specific error pointing to the actual relevant place in the code.
   */
-  err(...val) {return new je.Err(...val)}
+  err(...val) {return Error(...val)}
 
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar.funs(this.optModule, this.optNsLex))
