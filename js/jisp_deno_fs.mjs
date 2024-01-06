@@ -33,7 +33,7 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   canReach(val) {
     if (a.isStr(val)) return true
     if (a.isInst(val, URL)) return jm.isFileUrl(val)
-    throw TypeError(`${a.show(this)} is unable to reach path ${showPath(val)}`)
+    throw TypeError(`type mismatch: ${a.show(this)} does not support paths like ${showPath(val)}`)
   }
 
   async read(path) {

@@ -205,10 +205,12 @@ export class Module extends (
     if (a.isNil(srcTime)) return true
 
     const tarTime = this.opt((await this.optTarTime()), a.isFin)
+
     if (a.isNil(tarTime)) return false
     if (!(tarTime > srcTime)) return false
 
     const deps = this.optSrcDeps()
+
     if (a.isEmpty(deps)) return true
 
     /*
@@ -229,8 +231,9 @@ export class Module extends (
     If the target timestamps of any direct or indirect dependencies are missing,
     `Math.max` returns `NaN` and the current module's target file is considered
     to be outdated. That's what we want. Missing timestamps mean that their
-    target files are not ready. In that case, the current module must wait for
-    them to be ready, and recompile its own target file.
+    target files are either not ready, or not reachable on the current FS. In
+    that case, the current module must wait for them to be ready, and recompile
+    its own target file.
     */
     return tarTime >= Math.max(...times)
   }
@@ -360,10 +363,10 @@ export class Module extends (
   }
 
   /*
-  This field is cached because it's used repeatedly by direct and indirect
-  dependents during the same compilation pass, and repeatedly requesting the
-  timestamp from the FS might add measurable latency. Might be a premature
-  optimization. TODO check the costs.
+  This field is cached because it's used repeatedly during one compilation
+  pass, obtaining this value has a measurable (if minor) cost, and we assume
+  it doesn't change during one compilation pass, except after compiling and
+  writing the target file.
 
   Type: `isFin | Promise<isFin>`.
   */
@@ -373,17 +376,35 @@ export class Module extends (
 
   async optTarTimeAsync() {
     await this.init()
-    return this.reqRoot().reqFs().timestamp(this.reqTarUrl())
+    const tar = this.reqTarUrl()
+    const fs = this.reqRoot().reqFs()
+    return fs.canReach(tar) ? fs.timestamp(tar) : 0
   }
 
-  optSrcTime() {
+  /*
+  This field is cached because it's used repeatedly during one compilation
+  pass, obtaining this value has a measurable (if minor) cost, and we assume
+  it doesn't change during one compilation pass.
+
+  Type: `isFin | Promise<isFin>`.
+  */
+  #srcTime = undefined
+  setSrcTime(val) {return this.#srcTime = this.req(val, a.isFin), this}
+  optSrcTime() {return this.#srcTime ??= this.optSrcTimeAsync()}
+
+  async optSrcTimeAsync() {
     if (this.hasSrc()) return this.reqRoot().reqFs().timestamp(this.reqSrcUrl())
     return undefined
   }
 
-  // TODO reconsider if we can cache this value.
+  /*
+  We currently don't cache this value because it depends on the state of other
+  modules, which may be mutated between calls to this function. However, it may
+  actually be cachable. TODO reconsider.
+  */
   async timeMax() {
     return a.onlyFin(Math.max(
+      a.laxFin(await this.optSrcTime()),
       (await this.optTarTime()),
       ...await Promise.all(a.map(this.optTarDeps(), timeMaxCall)),
     ))
