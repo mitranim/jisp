@@ -3,6 +3,7 @@ import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jnnd from './jisp_named.mjs'
 import * as jn from './jisp_node.mjs'
+import * as jne from './jisp_node_empty.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 
@@ -101,42 +102,29 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     }
 
     /*
-    Invoking macro functions with `new` allows Jisp code to directly reference
-    macro classes in call positions. This is convenient for macros written as
-    classes, which includes most macros that ship with the compiler. This also
-    makes it possible to cleanly add static properties to macros and reference
-    them in Jisp code, which is convenient for some syntactic edge cases such
-    as `import.meta` and `new.target`.
-
-    This has a false positive: it uses `new` for functions defined with the
-    `function` keyword, accidentally invoking them as constructors rather than
-    regular functions. That's fine for our purposes. Using `new` on a regular
-    function creates an object based on its `.prototype`, sets it as `this` in
-    the constructor call, and overrides the function's return value with that
-    object if the function returns any non-object. However, in our case, macro
-    functions must return objects, namely instances of `Node`. The object
-    constructed with `new` should be overridden by the returned `Node`, and its
-    performance cost is negligible.
-
-    We pass the children as arguments for the "false positive" case of regular
-    functions. Constructors of class-style macros should ignore the arguments.
+    Automatically instantiate subclasses of `Node` with `new`. This allows Jisp
+    code to directly reference them in call positions. This is convenient for
+    macros written as classes, which includes most macros that ship with the
+    compiler. This also makes it possible to cleanly add static properties to
+    macros and reference them in Jisp code, which is convenient for some
+    syntactic edge cases such as `import.meta` and `new.target`.
     */
-    if (fun.prototype) return new fun(...list.reqChildArr())
+    if (a.isSubCls(fun, jn.Node)) return new fun()
 
     /*
-    This clause exists for several reasons.
+    This clause implements support for regular macro functions which aren't
+    subclasses of `Node`. We always invoke them as methods, which may be useful
+    for "live values" where properties are actually methods that care about
+    `this`. For regular functions exported by modules, the context `this` will
+    be the JS module object, which is typically ignored.
 
-      * Functions without `.prototype` can't be invoked with `new`.
-
-      * This allows us to invoke macro functions as methods, using the source
-        live value as `this`.
-
-    In ES5+, the native method syntax in class definitions and object literals
-    creates functions without `.prototype`. This is perfect for our purposes
-    here. We detect such functions and invoke them on the source live value as
-    methods. As a result, our system supports three different function styles
-    for macros: as classes, as regular functions, and as methods.
+    TODO add tests for this macro style, and for nil return values.
     */
+    return (
+      fun.apply(this.optLiveValSrc(), list.optChildArr()) ??
+      new jne.Empty()
+    )
+
     return fun.apply(this.optLiveValSrc(), list.optChildArr())
   }
 

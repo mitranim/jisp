@@ -76,7 +76,10 @@ export class ClassExtend extends jnlm.ListMacro {
     return this
   }
 
-  compile() {return ``}
+  compile() {
+    this.reqStatement()
+    return ``
+  }
 
   compileExtend() {
     let prev = ``

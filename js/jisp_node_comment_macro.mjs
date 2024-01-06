@@ -7,5 +7,11 @@ class.
 */
 export class CommentMacro extends jnlm.ListMacro {
   macro() {return this}
-  compile() {return ``}
+
+  compile() {
+    this.reqStatement()
+    return ``
+  }
+
+  isCosmetic() {return true}
 }
