@@ -197,8 +197,8 @@ await t.test(async function test_Root_resolution_and_compilation() {
     const tarText = await fs.read(tarUrl)
 
     tu.testCompiled(tarText, `
-const someConst = \`some_const_value\`;
-function someFunc () {
+export const someConst = \`some_const_value\`;
+export function someFunc () {
 return \`some_func_value\`;
 };
 `)

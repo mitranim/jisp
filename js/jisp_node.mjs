@@ -184,6 +184,8 @@ export class Node extends (
     return `(` + val + `)`
   }
 
+  optParentNode() {return a.onlyInst(this.optParent(), Node)}
+
   /*
   Subclasses may override this to allow some children to behave as statements.
   For example, statements are allowed in module roots, function bodies, blocks,
@@ -208,9 +210,7 @@ export class Node extends (
   Some parents can explicitly decide that some children are statements.
   Otherwise, it seems safer to assume that the node is an expression.
   */
-  isStatement() {
-    return !!a.onlyInst(this.optParent(), Node)?.isChildStatement(this)
-  }
+  isStatement() {return a.laxBool(this.optParentNode()?.isChildStatement(this))}
 
   // Used by some "macro" node types.
   reqStatement() {
@@ -220,10 +220,15 @@ export class Node extends (
     return this
   }
 
-  // FIXME use.
-  isInModuleRoot() {return false}
+  /*
+  Enables special JS semantics only available in module root, most notably the
+  ability to use `import` and `export` statements. Should be overridden in
+  subclasses.
+  */
+  isModuleRoot() {return false}
 
-  // FIXME use.
+  isInModuleRoot() {return a.laxBool(this.optParentNode()?.isModuleRoot())}
+
   isExportable() {return this.isStatement() && this.isInModuleRoot()}
 
   // Some node types may override this to indicate that they may be safely
@@ -257,27 +262,6 @@ implement such a method. Only some subclasses do.
 */
 export class NodeColl extends a.Coll {
   reqVal(val) {return a.reqInst(val, Node)}
-}
-
-export function optCompileNode(src) {
-  if (a.isNil(src)) return ``
-  a.reqInst(src, Node)
-
-  const out = compileNode(src)
-  if (a.isStr(out)) return out
-  throw src.err(`expected ${a.show(src)} to compile to a string, got ${a.show(out)}`)
-}
-
-export function reqCompileNode(src) {
-  a.reqInst(src, Node)
-  const out = compileNode(src)
-  if (a.isValidStr(out)) return out
-  throw src.err(`expected ${a.show(src)} to compile to a non-empty string, got ${a.show(out)}`)
-}
-
-function compileNode(src) {
-  try {return src.compile()}
-  catch (err) {throw src.toErr(err)}
 }
 
 /*
@@ -350,4 +334,25 @@ export function replaceNode(prev, next) {
     throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in macro-related code`)
   }
   return next.setParent(prev.optParent()).setSrcNode(prev)
+}
+
+export function optCompileNode(src) {
+  if (a.isNil(src)) return ``
+  a.reqInst(src, Node)
+
+  const out = compileNode(src)
+  if (a.isStr(out)) return out
+  throw src.err(`expected ${a.show(src)} to compile to a string, got ${a.show(out)}`)
+}
+
+export function reqCompileNode(src) {
+  a.reqInst(src, Node)
+  const out = compileNode(src)
+  if (a.isValidStr(out)) return out
+  throw src.err(`expected ${a.show(src)} to compile to a non-empty string, got ${a.show(out)}`)
+}
+
+function compileNode(src) {
+  try {return src.compile()}
+  catch (err) {throw src.toErr(err)}
 }

@@ -48,7 +48,7 @@ export class Compiling extends DebugListMacro {
   reqModule() {return this.reqAncMatch(jmo.Module)}
 
   macro() {
-    this.log(`current module:`, a.pkOpt(this.optModule()))
+    this.log(`compiling module:`, a.pkOpt(this.optModule()))
     this.reqChildCount(1)
     return this.macroFrom(1)
   }

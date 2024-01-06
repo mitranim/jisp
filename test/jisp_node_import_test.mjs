@@ -96,9 +96,9 @@ await t.test(async function test_Import_expression() {
 [const someVal2 [import someVal1.someAddress]]
 `,
 `
-const someVal0 = import("some_import_path");
-const someVal1 = import("one://two/three.four");
-const someVal2 = import(someVal1.someAddress);
+export const someVal0 = import("some_import_path");
+export const someVal1 = import("one://two/three.four");
+export const someVal2 = import(someVal1.someAddress);
 `)
 })
 
@@ -117,7 +117,7 @@ await t.test(async function test_Import_rewriting_non_jisp() {
 `,
 `
 import "../test_files/some_other_module";
-const someConst = import("../test_files/some_other_module");
+export const someConst = import("../test_files/some_other_module");
 `)
 
   await jrt.testModuleCompile(
@@ -197,7 +197,7 @@ await t.test(async function test_Import_meta() {
 `,
 `
 import.meta;
-const someConst = import.meta;
+export const someConst = import.meta;
 `)
 })
 

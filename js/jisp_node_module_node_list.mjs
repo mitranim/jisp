@@ -43,6 +43,7 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   macro() {return this.macroFrom(0)}
   compile() {return this.reqPrn().compileStatements(this.childIter())}
   isChildStatement() {return true}
+  isModuleRoot() {return true}
 
   /*
   Override for `Node..err` to avoid appending source code context to error

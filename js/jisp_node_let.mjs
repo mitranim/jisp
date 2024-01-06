@@ -22,6 +22,7 @@ export class Let extends jnc.Const {
 
   compileDeclare() {
     return a.spaced(
+      a.reqStr(this.compileExportPrefix()),
       a.reqStr(this.compilePrefix()),
       a.reqStr(this.compileName()),
     )

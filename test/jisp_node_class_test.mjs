@@ -24,6 +24,17 @@ await t.test(async function test_Class_invalid() {
 `,
     `[object Class] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
   )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[class SomeClass]
+[class SomeClass]
+`,
+    `redundant declaration of "SomeClass" in namespace [object NsLex]`,
+  )
 })
 
 await t.test(async function test_Class_extend_invalid() {
@@ -60,10 +71,10 @@ await t.test(async function test_Class_extend_valid() {
 [class SomeClass3 [.extend SomeClass2 SomeClass1.someMethod]]
 `,
 `
-class SomeClass0 extends 10 {};
-class SomeClass1 extends 20(10) {};
-class SomeClass2 extends 30(20(10)) {};
-class SomeClass3 extends SomeClass1.someMethod(SomeClass2) {};
+export class SomeClass0 extends 10 {};
+export class SomeClass1 extends 20(10) {};
+export class SomeClass2 extends 30(20(10)) {};
+export class SomeClass3 extends SomeClass1.someMethod(SomeClass2) {};
 `,
   )
 })
@@ -139,18 +150,18 @@ await t.test(async function test_Class_func_valid() {
 ]
 `,
 `
-class SomeClass0 {
+export class SomeClass0 {
 someMethod () {};
 };
-class SomeClass1 {
-someMethod () {};
-someMethod () {};
-};
-class SomeClass2 extends SomeClass1 {
+export class SomeClass1 {
 someMethod () {};
 someMethod () {};
 };
-class SomeClass3 {
+export class SomeClass2 extends SomeClass1 {
+someMethod () {};
+someMethod () {};
+};
+export class SomeClass3 {
 someMethod () {};
 async someMethod () {};
 static someMethod () {};
@@ -206,16 +217,16 @@ await t.test(async function test_Class_let_valid() {
 ]
 `,
 `
-class SomeClass0 {
+export class SomeClass0 {
 someField;
 };
-class SomeClass1 {
+export class SomeClass1 {
 someField = 10;
 someField = 20;
 someField0 = 30;
 someField1 = 40;
 };
-class SomeClass2 extends SomeClass1 {
+export class SomeClass2 extends SomeClass1 {
 someField = 10;
 static someField = 20;
 };
@@ -263,7 +274,7 @@ await t.test(async function test_Class_block() {
 ]
 `,
 `
-class SomeClass {
+export class SomeClass {
 static {};
 static {
 10;
@@ -298,6 +309,29 @@ static {
 30;
 };
 };
+};
+`,
+  )
+})
+
+await t.test(async function test_Class_export() {
+    await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[class SomeClass [.do [class SomeClass]]]
+
+[do [class SomeClass]]
+`,
+`
+export class SomeClass {
+static {
+class SomeClass {};
+};
+};
+{
+class SomeClass {};
 };
 `,
   )

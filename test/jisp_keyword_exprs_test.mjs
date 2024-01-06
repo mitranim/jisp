@@ -123,8 +123,8 @@ await t.test(async function test_Assign_valid() {
 [= [= one 10] [= two 20]]
 `,
 `
-let one = 10;
-let two = 20;
+export let one = 10;
+export let two = 20;
 30 = 40;
 30 = one;
 one = 30;

@@ -71,9 +71,9 @@ await t.test(async function test_If_as_expression() {
 [const someConst3 [if 10 20 30]]
 `,
 `
-const someConst1 = (10 ? undefined : undefined);
-const someConst2 = (10 ? 20 : undefined);
-const someConst3 = (10 ? 20 : 30);
+export const someConst1 = (10 ? undefined : undefined);
+export const someConst2 = (10 ? 20 : undefined);
+export const someConst3 = (10 ? 20 : 30);
 `)
 })
 
@@ -110,24 +110,24 @@ await t.test(async function test_If_implicit_return() {
 [func someFunc5 [] 10 [if 20 30 40]]
 `,
 `
-function someFunc0 () {
+export function someFunc0 () {
 return (10 ? undefined : undefined);
 };
-function someFunc1 () {
+export function someFunc1 () {
 return (10 ? 20 : undefined);
 };
-function someFunc2 () {
+export function someFunc2 () {
 return (10 ? 20 : 30);
 };
-function someFunc3 () {
+export function someFunc3 () {
 10;
 return (20 ? undefined : undefined);
 };
-function someFunc4 () {
+export function someFunc4 () {
 10;
 return (20 ? 30 : undefined);
 };
-function someFunc5 () {
+export function someFunc5 () {
 10;
 return (20 ? 30 : 40);
 };

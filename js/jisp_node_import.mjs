@@ -21,6 +21,19 @@ of this module refer to its actual exports.
 export class Import extends jnib.ImportBase {
   static get meta() {return ImportMeta}
 
+  // Involved in `.macroModeMixin`.
+  get NsLive() {return jns.NsLivePseudo}
+
+  /*
+  Compare `Use..reqResolve` which registers the imported module as a
+  dependency of the source file, not a dependency of the target file.
+  */
+  async reqResolve() {
+    await super.reqResolve()
+    this.reqModule().addTarDep(this.reqDepModule())
+    return this
+  }
+
   async macroModeUnnamed() {
     await this.optResolve()
     return super.macroModeUnnamed()
@@ -31,15 +44,13 @@ export class Import extends jnib.ImportBase {
     return super.macroModeNamed()
   }
 
-  // Involved in `.macroModeMixin`.
-  get NsLive() {return jns.NsLivePseudo}
-
   compile() {
     if (this.isStatement()) return this.compileStatement()
     return this.compileExpression()
   }
 
   compileStatement() {
+    this.reqCanCompileStatement()
     const name = this.optDestName()
     const addr = this.compileAddr()
     const refs = jm.mapUniq(this.optNsLive()?.optRefs(), a.pk).join(`, `)
@@ -91,13 +102,13 @@ export class Import extends jnib.ImportBase {
     ))
   }
 
-  /*
-  Compare `Use..reqResolve` which registers the imported module as a
-  dependency of the source file, not a dependency of the target file.
-  */
-  async reqResolve() {
-    await super.reqResolve()
-    this.reqModule().addTarDep(this.reqDepModule())
+  reqCanCompileStatement() {
+    if (!this.isStatement()) {
+      throw this.err(`statement mode of ${a.show(this)} can be used only in statement position`)
+    }
+    if (!this.isInModuleRoot()) {
+      throw this.err(`statement mode of ${a.show(this)} can be used only in module root`)
+    }
     return this
   }
 }

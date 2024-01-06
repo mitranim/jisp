@@ -52,6 +52,7 @@ export class Class extends jnlm.ListMacro {
 
   compile() {
     return a.spaced(
+      a.reqStr(this.compileExportPrefix()),
       a.reqStr(this.compilePrefix()),
       a.reqStr(this.compileName()),
       a.reqStr(this.compileExtend()),
@@ -59,6 +60,7 @@ export class Class extends jnlm.ListMacro {
     )
   }
 
+  compileExportPrefix() {return this.isExportable() ? `export` : ``}
   compilePrefix() {return `class`}
   compileName() {return jn.optCompileNode(this.reqIdent())}
   compileExtend() {return a.laxStr(this.optExtend()?.compileExtend())}

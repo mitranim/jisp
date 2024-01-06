@@ -60,10 +60,10 @@ await t.test(async function test_Block_expression() {
 [const someConst3 [do 10 20 30]]
 `,
 `
-const someConst0 = undefined;
-const someConst1 = 10;
-const someConst2 = (10, 20);
-const someConst3 = (10, 20, 30);
+export const someConst0 = undefined;
+export const someConst1 = 10;
+export const someConst2 = (10, 20);
+export const someConst3 = (10, 20, 30);
 `,
   )
 })

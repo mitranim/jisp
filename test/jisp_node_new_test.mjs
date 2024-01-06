@@ -50,7 +50,7 @@ await t.test(async function test_New() {
 new 10();
 new 10(20);
 new 10(20, 30);
-function SomeName () {};
+export function SomeName () {};
 new SomeName();
 new SomeName(10);
 new SomeName(10, 20);
@@ -79,7 +79,7 @@ await t.test(async function test_New_target() {
 `,
 `
 new.target;
-const someConst = new.target;
+export const someConst = new.target;
 `)
 })
 

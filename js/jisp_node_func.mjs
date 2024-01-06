@@ -51,6 +51,7 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   compile() {
     return a.spaced(
+      a.reqStr(this.compileExportPrefix()),
       a.reqStr(this.compilePrefix()),
       a.reqStr(this.compileName()),
       a.reqStr(this.compileParams()),
@@ -58,19 +59,12 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     )
   }
 
+  compileExportPrefix() {return this.isExportable() ? `export` : ``}
   compilePrefix() {return `function`}
-
   compileName() {return jn.optCompileNode(this.reqIdent())}
-
-  compileParams() {
-    return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())
-  }
-
+  compileParams() {return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())}
   compileBody() {return this.compileBodyWithImplicitReturn()}
-
-  compileBodyWithoutImplicitReturn() {
-    return this.reqPrn().compileBracesWithStatements(this.body())
-  }
+  compileBodyWithoutImplicitReturn() {return this.reqPrn().compileBracesWithStatements(this.body())}
 
   compileBodyWithImplicitReturn() {
     const prn = this.reqPrn()

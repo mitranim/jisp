@@ -132,7 +132,7 @@ await t.test(async function test_IdentUnqual_valid() {
 someConst
 `,
 `
-const someConst = 10;
+export const someConst = 10;
 someConst;
 `,
   )
@@ -146,7 +146,7 @@ someConst;
 someConst
 `,
 `
-const someConst = 10;
+export const someConst = 10;
 someConst;
 `,
   )

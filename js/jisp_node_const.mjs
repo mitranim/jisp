@@ -21,6 +21,7 @@ export class Const extends jnlm.ListMacro {
     this.reqStatement()
 
     return a.spaced(
+      a.reqStr(this.compileExportPrefix()),
       a.reqStr(this.compilePrefix()),
       a.reqStr(this.compileName()),
       a.reqStr(this.compileInfix()),
@@ -28,6 +29,7 @@ export class Const extends jnlm.ListMacro {
     )
   }
 
+  compileExportPrefix() {return this.isExportable() ? `export` : ``}
   compilePrefix() {return `const`}
   compileName() {return jn.optCompileNode(this.reqIdent())}
   compileInfix() {return `=`}

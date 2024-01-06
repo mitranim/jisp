@@ -16,15 +16,15 @@ await t.test(async function test_Func_implicit_return() {
 [func someFunc3 [] 10 20 30]
 `,
 `
-function someFunc0 () {};
-function someFunc1 () {
+export function someFunc0 () {};
+export function someFunc1 () {
 return 10;
 };
-function someFunc2 () {
+export function someFunc2 () {
 10;
 return 20;
 };
-function someFunc3 () {
+export function someFunc3 () {
 10;
 20;
 return 30;
@@ -57,7 +57,7 @@ await t.test(async function test_Func_arguments() {
 [func someFunc [] arguments]
 `,
 `
-function someFunc () {
+export function someFunc () {
 return arguments;
 };
 `,
@@ -102,7 +102,7 @@ await t.test(async function test_Func_this() {
 [func someFunc [] this]
 `,
 `
-function someFunc () {
+export function someFunc () {
 return this;
 };
 `,
@@ -195,25 +195,25 @@ await t.test(async function test_Func_ret() {
 [func someFunc4 [] [.ret 10] [.ret 20] 30]
 `,
 `
-function someFunc0 () {
+export function someFunc0 () {
 return;
 return 10;
 };
-function someFunc1 () {
+export function someFunc1 () {
 10;
 return;
 return 20;
 };
-function someFunc2 () {
+export function someFunc2 () {
 return 10;
 return 20;
 };
-function someFunc3 () {
+export function someFunc3 () {
 10;
 return 20;
 return 30;
 };
-function someFunc4 () {
+export function someFunc4 () {
 return 10;
 return 20;
 return 30;
@@ -241,7 +241,7 @@ await t.test(async function test_Func_declare_ret() {
 ]
 `,
 `
-function someFunc () {
+export function someFunc () {
 function ret () {};
 ret(20);
 return ret(30);
@@ -259,7 +259,7 @@ await t.test(async function test_Func_valid() {
 [func someFunc []]
 `,
 `
-function someFunc () {};
+export function someFunc () {};
 `)
 
   await jrt.testModuleCompile(
@@ -272,7 +272,7 @@ someFunc
 [someFunc]
 `,
 `
-function someFunc () {};
+export function someFunc () {};
 someFunc;
 someFunc();
 `)
@@ -285,7 +285,7 @@ someFunc();
 [func someFunc [one]]
 `,
 `
-function someFunc (one) {};
+export function someFunc (one) {};
 `)
 
   await jrt.testModuleCompile(
@@ -296,7 +296,7 @@ function someFunc (one) {};
 [func someFunc [one] one]
 `,
 `
-function someFunc (one) {
+export function someFunc (one) {
 return one;
 };
 `)
@@ -309,7 +309,7 @@ return one;
 [func someFunc [one] one one]
 `,
 `
-function someFunc (one) {
+export function someFunc (one) {
 one;
 return one;
 };
@@ -323,7 +323,7 @@ return one;
 [func someFunc [one] [.ret one] one]
 `,
 `
-function someFunc (one) {
+export function someFunc (one) {
 return one;
 return one;
 };
@@ -337,7 +337,7 @@ return one;
 [func someFunc [one two]]
 `,
 `
-function someFunc (one, two) {};
+export function someFunc (one, two) {};
 `)
 
   await jrt.testModuleCompile(
@@ -348,7 +348,7 @@ function someFunc (one, two) {};
 [func someFunc [one two] one]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 return one;
 };
 `)
@@ -361,7 +361,7 @@ return one;
 [func someFunc [one two] two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 return two;
 };
 `)
@@ -374,7 +374,7 @@ return two;
 [func someFunc [one two] one two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 one;
 return two;
 };
@@ -388,7 +388,7 @@ return two;
 [func someFunc [one two] one one two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 one;
 one;
 return two;
@@ -403,7 +403,7 @@ return two;
 [func someFunc [one two] one one two two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 one;
 one;
 two;
@@ -419,7 +419,7 @@ return two;
 [func someFunc [one two] [.ret one] one two two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 return one;
 one;
 two;
@@ -435,7 +435,7 @@ return two;
 [func someFunc [one two] one [.ret one] two two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 one;
 return one;
 two;
@@ -451,7 +451,7 @@ return two;
 [func someFunc [one two] one one [.ret two] two]
 `,
 `
-function someFunc (one, two) {
+export function someFunc (one, two) {
 one;
 one;
 return two;
@@ -460,7 +460,7 @@ return two;
 `)
 })
 
-await t.test(async function test_Func_name_invalid() {
+await t.test(async function test_Func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
@@ -480,6 +480,17 @@ await t.test(async function test_Func_name_invalid() {
 `,
     `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
   )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[.use "jisp:prelude.mjs" *]
+
+[func someFunc []]
+[func someFunc []]
+`,
+    `redundant declaration of "someFunc" in namespace [object NsLex]`,
+  )
 })
 
 await t.test(async function test_Func_async() {
@@ -496,7 +507,7 @@ await t.test(async function test_Func_async() {
 ]
 `,
 `
-async function someFunc () {
+export async function someFunc () {
 await 10;
 return 20;
 return (await 30);

@@ -12,6 +12,16 @@ with the language should be importable via `Use` from language-provided modules
 such as `prelude.mjs` and `global.mjs`.
 */
 export class Use extends jnib.ImportBase {
+  /*
+  Compare `Import..reqResolve` which registers the imported module as a
+  dependency of the source file, not a dependency of the target file.
+  */
+  async reqResolve() {
+    await super.reqResolve()
+    this.reqModule().addSrcDep(this.reqDepModule())
+    return this
+  }
+
   async macroModeUnnamed() {
     await this.reqImport()
     return this
@@ -41,16 +51,6 @@ export class Use extends jnib.ImportBase {
   */
   compile() {
     if (this.isStatement()) return ``
-    throw this.err(`unexpected attempt to compile macro node ${a.show(this)} in an expression position`)
-  }
-
-  /*
-  Compare `Import..reqResolve` which registers the imported module as a
-  dependency of the source file, not a dependency of the target file.
-  */
-  async reqResolve() {
-    await super.reqResolve()
-    this.reqModule().addSrcDep(this.reqDepModule())
-    return this
+    throw this.err(`unexpected attempt to compile macro node ${a.show(this)} in expression position`)
   }
 }

@@ -1,13 +1,6 @@
 [.use `jisp:prelude.mjs` *]
 
 [const someConst0 `some_const_value_0`]
-[export someConst0]
-
 [const someConst1 `some_const_value_1`]
-[export someConst1]
-
 [func someFunc0 [] `some_func_value_0`]
-[export someFunc0]
-
 [func someFunc1 [] `some_func_value_1`]
-[export someFunc1]

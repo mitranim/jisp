@@ -37,7 +37,7 @@ export class Export extends jnlm.ListMacro {
   }
 
   compile() {
-    this.reqStatement()
+    this.reqCanCompile()
     const src = jn.optCompileNode(this.reqSrc())
     const tar = jn.optCompileNode(this.optTar())
 
@@ -45,5 +45,11 @@ export class Export extends jnlm.ListMacro {
       return `export {` + a.reqStr(src) + ` as ` + a.reqStr(tar) + `}`
     }
     return `export {` + a.reqStr(src) + `}`
+  }
+
+  reqCanCompile() {
+    this.reqStatement()
+    if (!this.isInModuleRoot()) throw this.err(`${a.show(this)} can be used only in module root`)
+    return this
   }
 }
