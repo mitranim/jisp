@@ -59,6 +59,15 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
     await Deno.writeTextFile(path, body)
   }
 
+  /*
+  Would prefer `Deno.writeFile` or `Deno.writeTextFile` with `{append: true}`
+  with an empty input. However, when the input is empty, these functions seem
+  to skip the FS operation entirely.
+  */
+  async touch(path) {
+    await this.write(path, await this.read(path))
+  }
+
   async timestamp(path) {
     if (!this.canReach(path)) return undefined
 

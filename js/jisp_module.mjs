@@ -63,9 +63,6 @@ export class Module extends (
       tarPathAbs: this.optTarPathAbs(),
       srcDeps: a.map(this.optSrcDeps(), a.pk),
       tarDeps: a.map(this.optTarDeps(), a.pk),
-
-      // srcDeps: this.optSrcDeps(),
-      // tarDeps: this.optTarDeps(),
     }
   }
 
@@ -90,38 +87,14 @@ export class Module extends (
     for (const val of a.values(src.tarDeps)) {
       this.addTarDep(this.reqRoot().reqModule(val))
     }
-    // for (const val of a.values(src.srcDeps)) this.addSrcDep(this.reqFromJson(val))
-    // for (const val of a.values(src.tarDeps)) this.addTarDep(this.reqFromJson(val))
     return this
   }
 
   reqValid() {
     this.reqSrcPathAbs()
     this.reqTarPathAbs()
-
-    // const src = this.reqTarUrlStr()
-    // const tar = this.reqTarUrlStr()
-
-    // if (a.isSome(src)) {
-    //   const exp = jc.conf.getFileExtTar()
-    //   const act = p.posix.exp(tar)
-    //   if (act !== exp) {
-    //     throw this.err(`unexpected extension in ${a.show(this)} with target URL ${a.show(tar)} and source URL ${a.show(src)}; expected extension ${a.show(exp)}, got extension ${a.show(act)}`)
-    //   }
-    // }
-
     return this
   }
-
-  // reqNorm() {return this.reqRoot().reqModuleNorm(this)}
-
-  // reqFromJson(val) {
-  //   return new this.constructor()
-  //     .setParent(this.reqParent())
-  //     .fromJSON(val)
-  //     .reqValid()
-  //     .reqNorm()
-  // }
 
   // This lacks a type assertion because it would involve cyclic imports.
   optRoot() {return this.optParent()}
@@ -183,23 +156,32 @@ export class Module extends (
   }
 
   /*
-  A module is up to date when its target file is newer than its compile-time
-  dependencies, which includes its source file and any files it imports for
-  macro-time usage, directly or indirectly.
+  A module is up to date when its target file is newer than its source
+  dependencies (compile-time dependencies), which includes its source file and
+  any files it imports at macro time or compile time, directly or indirectly.
 
-  Updates in runtime dependencies do not make a module outdated. That's because
-  runtime dependencies don't affect the compiled code of the current module,
-  only its eventual runtime behavior.
+  Updates in target dependencies (runtime dependencies) do not make a module
+  outdated. That's because target dependencies don't affect the compiled code
+  of the current module, only its eventual runtime behavior. However, updates
+  in the target dependencies of source dependencies (runtime dependencies of
+  compile-time dependencies) absolutely do make a module outdated, because they
+  affect its compiled code.
 
-  For dependencies, we only check target timestamps, not source timestamps.
-  If a target file does not exist, then the timestamp is `undefined`, which
-  means it's outdated.
+  Modules which are unreachable on the current FS are assumed to be always up to
+  date. This is typical for external libraries.
+
+  For modules which have a Jisp source, if their target file doesn't exist,
+  their timestamp should be `undefined`, which should be considered outdated,
+  and should invalidate the target file of the current module.
+
+  For modules which have no Jisp source, we only care about their target
+  timestamp.
 
   Known issue: we currently don't bother finding runtime dependencies of JS
   files used as dependencies of Jisp files. It would require parsing JS.
   */
   async isUpToDate() {
-    if (this.optTarPathAbs() && !this.optTarUrlStr()) return true
+    if (this.isRel()) return true
 
     const srcTime = this.opt((await this.optSrcTime()), a.isFin)
     if (a.isNil(srcTime)) return true
@@ -209,8 +191,8 @@ export class Module extends (
     if (a.isNil(tarTime)) return false
     if (!(tarTime > srcTime)) return false
 
+    await this.init()
     const deps = this.optSrcDeps()
-
     if (a.isEmpty(deps)) return true
 
     /*
@@ -332,8 +314,8 @@ export class Module extends (
   initSrcDeps() {return this.#srcDeps ??= new ModuleSet()}
 
   /*
-  Short for "target dependencies". Must be used for dependencies which are
-  imported by the current module's target file (at runtime), but not
+  Short for "target dependencies". Must be used for dependencies which
+  are imported by the current module's target file (at runtime), but not
   necessarily by its source file (at macro time). The most typical example
   is imports via `Import`.
   */
@@ -403,14 +385,26 @@ export class Module extends (
   actually be cachable. TODO reconsider.
   */
   async timeMax() {
-    return a.onlyFin(Math.max(
-      a.laxFin(await this.optSrcTime()),
-      (await this.optTarTime()),
-      ...await Promise.all(a.map(this.optTarDeps(), timeMaxCall)),
-    ))
+    await this.init()
+    return a.onlyFin(Math.max(...await Promise.all([
+      this.optSrcTime().then(a.laxFin),
+      this.optTarTime(),
+      ...a.map(this.optSrcDeps(), timeMaxCall),
+      ...a.map(this.optTarDeps(), timeMaxCall),
+    ])))
   }
 
   reqMetaUrl() {return this.reqTarUrl().clone().setExt(`.meta.json`)}
+
+  // TODO better naming.
+  isAbs() {return !this.isRel()}
+
+  /*
+  TODO better naming. True if the current module's target path can only be
+  resolved by using an importmap or a convention such as `node_modules` for
+  CommonJS.
+  */
+  isRel() {return !!this.optTarPathAbs() && !this.optTarUrlStr()}
 
   clear() {
     this.optSrcDeps()?.clear()
@@ -419,7 +413,15 @@ export class Module extends (
   }
 
   [ji.symInsp](tar) {
-    return tar.funs(this.optSrcPathAbs, this.optTarPathAbs, this.optNodeList)
+    return tar.funs(
+      this.optSrcPathAbs,
+      this.optTarPathAbs,
+      this.optSrcDeps,
+      this.optTarDeps,
+      this.optSrcTime,
+      this.optTarTime,
+      this.optNodeList,
+    )
   }
 }
 

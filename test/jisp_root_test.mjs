@@ -70,6 +70,8 @@ export function makeModuleAddressed() {
     .setTarPathAbs(new URL(`test.mjs`, tu.TEST_TAR_URL).href)
 }
 
+export function makeRoot() {return new jr.Root().setFs(jdft.makeTestFs())}
+
 await t.test(async function test_compilation_with_prelude_star() {
   await testSingleFileCompilation(
     new URL(`test_use_prelude_star.jisp`,         tu.TEST_SRC_URL),
@@ -85,14 +87,13 @@ await t.test(async function test_compilation_with_prelude_named() {
 })
 
 export async function testSingleFileCompilation(src, exp) {
-  const fs = jdft.makeTestFs()
-  const root = new jr.Root().setFs(fs)
+  const root = makeRoot()
 
   const mod = root.reqModule(src.href)
   await mod.ready()
 
-  const tarText = a.trim(await fs.read(mod.reqTarUrl()))
-  const expText = a.trim(await fs.read(exp))
+  const tarText = a.trim(await root.reqFs().read(mod.reqTarUrl()))
+  const expText = a.trim(await root.reqFs().read(exp))
 
   tu.testCompiled(tarText, expText)
 }
@@ -181,8 +182,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     const srcUrlStr = new URL(`test_simple.jisp`, tu.TEST_SRC_URL).href
     await fail(srcUrlStr, `missing FS at [object Root]`)
 
-    const fs = jdft.makeTestFs()
-    const root = new jr.Root().setFs(fs)
+    const root = makeRoot()
 
     /*
     Despite "resolve" in the name, this involves reading, parsing, macroing,
@@ -194,7 +194,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     a.reqValidStr(tarStr)
 
     const tarUrl = new URL(tarStr)
-    const tarText = await fs.read(tarUrl)
+    const tarText = await root.reqFs().read(tarUrl)
 
     tu.testCompiled(tarText, `
 export const someConst = \`some_const_value\`;
