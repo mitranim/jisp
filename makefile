@@ -18,11 +18,11 @@ SRC_JS := ./js
 # # Disables coloring in Deno.
 # export NO_COLOR
 
-default: mock
-
 ifeq ($(verb),true)
 	OK = echo [$@] ok
 endif
+
+default: mock
 
 # TODO also watch files read by tests, in addition to imported by tests.
 test.w:

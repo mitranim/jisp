@@ -2,12 +2,15 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnst from './jisp_node_str.mjs'
 
 /*
 Usage:
     
   [export someName]
   [export someName aliasName]
+
+TODO: support string literals in target position.
 
 TODO consider a similar macro for re-exporting from another module:
 
@@ -26,25 +29,32 @@ TODO consider a similar macro for re-exporting from another module:
 */
 export class Export extends jnlm.ListMacro {
   reqSrc() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
-  optTar() {return this.optChildInstAt(2, jniu.IdentUnqual)}
+  optTar() {return this.optChildAt(2)}
+  optTarIdent() {return this.optChildInstAt(2, jniu.IdentUnqual)}
+  optTarStr() {return this.optChildInstAt(2, jnst.Str)}
 
   macro() {
     this.reqEveryChildNotCosmetic()
     this.reqChildCountBetween(2, 3)
     this.reqSrc()
-    this.optTar()
     return this.macroAt(1)
   }
 
   compile() {
     this.reqCanCompile()
-    const src = jn.optCompileNode(this.reqSrc())
-    const tar = jn.optCompileNode(this.optTar())
 
-    if (tar) {
-      return `export {` + a.reqStr(src) + ` as ` + a.reqStr(tar) + `}`
+    const tar = this.optTar()
+    if (!tar) return `export {` + jn.optCompileNode(this.reqSrc()) + `}`
+
+    if (a.isInst(tar, jniu.IdentUnqual)) {
+      return `export {` + jn.reqCompileNode(this.reqSrc()) + ` as ` + a.reqValidStr(tar.reqName()) + `}`
     }
-    return `export {` + a.reqStr(src) + `}`
+
+    if (a.isInst(tar, jnst.Str)) {
+      return `export {` + jn.reqCompileNode(this.reqSrc()) + ` as ` + JSON.stringify(tar.ownVal()) + `}`
+    }
+
+    throw tar.err(`${a.show(this)} requires the target name to be either an unqualified identifier or a literal string, got ${a.show(tar)}`)
   }
 
   reqCanCompile() {
