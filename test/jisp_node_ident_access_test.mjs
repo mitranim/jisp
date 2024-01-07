@@ -144,7 +144,7 @@ await t.test(async function test_IdentAccess_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" jp]
+[use "jisp:prelude.mjs" jp]
 
 jp.someName
 `,

@@ -1,5 +1,5 @@
-[.use `jisp:prelude.mjs` *]
-[.use `./test_caching_used.jisp`]
-[.use `./test_caching_used.mjs`]
+[use `jisp:prelude.mjs` *]
+[use `./test_caching_used.jisp`]
+[use `./test_caching_used.mjs`]
 [import `./test_caching_imported.jisp`]
 [import `./test_caching_imported.mjs`]

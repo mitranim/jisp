@@ -1,6 +1,6 @@
-[.use `jisp:prelude.mjs` *]
-[.use `jisp:prelude.mjs` jp]
-[.use `./test_macros.jisp` m]
+[use `jisp:prelude.mjs` *]
+[use `jisp:prelude.mjs` jp]
+[use `./test_macros.jisp` m]
 
 ; Generates a syntactically valid call that panics at runtime.
 [nil no ok]

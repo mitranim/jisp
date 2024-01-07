@@ -9,7 +9,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let]
 `,
@@ -19,7 +19,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one two three]
 `,
@@ -29,7 +29,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let 10 someName]
 `,
@@ -39,7 +39,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let 10 20]
 `,
@@ -49,7 +49,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [let one]
@@ -60,7 +60,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one 10]
 [let one 20]
@@ -71,7 +71,7 @@ await t.test(async function test_Let() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [let two 10]

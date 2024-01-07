@@ -17,7 +17,7 @@ behavior must be consolidated with the namespace-resolving behavior of `Ident`
 and other similar cases. The point of this is to make it possible to track
 "aliased" references. For example:
 
-  [.use `jisp:prelude.mjs` jp]
+  [use `jisp:prelude.mjs` jp]
   [const prelude jp]
   prelude.nil
 

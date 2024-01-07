@@ -7,7 +7,7 @@ await t.test(async function test_List_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [list [const someName 10]]
 `,
@@ -19,7 +19,7 @@ await t.test(async function test_List_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [list]
 [list [list]]

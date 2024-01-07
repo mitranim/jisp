@@ -100,11 +100,11 @@ export async function testSingleFileCompilation(src, exp) {
 
 await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_without_module_url() {
-    await testModuleFail(makeModule(), `[.use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
-    await testModuleFail(makeModule(), `[.use "./blah"]`,       `missing source URL in [object Module]`)
-    await testModuleFail(makeModule(), `[.use "../blah"]`,      `missing source URL in [object Module]`)
-    await testModuleFail(makeModule(), `[.use "/blah"]`,        `Module not found "file:///blah"`)
-    await testModuleFail(makeModule(), `[.use "file:///blah"]`, `Module not found "file:///blah"`)
+    await testModuleFail(makeModule(), `[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
+    await testModuleFail(makeModule(), `[use "./blah"]`,       `missing source URL in [object Module]`)
+    await testModuleFail(makeModule(), `[use "../blah"]`,      `missing source URL in [object Module]`)
+    await testModuleFail(makeModule(), `[use "/blah"]`,        `Module not found "file:///blah"`)
+    await testModuleFail(makeModule(), `[use "file:///blah"]`, `Module not found "file:///blah"`)
   })
 
   await t.test(async function test_fail_with_module_url() {
@@ -113,11 +113,11 @@ await t.test(async function test_Use_import_resolution() {
       await t.throws(async () => mod.macro(), Error, msg)
     }
 
-    await fail(`[.use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
-    await fail(`[.use "./blah"]`,       `Module not found "file:///one/two/blah"`)
-    await fail(`[.use "../blah"]`,      `Module not found "file:///one/blah"`)
-    await fail(`[.use "/blah"]`,        `Module not found "file:///blah"`)
-    await fail(`[.use "file:///blah"]`, `Module not found "file:///blah"`)
+    await fail(`[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
+    await fail(`[use "./blah"]`,       `Module not found "file:///one/two/blah"`)
+    await fail(`[use "../blah"]`,      `Module not found "file:///one/blah"`)
+    await fail(`[use "/blah"]`,        `Module not found "file:///blah"`)
+    await fail(`[use "file:///blah"]`, `Module not found "file:///blah"`)
   })
 
   await t.test(async function test_success_with_module_url() {
@@ -128,7 +128,7 @@ await t.test(async function test_Use_import_resolution() {
     }
 
     await test(`
-[.use "../js/prelude.mjs" *]
+[use "../js/prelude.mjs" *]
 [declare "../js/global.mjs"]
 
 undefined
@@ -142,7 +142,7 @@ globalThis;
 `)
 
     await test(`
-[.use "../js/prelude.mjs" jp]
+[use "../js/prelude.mjs" jp]
 [jp.declare "../js/global.mjs"]
 
 undefined

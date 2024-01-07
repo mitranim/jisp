@@ -379,7 +379,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   non-live namespace, eventually resolves to a live declaration in a live
   namespace. One common use case is the following:
 
-    [.use `jisp:prelude.mjs` jp]
+    [use `jisp:prelude.mjs` jp]
     [jp.and]
 
   After macroing the first statement, the local lexical namespace, which is

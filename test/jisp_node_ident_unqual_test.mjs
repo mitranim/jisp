@@ -104,7 +104,7 @@ await t.test(async function test_IdentUnqual_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [someIdent 10 20]
 `,
@@ -114,7 +114,7 @@ await t.test(async function test_IdentUnqual_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" jp]
+[use "jisp:prelude.mjs" jp]
 
 jp
 `,
@@ -126,7 +126,7 @@ await t.test(async function test_IdentUnqual_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const someConst 10]
 someConst
@@ -140,7 +140,7 @@ someConst;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" jp]
+[use "jisp:prelude.mjs" jp]
 
 [jp.const someConst 10]
 someConst

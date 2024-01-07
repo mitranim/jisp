@@ -11,7 +11,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [export]
 `,
@@ -21,7 +21,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [export 10]
 `,
@@ -31,7 +31,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [export 10 20 30]
 `,
@@ -41,7 +41,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [export one]
 `,
@@ -51,7 +51,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [export one two three]
 `,
@@ -61,7 +61,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [export one two three]
@@ -72,7 +72,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [export one 10]
@@ -83,7 +83,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [do [export one]]
@@ -94,7 +94,7 @@ await t.test(async function test_Export_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [const two [export one]]
@@ -107,7 +107,7 @@ await t.test(async function test_Export_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [let one]
 [export one]

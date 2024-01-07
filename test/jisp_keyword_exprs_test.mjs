@@ -8,7 +8,7 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [=]
 `,
@@ -18,7 +18,7 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [= someName]
 `,
@@ -28,7 +28,7 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [= someName "some_value" "other_value"]
 `,
@@ -38,7 +38,7 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [= someName "some_value"]
 `,
@@ -48,8 +48,8 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [let someName]
 
@@ -61,7 +61,7 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [= unqualName.qualName "some_value"]
 `,
@@ -71,8 +71,8 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [= [const someName 10] 20]
 `,
@@ -82,8 +82,8 @@ await t.test(async function test_Assign_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [let someName]
 
@@ -107,8 +107,8 @@ await t.test(async function test_Assign_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [let one 10]
 [let two 20]
@@ -144,7 +144,7 @@ await t.test(async function test_Not() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [!]
 [! [!]]
@@ -162,7 +162,7 @@ await t.test(async function test_NotNot() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [!!]
 [!! [!!]]
@@ -180,7 +180,7 @@ await t.test(async function test_Void() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [void]
 [void [void]]
@@ -198,7 +198,7 @@ await t.test(async function test_Await() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [await]
 [await [await]]
@@ -225,7 +225,7 @@ await t.test(async function test_IsNil() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [isNil 10]
 [isNil [isNil 10]]
@@ -242,7 +242,7 @@ await t.test(async function test_IsSome() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [isSome 10]
 [isSome [isSome 10]]
@@ -340,7 +340,7 @@ await t.test(async function test_Add() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [+ 10]
 [+ [+ 10]]
@@ -358,7 +358,7 @@ await t.test(async function test_Subtract() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [- 10]
 [- [- 10]]
@@ -376,7 +376,7 @@ await t.test(async function test_Multiply() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [* 10]
 [* [* 10]]
@@ -394,7 +394,7 @@ await t.test(async function test_Exponentiate() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [** 10]
 [** [** 10]]
@@ -412,7 +412,7 @@ await t.test(async function test_And() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [&&]
 [&& 10]
@@ -434,7 +434,7 @@ await t.test(async function test_Or() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [||]
 [|| 10]
@@ -456,7 +456,7 @@ await t.test(async function test_Coalesce() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:ops.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [??]
 [?? 10]
@@ -475,8 +475,8 @@ async function testKeyword_0_1_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20]
 `,
@@ -486,8 +486,8 @@ async function testKeyword_0_1_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20 30]
 `,
@@ -501,8 +501,8 @@ async function testKeyword_1_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name}]
 `,
@@ -512,8 +512,8 @@ async function testKeyword_1_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20]
 `,
@@ -523,8 +523,8 @@ async function testKeyword_1_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20 30]
 `,
@@ -538,8 +538,8 @@ async function testKeyword_1_valid(name) {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10]
 [${name} [${name} 10]]
@@ -554,8 +554,8 @@ async function testKeywordUnaryStatement(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} [const someName 10]]
 `,
@@ -567,8 +567,8 @@ async function testKeyword_2_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name}]
 `,
@@ -578,8 +578,8 @@ async function testKeyword_2_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10]
 `,
@@ -589,8 +589,8 @@ async function testKeyword_2_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20 30]
 `,
@@ -600,8 +600,8 @@ async function testKeyword_2_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} [const someName 10] 20]
 `,
@@ -613,8 +613,8 @@ async function testKeyword_2_valid(name) {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20]
 [${name} [${name} 10 20] [${name} 30 40]]
@@ -629,8 +629,8 @@ async function testKeyword_2_N_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name}]
 `,
@@ -640,8 +640,8 @@ async function testKeyword_2_N_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10]
 `,
@@ -651,8 +651,8 @@ async function testKeyword_2_N_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} [const someName 10] 20]
 `,
@@ -664,8 +664,8 @@ async function testKeyword_2_N_valid(name) {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} 10 20]
 [${name} 10 20 30]
@@ -688,8 +688,8 @@ async function testKeyword_1_N_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name}]
 `,
@@ -699,8 +699,8 @@ async function testKeyword_1_N_invalid(name) {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
-[.use "jisp:ops.mjs" *]
+[use "jisp:prelude.mjs" *]
+[use "jisp:ops.mjs" *]
 
 [${name} [const someName 10] 20]
 `,

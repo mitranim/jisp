@@ -7,7 +7,7 @@ await t.test(async function test_Dict_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [dict "10"]
 `,
@@ -17,7 +17,7 @@ await t.test(async function test_Dict_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [dict "10" "20" "30"]
 `,
@@ -27,7 +27,7 @@ await t.test(async function test_Dict_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [dict [const someConst "10"] "20"]
 `,
@@ -37,7 +37,7 @@ await t.test(async function test_Dict_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [dict "10" [const someConst "20"]]
 `,
@@ -49,7 +49,7 @@ await t.test(async function test_Dict_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [dict]
 [dict 10 20]

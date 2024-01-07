@@ -8,7 +8,7 @@ await t.test(async function test_Class_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class]
 `,
@@ -18,7 +18,7 @@ await t.test(async function test_Class_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class 10]
 `,
@@ -28,7 +28,7 @@ await t.test(async function test_Class_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass]
 [class SomeClass]
@@ -41,7 +41,7 @@ await t.test(async function test_Class_extend_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.extend]]
 `,
@@ -51,7 +51,7 @@ await t.test(async function test_Class_extend_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.extend OtherClass]]
 `,
@@ -63,7 +63,7 @@ await t.test(async function test_Class_extend_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass0 [.extend 10]]
 [class SomeClass1 [.extend 10 20]]
@@ -83,7 +83,7 @@ await t.test(async function test_Class_func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.func]]
 `,
@@ -93,7 +93,7 @@ await t.test(async function test_Class_func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.func 10 []]]
 `,
@@ -103,7 +103,7 @@ await t.test(async function test_Class_func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.func someMethod 10]]
 `,
@@ -113,7 +113,7 @@ await t.test(async function test_Class_func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.func.unknown someMethod 10]]
 `,
@@ -125,7 +125,7 @@ await t.test(async function test_Class_func_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass0
   [.func someMethod []]
@@ -175,7 +175,7 @@ await t.test(async function test_Class_let_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.let]]
 `,
@@ -185,7 +185,7 @@ await t.test(async function test_Class_let_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.let 10]]
 `,
@@ -197,7 +197,7 @@ await t.test(async function test_Class_let_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass0
   [.let someField]
@@ -238,7 +238,7 @@ await t.test(async function test_Class_block_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.do [.do]]]
 `,
@@ -248,7 +248,7 @@ await t.test(async function test_Class_block_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.do [do [.do]]]]
 `,
@@ -260,7 +260,7 @@ await t.test(async function test_Class_block() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass
   [.do]
@@ -318,7 +318,7 @@ await t.test(async function test_Class_export() {
     await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [class SomeClass [.do [class SomeClass]]]
 

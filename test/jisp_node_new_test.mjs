@@ -8,7 +8,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [new]
 `,
@@ -18,7 +18,7 @@ await t.test(async function test_New() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [new SomeName]
 `,
@@ -28,7 +28,7 @@ await t.test(async function test_New() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [new 10]
 [new 10 20]
@@ -72,7 +72,7 @@ await t.test(async function test_New_target() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [new.target]
 [const someConst [new.target]]
@@ -87,7 +87,7 @@ await t.test(async function test_New_unknown_field() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 new.unknownField
 `,

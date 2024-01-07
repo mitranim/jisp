@@ -9,7 +9,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const]
 `,
@@ -19,7 +19,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const one]
 `,
@@ -29,7 +29,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const one two three]
 `,
@@ -39,7 +39,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const 10 20]
 `,
@@ -49,7 +49,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const one 10]
 [const one 20]
@@ -60,7 +60,7 @@ await t.test(async function test_Const() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const one 10]
 

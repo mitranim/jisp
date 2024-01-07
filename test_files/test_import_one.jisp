@@ -4,7 +4,7 @@
 ; other file should already be resolved to disk (compiled), and both should be
 ; immediately importable in JS.
 
-[.use `jisp:prelude.mjs` jp]
+[use `jisp:prelude.mjs` jp]
 
 [jp.import `./test_import_two.jisp` dep]
 

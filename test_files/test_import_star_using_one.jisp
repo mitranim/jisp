@@ -1,4 +1,4 @@
-[.use `jisp:prelude.mjs` jp]
+[use `jisp:prelude.mjs` jp]
 
 [jp.import `./test_exports_more.jisp` *]
 [jp.import `./test_exports_less.jisp` *]

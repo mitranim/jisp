@@ -8,7 +8,7 @@ await t.test(async function test_Func_implicit_return() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc0 []]
 [func someFunc1 [] 10]
@@ -41,7 +41,7 @@ await t.test(async function test_Func_arguments() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [] arguments]
 `,
@@ -51,7 +51,7 @@ await t.test(async function test_Func_arguments() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 [declare "jisp:global.mjs"]
 
 [func someFunc [] arguments]
@@ -68,7 +68,7 @@ await t.test(async function test_Func_arguments_redeclaration() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []
   [const arguments 10]
@@ -86,7 +86,7 @@ await t.test(async function test_Func_this() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [] this]
 `,
@@ -96,7 +96,7 @@ await t.test(async function test_Func_this() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 [declare "jisp:global.mjs"]
 
 [func someFunc [] this]
@@ -113,7 +113,7 @@ await t.test(async function test_Func_this_redeclaration() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []
   [const this 10]
@@ -133,7 +133,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [.ret 10]
 `,
@@ -143,7 +143,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [] [.ret 10 20]]
 `,
@@ -153,7 +153,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [] [.ret]]
 `,
@@ -163,7 +163,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [] [.ret 10]]
 `,
@@ -173,7 +173,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []
   [const someConst [.ret 10]]
@@ -186,7 +186,7 @@ await t.test(async function test_Func_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc0 [] [.ret] 10]
 [func someFunc1 [] 10 [.ret] 20]
@@ -231,7 +231,7 @@ await t.test(async function test_Func_declare_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []
   [func ret []]
@@ -254,7 +254,7 @@ await t.test(async function test_Func_valid() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []]
 `,
@@ -265,7 +265,7 @@ export function someFunc () {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []]
 someFunc
@@ -280,7 +280,7 @@ someFunc();
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one]]
 `,
@@ -291,7 +291,7 @@ export function someFunc (one) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one] one]
 `,
@@ -304,7 +304,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one] one one]
 `,
@@ -318,7 +318,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one] [.ret one] one]
 `,
@@ -332,7 +332,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two]]
 `,
@@ -343,7 +343,7 @@ export function someFunc (one, two) {};
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one]
 `,
@@ -356,7 +356,7 @@ return one;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] two]
 `,
@@ -369,7 +369,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one two]
 `,
@@ -383,7 +383,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one one two]
 `,
@@ -398,7 +398,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one one two two]
 `,
@@ -414,7 +414,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] [.ret one] one two two]
 `,
@@ -430,7 +430,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one [.ret one] two two]
 `,
@@ -446,7 +446,7 @@ return two;
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc [one two] one one [.ret two] two]
 `,
@@ -464,7 +464,7 @@ await t.test(async function test_Func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func await []]
 `,
@@ -474,7 +474,7 @@ await t.test(async function test_Func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func eval []]
 `,
@@ -484,7 +484,7 @@ await t.test(async function test_Func_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func someFunc []]
 [func someFunc []]
@@ -497,7 +497,7 @@ await t.test(async function test_Func_async() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [func.async someFunc []
   [await 10]

@@ -1,4 +1,4 @@
-[.use `jisp:prelude.mjs` jp]
+[use `jisp:prelude.mjs` jp]
 
 [jp.import `https://example.com/some_js_module.mjs` someLib]
 [jp.const someConst `some_const_value`]

@@ -8,7 +8,7 @@ await t.test(async function test_Block_statement() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [do]
 
@@ -49,7 +49,7 @@ await t.test(async function test_Block_expression() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const someConst0 [do]]
 
@@ -76,7 +76,7 @@ await t.test(async function test_Block_expression_with_statements() {
   await jrt.testModuleFail(
     jrt.makeModule(),
 `
-[.use "jisp:prelude.mjs" *]
+[use "jisp:prelude.mjs" *]
 
 [const someConst [do
   [let someLet 10]
