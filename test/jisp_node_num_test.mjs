@@ -8,6 +8,17 @@ import * as jnnu from '../js/jisp_node_num.mjs'
 t.test(function test_Num_parse() {
   const cls = jnnu.Num
 
+  t.is(tu.testParseComplete(cls, `0`).ownVal(), 0)
+  t.is(tu.testParseComplete(cls, `-0`).ownVal(), -0)
+  t.is(tu.testParseComplete(cls, `1`).ownVal(), 1)
+  t.is(tu.testParseComplete(cls, `-1`).ownVal(), -1)
+  t.is(tu.testParseComplete(cls, `12`).ownVal(), 12)
+  t.is(tu.testParseComplete(cls, `-12`).ownVal(), -12)
+  t.is(tu.testParseComplete(cls, `12_345`).ownVal(), 12_345)
+  t.is(tu.testParseComplete(cls, `-12_345`).ownVal(), -12_345)
+  t.is(tu.testParseComplete(cls, `0.6_7_8`).ownVal(), 0.6_7_8)
+  t.is(tu.testParseComplete(cls, `-0.6_7_8`).ownVal(), -0.6_7_8)
+  t.is(tu.testParseComplete(cls, `12_345.6_7_8`).ownVal(), 12_345.6_7_8)
   t.is(tu.testParseComplete(cls, `-12_345.6_7_8`).ownVal(), -12_345.6_7_8)
 })
 
