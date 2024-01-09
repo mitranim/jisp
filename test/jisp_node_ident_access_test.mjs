@@ -120,7 +120,7 @@ await t.test(async function test_IdentAccess_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
     `.someIdent`,
-    `missing first child in parent [object IdentAccess]`,
+    `unable to find ancestral live value with property "someIdent" at descendant [object IdentAccess]`,
   )
 
   await jrt.testModuleFail(

@@ -3,7 +3,7 @@ import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnib from './jisp_node_import_base.mjs'
-import * as jnp from './jisp_node_predecl.mjs'
+import * as jnbm from './jisp_node_bare_macro.mjs'
 
 /*
 Somewhat similar to `Use`, but for runtime-only imports, rather than for
@@ -81,7 +81,7 @@ export class Import extends jnib.ImportBase {
       + `import(`
       + a.reqStr(
         a.isSome(path)
-        ? JSON.stringify(a.reqStr(path))
+        ? a.jsonEncode(a.reqStr(path))
         : jn.optCompileNode(this.reqAddr())
       )
       + `)`
@@ -97,7 +97,7 @@ export class Import extends jnib.ImportBase {
   arbitrary expression.
   */
   compileAddr() {
-    return JSON.stringify(a.reqStr(
+    return a.jsonEncode(a.reqStr(
       this.optTarPathRel() ?? this.optTarPathAbs() ?? this.reqSrcPath()
     ))
   }
@@ -111,8 +111,16 @@ export class Import extends jnib.ImportBase {
     }
     return this
   }
+
+  static moduleUrl = import.meta.url
 }
 
-export class ImportMeta extends jnp.Predecl {
-  getCompiledName() {return `import.meta`}
+export class ImportMeta extends jnbm.BareMacro {
+  /*
+  This should be safe from collisions because in JS, `import` is a keyword, and
+  `import.meta` is special syntax supported at the parser level.
+  */
+  compile() {return `import.meta`}
+
+  static moduleUrl = import.meta.url
 }

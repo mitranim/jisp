@@ -34,4 +34,5 @@ export class Comment extends jnt.Text {
   isCosmetic() {return true}
   macro() {return this}
   compile() {return `//` + a.reqStr(this.#body) + a.reqStr(this.#delim)}
+  static moduleUrl = import.meta.url
 }

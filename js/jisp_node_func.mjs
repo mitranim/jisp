@@ -7,9 +7,7 @@ import * as jnnl from './jisp_node_node_list.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
 
-export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
-  static get async() {return FuncAsync}
-
+export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
   static makeLiveValInner() {
     const tar = a.npo()
@@ -89,19 +87,27 @@ export class Func extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       && val !== this.optBodyLast()
     )
   }
+
+  static moduleUrl = import.meta.url
 }
 
-export class FuncAsync extends Func {
+export class Func extends FuncBase {
+  static get async() {return FuncAsync}
+  static moduleUrl = import.meta.url
+}
+
+export class FuncAsync extends FuncBase {
   compilePrefix() {return `async function`}
+  static moduleUrl = import.meta.url
 }
 
 /*
 TODO consider using `.reqParentMatch` to ensure that the parent is either a
 class node, or an object literal node.
 */
-export class MethodFuncBase extends Func {
+export class MethodFuncBase extends FuncBase {
   /*
-  Override for `Func..reqDeclareLex`.
+  Override for `FuncBase..reqDeclareLex`.
 
   In JS, methods can be referenced only via property access, and can't be
   referenced via unqualified identifiers. They add themselves to the prototype
@@ -115,6 +121,8 @@ export class MethodFuncBase extends Func {
   reqDeclareLex() {}
 
   compilePrefix() {return ``}
+
+  static moduleUrl = import.meta.url
 }
 
 /*
@@ -125,17 +133,21 @@ export class MethodFunc extends MethodFuncBase {
   static get async() {return MethodFuncAsync}
   static get static() {return MethodFuncStatic}
   compilePrefix() {return ``}
+  static moduleUrl = import.meta.url
 }
 
 export class MethodFuncAsync extends MethodFuncBase {
   compilePrefix() {return `async`}
+  static moduleUrl = import.meta.url
 }
 
 export class MethodFuncStatic extends MethodFuncBase {
   static get async() {return MethodFuncStaticAsync}
   compilePrefix() {return `static`}
+  static moduleUrl = import.meta.url
 }
 
 export class MethodFuncStaticAsync extends MethodFuncBase {
   compilePrefix() {return `static async`}
+  static moduleUrl = import.meta.url
 }

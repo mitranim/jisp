@@ -3,11 +3,17 @@ import * as jn from './jisp_node.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 
 /*
-Base class for macro-style `Node` classes that expect to replace an entire
-`DelimNodeList` that contains a reference to the macro, rather than only the
-referencing identifier.
+Base class for macro-style `Node` classes intended for list-style calling.
+The typical input (source node) for such macros is `DelimNodeList`.
+Compare the base class `BareMacro` intended for bare-style calling.
 */
 export class ListMacro extends jnnl.NodeList {
+  /*
+  This optional method is used by `DelimNodeList` to detect macro classes with
+  support for list-style calling.
+  */
+  static macroList() {return new this()}
+
   /*
   Override for `MixOwnNodeSourced` used by the base class `Node`. This method
   should be invoked in preparation for replacing a previous node, and before
@@ -69,4 +75,6 @@ export class ListMacro extends jnnl.NodeList {
     if (a.isInst(tar, cls)) return tar
     throw this.err(`${a.show(this)} requires its immediate parent to be an instance of ${a.show(cls)}, got parent ${a.show(tar)}`)
   }
+
+  static moduleUrl = import.meta.url
 }

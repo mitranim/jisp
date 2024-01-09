@@ -52,4 +52,6 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   correctness and forbid statements in expression-like blocks.
   */
   isChildStatement() {return this.isStatement()}
+
+  static moduleUrl = import.meta.url
 }

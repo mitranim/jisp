@@ -4,7 +4,6 @@ import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jpa from './jisp_pathed.mjs'
-import * as jmo from './jisp_module.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jnst from './jisp_node_str.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
@@ -161,7 +160,7 @@ export class ImportBase extends (
   done only in statement mode.
   */
   reqAddr() {return this.reqChildAt(1)}
-  optAddrStr() {return a.onlyInst(this.optChildAt(1), jnst.Str)}
+  optAddrStr() {return this.optChildAt(1)?.asOnlyInst(jnst.Str)}
   reqAddrStr() {return this.reqChildInstAt(1, jnst.Str)}
   optSrcPath() {return this.optAddrStr()?.reqVal()}
   reqSrcPath() {return this.reqAddrStr().reqVal()}
@@ -260,14 +259,6 @@ export class ImportBase extends (
   msgArgDest() {
     return `${a.show(this)} expected the argument at index 2 to be one of the following: missing; unqualified identifier; operator ${a.show(this.mixinName())}`
   }
-
-  /*
-  Implemented here, rather than in `Node`, because moving this to `Node` would
-  create an import cycle, which would cause module initialization issues, and
-  most node subclasses don't need this.
-  */
-  optModule() {return this.optAncMatch(jmo.Module)}
-  reqModule() {return this.reqAncMatch(jmo.Module)}
 
   /*
   Short for "optional dependency module". Returns the `Module` instance for the
@@ -417,4 +408,6 @@ export class ImportBase extends (
       this.optNsLive,
     )
   }
+
+  static moduleUrl = import.meta.url
 }

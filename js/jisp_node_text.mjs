@@ -23,4 +23,6 @@ export class Text extends jn.Node {
     this.reqSpan().setLen(a.reqStr(mat[0]).length)
     return this
   }
+
+  static moduleUrl = import.meta.url
 }

@@ -51,7 +51,7 @@ export class Export extends jnlm.ListMacro {
     }
 
     if (a.isInst(tar, jnst.Str)) {
-      return `export {` + jn.reqCompileNode(this.reqSrc()) + ` as ` + JSON.stringify(tar.ownVal()) + `}`
+      return `export {` + jn.reqCompileNode(this.reqSrc()) + ` as ` + a.jsonEncode(tar.ownVal()) + `}`
     }
 
     throw tar.err(`${a.show(this)} requires the target name to be either an unqualified identifier or a literal string, got ${a.show(tar)}`)
@@ -62,4 +62,6 @@ export class Export extends jnlm.ListMacro {
     if (!this.isInModuleRoot()) throw this.err(`${a.show(this)} can be used only in module root`)
     return this
   }
+
+  static moduleUrl = import.meta.url
 }

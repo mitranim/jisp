@@ -7,4 +7,6 @@ export class IdentOper extends jni.Ident {
   compile() {
     throw this.err(`unable to compile operator ${a.show(this)} with name ${a.show(this.optName())} to valid JS; operators are meant for compile-only use and should refer only to live values such as macros imported via "use"`)
   }
+
+  static moduleUrl = import.meta.url
 }

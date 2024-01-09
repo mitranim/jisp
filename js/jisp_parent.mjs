@@ -3,6 +3,12 @@ import * as jc from './jisp_conf.mjs'
 import * as je from './jisp_err.mjs'
 
 /*
+This file implements generic parent-to-child relations. Subclasses of `Node`
+should use more specialized versions of these mixins implemented in the file
+`jisp_parent_node.mjs`.
+*/
+
+/*
 Provides shortcuts for validating child-to-parent relations. Also see
 `MixParentOneToMany` and `MixParentOneToOne` which actually implement
 parent-to-child relations. Also see `MixChild` which implements
@@ -32,8 +38,6 @@ export class MixParent extends a.DedupMixinCache {
 }
 
 /*
-FIXME use for `NodeList`, `Root`, and possibly more.
-
 TODO consider support for splicing, like `DocumentFragment`.
 
 Known issue: unlike the DOM API, this does not ensure that a child only ever

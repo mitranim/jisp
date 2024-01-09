@@ -1,4 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as ji from './jisp_insp.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jv from './jisp_valued.mjs'
 import * as jni from './jisp_node_ident.mjs'
@@ -9,9 +10,19 @@ macros where input and output are JS values rather than AST nodes. Currently
 unused, but this may change in the future.
 */
 export class Val extends jv.MixOwnValued.goc(jn.Node) {
+  macro() {return this}
   compile() {return this.constructor.compile(this, this.ownVal())}
 
-  // Must match `.compile`.
+  static reqValid(val) {
+    if (this.isValid(val)) return val
+    throw TypeError(this.msgInvalid(val))
+  }
+
+  static msgInvalid(val) {
+    return `${a.show(this)} is unable to completely represent ${a.show(val)} in compiled JS code; currently supported types: undefined, null, bool, num, str, plain array, plain dict`
+  }
+
+  // SYNC[node_val_encode]
   static isValid(val) {
     return (
       false
@@ -24,13 +35,13 @@ export class Val extends jv.MixOwnValued.goc(jn.Node) {
     )
   }
 
-  // Must match `.isValid`.
+  // SYNC[node_val_encode]
   static compile(node, val) {
     if (a.isNil(val) || a.isBool(val) || a.isNum(val)) return String(val)
-    if (a.isStr(val)) return JSON.stringify(val)
+    if (a.isStr(val)) return a.jsonEncode(val)
     if (a.isTrueArr(val)) return this.compileArr(node, val)
     if (a.isDict(val)) return this.compileDict(node, val)
-    throw node.err(`unable to encode ${a.show(val)} as JS code; currently supported types: undefined, null, bool, num, str, plain array, plain dict`)
+    throw node.err(this.msgInvalid(val))
   }
 
   static compileArr(node, val) {
@@ -64,4 +75,10 @@ export class Val extends jv.MixOwnValued.goc(jn.Node) {
     out += `}`
     return out
   }
+
+  static from(val) {return new this().setVal(val)}
+
+  static moduleUrl = import.meta.url;
+
+  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optVal)}
 }

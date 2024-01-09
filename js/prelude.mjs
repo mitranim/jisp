@@ -1,3 +1,13 @@
+export {
+  Nil    as nil,
+  Null   as null,
+  No     as no,
+  Ok     as ok,
+  Nan    as nan,
+  Inf    as inf,
+  Global as global,
+} from './jisp_predecl.mjs'
+
 export {Import       as import}  from './jisp_node_import.mjs'
 export {Export       as export}  from './jisp_node_export.mjs'
 export {Const        as const}   from './jisp_node_const.mjs'
@@ -12,6 +22,8 @@ export {CommentMacro as comment} from './jisp_node_comment_macro.mjs'
 export {Declare      as declare} from './jisp_node_declare.mjs'
 export {List         as list}    from './jisp_node_list.mjs'
 export {Dict         as dict}    from './jisp_node_dict.mjs'
+export {Quote        as quote}   from './jisp_node_quoting.mjs'
+export {Unquote      as unquote} from './jisp_node_quoting.mjs'
 
 /*
 Redundancies. TODO choose one style and dedup.

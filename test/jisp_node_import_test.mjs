@@ -192,12 +192,16 @@ await t.test(async function test_Import_meta() {
 `
 [use "jisp:prelude.mjs" *]
 
+import.meta
 [import.meta]
-[const someConst [import.meta]]
+[const someConst0 import.meta]
+[const someConst1 [import.meta]]
 `,
 `
 import.meta;
-export const someConst = import.meta;
+import.meta();
+export const someConst0 = import.meta;
+export const someConst1 = import.meta();
 `)
 })
 

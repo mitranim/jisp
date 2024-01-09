@@ -74,12 +74,16 @@ await t.test(async function test_New_target() {
 `
 [use "jisp:prelude.mjs" *]
 
+new.target
 [new.target]
-[const someConst [new.target]]
+[const someConst0 new.target]
+[const someConst1 [new.target]]
 `,
 `
 new.target;
-export const someConst = new.target;
+new.target();
+export const someConst0 = new.target;
+export const someConst1 = new.target();
 `)
 })
 

@@ -50,6 +50,6 @@ export class Compiling extends DebugListMacro {
   macro() {
     this.log(`compiling module:`, a.pkOpt(this.optModule()))
     this.reqChildCount(1)
-    return this.macroFrom(1)
+    return this
   }
 }

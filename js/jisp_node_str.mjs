@@ -6,6 +6,7 @@ import * as jv from './jisp_valued.mjs'
 export class Str extends jv.MixOwnValued.goc(jnt.Text) {
   setVal(val) {return super.setVal(this.req(val, a.isStr))}
   macro() {return this}
+  static moduleUrl = import.meta.url;
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
 }
 
@@ -14,7 +15,8 @@ Represents a "raw" string delimited by backticks. Supports resizable delimiters:
 groups of subsequent backticks form "fences" of arbitrary length.
 
 A "raw" string has no support for escape sequences. All inner content is taken
-as-is, exactly, without any special conversion or interpretation.
+as-is, exactly, without any special conversion or interpretation. Compare
+`StrDouble` which supports escape sequences.
 
 Motives for "raw" strings:
 
@@ -53,8 +55,14 @@ export class StrBacktick extends Str {
       + '`'
     )
   }
+
+  static moduleUrl = import.meta.url
 }
 
+/*
+Represents a double-quoted non-raw string with support for escape sequences.
+TODO: consider supporting resizable fences, just like in `StrBacktick`.
+*/
 export class StrDouble extends Str {
   static regexp() {return /^"(?:\\"|[^"])*"/}
 
@@ -74,4 +82,6 @@ export class StrDouble extends Str {
   static decode(val) {return JSON.parse(a.reqStr(val))}
 
   compile() {return this.decompile()}
+
+  static moduleUrl = import.meta.url
 }

@@ -8,4 +8,5 @@ export class BraceSuf extends jnet.ExactText {static src() {return `}`}}
 export class Braces extends jndnl.DelimNodeList {
   static prefix() {return BracePre.src()}
   static suffix() {return BraceSuf.src()}
+  static moduleUrl = import.meta.url
 }

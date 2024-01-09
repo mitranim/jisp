@@ -14,4 +14,6 @@ export class List extends jnlm.ListMacro {
       + `]`
     )
   }
+
+  static moduleUrl = import.meta.url
 }

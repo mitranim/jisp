@@ -26,6 +26,11 @@ export function optLiveValCall(src) {
 }
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
+export function optLiveValSrcCall(src) {
+  return a.isObj(src) && `optLiveValSrc` in src ? src.optLiveValSrc() : undefined
+}
+
+// Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function optLiveValInnerCall(src) {
   return a.isObj(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
 }
@@ -58,6 +63,11 @@ export class StrSet extends a.TypedSet {
 }
 
 export class ValidStrSet extends a.TypedSet {
+  reqVal(val) {return a.reqValidStr(val)}
+}
+
+export class ValidStrMap extends a.TypedMap {
+  reqKey(key) {return a.reqValidStr(key)}
   reqVal(val) {return a.reqValidStr(val)}
 }
 

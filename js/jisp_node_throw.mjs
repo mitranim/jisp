@@ -17,4 +17,6 @@ export class Throw extends jnlm.ListMacro {
     this.reqStatement()
     return `throw ` + jn.reqCompileNode(this.reqVal())
   }
+
+  static moduleUrl = import.meta.url
 }

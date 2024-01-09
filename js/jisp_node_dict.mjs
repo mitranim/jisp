@@ -45,4 +45,6 @@ export class Dict extends jnlm.ListMacro {
   }
 
   compileVal(val) {return jn.reqCompileNode(val)}
+
+  static moduleUrl = import.meta.url
 }

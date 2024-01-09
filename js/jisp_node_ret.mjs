@@ -19,4 +19,6 @@ export class Ret extends jnlm.ListMacro {
     if (val) return `return ` + jn.optCompileNode(val)
     return `return`
   }
+
+  static moduleUrl = import.meta.url
 }

@@ -80,25 +80,61 @@ await t.test(async function test_IdentUnqual_invalid() {
   await jrt.testModuleFail(
     jrt.makeModule(),
     `someIdent`,
-    `unable to find declaration of "someIdent" at [object IdentUnqual]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 1:1
+
+source code preview:
+
+someIdent`,
   )
 
   await jrt.testModuleFail(
     jrt.makeModule(),
     `[someIdent]`,
-    `unable to find declaration of "someIdent" at [object IdentUnqual]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 1:2
+
+source code preview:
+
+someIdent]`,
   )
 
   await jrt.testModuleFail(
     jrt.makeModule(),
     `[someIdent 10]`,
-    `unable to find declaration of "someIdent" at [object IdentUnqual]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 1:2
+
+source code preview:
+
+someIdent 10]`,
   )
 
   await jrt.testModuleFail(
     jrt.makeModule(),
     `[someIdent 10 20]`,
-    `unable to find declaration of "someIdent" at [object IdentUnqual]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 1:2
+
+source code preview:
+
+someIdent 10 20]`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+    `[10 someIdent 20]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 1:5
+
+source code preview:
+
+someIdent 20]`,
   )
 
   await jrt.testModuleFail(
@@ -106,9 +142,15 @@ await t.test(async function test_IdentUnqual_invalid() {
 `
 [use "jisp:prelude.mjs" *]
 
-[someIdent 10 20]
+[10 someIdent 20]
 `,
-    `unable to find declaration of "someIdent" at [object IdentUnqual]`,
+    `unable to find declaration of "someIdent" at [object IdentUnqual]
+
+row:col: 4:5
+
+source code preview:
+
+someIdent 20]`,
   )
 
   await jrt.testModuleFail(
@@ -118,7 +160,7 @@ await t.test(async function test_IdentUnqual_invalid() {
 
 jp
 `,
-    `unexpected non-call reference "jp" to live value`,
+    `unexpected reference "jp" to live value`,
   )
 })
 

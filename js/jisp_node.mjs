@@ -102,10 +102,12 @@ export class Node extends (
     )
   )
 ) {
-  // For `MixOwnSpanned`.
+  // Override for `MixOwnSpanned`.
   get Span() {return jsp.StrSpan}
+
   optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
 
+  // Override for `MixErrer`.
   get Err() {return je.Err}
 
   err(msg, opt) {
@@ -115,10 +117,11 @@ export class Node extends (
   }
 
   context() {return a.laxStr(this.optSpan()?.context())}
+  contextOwn() {return a.laxStr(this.ownSpan()?.context())}
 
   contextDeep() {
-    const tar = this.context()
-    const src = this.optSrcNode()?.contextDeep()
+    const tar = this.contextOwn()
+    const src = this.optSrcNodeDeep()?.contextDeep()
     if (!src) return tar
     return jm.joinParagraphs(tar, jm.joinParagraphs(`context of source node:`, src))
   }
@@ -156,14 +159,6 @@ export class Node extends (
 
   macro() {return this.errMeth(`macro`)}
 
-  /*
-  Default "nop" implementation of macroing a list, which represents a "call" in
-  our Lispy syntax. This is always invoked by `DelimNodeList` on its first
-  element. This default implementation does not support macro calling. See
-  `Ident..macroList` for an override that does.
-  */
-  macroList(val) {return val}
-
   compile() {throw this.errMeth(`compile`)}
   decompile() {return a.laxStr(this.optDecompileSrcNode() ?? this.optDecompileOwn())}
 
@@ -172,6 +167,8 @@ export class Node extends (
 
   optDecompileSrcNode() {return this.optSrcNode()?.decompile()}
   reqDecompileSrcNode() {return a.reqStr(this.reqSrcNode().decompile())}
+
+  optSrcNodeDeep() {return this.optSrcNode() ?? this.optParentNode()?.optSrcNodeDeep()}
 
   /*
   Minor shortcut for subclasses that may compile either in expression mode or in
@@ -184,7 +181,34 @@ export class Node extends (
     return `(` + val + `)`
   }
 
-  optParentNode() {return a.onlyInst(this.optParent(), Node)}
+  /*
+  Relevant for quoting and unquoting. See `Quote` and `Unquote`.
+  Subclasses that use "parent" mixins should override this and
+  invoke this method on their children.
+  */
+  macroRepr() {
+    this.initReprModName()
+    this.initReprSrcName()
+    return this
+  }
+
+  #reprModName = undefined
+  initReprModName() {return this.#reprModName ??= this.reqModuleNodeList().reqAutoImportName(this.reqModuleUrl())}
+  optReprModName() {return this.#reprModName}
+  reqReprModName() {return this.optReprModName() ?? this.throw(`missing module import reference at ${a.show(this)}`)}
+
+  #reprSrcName = undefined
+  initReprSrcName() {return this.#reprSrcName ??= this.reqModuleNodeList().reqAutoValName(this.reqSpan().ownSrc())}
+  optReprSrcName() {return this.#reprSrcName}
+  reqReprSrcName() {return this.optReprSrcName() ?? this.throw(`missing source code reference at ${a.show(this)}`)}
+
+  compileRepr() {
+    const pre = a.reqStr(this.reqReprModName())
+    let out = `new ${a.inter(pre, `.`, this.constructor.name)}()`
+    const span = this.reqSpan()
+    out += `.initSpanWith(${this.reqReprSrcName()}, ${span.ownPos()}, ${span.ownLen()})`
+    return out
+  }
 
   /*
   Subclasses may override this to allow some children to behave as statements.
@@ -231,11 +255,48 @@ export class Node extends (
 
   isExportable() {return this.isStatement() && this.isInModuleRoot()}
 
-  // Some node types may override this to indicate that they may be safely
-  // elided from the AST when tokenizing or lexing.
+  /*
+  Some node types may override this to indicate that they may be safely elided
+  from the AST when tokenizing or lexing.
+  */
   isCosmetic() {return false}
 
-  [ji.symInsp](tar) {return tar.funs(this.decompile)}
+  optParentNode() {return a.onlyInst(this.optParent(), Node)}
+
+  /*
+  Ideally, we would find `ModuleNodeList` by class, by calling the method
+  `.optAncMatch` or `.reqAncMatch`. However, it would require us to import
+  the file where it's defined, which would create a cyclic dependency and
+  cause problems. For now, we use an indirect approach.
+  */
+  optModuleNodeList() {return this.optAncFind(isModuleNodeList)}
+  reqModuleNodeList() {return this.reqAncFind(isModuleNodeList)}
+
+  /*
+  Ideally, this would use `.optParentMatch(Module)`. This code uses an indirect
+  approach for the same reason as `.optModuleNodeList`: to avoid cyclic imports
+  which would cause everything to explode.
+  */
+  optModule() {return this.optModuleNodeList()?.optModule()}
+  reqModule() {return this.reqModuleNodeList().reqModule()}
+
+  reqModuleUrl() {
+    const con = this.constructor
+    const tar = a.getOwn(con, `moduleUrl`)
+    if (!a.isValidStr(tar)) {
+      throw this.err(`missing module URL string on node class ${a.show(con)}`)
+    }
+    return tar
+  }
+
+  optResolveName(key) {
+    a.optStr(key)
+    if (!key) return undefined
+
+    return this.optParent()?.optAncProcure(function optResolve(val) {
+      return jm.ownNsLexCall(val)?.optResolve(key)
+    })
+  }
 
   /*
   Placeholder for hypothetical support for Lisp-style quoting and unquoting of
@@ -248,7 +309,9 @@ export class Node extends (
   when repring. This line must be EXACTLY copy-pasted into EVERY subclass and
   descendant class.
   */
-  static moduleUrl = import.meta.url
+  static moduleUrl = import.meta.url;
+
+  [ji.symInsp](tar) {return tar.funs(this.decompile)}
 }
 
 export class NodeSet extends a.TypedSet {
@@ -262,6 +325,17 @@ implement such a method. Only some subclasses do.
 */
 export class NodeColl extends a.Coll {
   reqVal(val) {return a.reqInst(val, Node)}
+}
+
+export class Empty extends Node {
+  macro() {return this}
+
+  compile() {
+    this.reqStatement()
+    return ``
+  }
+
+  static moduleUrl = import.meta.url
 }
 
 /*
@@ -284,12 +358,7 @@ of looping forever, at least in synchronous mode.
 */
 export function macroNode(prev) {
   if (a.isNil(prev)) return undefined
-  a.reqInst(prev, Node)
-
-  let next
-  try {next = prev.macro()}
-  catch (err) {throw prev.toErr(err)}
-
+  const next = macroCall(prev)
   if (a.isPromise(next)) return macroNodeAsyncWith(prev, next)
   if (prev === next) return prev
   return macroNode(replaceNode(prev, next))
@@ -297,15 +366,10 @@ export function macroNode(prev) {
 
 export function macroNodeSync(prev) {
   if (a.isNil(prev)) return undefined
-  a.reqInst(prev, Node)
-
-  let next
-  try {next = prev.macro()}
-  catch (err) {throw prev.toErr(err)}
-
+  const next = macroCall(prev)
   if (a.isPromise(next)) throw prev.err(msgMacroNodeSync(prev))
   if (prev === next) return prev
-  return macroNode(replaceNode(prev, next))
+  return macroNodeSync(replaceNode(prev, next))
 }
 
 function msgMacroNodeSync(val) {
@@ -320,6 +384,12 @@ async function macroNodeAsyncWith(prev, next) {
 
   if (prev === next) return prev
   return macroNode(replaceNode(prev, next))
+}
+
+export function reqMacroReprNode(prev) {
+  const next = macroReprCall(prev)
+  if (prev === next) return prev
+  return reqMacroReprNode(replaceNode(prev, next))
 }
 
 export function replaceNode(prev, next) {
@@ -338,21 +408,67 @@ export function replaceNode(prev, next) {
 
 export function optCompileNode(src) {
   if (a.isNil(src)) return ``
-  a.reqInst(src, Node)
-
-  const out = compileNode(src)
+  const out = compileCall(src)
   if (a.isStr(out)) return out
   throw src.err(`expected ${a.show(src)} to compile to a string, got ${a.show(out)}`)
 }
 
 export function reqCompileNode(src) {
-  a.reqInst(src, Node)
-  const out = compileNode(src)
+  const out = compileCall(src)
   if (a.isValidStr(out)) return out
   throw src.err(`expected ${a.show(src)} to compile to a non-empty string, got ${a.show(out)}`)
 }
 
-function compileNode(src) {
+export function reqCompileReprNode(src) {
+  const out = compileReprCall(src)
+  if (a.isValidStr(out)) return out
+  throw src.err(`expected ${a.show(src)} to compile to a string representation of its AST constructor, got ${a.show(out)}`)
+}
+
+function macroCall(src) {
+  a.reqInst(src, Node)
+  try {return src.macro()}
+  catch (err) {throw src.toErr(err)}
+}
+
+function macroReprCall(src) {
+  a.reqInst(src, Node)
+  try {return src.macroRepr()}
+  catch (err) {throw src.toErr(err)}
+}
+
+function compileCall(src) {
+  a.reqInst(src, Node)
   try {return src.compile()}
   catch (err) {throw src.toErr(err)}
+}
+
+function compileReprCall(src) {
+  a.reqInst(src, Node)
+  try {return src.compileRepr()}
+  catch (err) {throw src.toErr(err)}
+}
+
+function isModuleNodeList(val) {return a.optInst(val, Node)?.isModuleRoot()}
+
+// For internal use by code that invokes macro functions.
+export function reqValidMacroResult(src, out, fun) {
+  a.reqInst(src, Node)
+  if (a.isPromise(out)) return reqValidMacroResultAsync(out, fun)
+  return reqValidMacroResultSync(src, out, fun)
+}
+
+// For internal use by code that invokes macro functions.
+export function reqValidMacroResultSync(src, out, fun) {
+  a.reqInst(src, Node)
+  if (a.isNil(out)) return new Empty()
+  if (a.isInst(out, Node)) return out
+  throw src.err(`expected macro function ${a.show(fun)} to return nil or instance of ${a.show(jn.Node)}, got unexpected value ${a.show(out)}`)
+}
+
+// For internal use by code that invokes macro functions.
+export async function reqValidMacroResultAsync(src, out, fun) {
+  a.reqInst(src, Node)
+  out = await out
+  return reqValidMacroResultSync(src, out, fun)
 }

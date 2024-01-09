@@ -11,4 +11,6 @@ export class Declare extends jnu.Use {
     this.reqNsLex().addMixin(await this.reqNsLive())
     return this
   }
+
+  static moduleUrl = import.meta.url
 }

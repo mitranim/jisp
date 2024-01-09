@@ -19,7 +19,7 @@ operations. We count characters only when really needed, such as for row/col
 positioning. See `Span.prototype.init`.
 */
 export class Span extends ji.MixInsp.goc(a.Emp) {
-  #src = ``
+  #src = undefined
   setSrc(val) {return this.#src = jm.reqStrOrArr(val), this}
   withSrc(val) {return this.clone().setSrc(val)}
   ownSrc() {return this.#src}
@@ -34,15 +34,16 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   setLen(val) {return this.#len = a.reqNat(val), this}
   withLen(val) {return this.clone().setLen(val)}
   ownLen() {return this.#len}
-  hasLen() {return this.#len > 0}
-  isEmpty() {return !this.hasLen()}
 
-  init(src) {return this.setSrc(src).setPos(0).setLen(src.length)}
+  init(src, pos, len) {
+    return this.setSrc(src).setPos(pos ?? 0).setLen(len ?? src.length)
+  }
 
   // TODO consider moving to `StrSpan`.
   // This interface is expected to always return a string.
   decompile() {return this.#src.slice(this.#pos, this.#pos + this.#len)}
 
+  isEmpty() {return !this.hasMore()}
   hasMore() {return this.#pos < this.#src.length}
   skip(len) {return this.#pos += a.reqNat(len), this}
 

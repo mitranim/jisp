@@ -150,29 +150,6 @@ allocated once and reused.
 export class NsLivePseudoUnref extends NsLivePseudo {addRef() {}}
 
 /*
-Short for "namespace with predeclared names".
-Intended for declaring JS globals.
-TODO better name.
-*/
-/*
-export class NsPredecl extends NsBase {
-  #set = undefined
-  initSet() {return this.#set ??= new jm.ValidStrSet()}
-  optSet() {return this.#set}
-
-  has(key) {return !!this.optSet()?.has(key)}
-  add(key) {return this.initSet().add(key), this}
-
-  addMany(...val) {
-    for (val of val) this.add(val)
-    return this
-  }
-
-  [ji.symInsp](tar) {return super[ji.symInsp](tar.funs(this.optSet))}
-}
-*/
-
-/*
 Short for "namespace lexical". Unlike `NsBase` and `NsLive`, this namespace
 is mutable and supports mixins.
 
@@ -213,13 +190,13 @@ export class NsLex extends jmi.MixMixable.goc(NsBase) {
     return this.#decls?.get(key)
   }
 
-  // Draft. May be a dumb idea.
-  addEmpty(key) {
-    a.reqValidStr(key)
-    const tar = this.initDecls()
-    if (!tar.has(key)) Map.prototype.set.call(tar, key, undefined)
-    return this
-  }
+  // // Draft. May be a dumb idea.
+  // addEmpty(key) {
+  //   a.reqValidStr(key)
+  //   const tar = this.initDecls()
+  //   if (!tar.has(key)) Map.prototype.set.call(tar, key, undefined)
+  //   return this
+  // }
 
   /*
   TODO: would be ideal if these error messages referenced the code where this

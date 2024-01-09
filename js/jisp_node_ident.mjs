@@ -3,7 +3,6 @@ import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jnnd from './jisp_named.mjs'
 import * as jn from './jisp_node.mjs'
-import * as jne from './jisp_node_empty.mjs'
 import * as jnt from './jisp_node_text.mjs'
 import * as jnnu from './jisp_node_num.mjs'
 
@@ -85,50 +84,6 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   optName() {return this.optDecompileOwn()}
 
   /*
-  Override for `Node..macroList`. Implements calling of list-style macros.
-  Automatically invoked by `DelimNodeList`.
-
-  Known issue: does not add the identifier to its resolved namespace as a
-  reference (via `NsBase..addRef`). At the time of writing, it's not entirely
-  clear whether we should do that for identifiers which are removed from the
-  AST as a result of macroing.
-  */
-  macroList(list) {
-    const fun = this.optLiveVal()
-    if (a.isNil(fun)) return list
-
-    if (!a.isFun(fun)) {
-      throw this.err(`unexpected non-function live value ${a.show(fun)} in call position`)
-    }
-
-    /*
-    Automatically instantiate subclasses of `Node` with `new`. This allows Jisp
-    code to directly reference them in call positions. This is convenient for
-    macros written as classes, which includes most macros that ship with the
-    compiler. This also makes it possible to cleanly add static properties to
-    macros and reference them in Jisp code, which is convenient for some
-    syntactic edge cases such as `import.meta` and `new.target`.
-    */
-    if (a.isSubCls(fun, jn.Node)) return new fun()
-
-    /*
-    This clause implements support for regular macro functions which aren't
-    subclasses of `Node`. We always invoke them as methods, which may be useful
-    for "live values" where properties are actually methods that care about
-    `this`. For regular functions exported by modules, the context `this` will
-    be the JS module object, which is typically ignored.
-
-    TODO add tests for this macro style, and for nil return values.
-    */
-    return (
-      fun.apply(this.optLiveValSrc(), list.optChildArr()) ??
-      new jne.Empty()
-    )
-
-    return fun.apply(this.optLiveValSrc(), list.optChildArr())
-  }
-
-  /*
   SYNC[ident_live_val].
 
   This code is suitable only for unqualified identifiers, and must be fully
@@ -138,27 +93,14 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
 
   macroWithNs(nsp) {
     nsp.addRef(this)
+
     const src = nsp.optLiveVal()
     if (a.isSome(src)) return this.macroWithLiveValSrc(src)
-    return this.macroWithNsNonLive(nsp)
-  }
 
-  macroWithNsNonLive(nsp) {
-    // const val = this.optLiveValFromNs(nsp)
-    // if (a.isSome(val)) return this.macroWithLiveVal(val)
+    const val = this.optLiveValFromDec(nsp.optGet(this.optName()))
+    if (a.isSome(val)) return this.macroWithLiveVal(val)
 
-    const key = this.reqName()
-    const dec = nsp.optGet(key)
-    if (a.isNil(dec)) return this
-
-    const val = this.optLiveValFromDec(dec)
-    if (a.isNil(val)) return this
-
-    /*
-    TODO: make reporting of source declarations consistent between `.macro` and
-    `.macroList`.
-    */
-    throw this.err(a.reqStr(this.msgUnexpectedLive(key, val)) + ` found in declaration ${a.show(dec)}`)
+    return this
   }
 
   /*
@@ -189,7 +131,16 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   macroWithLiveVal(val, src) {
-    throw this.err(this.msgUnexpectedLive(this.reqName(), val, src))
+    /*
+    The optional method `.macroBare` is implemented by `BareMacro` and its
+    subclasses. This interface allows our `Node` subclasses to optionally
+    implement support for bare-style calling. Compare list-style calling
+    which is supported by `DelimNodeList` and used by `ListMacro`.
+    */
+    if (a.isSubCls(val, jn.Node) && `macroBare` in val) {
+      return jn.reqValidMacroResult(this, val.macroBare(this), val)
+    }
+    throw this.err(`unexpected reference ${a.show(this.optName())} to live value ${a.show(val)}${src ? ` found in live object ${a.show(src)}` : ``}; to be usable in this position, the live value must be a subclass of \`Node\` with a static method \`.macroBare\``)
   }
 
   /*
@@ -205,12 +156,6 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   names.
   */
   compile() {return this.reqNotKeyword().decompile()}
-
-  msgUnexpectedLive(key, val, src) {
-    const msg = `unexpected non-call reference ${a.show(key)} to live value ${a.show(val)}`
-    if (a.isSome(src)) return msg + ` found in live object ${a.show(src)}`
-    return msg
-  }
 
   reqDeclareLex() {
     this.reqCanDeclare()
@@ -237,12 +182,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
 
   isReserved() {return jm.jsReservedNames.has(this.optName())}
 
-  optResolveNs() {
-    const key = this.reqName()
-    return this.reqParent().optAncProcure(function optResolveNs(val) {
-      return jm.ownNsLexCall(val)?.optResolve(key)
-    })
-  }
+  optResolveNs() {return this.optResolveName(this.optName())}
 
   /*
   TODO: consider including all locally available names in the error message.
@@ -272,6 +212,35 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     throw this.err(`expected ${a.show(this.optName())} to be declared in a live namespace, but the nearest declaration was found in the non-live namespace ${a.show(val)}`)
   }
 
+  /*
+  Implementation note. Unlike `.optLiveVal`, this does not attempt to obtain a
+  live value source from a non-live namespace. That's because declarations of
+  unqualified identifiers in non-live namespaces may indirectly refer to live
+  values, but not to live value sources. The most typical case is `NsLex`,
+  where declarations are AST nodes that declare names. One common example is
+  `Use`:
+
+    [use `jisp:prelude.mjs` jp]
+    jp
+
+  In this case, the unqualified identifier `jp` resolves to the local non-live
+  namespace which is an instance of `NsLex`, where the declaration of `jp` is
+  an instance of `Use`, which has a live value which is the JS module that it
+  imports. For the name `jp`, there is no outer object on which we would read
+  the property `jp` to obtain the live value of the module. This live value is
+  an orphan without a live value source.
+
+  Note the difference with the following example:
+
+    [use `jisp:prelude.mjs` *]
+    const
+
+  In this example, `Use` does NOT create a declaration in the local non-live
+  namespace `NsLex`. The unqualified identifier `const` resolves to a live
+  namespace which is an instance of `NsLive`, and we can obtain the live value
+  source, which is the same JS module object as in the previous example. Note
+  in the earlier example, this was the live value, not the live value source.
+  */
   optLiveValSrc() {return this.optResolveNsLive()?.optLiveVal()}
 
   reqLiveValSrc() {
@@ -283,12 +252,8 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
 
   // SYNC[ident_live_val].
   optLiveVal() {
-    const key = this.optName()
-    if (!key) return undefined
-
     const src = this.optResolveNs()
-    if (!src) return undefined
-
+    if (a.isNil(src)) return undefined
     if (src.hasLiveVal()) return this.optDerefLiveVal(src.reqLiveVal())
     return this.optLiveValFromNs(src)
   }
@@ -373,11 +338,11 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   are instances of `Node`. In the future, we may consider extending the rules.
 
   Values declared in namespaces, such as this value, may optionally implement
-  the method `.optLiveVal` which may return a live value. This may seem with
-  the existence of live namespaces which themselves return a live value via
-  `.optLiveVal`. However, there are cases where a non-live declaration, in a
-  non-live namespace, eventually resolves to a live declaration in a live
-  namespace. One common use case is the following:
+  the method `.optLiveVal` which may return a live value. This may seem
+  redundant with the existence of live namespaces which themselves return a
+  live value via `.optLiveVal`. However, there are cases where a non-live
+  declaration, in a non-live namespace, eventually resolves to a live
+  declaration in a live namespace. One common use case is the following:
 
     [use `jisp:prelude.mjs` jp]
     [jp.and]
@@ -401,7 +366,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   static toValidDictKey(val) {
     a.reqStr(val)
     if (this.isValidDictKey(val)) return val
-    return JSON.stringify(val)
+    return a.jsonEncode(val)
   }
 
   static isValidDictKey(val) {
@@ -416,6 +381,8 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
       )
     )
   }
+
+  static moduleUrl = import.meta.url;
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optName)}
 }

@@ -1,7 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jm from './jisp_misc.mjs'
-import * as ji from './jisp_insp.mjs'
-import * as jp from './jisp_parent.mjs'
+import * as jpn from './jisp_parent_node.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
@@ -28,7 +27,7 @@ The "square brackets" version requires a different class, because square
 brackets are useful when the "key" is an arbitrary expression, not a hardcoded
 identifier.
 */
-export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
+export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
   /*
   Used by `Ident..parse`, which is called by the tokenizer. We parse text like
   `.someIdent` as its own atomic token. We combine it with the preceding
@@ -39,7 +38,7 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   /*
   Should be called by the lexer. Should `IdentAccess` with the preceding
   expression. This is right-associative, which is arguably somewhat heretical
-  for a Lispy syntax.
+  in a Lispy syntax.
   */
   static lexNext(lex, prev) {
     const span = lex.reqSpan()
@@ -63,28 +62,23 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
   // Override for `MixNamed`.
   optName() {return a.stripPre(this.optDecompileOwn(), this.constructor.separator())}
 
-  // Override for `Node`.
-  decompile() {
-    return this.optDecompileSrcNode() ?? (
-      a.laxStr(this.optFirstChild()?.decompile()) +
-      a.reqStr(this.reqDecompileOwn())
-    )
+  macro() {
+    const chi = this.optFirstChild()
+    if (a.isNil(chi)) return this.macroOrphan()
+
+    const src = this.optResolveLiveValFromChild()
+    if (a.isSome(src)) return this.macroWithLiveValSrc(src)
+
+    return this.setChild(jn.macroNodeSync(chi))
   }
 
   /*
-  This node has two forms: orphan and non-orphan. The orphan form is allowed
-  only in a call position; that case is handled by the method `.macroList`,
-  which is invoked by `DelimNodeList`. When this node is macroed by itself, it
-  must be non-orphan. This means we should look for a live value explicitly on
-  the source expression (which must be present), and avoid calling
-  `.optLiveValSrc`, which could fall back on resolving a live value from
-  ancestor nodes.
+  TODO better naming. This is used when the current node doesn't have a child,
+  which is the exact opposite of having no parent, which is the meaning of the
+  term "orphan".
   */
-  macro() {
-    const src = this.optResolveLiveValFromChild()
-    if (a.isSome(src)) return this.macroWithLiveValSrc(src)
-    this.setChild(jn.macroNodeSync(this.reqFirstChild()))
-    return this
+  macroOrphan() {
+    return this.macroWithLiveValSrc(this.reqResolveLiveValFromAnc())
   }
 
   compile() {
@@ -95,7 +89,17 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     )
   }
 
+  // Override for `Node`.
+  decompile() {
+    return this.optDecompileSrcNode() ?? (
+      a.laxStr(this.optFirstChild()?.decompile()) +
+      a.reqStr(this.reqDecompileOwn())
+    )
+  }
+
   /*
+  Unused, TODO drop.
+
   TODO consistent naming scheme for spans generated from combining expressions.
   It would be simpler to just override `.optSpan` or replace `.ownSpan`, but we
   ALSO need access to the original `.ownSpan`.
@@ -177,5 +181,5 @@ export class IdentAccess extends jp.MixParentOneToOne.goc(jni.Ident) {
     )
   }
 
-  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optFirstChild)}
+  static moduleUrl = import.meta.url
 }

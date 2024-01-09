@@ -14,4 +14,6 @@ export class CommentMacro extends jnlm.ListMacro {
   }
 
   isCosmetic() {return true}
+
+  static moduleUrl = import.meta.url
 }

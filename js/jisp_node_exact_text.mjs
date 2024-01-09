@@ -16,4 +16,6 @@ export class ExactText extends jnt.Text {
   }
 
   macro() {return this}
+
+  static moduleUrl = import.meta.url
 }

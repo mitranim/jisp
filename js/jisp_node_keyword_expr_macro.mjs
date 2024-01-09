@@ -56,6 +56,7 @@ export class KeywordExprMacro extends jnlm.ListMacro {
   unaryPrefix() {throw this.errMeth(`unaryPrefix`)}
   unarySuffix() {throw this.errMeth(`unarySuffix`)}
   binaryInfix() {throw this.errMeth(`binaryInfix`)}
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_0_1 extends KeywordExprMacro {
@@ -64,6 +65,8 @@ export class KeywordExprMacro_0_1 extends KeywordExprMacro {
     this.reqChildCountBetween(1, 2)
     return this.macroFrom(1)
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_1 extends KeywordExprMacro {
@@ -72,6 +75,8 @@ export class KeywordExprMacro_1 extends KeywordExprMacro {
     this.reqChildCount(2)
     return this.macroFrom(1)
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_0_2 extends KeywordExprMacro {
@@ -80,6 +85,8 @@ export class KeywordExprMacro_0_2 extends KeywordExprMacro {
     this.reqChildCountBetween(1, 3)
     return this.macroFrom(1)
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_2 extends KeywordExprMacro {
@@ -96,6 +103,8 @@ export class KeywordExprMacro_2 extends KeywordExprMacro {
       jn.optCompileNode(this.reqChildAt(2)),
     ))
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_1_N extends KeywordExprMacro {
@@ -104,6 +113,8 @@ export class KeywordExprMacro_1_N extends KeywordExprMacro {
     this.reqChildCountMin(2)
     return this.macroFrom(1)
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_2_N extends KeywordExprMacro {
@@ -112,4 +123,6 @@ export class KeywordExprMacro_2_N extends KeywordExprMacro {
     this.reqChildCountMin(3)
     return this.macroFrom(1)
   }
+
+  static moduleUrl = import.meta.url
 }

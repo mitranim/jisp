@@ -29,4 +29,6 @@ export class Let extends jnc.Const {
   }
 
   compilePrefix() {return `let`}
+
+  static moduleUrl = import.meta.url
 }

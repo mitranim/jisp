@@ -37,6 +37,14 @@ There are two ways of importing: `use` and `import`.
 
 The only way to evaluate something at macro time is by referencing it from another module imported by `use`.
 
+## Names
+
+JS uses reserved keywords, special reserved names, and a large amount of special syntax. Many traditional Lisps, including Common Lisp, also use reserved names and special syntax. In contrast, Jisp has no keywords, no reserved names, and no special-case syntax. In this sense, Jisp is more general.
+
+JS has a large amount of globally predeclared names. Many traditional Lisps, including Common Lisp, do the same. In contrast, the only predeclared name in Jisp is `use`. Jisp code imports other names on an opt-in basis.
+
+JS built-ins tend to have verbose names such as `undefined`, `Infinity`, `globalThis`. Jisp provides shorter names such as `nil`, `inf`, `global`, which compile to the regular JS built-in names. Just like other names, these are opt-in. User code may avoid importing them.
+
 ## Misc
 
 Should Jisp be written in itself?

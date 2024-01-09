@@ -1,9 +1,16 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
+import * as jm from './jisp_misc.mjs'
 import * as jns from './jisp_ns.mjs'
 import * as jl from './jisp_lexer.mjs'
+import * as jn from './jisp_node.mjs'
 import * as jnnl from './jisp_node_node_list.mjs'
 import * as jnu from './jisp_node_use.mjs'
+import * as jnc from './jisp_node_const.mjs'
+import * as jniu from './jisp_node_ident_unqual.mjs'
+import * as jnst from './jisp_node_str.mjs'
+import * as jnim from './jisp_node_import.mjs'
+import * as jnv from './jisp_node_val.mjs'
 
 export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   /*
@@ -41,8 +48,11 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   should support both modes.
   */
   macro() {return this.macroFrom(0)}
-  compile() {return this.reqPrn().compileStatements(this.childIter())}
+
+  compile() {return this.reqPrn().compileStatements(this.optChildArr())}
+
   isChildStatement() {return true}
+
   isModuleRoot() {return true}
 
   /*
@@ -56,7 +66,95 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   err(...val) {return Error(...val)}
 
+  /*
+  Counter used for automatically generated names. The counter is per module,
+  rather than per some hypothetical descendant, because within one module, all
+  auto-generated names need to be unique. That's because we need to avoid
+  collisions between generated names at the module root level and generated
+  names in inner scopes.
+  */
+  #gen = 0
+  genInc() {return ++this.#gen}
+  genName() {return `$_gen_` + this.genInc()}
+
+  /*
+  Takes an import address, ensures that the current module has an automatically
+  generated import statement with this address that uses a "named" form, and
+  returns the name declared by that import statement. Useful when implicitly
+  adding imports. See the macro `Quote` and associated tests.
+  */
+  reqAutoImportName(src) {return a.pk(this.reqAutoImport(src))}
+
+  reqAutoImport(src) {
+    const tar = this.initAutoImports()
+    return tar.get(src) ?? tar.setted(src, this.addAutoImport(src))
+  }
+
+  #autoImports = undefined
+  initAutoImports() {return this.#autoImports ??= new ImportMap()}
+  optAutoImports() {return this.#autoImports}
+
+  /*
+  Known issue: the resulting node has no reference to source code.
+  Any exceptions that may occur during its macroing or compilation
+  would have only an error message, without associated source code.
+  */
+  addAutoImport(src) {
+    const tar = new jnim.Import().setChildren(
+      new jn.Empty(),
+      new jnst.StrBacktick().setVal(src),
+      new jniu.IdentUnqual().initSpanWith(this.genName()),
+    )
+    this.appendChild(tar)
+    return tar
+  }
+
+  /*
+  Takes an arbitrary JS value, which must be serializable via `Val`, ensures
+  that the current module has an automatically generated variable with this
+  value assigned, and returns the name declared by that variable.
+
+  TODO: prevent automatic export of the resulting variable.
+  */
+  reqAutoValName(src) {return a.pk(this.reqAutoVal(src))}
+
+  reqAutoVal(src) {
+    const tar = this.initAutoVals()
+    return tar.get(src) ?? tar.setted(src, this.addAutoVal(src))
+  }
+
+  #autoVals = undefined
+  initAutoVals() {return this.#autoVals ??= new ConstMap()}
+  optAutoVals() {return this.#autoVals}
+
+  /*
+  Known issue: the resulting node has no reference to source code.
+  Any exceptions that may occur during its macroing or compilation
+  would have only an error message, without associated source code.
+  */
+  addAutoVal(src) {
+    const tar = new jnc.Const().setChildren(
+      new jn.Empty(),
+      new jniu.IdentUnqual().initSpanWith(this.genName()),
+      new jnv.Val().setVal(jnv.Val.reqValid(src)),
+    )
+    this.appendChild(tar)
+    return tar
+  }
+
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar.funs(this.optModule, this.optNsLex))
   }
+
+  static moduleUrl = import.meta.url
+}
+
+class ImportMap extends a.TypedMap {
+  reqKey(key) {return a.reqValidStr(key)}
+  reqVal(val) {return a.reqInst(val, jnim.Import)}
+}
+
+class ConstMap extends a.TypedMap {
+  reqKey(key) {return key}
+  reqVal(val) {return a.reqInst(val, jnc.Const)}
 }

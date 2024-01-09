@@ -92,6 +92,8 @@ export class ClassExtend extends jnlm.ListMacro {
     }
     return a.optPre(prev, `extends `)
   }
+
+  static moduleUrl = import.meta.url
 }
 
 export class ClassLetBase extends jnl.Let {
@@ -105,15 +107,19 @@ export class ClassLetBase extends jnl.Let {
 
   // Override for `Node..reqDeclareLex`.
   reqDeclareLex() {}
+
+  static moduleUrl = import.meta.url
 }
 
 export class ClassLet extends ClassLetBase {
   static get static() {return ClassLetStatic}
   compilePrefix() {return ``}
+  static moduleUrl = import.meta.url
 }
 
 export class ClassLetStatic extends ClassLetBase {
   compilePrefix() {return `static`}
+  static moduleUrl = import.meta.url
 }
 
 export class ClassBlock extends jnb.Block {
@@ -126,4 +132,6 @@ export class ClassBlock extends jnb.Block {
     this.reqStatement()
     return `static ` + a.reqStr(this.compileStatement())
   }
+
+  static moduleUrl = import.meta.url
 }

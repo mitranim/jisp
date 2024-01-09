@@ -34,7 +34,7 @@ export {
 
   _ as globalThis,
   _ as console,
-  _ as document,
+  _ as document, // Only in some JS environments.
   _ as decodeURI,
   _ as decodeURIComponent,
   _ as encodeURI,
