@@ -101,8 +101,8 @@ export async function testSingleFileCompilation(src, exp) {
 await t.test(async function test_Use_import_resolution() {
   await t.test(async function test_fail_without_module_url() {
     await testModuleFail(makeModule(), `[use "blah"]`,         `Relative import path "blah" not prefixed with / or ./ or ../`)
-    await testModuleFail(makeModule(), `[use "./blah"]`,       `missing source URL in [object Module]`)
-    await testModuleFail(makeModule(), `[use "../blah"]`,      `missing source URL in [object Module]`)
+    await testModuleFail(makeModule(), `[use "./blah"]`,       `missing source URL at [object Module]`)
+    await testModuleFail(makeModule(), `[use "../blah"]`,      `missing source URL at [object Module]`)
     await testModuleFail(makeModule(), `[use "/blah"]`,        `Module not found "file:///blah"`)
     await testModuleFail(makeModule(), `[use "file:///blah"]`, `Module not found "file:///blah"`)
   })

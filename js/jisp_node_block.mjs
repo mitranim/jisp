@@ -53,5 +53,5 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   */
   isChildStatement() {return this.isStatement()}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

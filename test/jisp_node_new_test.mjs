@@ -63,11 +63,6 @@ new SomeName.OtherName(10, 20, 30);
   )
 })
 
-/*
-Imperfect behavior. In Jisp, this requires a function call, whereas in JS, it
-doesn't. Ideally, this would not require a function call in Jisp. Solving this
-may require restoring support for "bare" macro calls, which has been removed.
-*/
 await t.test(async function test_New_target() {
   await jrt.testModuleCompile(
     jrt.makeModule(),

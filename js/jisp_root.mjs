@@ -161,5 +161,6 @@ export class Root extends (
     return tar
   }
 
+  get [jm.symType]() {return jm.symTypeRoot}
   [ji.symInsp](tar) {return tar.funs(this.ownFs)}
 }

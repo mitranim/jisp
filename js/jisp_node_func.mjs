@@ -30,8 +30,10 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     this.declareParams()
-    return this.macroFrom(3)
+    return this.macroBody()
   }
+
+  macroBody() {return this.macroFrom(3)}
 
   // Override for `Node..reqDeclareLex`.
   reqDeclareLex() {
@@ -88,17 +90,18 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Func extends FuncBase {
   static get async() {return FuncAsync}
-  static moduleUrl = import.meta.url
+  static get asyncImplicit() {return FuncAsyncImplicit}
+  static reprModuleUrl = import.meta.url
 }
 
 export class FuncAsync extends FuncBase {
   compilePrefix() {return `async function`}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 /*
@@ -122,7 +125,7 @@ export class MethodFuncBase extends FuncBase {
 
   compilePrefix() {return ``}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 /*
@@ -133,21 +136,21 @@ export class MethodFunc extends MethodFuncBase {
   static get async() {return MethodFuncAsync}
   static get static() {return MethodFuncStatic}
   compilePrefix() {return ``}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class MethodFuncAsync extends MethodFuncBase {
   compilePrefix() {return `async`}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class MethodFuncStatic extends MethodFuncBase {
   static get async() {return MethodFuncStaticAsync}
   compilePrefix() {return `static`}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class MethodFuncStaticAsync extends MethodFuncBase {
   compilePrefix() {return `static async`}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

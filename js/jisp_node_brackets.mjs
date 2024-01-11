@@ -8,5 +8,5 @@ export class BracketSuf extends jnet.ExactText {static src() {return `]`}}
 export class Brackets extends jndnl.DelimNodeList {
   static prefix() {return BracketPre.src()}
   static suffix() {return BracketSuf.src()}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

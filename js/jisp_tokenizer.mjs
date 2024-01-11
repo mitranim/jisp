@@ -27,6 +27,7 @@ parentheses, which are only valid as tokens, and should not occur in a lexed
 AST.
 */
 export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
+  // Override for `MixOwnSpanned`.
   get Span() {return jsp.StrSpan}
 
   init(src) {return this.initSpan().init(src), super.init()}
@@ -82,6 +83,7 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   // get Num() {return jnnu.Num}
   // get StrBacktick() {return jnst.StrBacktick}
   // get StrDouble() {return jnst.StrDouble}
+  // get IdentOper() {return jnio.IdentOper}
   // get IdentUnqual() {return jniu.IdentUnqual}
   // get IdentAccess() {return jnia.IdentAccess}
 
@@ -100,6 +102,7 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   //     this.Num.parse(span) ??
   //     this.StrBacktick.parse(span) ??
   //     this.StrDouble.parse(span) ??
+  //     this.IdentOper.parse(span) ??
   //     this.IdentUnqual.parse(span) ??
   //     this.IdentAccess.parse(span) ??
   //     undefined

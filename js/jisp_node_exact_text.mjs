@@ -10,12 +10,13 @@ export class ExactText extends jnt.Text {
     const pre = a.reqValidStr(this.src())
     if (!span.rem().startsWith(pre)) return undefined
 
-    const tar = new this().setSpan(span.withLen(pre.length))
+    const tar = new this()
+    tar.initSpan().setFrom(span).setLen(pre.length)
     span.skip(pre.length)
     return tar
   }
 
   macro() {return this}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

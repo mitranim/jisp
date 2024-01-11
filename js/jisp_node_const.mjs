@@ -34,5 +34,5 @@ export class Const extends jnlm.ListMacro {
   compileName() {return jn.optCompileNode(this.reqIdent())}
   compileInfix() {return `=`}
   compileVal() {return jn.optCompileNode(this.reqVal())}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

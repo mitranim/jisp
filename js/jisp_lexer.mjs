@@ -11,6 +11,8 @@ import * as jnia from './jisp_node_ident_access.mjs'
 
 export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
   get Tokenizer() {return jt.Tokenizer}
+
+  // Override for `MixOwnSpanned`.
   get Span() {return jsp.ArrSpan}
 
   init(src) {

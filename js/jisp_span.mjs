@@ -2,6 +2,8 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as je from './jisp_err.mjs'
 import * as jm from './jisp_misc.mjs'
+import * as jre from './jisp_repr.mjs'
+import * as jpa from './jisp_pathed.mjs'
 import * as jrc from './jisp_row_col.mjs'
 
 /*
@@ -58,7 +60,12 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
       .setLen(this.#len)
   }
 
-  static range(begin, end) {
+  setFrom(src) {
+    a.reqInst(src, Span)
+    return this.setSrc(src.ownSrc()).setPos(src.ownPos()).setLen(src.ownLen())
+  }
+
+  setRange(begin, end) {
     const beginSrc = begin.ownSrc()
     const endSrc = end.ownSrc()
 
@@ -67,14 +74,14 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
       throw Error(`unable to create range from spans ${a.show(begin)} and ${a.show(end)} with mismatching source`)
     }
 
-    return new this()
+    return this
       .setSrc(beginSrc)
       .setPos(begin.ownPos())
       .setLen(end.nextPos() - begin.ownPos())
   }
 
   static optRange(begin, end) {
-    return a.isSome(begin) && a.isSome(end) ? this.range(begin, end) : undefined
+    return a.isSome(begin) && a.isSome(end) ? new this().setRange(begin, end) : undefined
   }
 
   [ji.symInsp](tar) {
@@ -82,36 +89,70 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
   }
 }
 
-export class StrSpan extends Span {
+export class StrSpan extends jpa.MixPathed.goc(Span) {
   setSrc(val) {return super.setSrc(a.reqStr(val))}
   rowCol() {return new jrc.RowCol().fromUtf16(this.ownSrc(), this.ownPos())}
 
   /*
+  This uses the format `path:row:col` which is well-known and supported by
+  various external tools such as terminals and code editors. Examples:
+
+    some/path:123:456
+    /some/path:123:456
+    file:///some/path:123:456
+
   TODO:
 
     * Consider including preceding code (requires highlighting).
     * Consider indentation.
     * Consider colors.
     * Consider highlighting specific region with carets.
-    * Instead of displaying only `row:col`, we should display `path:row:col`
-      when file path is available.
-
-  When we implement reporting of file paths, we should use the well-known format
-  that looks like the following examples, where `123:456` stands for `row:col`.
-
-    some/path:123:456
-    /some/path:123:456
-    file:///some/path:123:456
   */
   context() {
     const rowCol = this.rowCol()
     const preview = jm.preview(this.rem())
 
     return jm.joinParagraphs(
-      `row:col: ` + rowCol.strShort(),
-      preview ? jm.joinParagraphs(`source code preview:`, preview) : ``,
+      a.laxStr(this.optPath()) + `:` + rowCol.strShort(),
+      preview,
     )
   }
+}
+
+export class ReprStrSpan extends jre.MixRepr.goc(StrSpan) {
+  // Override for `MixRepr`.
+  compileRepr() {
+    let out = a.reqStr(super.compileRepr())
+
+    const pat = this.optReprPathName()
+    if (pat) out += `.setPath(${pat})`
+
+    const src = this.reqReprSrcName()
+    if (src) out += `.setSrc(${src})`
+
+    const pos = this.ownPos()
+    if (pos) out += `.setPos(${pos})`
+
+    const len = this.ownLen()
+    if (len) out += `.setLen(${len})`
+
+    return out
+  }
+
+  // Must be set by callers such as `Node`.
+  #reprPathName = undefined
+  setReprPathName(val) {return this.#reprPathName = this.req(val, a.isValidStr), this}
+  optReprPathName() {return this.#reprPathName}
+  reqReprPathName() {return this.optReprPathName() ?? this.throw(`missing name of path string at ${a.show(this)}`)}
+
+  // Must be set by callers such as `Node`.
+  #reprSrcName = undefined
+  setReprSrcName(val) {return this.#reprSrcName = this.req(val, a.isValidStr), this}
+  optReprSrcName() {return this.#reprSrcName}
+  reqReprSrcName() {return this.optReprSrcName() ?? this.throw(`missing name of source string at ${a.show(this)}`)}
+
+  // Override for `MixRepr`.
+  static reprModuleUrl = import.meta.url
 }
 
 export class ArrSpan extends Span {

@@ -20,6 +20,7 @@ of this module refer to its actual exports.
 */
 export class Import extends jnib.ImportBase {
   static get meta() {return ImportMeta}
+  // static get meta() {return undefined}
 
   // Involved in `.macroModeMixin`.
   get NsLive() {return jns.NsLivePseudo}
@@ -112,7 +113,7 @@ export class Import extends jnib.ImportBase {
     return this
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class ImportMeta extends jnbm.BareMacro {
@@ -122,5 +123,5 @@ export class ImportMeta extends jnbm.BareMacro {
   */
   compile() {return `import.meta`}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

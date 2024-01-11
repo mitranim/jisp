@@ -41,7 +41,7 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
     return Number.parseFloat(src)
   }
 
-  static moduleUrl = import.meta.url;
+  static reprModuleUrl = import.meta.url;
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
 }

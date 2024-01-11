@@ -22,7 +22,7 @@ export class New extends jnlm.ListMacro {
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class NewTarget extends jnbm.BareMacro {
@@ -32,5 +32,5 @@ export class NewTarget extends jnbm.BareMacro {
   */
   compile() {return `new.target`}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

@@ -66,8 +66,16 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
     const chi = this.optFirstChild()
     if (a.isNil(chi)) return this.macroOrphan()
 
-    const src = this.optResolveLiveValFromChild()
-    if (a.isSome(src)) return this.macroWithLiveValSrc(src)
+    const src = this.optResolveLiveValSrcFromChild()
+    if (a.isSome(src)) {
+      /*
+      See the comment on `IdentAccess..optDerefLiveVal` for the explanation of
+      this special case.
+      */
+      if (jn.isBareMacro(src)) return this.setChild(jn.macroNodeSync(chi))
+
+      return this.macroWithLiveValSrc(src)
+    }
 
     return this.setChild(jn.macroNodeSync(chi))
   }
@@ -78,7 +86,7 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
   term "orphan".
   */
   macroOrphan() {
-    return this.macroWithLiveValSrc(this.reqResolveLiveValFromAnc())
+    return this.macroWithLiveValSrc(this.reqResolveLiveValSrcFromAnc())
   }
 
   compile() {
@@ -111,7 +119,7 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
     const spanSrc = this.optFirstChild()?.optSpan()
     if (!spanSrc) return spanOwn
 
-    return this.Span.range(spanSrc, spanOwn)
+    return new this.Span().setRange(spanSrc, spanOwn)
   }
 
   /*
@@ -126,16 +134,16 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
   optLiveValSrc() {
     return (
       this.optFirstChild()
-      ? this.optResolveLiveValFromChild()
-      : this.reqResolveLiveValFromAnc()
+      ? this.optResolveLiveValSrcFromChild()
+      : this.reqResolveLiveValSrcFromAnc()
     )
   }
 
-  optResolveLiveValFromChild() {
+  optResolveLiveValSrcFromChild() {
     return this.optFirstChild()?.asOnlyInst(jni.Ident)?.optLiveVal()
   }
 
-  optResolveLiveValFromAnc() {
+  optResolveLiveValSrcFromAnc() {
     const key = this.optName()
     if (!key) return undefined
 
@@ -164,22 +172,34 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
   reqLiveValSrc() {
     return (
       this.optFirstChild()
-      ? this.reqResolveLiveValFromChild()
-      : this.reqResolveLiveValFromAnc()
+      ? this.reqResolveLiveValSrcFromChild()
+      : this.reqResolveLiveValSrcFromAnc()
     )
   }
 
-  reqResolveLiveValFromChild() {
+  reqResolveLiveValSrcFromChild() {
     return this.reqFirstChild().asReqInst(jni.Ident).reqLiveVal()
   }
 
-  reqResolveLiveValFromAnc() {
+  reqResolveLiveValSrcFromAnc() {
     const key = this.reqName()
     return (
-      this.optResolveLiveValFromAnc() ??
+      this.optResolveLiveValSrcFromAnc() ??
       this.throw(`unable to find ancestral live value with property ${a.show(key)} at descendant ${a.show(this)}`)
     )
   }
 
-  static moduleUrl = import.meta.url
+  /*
+  Override for `Ident..optDerefLiveVal`.
+
+  A "bare" macro is considered to represent a runtime value, not a live value.
+  We leave it to the child node, typically an identifier, to handle this
+  particular case.
+  */
+  optDerefLiveVal(src) {
+    if (jn.isBareMacro(src)) return undefined
+    return super.optDerefLiveVal(src)
+  }
+
+  static reprModuleUrl = import.meta.url
 }

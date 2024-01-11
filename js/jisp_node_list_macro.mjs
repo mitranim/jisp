@@ -76,5 +76,5 @@ export class ListMacro extends jnnl.NodeList {
     throw this.err(`${a.show(this)} requires its immediate parent to be an instance of ${a.show(cls)}, got parent ${a.show(tar)}`)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

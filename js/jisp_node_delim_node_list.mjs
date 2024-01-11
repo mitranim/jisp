@@ -30,7 +30,7 @@ export class DelimNodeList extends jnnl.NodeList {
       const next = span.optHead()
 
       if (next.decompile() === suf) {
-        tar.setSpan(tar.Span.range(head.reqSpan(), next.reqSpan()))
+        tar.initSpan().setRange(head.reqSpan(), next.reqSpan())
         span.skip(1)
         return tar
       }
@@ -56,10 +56,7 @@ export class DelimNodeList extends jnnl.NodeList {
   classes. If the given live value is a `Node` subclass which does not
   implement this method, we ignore it here, and macro the children of this
   node list one by one. In such cases, the identifier in the call position
-  will handle that live value using its own rules.
-
-  For subclasses of `Node`, avoiding direct instantiation and using optional
-  methods allows us to implement several different styles of macroing. See also:
+  will handle that live value using its own rules. See also:
 
     * `Ident` which implements support for "bare" calls.
     * `DelimNodeList` which implements support for "list" and "repr list" calls.
@@ -75,11 +72,11 @@ export class DelimNodeList extends jnnl.NodeList {
   is invoked, it must return nil or an instance of `Node`. Any other return
   value is invalid and causes an immediate exception.
 
-  Whenever possible, we invoke macro functions as methods. This is possible
-  when a macro function is found as a property of a "live value source" such
-  as that returned by `Ident..optLiveValSrc`, and should work even when the
-  identifier is unqualified. The most typical "live value sources" are JS
-  module objects obtained by importing another module via `Use`.
+  When invoking a regular macro function, in addition to providing the elements
+  of the node list as arguments, we also provide the list itself, as `this`.
+  The type of `this` is typically a subclass of `DelimNodeList`, such as
+  `Brackets`. Macro functions can use methods of `DelimNodeList` to validate
+  their inputs, and have access to the AST even when invoked with no arguments.
 
   TODO add tests for various macro behaviors, and for nil return values.
 
@@ -101,23 +98,13 @@ export class DelimNodeList extends jnnl.NodeList {
     }
 
     if (a.isSubCls(fun, jn.Node)) {
-      /*
-      The optional method `.macroList` is implemented by `ListMacro` and its
-      subclasses. This interface allows our `Node` subclasses to optionally
-      implement support for list-style calling.
-      */
-      if (`macroList` in fun) {
+      if (jn.isListMacro(fun)) {
         return jn.reqValidMacroResult(this, fun.macroList(this), fun)
       }
-
       return this.macroFallback()
     }
 
-    return jn.reqValidMacroResult(
-      this,
-      fun.apply(jm.optLiveValSrcCall(head), this.optChildSlice(1)),
-      fun,
-    )
+    return jn.reqValidMacroResult(this, fun.apply(this, this.optChildSlice(1)), fun)
   }
 
   /*
@@ -156,5 +143,5 @@ export class DelimNodeList extends jnnl.NodeList {
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

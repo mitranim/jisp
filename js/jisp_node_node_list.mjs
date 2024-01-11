@@ -14,5 +14,5 @@ export class NodeList extends jpn.MixParentNodeOneToMany.goc(jn.Node) {
   macro() {throw this.errMeth(`macro`)}
   */
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

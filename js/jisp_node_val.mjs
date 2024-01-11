@@ -78,7 +78,7 @@ export class Val extends jv.MixOwnValued.goc(jn.Node) {
 
   static from(val) {return new this().setVal(val)}
 
-  static moduleUrl = import.meta.url;
+  static reprModuleUrl = import.meta.url;
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optVal)}
 }

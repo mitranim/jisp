@@ -54,5 +54,5 @@ export class Predecl extends jnbm.BareMacro {
     )).setHasCode(!!ctxOwn || !!ctxDec)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

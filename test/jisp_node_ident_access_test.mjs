@@ -4,7 +4,6 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 import * as je from '../js/jisp_err.mjs'
-import * as jsp from '../js/jisp_span.mjs'
 import * as jnia from '../js/jisp_node_ident_access.mjs'
 import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
@@ -65,21 +64,19 @@ t.test(function test_IdentAccess_parse_partial() {
 })
 
 t.test(function test_IdentAccess_child_node_and_source_node() {
-  const expr = new jniu.IdentUnqual().setSpan(new jsp.StrSpan().init(`one`))
+  const expr = new jniu.IdentUnqual().initSpanWith(`one`)
 
   t.is(expr.decompile(), `one`)
   t.is(expr.reqName(), `one`)
 
-  const access = new jnia.IdentAccess().setSpan(new jsp.StrSpan().init(`.two`))
+  const access = new jnia.IdentAccess().initSpanWith(`.two`)
 
   t.is(access.reqName(), `two`)
   t.is(access.decompile(), `.two`)
 
   t.throws(() => access.compile(), Error, `missing first child in parent [object IdentAccess]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 .two`)
 
@@ -98,9 +95,7 @@ source code preview:
   t.is(access.decompile(), `one.two`)
   t.is(access.compile(), `one.two`)
 
-  const other = new jnbrk.Brackets()
-    .setSpan(new jsp.StrSpan().init(`[otherIdent "some_input"]`))
-
+  const other = new jnbrk.Brackets().initSpanWith(`[otherIdent "some_input"]`)
   t.is(other.decompile(), `[otherIdent "some_input"]`)
 
   // See comments in `test_IdentUnqual_from_source_node` for explanations.

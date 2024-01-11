@@ -54,5 +54,5 @@ export class Use extends jnib.ImportBase {
     throw this.err(`unexpected attempt to compile macro node ${a.show(this)} in expression position`)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

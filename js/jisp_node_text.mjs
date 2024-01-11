@@ -12,7 +12,9 @@ export class Text extends jn.Node {
     const mat = this.match(span.rem())
     if (!mat) return undefined
 
-    const tar = new this().setSpan(span.withLen(0)).setMatch(mat)
+    const tar = new this()
+    tar.initSpan().setFrom(span).setLen(0)
+    tar.setMatch(mat)
     span.skip(tar.reqSpan().ownLen())
     return tar
   }
@@ -24,5 +26,5 @@ export class Text extends jn.Node {
     return this
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

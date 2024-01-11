@@ -56,7 +56,7 @@ export class KeywordExprMacro extends jnlm.ListMacro {
   unaryPrefix() {throw this.errMeth(`unaryPrefix`)}
   unarySuffix() {throw this.errMeth(`unarySuffix`)}
   binaryInfix() {throw this.errMeth(`binaryInfix`)}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_0_1 extends KeywordExprMacro {
@@ -66,7 +66,7 @@ export class KeywordExprMacro_0_1 extends KeywordExprMacro {
     return this.macroFrom(1)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_1 extends KeywordExprMacro {
@@ -76,7 +76,7 @@ export class KeywordExprMacro_1 extends KeywordExprMacro {
     return this.macroFrom(1)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_0_2 extends KeywordExprMacro {
@@ -86,7 +86,7 @@ export class KeywordExprMacro_0_2 extends KeywordExprMacro {
     return this.macroFrom(1)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_2 extends KeywordExprMacro {
@@ -104,7 +104,7 @@ export class KeywordExprMacro_2 extends KeywordExprMacro {
     ))
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_1_N extends KeywordExprMacro {
@@ -114,7 +114,7 @@ export class KeywordExprMacro_1_N extends KeywordExprMacro {
     return this.macroFrom(1)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class KeywordExprMacro_2_N extends KeywordExprMacro {
@@ -124,5 +124,5 @@ export class KeywordExprMacro_2_N extends KeywordExprMacro {
     return this.macroFrom(1)
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

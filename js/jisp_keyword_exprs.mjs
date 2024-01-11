@@ -227,6 +227,7 @@ export class Instanceof extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `instanceof`}
 }
 
+// TODO: support bare and 0-N variadic.
 export class Void extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `undefined`}
   unaryPrefix() {return `void`}

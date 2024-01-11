@@ -6,7 +6,7 @@ import * as jv from './jisp_valued.mjs'
 export class Str extends jv.MixOwnValued.goc(jnt.Text) {
   setVal(val) {return super.setVal(this.req(val, a.isStr))}
   macro() {return this}
-  static moduleUrl = import.meta.url;
+  static reprModuleUrl = import.meta.url;
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
 }
 
@@ -41,6 +41,8 @@ export class StrBacktick extends Str {
       throw this.err(`internal error: regexp match was found but captured content was nil`)
     }
 
+    // FIXME known issue: `.compileRepr` includes the source span, but forgets
+    // to include the captured value. As a result, the string has invalid content.
     this.setVal(body)
     return this
   }
@@ -56,7 +58,7 @@ export class StrBacktick extends Str {
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 /*
@@ -83,5 +85,5 @@ export class StrDouble extends Str {
 
   compile() {return this.decompile()}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

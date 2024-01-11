@@ -47,22 +47,33 @@ export class MixChild extends a.DedupMixinCache {
 
       // TODO better naming. This starts search at the current node, not at the
       // parent. The name should reflect that.
-      optAncMatch(cls) {
+      optAncFindInst(cls) {
         a.reqCls(cls)
-        let tar = this
-        while (tar) {
-          if (a.isInst(tar, cls)) return tar
-          tar = tar.optParent()
-        }
-        return undefined
+        return this.optAncFind(function testAncInst(val) {return a.isInst(val, cls)})
       }
 
       // TODO better naming. This starts search at the current node, not at the
       // parent. The name should reflect that.
-      reqAncMatch(cls) {
+      reqAncFindInst(cls) {
         return (
-          this.optAncMatch(cls) ??
+          this.optAncFindInst(cls) ??
           this.throw(`unable to find ancestor with class ${a.show(cls)} at descendant ${a.show(this)}`)
+        )
+      }
+
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
+      optAncFindType(sym) {
+        a.reqSym(sym)
+        return this.optAncFind(function testAncType(val) {return jm.hasInternalType(val, sym)})
+      }
+
+      // TODO better naming. This starts search at the current node, not at the
+      // parent. The name should reflect that.
+      reqAncFindType(sym) {
+        return (
+          this.optAncFindType(sym) ??
+          this.throw(`unable to find ancestor with internal type ${a.show(sym)} at descendant ${a.show(this)}`)
         )
       }
 
@@ -70,12 +81,9 @@ export class MixChild extends a.DedupMixinCache {
       // parent. The name should reflect that.
       optAncFind(fun) {
         a.reqFun(fun)
-        let tar = this
-        while (tar) {
-          if (fun(tar)) return tar
-          tar = tar.optParent()
-        }
-        return undefined
+        return this.optAncProcure(function testAnc(val) {
+          return fun(val) ? val : undefined
+        })
       }
 
       // TODO better naming. This starts search at the current node, not at the
@@ -99,10 +107,17 @@ export class MixChild extends a.DedupMixinCache {
         }
         return undefined
       }
+
+      reqAncProcure(fun) {
+        return (
+          this.optAncProcure(fun) ??
+          this.throw(`unable to procure ancestral value via function ${a.show(fun)} at descendant node ${a.show(this)}`)
+        )
+      }
     }
   }
 }
 
 function optParentCall(src) {
-  return a.isObj(src) && `optParent` in src ? src.optParent() : undefined
+  return a.isComp(src) && `optParent` in src ? src.optParent() : undefined
 }

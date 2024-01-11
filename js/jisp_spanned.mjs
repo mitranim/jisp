@@ -6,7 +6,9 @@ import * as jsp from './jisp_span.mjs'
 export class MixOwnSpanned extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnSpanned extends je.MixErrer.goc(cls) {
+      // Override in subclass.
       get Span() {return jsp.Span}
+
       #span = undefined
       setSpan(val) {return this.#span = this.reqInst(val, this.Span), this}
       ownSpan() {return this.#span}

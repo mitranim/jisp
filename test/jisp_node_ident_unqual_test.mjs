@@ -4,7 +4,6 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 import * as je from '../js/jisp_err.mjs'
-import * as jsp from '../js/jisp_span.mjs'
 import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
@@ -82,9 +81,7 @@ await t.test(async function test_IdentUnqual_invalid() {
     `someIdent`,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 someIdent`,
   )
@@ -94,9 +91,7 @@ someIdent`,
     `[someIdent]`,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 1:2
-
-source code preview:
+:1:2
 
 someIdent]`,
   )
@@ -106,9 +101,7 @@ someIdent]`,
     `[someIdent 10]`,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 1:2
-
-source code preview:
+:1:2
 
 someIdent 10]`,
   )
@@ -118,9 +111,7 @@ someIdent 10]`,
     `[someIdent 10 20]`,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 1:2
-
-source code preview:
+:1:2
 
 someIdent 10 20]`,
   )
@@ -130,9 +121,7 @@ someIdent 10 20]`,
     `[10 someIdent 20]`,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 1:5
-
-source code preview:
+:1:5
 
 someIdent 20]`,
   )
@@ -146,9 +135,7 @@ someIdent 20]`,
 `,
     `unable to find declaration of "someIdent" at [object IdentUnqual]
 
-row:col: 4:5
-
-source code preview:
+:4:5
 
 someIdent 20]`,
   )
@@ -195,15 +182,11 @@ someConst;
 })
 
 t.test(function test_IdentUnqual_from_source_node() {
-  const ident = new jniu.IdentUnqual()
-    .setSpan(new jsp.StrSpan().init(`someIdent`))
-
+  const ident = new jniu.IdentUnqual().initSpanWith(`someIdent`)
   t.is(ident.decompile(), `someIdent`)
   t.is(ident.reqName(), `someIdent`)
 
-  const other = new jnbrk.Brackets()
-    .setSpan(new jsp.StrSpan().init(`[otherIdent "some_input"]`))
-
+  const other = new jnbrk.Brackets().initSpanWith(`[otherIdent "some_input"]`)
   t.is(other.decompile(), `[otherIdent "some_input"]`)
 
   /*

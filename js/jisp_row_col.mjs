@@ -1,6 +1,7 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as ji from './jisp_insp.mjs'
 
+// Internal tool for calculating `row:col` from scalar positions in text.
 export class RowCol extends ji.MixInsp.goc(a.Emp) {
   #row = undefined
   setRow(val) {return this.#row = a.reqNat(val), this}
@@ -17,11 +18,14 @@ export class RowCol extends ji.MixInsp.goc(a.Emp) {
   }
 
   /*
+  Takes a UTF-16 position and returns row and col in Unicode characters, with
+  newlines normalized.
+
   Regular JS strings are encoded as UTF-16. The indexing syntax `str[ind]`
   and various methods such as `.slice` use UTF-16 code points, not Unicode
   characters. However, the `for..of` loop iterates Unicode characters, not
-  UTF-16 points. Each chunk may have `.length > 1`. This method takes a
-  UTF-16 position and returns row and col in Unicode characters.
+  UTF-16 points, and the chunk length at each iteration can be above 1, when
+  surrogate pairs are found.
   */
   fromUtf16(src, pos) {
     a.reqStr(src)

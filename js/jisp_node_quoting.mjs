@@ -15,7 +15,7 @@ export class Quote extends jnlm.ListMacro {
 
   compile() {return jn.reqCompileReprNode(this.reqVal())}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Unquote extends jnlm.ListMacro {
@@ -51,5 +51,5 @@ export class Unquote extends jnlm.ListMacro {
   */
   compile() {return this.compileRepr()}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

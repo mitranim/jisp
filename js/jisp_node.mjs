@@ -2,8 +2,8 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
-import * as jr from './jisp_ref.mjs'
 import * as ji from './jisp_insp.mjs'
+import * as jre from './jisp_repr.mjs'
 import * as jch from './jisp_child.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jsp from './jisp_span.mjs'
@@ -91,8 +91,10 @@ export class Node extends (
             // It does not implement actual storage of child nodes.
             jp.MixParent.goc(
               jch.MixChild.goc(
-                ji.MixInsp.goc(
-                  a.Emp
+                jre.MixRepr.goc(
+                  ji.MixInsp.goc(
+                    a.Emp
+                  )
                 )
               )
             )
@@ -102,11 +104,6 @@ export class Node extends (
     )
   )
 ) {
-  // Override for `MixOwnSpanned`.
-  get Span() {return jsp.StrSpan}
-
-  optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
-
   // Override for `MixErrer`.
   get Err() {return je.Err}
 
@@ -114,16 +111,6 @@ export class Node extends (
     const ctx = this.contextDeep()
     if (!ctx) return new this.Err(msg, opt)
     return new this.Err(jm.joinParagraphs(msg, ctx), opt).setHasCode(true)
-  }
-
-  context() {return a.laxStr(this.optSpan()?.context())}
-  contextOwn() {return a.laxStr(this.ownSpan()?.context())}
-
-  contextDeep() {
-    const tar = this.contextOwn()
-    const src = this.optSrcNodeDeep()?.contextDeep()
-    if (!src) return tar
-    return jm.joinParagraphs(tar, jm.joinParagraphs(`context of source node:`, src))
   }
 
   /*
@@ -134,6 +121,32 @@ export class Node extends (
     if (!this.optSpan()) return err
     if (a.isInst(err, je.Err) && err.optHasCode()) return err
     return this.err(jm.renderErrLax(err), {cause: err})
+  }
+
+  // Override for `MixOwnSpanned`.
+  get Span() {return jsp.ReprStrSpan}
+
+  optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
+
+  context() {return a.laxStr(this.spanWithPath(this.optSpan())?.context())}
+
+  contextDeep() {
+    const src = a.laxStr(this.optSrcNodeDeep()?.contextDeep())
+    const own = a.laxStr(this.spanWithPath(this.ownSpan())?.context())
+    if (!own) return src
+
+    return jm.joinParagraphs(
+      own,
+      (src && jm.joinParagraphs(`context of source node:`, src)),
+    )
+  }
+
+  spanWithPath(span) {
+    if (span && !span.ownPath()) {
+      const path = this.optModulePath()
+      if (path) span.setPath(path)
+    }
+    return span
   }
 
   /*
@@ -187,27 +200,34 @@ export class Node extends (
   invoke this method on their children.
   */
   macroRepr() {
-    this.initReprModName()
-    this.initReprSrcName()
+    this.initReprSpan()
+    this.initReprImport()
     return this
   }
 
-  #reprModName = undefined
-  initReprModName() {return this.#reprModName ??= this.reqModuleNodeList().reqAutoImportName(this.reqModuleUrl())}
-  optReprModName() {return this.#reprModName}
-  reqReprModName() {return this.optReprModName() ?? this.throw(`missing module import reference at ${a.show(this)}`)}
-
-  #reprSrcName = undefined
-  initReprSrcName() {return this.#reprSrcName ??= this.reqModuleNodeList().reqAutoValName(this.reqSpan().ownSrc())}
-  optReprSrcName() {return this.#reprSrcName}
-  reqReprSrcName() {return this.optReprSrcName() ?? this.throw(`missing source code reference at ${a.show(this)}`)}
-
   compileRepr() {
-    const pre = a.reqStr(this.reqReprModName())
-    let out = `new ${a.inter(pre, `.`, this.constructor.name)}()`
-    const span = this.reqSpan()
-    out += `.initSpanWith(${this.reqReprSrcName()}, ${span.ownPos()}, ${span.ownLen()})`
+    let out = super.compileRepr()
+    const span = this.ownSpan()
+    if (span?.hasMore()) out += `.setSpan(${a.reqStr(span.compileRepr())})`
     return out
+  }
+
+  initReprSpan() {
+    const span = this.spanWithPath(this.ownSpan())
+    if (!span?.hasMore()) return
+
+    const mod = this.reqModuleNodeList()
+    span.setReprImportName(mod.reqAutoImportName(span.reqReprModuleUrl()))
+
+    const path = span.optPath()
+    if (path) span.setReprPathName(mod.reqAutoValName(path))
+
+    span.setReprSrcName(mod.reqAutoValName(span.ownSrc()))
+  }
+
+  initReprImport() {
+    const mod = this.reqModuleNodeList()
+    this.setReprImportName(mod.reqAutoImportName(this.reqReprModuleUrl()))
   }
 
   /*
@@ -263,31 +283,14 @@ export class Node extends (
 
   optParentNode() {return a.onlyInst(this.optParent(), Node)}
 
-  /*
-  Ideally, we would find `ModuleNodeList` by class, by calling the method
-  `.optAncMatch` or `.reqAncMatch`. However, it would require us to import
-  the file where it's defined, which would create a cyclic dependency and
-  cause problems. For now, we use an indirect approach.
-  */
-  optModuleNodeList() {return this.optAncFind(isModuleNodeList)}
-  reqModuleNodeList() {return this.reqAncFind(isModuleNodeList)}
+  optModule() {return this.optAncFindType(jm.symTypeModule)}
+  reqModule() {return this.reqAncFindType(jm.symTypeModule)}
 
-  /*
-  Ideally, this would use `.optParentMatch(Module)`. This code uses an indirect
-  approach for the same reason as `.optModuleNodeList`: to avoid cyclic imports
-  which would cause everything to explode.
-  */
-  optModule() {return this.optModuleNodeList()?.optModule()}
-  reqModule() {return this.reqModuleNodeList().reqModule()}
+  optModuleNodeList() {return this.optAncFindType(jm.symTypeModuleNodeList)}
+  reqModuleNodeList() {return this.reqAncFindType(jm.symTypeModuleNodeList)}
 
-  reqModuleUrl() {
-    const con = this.constructor
-    const tar = a.getOwn(con, `moduleUrl`)
-    if (!a.isValidStr(tar)) {
-      throw this.err(`missing module URL string on node class ${a.show(con)}`)
-    }
-    return tar
-  }
+  optModulePath() {return this.optModule()?.optSrcPathAbs()}
+  reqModulePath() {return this.optModulePath() ?? this.throw(`missing module path at ${a.show(this)}`)}
 
   optResolveName(key) {
     a.optStr(key)
@@ -299,17 +302,19 @@ export class Node extends (
   }
 
   /*
-  Placeholder for hypothetical support for Lisp-style quoting and unquoting of
-  code, which would require is to implement "repr" functionality for all AST
-  node classes, which would require us to add appropriate imports to the
-  generated code. Repr should be implemented in this base class, and used by
-  the "quote" macro.
+  Similar to macroing, and slightly more general. This method should "map" the
+  current node and all its descendants by using the given function. Subclasses
+  with children must override the method `.mapChildrenDeep` to use the given
+  function to "map" their children to its output. Unlike `.macro`, this must be
+  synchronous.
 
-  This property must always be "own". Anything else should cause an exception
-  when repring. This line must be EXACTLY copy-pasted into EVERY subclass and
-  descendant class.
+  In the future, we may consider expressing `.macro` and `.macroRepr` in terms
+  of this operation. For now, this is provided for user code only.
   */
-  static moduleUrl = import.meta.url;
+  mapDeep(fun) {return fun(this.mapChildrenDeep(fun))}
+  mapChildrenDeep(fun) {return a.reqFun(fun), this}
+
+  static reprModuleUrl = import.meta.url;
 
   [ji.symInsp](tar) {return tar.funs(this.decompile)}
 }
@@ -335,7 +340,7 @@ export class Empty extends Node {
     return ``
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 /*
@@ -394,9 +399,8 @@ export function reqMacroReprNode(prev) {
 
 export function replaceNode(prev, next) {
   a.reqInst(prev, Node)
-  if (a.isNil(next)) {
-    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with nil`)
-  }
+  if (a.isNil(next)) return new Empty()
+
   if (!a.isInst(next, Node)) {
     throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with non-node ${a.show(next)}`)
   }
@@ -449,8 +453,6 @@ function compileReprCall(src) {
   catch (err) {throw src.toErr(err)}
 }
 
-function isModuleNodeList(val) {return a.optInst(val, Node)?.isModuleRoot()}
-
 // For internal use by code that invokes macro functions.
 export function reqValidMacroResult(src, out, fun) {
   a.reqInst(src, Node)
@@ -461,7 +463,7 @@ export function reqValidMacroResult(src, out, fun) {
 // For internal use by code that invokes macro functions.
 export function reqValidMacroResultSync(src, out, fun) {
   a.reqInst(src, Node)
-  if (a.isNil(out)) return new Empty()
+  if (a.isNil(out)) return undefined
   if (a.isInst(out, Node)) return out
   throw src.err(`expected macro function ${a.show(fun)} to return nil or instance of ${a.show(jn.Node)}, got unexpected value ${a.show(out)}`)
 }
@@ -471,4 +473,23 @@ export async function reqValidMacroResultAsync(src, out, fun) {
   a.reqInst(src, Node)
   out = await out
   return reqValidMacroResultSync(src, out, fun)
+}
+
+/*
+The optional method `.macroList` is implemented by `ListMacro` and its
+subclasses. This interface allows our `Node` subclasses to optionally
+implement support for list-style calling.
+*/
+export function isListMacro(val) {
+  return a.isSubCls(val, Node) && `macroList` in val
+}
+
+/*
+The optional method `.macroBare` is implemented by `BareMacro` and its
+subclasses. This interface allows our `Node` subclasses to optionally
+implement support for bare-style calling. Compare list-style calling
+which is supported by `DelimNodeList` and used by `ListMacro`.
+*/
+export function isBareMacro(val) {
+  return a.isSubCls(val, Node) && `macroBare` in val
 }

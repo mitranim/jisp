@@ -31,6 +31,14 @@ export class MixParentNodeOneToOne extends a.DedupMixinCache {
         return out
       }
 
+      // Override for `Node..mapChildrenDeep`.
+      mapChildrenDeep(fun) {
+        a.reqFun(fun)
+        const chi = this.optFirstChild()
+        if (a.isSome(chi)) this.setChild(fun(chi))
+        return this
+      }
+
       [ji.symInsp](tar) {
         tar = super[ji.symInsp](tar)
         if (this.hasChildren()) return tar.funs(this.optFirstChild)
@@ -145,6 +153,18 @@ export class MixParentNodeOneToMany extends a.DedupMixinCache {
           throw this.err(`unexpected cosmetic child node ${a.show(val)} at index ${a.show(ind)} in parent ${a.show(this)}`)
         }
         return val
+      }
+
+      // Override for `Node..mapChildrenDeep`.
+      mapChildrenDeep(fun) {return this.mapChildrenDeepFrom(fun, 0)}
+
+      mapChildrenDeepFrom(fun, ind) {
+        a.reqFun(fun)
+        a.reqNat(ind)
+        while (ind < this.childCount()) {
+          this.replaceChildAt(ind, fun(this.reqChildAt(ind++)))
+        }
+        return this
       }
 
       [ji.symInsp](tar) {

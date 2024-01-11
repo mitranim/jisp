@@ -26,10 +26,6 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   }
   */
 
-  // This lacks a type assertion because it would involve cyclic imports.
-  optModule() {return this.optParent()}
-  reqModule() {return this.reqParent()}
-
   // Used by `.parse`. May override in subclass.
   get Lexer() {return jl.Lexer}
 
@@ -51,8 +47,13 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
 
   compile() {return this.reqPrn().compileStatements(this.optChildArr())}
 
+  // Override for `Node..isChildStatement`.
   isChildStatement() {return true}
 
+  /*
+  Override for `Node..isModuleRoot`. Enables features that work only in module
+  root due to JS limitations.
+  */
   isModuleRoot() {return true}
 
   /*
@@ -113,8 +114,6 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   Takes an arbitrary JS value, which must be serializable via `Val`, ensures
   that the current module has an automatically generated variable with this
   value assigned, and returns the name declared by that variable.
-
-  TODO: prevent automatic export of the resulting variable.
   */
   reqAutoValName(src) {return a.pk(this.reqAutoVal(src))}
 
@@ -124,7 +123,7 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   }
 
   #autoVals = undefined
-  initAutoVals() {return this.#autoVals ??= new ConstMap()}
+  initAutoVals() {return this.#autoVals ??= new ConstPrivateMap()}
   optAutoVals() {return this.#autoVals}
 
   /*
@@ -133,7 +132,7 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   would have only an error message, without associated source code.
   */
   addAutoVal(src) {
-    const tar = new jnc.Const().setChildren(
+    const tar = new ConstPrivate().setChildren(
       new jn.Empty(),
       new jniu.IdentUnqual().initSpanWith(this.genName()),
       new jnv.Val().setVal(jnv.Val.reqValid(src)),
@@ -142,11 +141,13 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return tar
   }
 
+  get [jm.symType]() {return jm.symTypeModuleNodeList}
+
   [ji.symInsp](tar) {
     return super[ji.symInsp](tar.funs(this.optModule, this.optNsLex))
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 class ImportMap extends a.TypedMap {
@@ -154,7 +155,11 @@ class ImportMap extends a.TypedMap {
   reqVal(val) {return a.reqInst(val, jnim.Import)}
 }
 
-class ConstMap extends a.TypedMap {
+class ConstPrivateMap extends a.TypedMap {
   reqKey(key) {return key}
-  reqVal(val) {return a.reqInst(val, jnc.Const)}
+  reqVal(val) {return a.reqInst(val, ConstPrivate)}
+}
+
+class ConstPrivate extends jnc.Const {
+  isExportable() {return false}
 }

@@ -86,5 +86,5 @@ export class If extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

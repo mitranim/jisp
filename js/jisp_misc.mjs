@@ -2,6 +2,29 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as jc from './jisp_conf.mjs'
 
+/*
+These symbols are used by some internal code as an alternative to `instanceof`
+checks. Whenever possible, we should use simple `instanceof` instead. However,
+sometimes that would require impossible cyclic imports. This is the current
+workaround.
+*/
+export const symType = Symbol.for(`jisp.type`)
+export const symTypeRoot = Symbol.for(`jisp.type.Root`)
+export const symTypeModule = Symbol.for(`jisp.type.Module`)
+export const symTypeModuleNodeList = Symbol.for(`jisp.type.ModuleNodeList`)
+
+export function hasInternalType(val, exp) {
+  return a.isComp(val) && symType in val && val[symType] === exp
+}
+
+export function hasInternalTypeModule(val) {
+  return hasInternalType(val, symTypeModule)
+}
+
+export function hasInternalTypeModuleNodeList(val) {
+  return hasInternalType(val, symTypeModuleNodeList)
+}
+
 export function isStrOrArr(val) {return a.isStr(val) || a.isTrueArr(val)}
 export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
 export function preview(src) {return a.ell(src, 128)}

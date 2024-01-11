@@ -20,5 +20,5 @@ export class Ret extends jnlm.ListMacro {
     return `return`
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

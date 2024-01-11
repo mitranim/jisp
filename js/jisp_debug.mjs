@@ -1,5 +1,4 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jmo from './jisp_module.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jni from './jisp_node_ident.mjs'
 
@@ -44,9 +43,6 @@ export class Inspect extends DebugListMacro {
 }
 
 export class Compiling extends DebugListMacro {
-  optModule() {return this.optAncMatch(jmo.Module)}
-  reqModule() {return this.reqAncMatch(jmo.Module)}
-
   macro() {
     this.log(`compiling module:`, a.pkOpt(this.optModule()))
     this.reqChildCount(1)

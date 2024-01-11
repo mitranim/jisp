@@ -375,7 +375,7 @@ export class Module extends (
   optSrcTime() {return this.#srcTime ??= this.optSrcTimeAsync()}
 
   async optSrcTimeAsync() {
-    if (this.hasSrc()) return this.reqRoot().reqFs().timestamp(this.reqSrcUrl())
+    if (this.hasFileExtSrc()) return this.reqRoot().reqFs().timestamp(this.reqSrcUrl())
     return undefined
   }
 
@@ -411,6 +411,8 @@ export class Module extends (
     this.optTarDeps()?.clear()
     return this
   }
+
+  get [jm.symType]() {return jm.symTypeModule}
 
   [ji.symInsp](tar) {
     return tar.funs(

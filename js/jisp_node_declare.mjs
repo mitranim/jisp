@@ -12,5 +12,5 @@ export class Declare extends jnu.Use {
     return this
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

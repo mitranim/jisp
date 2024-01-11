@@ -4,6 +4,18 @@ import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as je from './jisp_err.mjs'
 
+export class MixPathed extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixPathed extends je.MixErrer.goc(cls) {
+      #path = undefined
+      setPath(val) {return this.#path = this.req(val, a.isValidStr), this}
+      ownPath() {return this.#path}
+      optPath() {return this.#path}
+      reqPath() {return this.optPath() ?? this.throw(`missing path at ${a.show(this)}`)}
+    }
+  }
+}
+
 /*
 Should store a canonical path to a module source file, the same path which is
 used as the primary key of `Module`, and which is used to store and obtain
@@ -31,16 +43,16 @@ export class MixSrcPathAbsed extends a.DedupMixinCache {
       #srcPathAbs = undefined
       setSrcPathAbs(val) {return this.#srcPathAbs = this.req(val, jm.isCanonicalModulePath), this}
       optSrcPathAbs() {return this.#srcPathAbs}
-      reqSrcPathAbs() {return this.optSrcPathAbs() ?? this.throw(`missing source path in ${a.show(this)}`)}
+      reqSrcPathAbs() {return this.optSrcPathAbs() ?? this.throw(`missing source path at ${a.show(this)}`)}
 
       optSrcUrlStr() {return a.only(this.optSrcPathAbs(), jm.hasScheme)}
-      reqSrcUrlStr() {return this.optSrcUrlStr() ?? this.throw(`missing source URL in ${a.show(this)}`)}
+      reqSrcUrlStr() {return this.optSrcUrlStr() ?? this.throw(`missing source URL at ${a.show(this)}`)}
 
       optSrcUrl() {return jm.Url.opt(this.optSrcUrlStr())}
       reqSrcUrl() {return new jm.Url(this.reqSrcUrlStr())}
 
-      // TODO more specific name. We have a lexicon collision.
-      hasSrc() {
+      // TODO better name. We have a lexicon collision.
+      hasFileExtSrc() {
         const val = this.optSrcUrlStr()
         return a.isSome(val) && p.posix.ext(val) === jc.conf.getFileExtSrc()
       }
@@ -68,10 +80,10 @@ export class MixTarPathAbsed extends a.DedupMixinCache {
       #tarPathAbs = undefined
       setTarPathAbs(val) {return this.#tarPathAbs = this.req(val, jm.isCanonicalModulePath), this}
       optTarPathAbs() {return this.#tarPathAbs}
-      reqTarPathAbs() {return this.optTarPathAbs() ?? this.throw(`missing target path in ${a.show(this)}`)}
+      reqTarPathAbs() {return this.optTarPathAbs() ?? this.throw(`missing target path at ${a.show(this)}`)}
 
       optTarUrlStr() {return a.only(this.optTarPathAbs(), jm.hasScheme)}
-      reqTarUrlStr() {return this.optTarUrlStr() ?? this.throw(`missing target URL in ${a.show(this)}`)}
+      reqTarUrlStr() {return this.optTarUrlStr() ?? this.throw(`missing target URL at ${a.show(this)}`)}
 
       optTarUrl() {return jm.Url.opt(this.optTarUrlStr())}
       reqTarUrl() {return new jm.Url(this.reqTarUrlStr())}

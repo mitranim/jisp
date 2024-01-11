@@ -30,41 +30,41 @@ without renaming, use regular predeclaration:
 export class Nil extends jnp.Predecl {
   reqName() {return `undefined`}
   ownVal() {return undefined}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Null extends jnp.Predecl {
   reqName() {return `null`}
   ownVal() {return null}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class No extends jnp.Predecl {
   reqName() {return `false`}
   ownVal() {return false}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Ok extends jnp.Predecl {
   reqName() {return `true`}
   ownVal() {return true}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Nan extends jnp.Predecl {
   reqName() {return `NaN`}
   ownVal() {return NaN}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Inf extends jnp.Predecl {
   reqName() {return `Infinity`}
   ownVal() {return Infinity}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
 
 export class Global extends jnp.Predecl {
   reqName() {return `globalThis`}
   ownVal() {return globalThis}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

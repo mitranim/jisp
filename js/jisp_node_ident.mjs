@@ -131,13 +131,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   }
 
   macroWithLiveVal(val, src) {
-    /*
-    The optional method `.macroBare` is implemented by `BareMacro` and its
-    subclasses. This interface allows our `Node` subclasses to optionally
-    implement support for bare-style calling. Compare list-style calling
-    which is supported by `DelimNodeList` and used by `ListMacro`.
-    */
-    if (a.isSubCls(val, jn.Node) && `macroBare` in val) {
+    if (jn.isBareMacro(val)) {
       return jn.reqValidMacroResult(this, val.macroBare(this), val)
     }
     throw this.err(`unexpected reference ${a.show(this.optName())} to live value ${a.show(val)}${src ? ` found in live object ${a.show(src)}` : ``}; to be usable in this position, the live value must be a subclass of \`Node\` with a static method \`.macroBare\``)
@@ -382,7 +376,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     )
   }
 
-  static moduleUrl = import.meta.url;
+  static reprModuleUrl = import.meta.url;
 
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optName)}
 }

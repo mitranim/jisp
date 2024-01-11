@@ -63,5 +63,5 @@ export class Export extends jnlm.ListMacro {
     return this
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

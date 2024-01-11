@@ -2,7 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
-import * as jsp from '../js/jisp_span.mjs'
+import * as jmo from '../js/jisp_module.mjs'
 import * as jn from '../js/jisp_node.mjs'
 
 /*
@@ -11,21 +11,19 @@ parsing, macroing, or compilation, but participate in those features. This
 should be executed before tests for the higher-level features.
 */
 
-function makeSpan(src) {return new jsp.StrSpan().init(src)}
-
 class NodeOne extends jn.Node {}
 class NodeTwo extends jn.Node {}
 class NodeThree extends jn.Node {}
 
 function makeNodes() {
-  const span = makeSpan(`one
+  const src = `one
 two
-three`)
+three`
 
   return [
-    new NodeOne().setSpan(span.withPos(0)),
-    new NodeTwo().setSpan(span.withPos(4)),
-    new NodeThree().setSpan(span.withPos(8)),
+    new NodeOne().initSpanWith(src, 0, 3),
+    new NodeTwo().initSpanWith(src, 4, 3),
+    new NodeThree().initSpanWith(src, 8, 5),
   ]
 }
 
@@ -34,38 +32,30 @@ t.test(function test_Node_error_with_source_context() {
 
   tu.testErrWithoutCode(t.throws(() => node.macro(), Error, `method "macro" not fully implemented on [object NodeOne]`))
 
-  const span = makeSpan(`some_source_code`)
-  node.setSpan(span)
+  node.initSpan().init(`some_source_code`)
 
   tu.testErrWithCode(t.throws(() => node.macro(), Error, `method "macro" not fully implemented on [object NodeOne]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 some_source_code`))
 
   tu.testErrWithCode(t.throws(() => node.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 some_source_code`))
 
-  span.init(`
+  node.initSpan().init(`
 one
 two
 three
 four
-`)
-  span.setPos(6)
+`).setPos(6)
 
   tu.testErrWithCode(t.throws(() => node.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
 
-row:col: 3:2
-
-source code preview:
+:3:2
 
 wo
 three
@@ -77,9 +67,7 @@ t.test(function test_Node_source_node_cycle_prevention() {
 
   tu.testErrWithCode(t.throws(() => one.setSrcNode(one), Error, `[object NodeOne] is not allowed to be its own source node
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -87,18 +75,14 @@ three`))
 
   tu.testErrWithCode(t.throws(() => two.setSrcNode(two), Error, `[object NodeTwo] is not allowed to be its own source node
 
-row:col: 2:1
-
-source code preview:
+:2:1
 
 two
 three`))
 
   tu.testErrWithCode(t.throws(() => three.setSrcNode(three), Error, `[object NodeThree] is not allowed to be its own source node
 
-row:col: 3:1
-
-source code preview:
+:3:1
 
 three`))
 
@@ -116,9 +100,7 @@ target node: [object NodeOne]
 
 target node context:
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -128,9 +110,7 @@ source node: [object NodeTwo]
 
 source node context:
 
-row:col: 2:1
-
-source code preview:
+:2:1
 
 two
 three`))
@@ -151,9 +131,7 @@ target node: [object NodeOne]
 
 target node context:
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -163,9 +141,7 @@ source node: [object NodeThree]
 
 source node context:
 
-row:col: 3:1
-
-source code preview:
+:3:1
 
 three`))
 
@@ -177,9 +153,7 @@ t.test(function test_Node_source_node_tracing_in_errors() {
 
   tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -187,18 +161,14 @@ three`))
 
   tu.testErrWithCode(t.throws(() => two.compile(), Error, `method "compile" not fully implemented on [object NodeTwo]
 
-row:col: 2:1
-
-source code preview:
+:2:1
 
 two
 three`))
 
   tu.testErrWithCode(t.throws(() => three.compile(), Error, `method "compile" not fully implemented on [object NodeThree]
 
-row:col: 3:1
-
-source code preview:
+:3:1
 
 three`))
 
@@ -206,9 +176,7 @@ three`))
 
   tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -216,9 +184,7 @@ three
 
 context of source node:
 
-row:col: 2:1
-
-source code preview:
+:2:1
 
 two
 three`))
@@ -227,9 +193,7 @@ three`))
 
   tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
 
-row:col: 1:1
-
-source code preview:
+:1:1
 
 one
 two
@@ -237,18 +201,83 @@ three
 
 context of source node:
 
-row:col: 2:1
-
-source code preview:
+:2:1
 
 two
 three
 
 context of source node:
 
-row:col: 3:1
+:3:1
 
-source code preview:
+three`))
+
+  one.setParent(new jmo.Module().setSrcPathAbs(`some_dir_0/some_file_0.jisp`))
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+some_dir_0/some_file_0.jisp:1:1
+
+one
+two
+three
+
+context of source node:
+
+:2:1
+
+two
+three
+
+context of source node:
+
+:3:1
+
+three`))
+
+  two.setParent(new jmo.Module().setSrcPathAbs(`file:///some_dir_1/some_file_1.jisp`))
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+some_dir_0/some_file_0.jisp:1:1
+
+one
+two
+three
+
+context of source node:
+
+file:///some_dir_1/some_file_1.jisp:2:1
+
+two
+three
+
+context of source node:
+
+:3:1
+
+three`))
+
+  three.setParent(new jmo.Module().setSrcPathAbs(`https:///some_dir_2/some_file_2.jisp`))
+
+  tu.testErrWithCode(t.throws(() => one.compile(), Error, `method "compile" not fully implemented on [object NodeOne]
+
+some_dir_0/some_file_0.jisp:1:1
+
+one
+two
+three
+
+context of source node:
+
+file:///some_dir_1/some_file_1.jisp:2:1
+
+two
+three
+
+context of source node:
+
+https:///some_dir_2/some_file_2.jisp:3:1
 
 three`))
 })

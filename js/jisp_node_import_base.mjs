@@ -409,5 +409,5 @@ export class ImportBase extends (
     )
   }
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

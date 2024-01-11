@@ -15,5 +15,5 @@ export class BareMacro extends jn.Node {
 
   macro() {return this}
 
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }

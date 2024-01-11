@@ -9,5 +9,5 @@ subclasses of `Ident`, such as those that represent qualified idents.
 */
 export class IdentUnqual extends jni.Ident {
   static regexp() {return this.regexpIdentUnqual()}
-  static moduleUrl = import.meta.url
+  static reprModuleUrl = import.meta.url
 }
