@@ -12,7 +12,7 @@ export const SRC_TEXT = Deno.readTextFileSync(new URL(`test_code.jisp`, TEST_SRC
 
 export const SRC_TEXT_SHORT = `
 10 20
-; comment
+;; comment ;;
 "double quoted"
 \`grave quoted\`
 * && >>>

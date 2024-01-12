@@ -9,13 +9,15 @@
 
   [.func.static regexp [] [throw [jm.errMeth `regexp` this]]]
 
-  ; Requires implicit return.
+  ;; Requires implicit return. ;;
   [.func.static match [src] [[this.regexp].exec [a.reqStr src]]]
 
-  ; Requires implicit return.
+  ;; Requires implicit return. ;;
   [.func.static parse [span]
-    ; TODO better naming.
-    ; If the assigned value is nil, this should immediately return nil.
+    ;;
+    TODO better naming.
+    If the assigned value is nil, this should immediately return nil.
+    ;;
     [const.guard mat [this.match [span.rem]]]
 
     [const tar [chain
@@ -28,13 +30,23 @@
     tar
   ]
 
-  ; Requires implicit return.
+  ;; Requires implicit return. ;;
   [.func.static isValid [val] [jm.isFullMatch val [this.regexp]]]
 
-  ; Requires implicit return.
+  ;; Requires implicit return. ;;
   [.func setMatch [mat]
     [const len [a.reqStr [get mat 0]].length]
     [chain [this.reqSpan] [.setLen len]]
     this
   ]
 ]
+
+;;
+
+Normal comment text; contains normal semicolon.
+
+# Markdown heading
+
+Not # markdown heading in comment text.
+
+;;

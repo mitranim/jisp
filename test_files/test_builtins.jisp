@@ -1,7 +1,9 @@
-; When the tokenizer runs in default mode, this comment should be omitted
-; from the AST. Preserving comments and whitespace is an opt-in setting.
-; When preserving comments and whitespace, this should be the first node
-; in the AST.
+;;
+When the tokenizer runs in default mode, this comment should be omitted
+from the AST. Preserving comments and whitespace is an opt-in setting.
+When preserving comments and whitespace, this should be the first node
+in the AST.
+;;
 
 10
 

@@ -46,12 +46,20 @@ export class Lexer extends jsn.MixOwnSpanned.goc(jit.Iter) {
 
   optStep() {
     return (
-      jnbrc.Braces.lex(this) ??
-      jnbrk.Brackets.lex(this) ??
-      jnpar.Parens.lex(this) ??
+      this.Braces.lex(this) ??
+      this.Brackets.lex(this) ??
+      this.Parens.lex(this) ??
       undefined
     )
   }
+
+  /*
+  User code may subclass `Lexer` and override some of these getters.
+  This allows user code to provide custom classes for built-in syntax.
+  */
+  get Braces() {return jnbrc.Braces}
+  get Brackets() {return jnbrk.Brackets}
+  get Parens() {return jnpar.Parens}
 
   optNext(prev) {
     if (!prev || !this.more()) return prev

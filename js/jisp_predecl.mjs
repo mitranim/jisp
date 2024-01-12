@@ -7,12 +7,12 @@ Example:
 
   [use `jisp:prelude.mjs` *]
 
-  nil   ; JS `undefined`
-  null  ; JS `null`
-  no    ; JS `false`
-  ok    ; JS `true`
-  nan   ; JS `NaN`
-  inf   ; JS `Infinity`
+  nil    ->   undefined
+  null   ->   null
+  no     ->   false
+  ok     ->   true
+  nan    ->   NaN
+  inf    ->   Infinity
 
 Note that this is needed ONLY for renaming. For JS globals which are used
 without renaming, use regular predeclaration:

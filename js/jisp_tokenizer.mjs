@@ -19,12 +19,11 @@ import * as jnia from './jisp_node_ident_access.mjs'
 Parses source code, generating a stream of tokens. The output is typically fed
 into a `Lexer` which converts a stream of tokens into a tree of AST nodes.
 
-We don't implement intermediary token types distinct from AST nodes. Instead, we
-instantiate tokens immediately as AST nodes. This simplifies the class system
-and avoids the need for conversion from tokens to nodes. As a tradeoff, this
-requires us to define node types for delimiters, such as opening and closing
-parentheses, which are only valid as tokens, and should not occur in a lexed
-AST.
+In our system, tokens are represented with AST nodes. Our lexer uses most of
+them as-is, without further conversion from tokens to nodes. As a tradeoff,
+this requires us to define node types for delimiters, such as opening and
+closing parentheses, which are only valid as tokens, and should not occur
+in a lexed AST.
 */
 export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
   // Override for `MixOwnSpanned`.
@@ -53,61 +52,42 @@ export class Tokenizer extends jsd.MixOwnSpanned.goc(jit.Iter) {
     const span = this.reqSpan()
 
     return (
-      jnbrc.BracePre.parse(span) ??
-      jnbrc.BraceSuf.parse(span) ??
-      jnbrk.BracketPre.parse(span) ??
-      jnbrk.BracketSuf.parse(span) ??
-      jnpar.ParenPre.parse(span) ??
-      jnpar.ParenSuf.parse(span) ??
-      jnsp.Space.parse(span) ??
-      jnco.Comment.parse(span) ??
-      jnnu.Num.parse(span) ??
-      jnst.StrBacktick.parse(span) ??
-      jnst.StrDouble.parse(span) ??
-      jnio.IdentOper.parse(span) ??
-      jniu.IdentUnqual.parse(span) ??
-      jnia.IdentAccess.parse(span) ??
+      this.Space.parse(span) ??
+      this.Comment.parse(span) ??
+      this.BracePre.parse(span) ??
+      this.BraceSuf.parse(span) ??
+      this.BracketPre.parse(span) ??
+      this.BracketSuf.parse(span) ??
+      this.ParenPre.parse(span) ??
+      this.ParenSuf.parse(span) ??
+      this.Num.parse(span) ??
+      this.StrBacktick.parse(span) ??
+      this.StrDouble.parse(span) ??
+      this.IdentOper.parse(span) ??
+      this.IdentUnqual.parse(span) ??
+      this.IdentAccess.parse(span) ??
       undefined
     )
   }
 
-  // // May override in subclass. Needs benching.
-  // get BracePre() {return jnbrc.BracePre}
-  // get BraceSuf() {return jnbrc.BraceSuf}
-  // get BracketPre() {return jnbrk.BracketPre}
-  // get BracketSuf() {return jnbrk.BracketSuf}
-  // get ParenPre() {return jnpar.ParenPre}
-  // get ParenSuf() {return jnpar.ParenSuf}
-  // get Space() {return jnsp.Space}
-  // get Comment() {return jnco.Comment}
-  // get Num() {return jnnu.Num}
-  // get StrBacktick() {return jnst.StrBacktick}
-  // get StrDouble() {return jnst.StrDouble}
-  // get IdentOper() {return jnio.IdentOper}
-  // get IdentUnqual() {return jniu.IdentUnqual}
-  // get IdentAccess() {return jnia.IdentAccess}
-
-  // optStep() {
-  //   const span = this.reqSpan()
-  //
-  //   return (
-  //     this.BracePre.parse(span) ??
-  //     this.BraceSuf.parse(span) ??
-  //     this.BracketPre.parse(span) ??
-  //     this.BracketSuf.parse(span) ??
-  //     this.ParenPre.parse(span) ??
-  //     this.ParenSuf.parse(span) ??
-  //     this.Space.parse(span) ??
-  //     this.Comment.parse(span) ??
-  //     this.Num.parse(span) ??
-  //     this.StrBacktick.parse(span) ??
-  //     this.StrDouble.parse(span) ??
-  //     this.IdentOper.parse(span) ??
-  //     this.IdentUnqual.parse(span) ??
-  //     this.IdentAccess.parse(span) ??
-  //     undefined
-  //   )
-  // }
+  /*
+  User code may subclass `Tokenizer` and override some of these getters.
+  This allows user code to provide custom classes for built-in syntax.
+  */
+  get Space() {return jnsp.Space}
+  get Comment() {return jnco.CommentFenced}
+  get BracePre() {return jnbrc.BracePre}
+  get BraceSuf() {return jnbrc.BraceSuf}
+  get BracketPre() {return jnbrk.BracketPre}
+  get BracketSuf() {return jnbrk.BracketSuf}
+  get ParenPre() {return jnpar.ParenPre}
+  get ParenSuf() {return jnpar.ParenSuf}
+  get Num() {return jnnu.Num}
+  get StrBacktick() {return jnst.StrBacktick}
+  get StrDouble() {return jnst.StrDouble}
+  get IdentOper() {return jnio.IdentOper}
+  get IdentUnqual() {return jniu.IdentUnqual}
+  get IdentAccess() {return jnia.IdentAccess}
 
   err(msg, opt) {return je.TokenizerErr.fromSpan(this.optSpan(), msg, opt)}
 

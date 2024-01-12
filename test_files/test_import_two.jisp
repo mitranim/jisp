@@ -1,7 +1,9 @@
-; Intended for testing transitive imports. This should be directly imported by
-; `./test_import_one.jisp`, and should NOT be directly imported by a test.
-; After resolving `./test_import_one.jisp` to disk (compiling it), this file
-; should also be resolved to disk (compiled) and importable in JS.
+;;
+Intended for testing transitive imports. This should be directly imported by
+`./test_import_one.jisp`, and should NOT be directly imported by a test.
+After resolving `./test_import_one.jisp` to disk (compiling it), this file
+should also be resolved to disk (compiled) and importable in JS.
+;;
 
 [use `jisp:prelude.mjs` jp]
 

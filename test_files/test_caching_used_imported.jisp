@@ -1,2 +1,4 @@
-; This file should be "imported" by another file which is "used".
-; This file has no dependencies of its own.
+;;
+This file should be "imported" by another file which is "used".
+This file has no dependencies of its own.
+;;

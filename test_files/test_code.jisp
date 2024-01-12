@@ -2,49 +2,49 @@
 [use `jisp:prelude.mjs` jp]
 [use `./test_macros.jisp` m]
 
-; Generates a syntactically valid call that panics at runtime.
+;; Generates a syntactically valid call that panics at runtime. ;;
 [nil no ok]
 
-; Compile error.
-; someVal
+;; Compile error. ;;
+;; someVal ;;
 
 [const someVal 10]
 
-; OK.
+;; OK. ;;
 someVal
 
-; Compile error.
-; [func someFunc0 [] someArg]
+;; Compile error. ;;
+;; [func someFunc0 [] someArg] ;;
 
-; OK.
+;; OK. ;;
 [func someFunc1 [someArg] someArg]
 
-; Must generate a runtime call without "new".
+;; Must generate a runtime call without "new". ;;
 [someFunc1 10 20 30]
 
-; OK.
+;; OK. ;;
 [func someFunc2 [] someVal]
 
 [callSyntax `list run new val` someFunc2]
 
-; Must generate a runtime call with "new".
+;; Must generate a runtime call with "new". ;;
 [someFunc2 10 20 30]
 
 [jp.global.console.log `logging0`]
 
 [global.console.log `logging1`]
 
-; "global" must be predefined.
+;; "global" must be predefined. ;;
 [const g global]
 
-; Compile error.
-; m.astMacro
+;; Compile error. ;;
+;; m.astMacro ;;
 
-; OK.
+;; OK. ;;
 [m.astMacro 10 20 30]
 
-; Compile error.
-; m.valMacro
+;; Compile error. ;;
+;; m.valMacro ;;
 
-; OK.
+;; OK. ;;
 [m.valMacro 10 20 30]

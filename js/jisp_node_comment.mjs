@@ -1,38 +1,58 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnt from './jisp_node_text.mjs'
 
-/*
-FIXME:
-
-  * Make comment character configurable.
-
-  * Switch from line comment support to fence comment support.
-
-    * Requires handling JS comment delimiters in Jisp comment body, or compiling
-      into single line comments.
-*/
-export class Comment extends jnt.Text {
-  static regexp() {return /^;([^\n\r]*)(\r\n|\r|\n|$)/}
-  static prefix() {return `;`}
-  prefix() {return this.constructor.prefix()}
-
-  #body = ``
-  ownBody() {return this.#body}
+export class CommentBase extends jnt.Text {
+  #body = undefined
   setBody(val) {return this.#body = this.req(val, a.isStr), this}
+  optBody() {return this.#body}
 
-  #delim = ``
-  ownDelim() {return this.#delim}
-  setDelim(val) {return this.#delim = this.req(val, a.isStr), this}
+  isCosmetic() {return true}
+  macro() {return this}
+  static reprModuleUrl = import.meta.url
+}
+
+export class CommentFenced extends CommentBase {
+  static regexp() {return /^(;{2,})(?!;)([^]*?)(?<!;)(\1)(?!;)/}
+
+  setMatch(mat) {
+    super.setMatch(mat)
+    this.setBody(mat[2])
+    return this
+  }
+
+  compile() {
+    return (
+      ``
+      + `/*`
+      + a.laxStr(this.optBody()).replaceAll(/[*][/]/g, `\\*/`)
+      + `*/`
+    )
+  }
+
+  static reprModuleUrl = import.meta.url
+}
+
+/*
+Unused. We're still considering whether to use fenced comments or single-line
+comments. Using both would be unwise.
+*/
+export class CommentSingleLine extends jnt.Text {
+  static regexp() {return /^;([^\n\r]*)(\r\n|\r|\n|$)/}
+
+  #term = undefined
+  setTerm(val) {return this.#term = this.req(val, a.isStr), this}
+  ownTerm() {return this.#term}
 
   setMatch(mat) {
     super.setMatch(mat)
     this.setBody(mat[1])
-    this.setDelim(mat[2])
+    this.setTerm(mat[2])
     return this
   }
 
-  isCosmetic() {return true}
-  macro() {return this}
-  compile() {return `//` + a.reqStr(this.#body) + a.reqStr(this.#delim)}
+  compile() {
+    return `//` + a.laxStr(this.optBody()) + a.laxStr(this.optTerm())
+  }
+
   static reprModuleUrl = import.meta.url
 }
