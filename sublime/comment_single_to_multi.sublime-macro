@@ -1,0 +1,16 @@
+[
+  {"command": "move_to", "args": {"to": "bol"}},
+  {"command": "expand_selection", "args": {"to": "scope"}},
+  {"command": "move", "args": {"by": "characters", "forward": true}},
+  {"command": "insert_snippet", "args": {"contents": "$0\t"}},
+  {"command": "delete_word", "args": {"forward": true, "sub_words": true}},
+  {"command": "duplicate_line"},
+  {"command": "duplicate_line"},
+  {"command": "run_macro_file", "args": {"file": "res://Packages/Default/Delete to Hard EOL.sublime-macro"}},
+  {"command": "move", "args": {"by": "lines", "forward": false}},
+  {"command": "move", "args": {"by": "lines", "forward": false}},
+  {"command": "run_macro_file", "args": {"file": "res://Packages/Default/Delete to Hard EOL.sublime-macro"}},
+  {"command": "move", "args": {"by": "lines", "forward": true}},
+  {"command": "delete_word", "args": {"forward": false, "sub_words": true}},
+  {"command": "run_macro_file", "args": {"file": "res://Packages/Default/Add Line.sublime-macro"}},
+]

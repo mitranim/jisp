@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>scope</key>
+
+  <!--
+  This has false positives. It accidentally enables indexing of variable
+  declarations not in module root. We want to index variable declarations
+  only in module root, where they're automatically exported. We fix that
+  in `sym_none.tmPreferences`, which negates this setting for declarations
+  not in module root.
+  -->
+  <string>entity.name.jisp</string>
+
+  <key>settings</key>
+  <dict>
+    <key>showInSymbolList</key>
+    <integer>1</integer>
+    <key>showInIndexedSymbolList</key>
+    <integer>1</integer>
+  </dict>
+</dict>
+</plist>

@@ -1,0 +1,146 @@
+[
+  /*
+  Auto-pair backquotes. Partially copied from the default Sublime keymap,
+  with some modifications.
+
+  FIXME double check if this actually works.
+  */
+  {
+    "keys": ["`"],
+    "command": "insert_snippet",
+    "args": {"contents": "`$0`"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "preceding_text", "operator": "regex_contains", "operand": "(?:^|\\s)$", "match_all": true},
+      {"key": "following_text", "operator": "regex_contains", "operand": "^(?:\\s|$)", "match_all": true},
+    ]
+  },
+  {
+    "keys": ["`"],
+    "command": "insert_snippet",
+    "args": {"contents": "`${0:$SELECTION}`"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": false, "match_all": true},
+    ]
+  },
+  {
+    "keys": ["`"],
+    "command": "move",
+    "args": {"by": "characters", "forward": true},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "following_text", "operator": "regex_contains", "operand": "^`", "match_all": true},
+    ]
+  },
+  {
+    "keys": ["backspace"],
+    "command": "run_macro_file",
+    "args": {"file": "res://Packages/Default/Delete Left Right.sublime-macro"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "preceding_text", "operator": "regex_contains", "operand": "`$", "match_all": true},
+      {"key": "following_text", "operator": "regex_contains", "operand": "^`", "match_all": true},
+    ]
+  },
+
+  /*
+  When selection is non-empty, typing the comment fence character should wrap it
+  around the selection.
+  */
+  {
+    "keys": [";"],
+    "command": "misc_wrap",
+    "args": {"prefix": ";", "suffix": ";"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": false, "match_all": true},
+    ],
+  },
+
+  /*
+  When selection is non-empty, pressing the built-in comment hotkey should wrap
+  the fence around the selection without additional spaces or indentation.
+  Questionable behavior because this disables the default "toggle" behavior,
+  preventing ST from un-wrapping the comment block when the selection is
+  non-empty.
+  */
+  {
+    "keys": ["primary+/"],
+    "command": "misc_wrap",
+    "args": {"prefix": ";;", "suffix": ";;"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_match_enabled", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": false, "match_all": true},
+    ],
+  },
+
+  /*
+  When the cursor is between two comment fences on a single line, pressing Enter
+  moves them to their own lines, with the cursor on a line between.
+
+  TODO write custom macro with sensible behavior. Should support whitespace
+  around the cursor and avoid unnecessary indent.
+
+  TODO also support cases when it's not just whitespace between the fences.
+  */
+  {
+    "keys": ["enter"],
+    "command": "run_macro_file",
+    "args": {"file": "res://Packages/Default/Add Line in Braces.sublime-macro"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp"},
+      {"key": "setting.auto_indent", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "preceding_text", "operator": "regex_contains", "operand": ";$", "match_all": true},
+      {"key": "following_text", "operator": "regex_contains", "operand": "^;", "match_all": true},
+    ],
+  },
+
+  /*
+  When pressing Enter at EOL immediately after an opening comment fence, copy
+  the fence to the next line, placing the cursor between.
+  */
+  {
+    "keys": ["enter"],
+    "command": "run_macro_file",
+    "args": {"file": "res://Packages/jisp/dup_line_wrap.sublime-macro"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp comment"},
+      {"key": "setting.auto_indent", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "preceding_text", "operator": "regex_contains", "operand": ";+$", "match_all": true},
+      {"key": "following_text", "operator": "regex_match", "operand": "^$", "match_all": true},
+    ],
+  },
+
+  /*
+  When pressing Enter after an opening comment fence followed by some other text
+  on the current line, convert this single-line comment to a multi-line comment
+  with a matching fence. This is useful when the user types an opening fence
+  and some text, then wants to continue typing on the next line. This makes it
+  convenient to maintain a consistent rule that in multi-line comments, fences
+  should be placed on their own lines surrounding the comment text.
+  */
+  {
+    "keys": ["enter"],
+    "command": "run_macro_file",
+    "args": {"file": "res://Packages/jisp/comment_single_to_multi.sublime-macro"},
+    "context": [
+      {"key": "selector", "operator": "equal", "operand": "source.jisp comment"},
+      {"key": "setting.auto_indent", "operator": "equal", "operand": true},
+      {"key": "selection_empty", "operator": "equal", "operand": true, "match_all": true},
+      {"key": "preceding_text", "operator": "regex_match", "operand": "^\\s*(;+)[^;]+$", "match_all": true},
+      {"key": "following_text", "operator": "regex_match", "operand": "^$", "match_all": true},
+    ],
+  },
+]

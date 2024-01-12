@@ -1,26 +1,339 @@
 %YAML 1.2
 ---
 version: 2
-extends: Packages/mox/mox_base.sublime-syntax
 scope: source.jisp
+file_extensions: [jisp]
 
 variables:
-  comment_line_start: ;
+  comment_delim: ;
+  comment_fence_begin: '({{comment_delim}}{2,})'
+  comment_fence_end: (?<!{{comment_delim}})\1(?!{{comment_delim}})
 
-  # TODO consider switching to ONLY fenced comments.
-  comment_block_start: (?!)
-  comment_block_end: (?!)
+  string_backtick_delim: '`'
+  string_backtick_fence_begin: '({{string_backtick_delim}}++)'
+  string_backtick_fence_end: (?<!{{string_backtick_delim}})\1(?!{{string_backtick_delim}})
 
-  ident_start_chars: '[[:alpha:]_$]'
-  ident_chars: '[[:alnum:]_$]'
-  ident: (?<!{{ident_chars}}){{ident_start_chars}}{{ident_chars}}*(?!{{ident_chars}})
+  string_double_delim: '"'
+  string_double_fence_begin: '({{string_double_delim}}++)'
+  string_double_fence_end: (?<!{{string_double_delim}})\1(?!{{string_double_delim}})
+
+  char_escape: \\(?:.|\n)
+  accessor: \.
+  space: \s*
+  eol: (?:\n|$)
+
+  # int_bin: '(?:[0-1][0-1_]*)'
+  # int_oct: '(?:[0-7][0-7_]*)'
+  int_dec: '(?:[0-9][0-9_]*)'
+  # int_hex: '(?:[0-9a-f][0-9a-f_]*)'
+
+  # SYNC[ident_oper].
+  operator_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
+  operator: '[{{operator_chars}}]++'
+
+  ident_begin_chars: '[:alpha:]_$'
+  ident_chars: '[:alnum:]_$'
+  entity_chars: '{{ident_chars}}{{operator_chars}}'
+  ident_break_begin: (?<![{{entity_chars}}])
+  ident_break_end: (?![{{entity_chars}}])
+  ident: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*+{{ident_break_end}}'
 
 contexts:
-  ident-match:
-    - meta_prepend: true
-    - include: ident-call-match
-    - include: ident-const-predeclared-match
+  prototype:
+    - include: comment-match
 
-  ident-const-predeclared-match:
-    - match: \b(?:nil|null|no|ok)\b
+  # Should match `Tokenizer`.
+  main:
+    - include: punct-match
+    - include: number-match
+    - include: string-match
+    - include: operator-match
+    - include: ident-match
+
+  comment-match:
+    - include: comment-fenced-match
+
+  comment-fenced-match:
+    - match: '{{comment_fence_begin}}'
+      scope: comment.block.jisp punctuation.definition.comment.begin.jisp
+      push: [comment-block-meta, comment-fenced-pop]
+
+  comment-fenced-pop:
+    - match: '{{comment_fence_end}}'
+      scope: comment.block.jisp punctuation.definition.comment.end.jisp
+      pop: 1
+    - include: comment-markup
+
+  comment-block-meta:
+    - meta_content_scope: comment.block.jisp
+    - include: now-pop
+
+  comment-markup:
+    - include: comment-heading-match
+
+  # Known limitation: this doesn't match headings placed between comment
+  # delimiters on a single line.
+  comment-heading-match:
+    - match: '^{{space}}((#+)\s+\S.*)(?:{{eol}})'
+      captures:
+        1: markup.heading.jisp
+        2: punctuation.definition.heading.begin.jisp
+
+  punct-match:
+    - include: brace-match
+    - include: bracket-match
+    - include: paren-match
+    - include: accessor-match
+
+  brace-match:
+    - match: \{
+      scope: punctuation.section.braces.begin.jisp
+      push: brace-pop
+    - match: \}
+      scope: punctuation.section.braces.end.jisp invalid.illegal.jisp
+
+  brace-pop:
+    - meta_scope: meta.block.jisp meta.braces.jisp
+    - match: \}
+      scope: punctuation.section.braces.end.jisp
+      pop: 1
+    - include: main
+
+  bracket-match:
+    - match: \[
+      scope: punctuation.section.brackets.begin.jisp
+      push: [bracket-pop, list-head-pop]
+    - match: \]
+      scope: punctuation.section.brackets.end.jisp invalid.illegal.jisp
+
+  bracket-pop:
+    - meta_scope: meta.block.jisp meta.brackets.jisp
+    - match: \]
+      scope: punctuation.section.brackets.end.jisp
+      pop: 1
+    - include: main
+
+  paren-match:
+    - match: \(
+      scope: punctuation.section.parens.begin.jisp
+      push: paren-pop
+    - match: \)
+      scope: punctuation.section.parens.end.jisp invalid.illegal.jisp
+
+  paren-pop:
+    - meta_scope: meta.block.jisp meta.parens.jisp
+    - match: \)
+      scope: punctuation.section.parens.end.jisp
+      pop: 1
+    - include: main
+
+  accessor-match:
+    - match: '{{accessor}}'
+      scope: punctuation.accessor.dot.jisp
+
+  number-match:
+    - include: number-dec-match
+
+  # Must match `Num.regex`.
+  number-dec-match:
+    - match: '(-)?{{int_dec}}(\.){{int_dec}}([{{ident_chars}}]*)'
+      scope: constant.numeric.decimal.jisp
+      captures:
+        1: keyword.operator.arithmetic.jisp
+        2: punctuation.separator.decimal.jisp
+        3: invalid.illegal.jisp
+    - match: '(-)?{{int_dec}}([{{ident_chars}}]*)'
+      scope: constant.numeric.decimal.jisp
+      captures:
+        1: keyword.operator.arithmetic.jisp
+        2: invalid.illegal.jisp
+
+  string-match:
+    - include: string-backtick-match
+    - include: string-double-match
+
+  string-backtick-match:
+    - include: string-backtick-empty-match
+    - include: string-backtick-fenced-match
+
+  # This special case matches two quotes with no other content, treating it as
+  # an empty string. This means we won't be treating it as an opening fence.
+  string-backtick-empty-match:
+    - match: '({{string_backtick_delim}})({{string_backtick_delim}})(?!{{string_backtick_delim}})'
+      scope: string.quoted.other.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+
+  string-backtick-fenced-match:
+    - match: '{{string_backtick_fence_begin}}'
+      scope: punctuation.definition.string.begin.jisp
+      push: string-backtick-fenced-pop
+
+  string-backtick-fenced-pop:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.other.jisp
+    - match: '{{string_backtick_fence_end}}'
+      scope: punctuation.definition.string.end.jisp
+      pop: 1
+
+  string-double-match:
+    - include: string-double-empty-match
+    - include: string-double-fenced-match
+
+  # This special case matches two quotes with no other content, treating it as
+  # an empty string. This means we won't be treating it as an opening fence.
+  string-double-empty-match:
+    - match: '({{string_double_delim}})({{string_double_delim}})(?!{{string_double_delim}})'
+      scope: string.quoted.other.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+
+  string-double-fenced-match:
+    - match: '{{string_double_fence_begin}}'
+      scope: punctuation.definition.string.begin.jisp
+      push: string-double-pop
+
+  string-double-pop:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.jisp
+    - match: '{{string_double_fence_end}}'
+      scope: punctuation.definition.string.end.jisp
+      pop: 1
+    - match: '{{char_escape}}'
+      scope: constant.character.escape.jisp
+
+  operator-match:
+    - match: '{{operator}}'
+      scope: keyword.operator.jisp
+
+  ident-match:
+    - include: ident-constant-match
+    - include: ident-unqual-match
+
+  # Questionable special case, provided for syntactical consistency with other
+  # languages. Unlike most languages, Jisp does not have any keywords or
+  # reserved words, and these "constants" are regular identifiers exported by
+  # prelude, which is completely optional. They can be used unqualified or
+  # qualified, and more importantly, they can be renamed or replaced. There is
+  # really totally nothing special about them. We may reconsider this.
+  ident-constant-match:
+    - match: \b(?:nil|null|no|ok|nan|inf)\b
       scope: constant.language.jisp
+
+  # Naming refers to `IdentUnqual`.
+  ident-unqual-match:
+    - match: '{{ident}}'
+      scope: variable.other.jisp
+
+  # Naming refers to `IdentAccess`.
+  ident-access-pop-multi:
+    - match: '({{accessor}}){{space}}({{ident}})'
+      captures:
+        1: punctuation.accessor.dot.jisp
+        2: variable.other.jisp
+    - include: nonblank-pop
+
+  list-head-pop:
+    - include: accessor-match
+    - include: call-known-pop-opt
+    - include: call-unknown-pop-opt
+    - include: ident-unqual-match
+    - include: nonblank-pop
+
+  call-unknown-pop-opt:
+    - match: '{{ident}}(?!{{accessor}})'
+      scope: variable.function.jisp
+      pop: 1
+
+  call-known-pop-opt:
+    - include: call-use-pop
+    - include: call-import-pop
+    - include: call-const-pop
+    - include: call-let-pop
+    - include: call-func-pop
+    - include: call-class-pop
+
+  call-use-pop:
+    - match: '{{ident_break_begin}}use{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [import-addr-pop, ident-access-pop-multi]
+
+  call-import-pop:
+    - match: '{{ident_break_begin}}import{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [import-addr-pop, ident-access-pop-multi]
+
+  import-addr-pop:
+    - match: '({{string_backtick_delim}})[^{{string_backtick_delim}}]*({{string_backtick_delim}})(?!{{string_backtick_delim}})'
+      scope: string.quoted.other.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+      set: import-decl-pop
+
+    - match: '({{string_double_delim}})[^{{string_double_delim}}]*({{string_double_delim}})(?!{{string_double_delim}})'
+      scope: string.quoted.double.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+      set: import-decl-pop
+
+    - include: nonblank-pop
+
+  import-decl-pop:
+    - match: '{{ident}}'
+      scope: meta.binding.name.jisp variable.other.jisp
+      pop: 1
+    - include: nonblank-pop
+
+  call-const-pop:
+    - match: '{{ident_break_begin}}const{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [declare-variable-pop, ident-access-pop-multi]
+
+  call-let-pop:
+    - match: '{{ident_break_begin}}let{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [declare-variable-pop, ident-access-pop-multi]
+
+  declare-variable-pop:
+    - match: '{{ident}}'
+      scope: meta.binding.name.jisp entity.name.jisp
+      pop: 1
+    - include: nonblank-pop
+
+  call-func-pop:
+    - match: '{{ident_break_begin}}func{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [func-name-pop, ident-access-pop-multi]
+
+  func-name-pop:
+    - match: '{{ident}}'
+      scope: entity.name.function.jisp
+      set: func-params-pop
+    - include: nonblank-pop
+
+  # Placeholder.
+  func-params-pop:
+    - include: nonblank-pop
+
+  call-class-pop:
+    - match: '{{ident_break_begin}}class{{ident_break_end}}'
+      scope: keyword.declaration.jisp
+      set: [class-name-pop, ident-access-pop-multi]
+
+  class-name-pop:
+    - match: '{{ident}}'
+      scope: entity.name.class.jisp
+      pop: 1
+    - include: nonblank-pop
+
+  nonblank-pop:
+    - match: (?=\S)
+      pop: 1
+
+  now-pop:
+    - match: ''
+      pop: 1

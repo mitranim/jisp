@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>scope</key>
+  <string>source.jisp</string>
+
+  <key>settings</key>
+  <dict>
+    <key>increaseIndentPattern</key>
+    <string><![CDATA[(?x)
+      (?:
+        (?<re0> \(\g<re0>*\) | [^\(\)] )*+
+        \(
+        (?<re1> \(\g<re1>*\) | [^\(\)] )*+
+        (?:\(|$)
+      )
+      |
+      (?:
+        (?<re2> \[\g<re2>*\] | [^\[\]] )*+
+        \[
+        (?<re3> \[\g<re3>*\] | [^\[\]] )*+
+        (?:\[|$)
+      )
+      |
+      (?:
+        (?<re4> \{\g<re4>*\} | [^\{\}] )*+
+        \{
+        (?<re5> \{\g<re5>*\} | [^\{\}] )*+
+        (?:\{|$)
+      )
+    ]]></string>
+
+    <key>decreaseIndentPattern</key>
+    <string>(?x) [^\(\)]*\) | [^\[\]]*\] | [^\{\}]*\}</string>
+
+    <key>bracketIndentNextLinePattern</key>
+    <string></string>
+
+    <key>disableIndentNextLinePattern</key>
+    <string></string>
+
+    <key>unIndentedLinePattern</key>
+    <string></string>
+
+    <key>indentParens</key>
+    <false />
+
+    <key>indentSquareBrackets</key>
+    <false />
+
+    <key>preserveIndent</key>
+    <false />
+  </dict>
+</dict>
+</plist>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>scope</key>
+  <string>
+    markup.heading.jisp,
+    meta.binding.name.jisp variable.other.jisp
+  </string>
+  <key>settings</key>
+  <dict>
+    <key>showInSymbolList</key>
+    <integer>1</integer>
+  </dict>
+</dict>
+</plist>

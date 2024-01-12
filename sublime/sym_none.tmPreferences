@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>scope</key>
+
+  <!--
+  This should disable indexing of variable declarations not in module root.
+  This is a negation of an index enabled by the file `sym_index.tmPreferences`.
+  -->
+  <string>
+    meta.block.jisp meta.block.jisp entity.name.jisp
+  </string>
+
+  <key>settings</key>
+  <dict>
+    <key>showInSymbolList</key>
+    <integer>0</integer>
+    <key>showInIndexedSymbolList</key>
+    <integer>0</integer>
+  </dict>
+</dict>
+</plist>
