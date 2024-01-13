@@ -8,16 +8,10 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 import * as jnr from './jisp_node_ret.mjs'
 
 export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
-  // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
-  static makeLiveValInner() {
-    const tar = a.npo()
-    tar.ret = jnr.Ret
-    return tar
-  }
-
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+  optParams() {return this.optChildInstAt(2, jnnl.NodeList)}
   reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
   body() {return this.optChildSlice(3)}
   hasBody() {return this.childCount() > 3}
@@ -26,7 +20,7 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(3)
+    this.reqChildCountMin(2)
     this.reqIdent().reqCanDeclare()
     this.reqDeclareLex()
     this.declareParams()
@@ -44,7 +38,9 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   declareParams() {
-    for (const val of this.reqParams().childIter()) {
+    const src = this.optParams()
+    if (a.isNil(src)) return
+    for (const val of src.childIter()) {
       val.asReqInst(jniu.IdentUnqual).reqDeclareLex()
     }
   }
@@ -62,7 +58,7 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   compileExportPrefix() {return this.isExportable() ? `export` : ``}
   compilePrefix() {return `function`}
   compileName() {return jn.optCompileNode(this.reqIdent())}
-  compileParams() {return this.reqPrn().compileParensWithExpressions(this.reqParams().childIter())}
+  compileParams() {return this.reqPrn().compileParensWithExpressions(this.optParams()?.childIter())}
   compileBody() {return this.compileBodyWithImplicitReturn()}
   compileBodyWithoutImplicitReturn() {return this.reqPrn().compileBracesWithStatements(this.body())}
 

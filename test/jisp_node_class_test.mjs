@@ -87,7 +87,7 @@ await t.test(async function test_Class_func_invalid() {
 
 [class SomeClass [.func]]
 `,
-    `[object MethodFunc] expected at least 3 children, got 1 children`,
+    `[object MethodFunc] expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -107,7 +107,7 @@ await t.test(async function test_Class_func_invalid() {
 
 [class SomeClass [.func someMethod 10]]
 `,
-    `[object MethodFunc] expected the child node at index 2 to be an instance of [function NodeList], found [object Num]`,
+    `[object MethodFunc] expected the child node at index 2 to be either nil or an instance of [function NodeList], found [object Num]`,
   )
 
   await jrt.testModuleFail(

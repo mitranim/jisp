@@ -4,6 +4,69 @@ import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jrt from './jisp_root_test.mjs'
 
+await t.test(async function test_Func_invalid() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func]
+`,
+    `[object Func] expected at least 2 children, got 1 children`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func 10]
+`,
+    `[object Func] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func []]
+`,
+    `[object Func] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Brackets]`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func await []]
+`,
+    `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func eval []]
+`,
+    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func someFunc []]
+[func someFunc []]
+`,
+    `redundant declaration of "someFunc" in namespace [object NsLex]`,
+  )
+})
+
 await t.test(async function test_Func_implicit_return() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
@@ -29,8 +92,7 @@ export function someFunc3 () {
 20;
 return 30;
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Func_arguments() {
@@ -60,8 +122,7 @@ await t.test(async function test_Func_arguments() {
 export function someFunc () {
 return arguments;
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Func_arguments_redeclaration() {
@@ -105,8 +166,7 @@ await t.test(async function test_Func_this() {
 export function someFunc () {
 return this;
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Func_this_redeclaration() {
@@ -124,10 +184,27 @@ await t.test(async function test_Func_this_redeclaration() {
 })
 
 /*
-Declaring `ret` in prelude may seem dirty. It would seem more natural to declare
-it in function scope. However, we should avoid implicitly adding names to scopes
-because of possible collisions. See the comment on `jsReservedNames` for
-explanations.
+At the time of writing, we declare `ret` in the prelude. This is different from
+JS where `return` is contextual, only available in function bodies. JS can
+afford to make it contextual because `return` is a reserved keyword, which
+means user code can never declare a variable with that name. This means there
+is no possibility of collision. However, in Jisp, the situation is different.
+Jisp has no keywords or reserved words. Because of that, Jisp can never
+implicitly declare unqualified identifiers, because they would sometimes mask
+user-defined names. This would create a danger of accidentally breaking user
+code in future language versions, when adding new contextual names, which is
+expected to happen in `Class` due to its feature bloat. To avoid this problem,
+we have an alternate way of providing contextual names, via the orphan form of
+`IdentAccess`. In case of `return`, this would look like this:
+
+  [.ret someValue]
+
+However, this doesn't seem any better than having `ret` in the prelude.
+So for now, we allow `ret` anywhere, even though it may generate invalid
+compiled code. This isn't much different from using `return` in the wrong
+places when writing JS manually.
+
+Also see the comment on `jsReservedNames` for a similar explanation.
 */
 await t.test(async function test_Func_ret() {
   await jrt.testModuleFail(
@@ -135,17 +212,7 @@ await t.test(async function test_Func_ret() {
 `
 [use "jisp:prelude.mjs" *]
 
-[.ret 10]
-`,
-    `unable to find ancestral live value with property "ret" at descendant [object IdentAccess]`,
-  )
-
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[func someFunc [] [.ret 10 20]]
+[ret 10 20]
 `,
     `[object Ret] expected between 1 and 2 children, got 3 children`,
   )
@@ -155,7 +222,17 @@ await t.test(async function test_Func_ret() {
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [] [.ret]]
+[ret 10 20]
+`,
+    `[object Ret] expected between 1 and 2 children, got 3 children`,
+  )
+
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[const someConst [ret]]
 `,
     `[object Ret] can only be used as a statement`,
   )
@@ -165,7 +242,7 @@ await t.test(async function test_Func_ret() {
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [] [.ret 10]]
+[func someFunc [] [ret 10]]
 `,
     `[object Ret] can only be used as a statement`,
   )
@@ -176,7 +253,7 @@ await t.test(async function test_Func_ret() {
 [use "jisp:prelude.mjs" *]
 
 [func someFunc []
-  [const someConst [.ret 10]]
+  [const someConst [ret 10]]
   20
 ]
 `,
@@ -188,11 +265,24 @@ await t.test(async function test_Func_ret() {
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc0 [] [.ret] 10]
-[func someFunc1 [] 10 [.ret] 20]
-[func someFunc2 [] [.ret 10] 20]
-[func someFunc3 [] 10 [.ret 20] 30]
-[func someFunc4 [] [.ret 10] [.ret 20] 30]
+[ret]
+[ret 10]
+`,
+`
+return;
+return 10;
+`)
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func someFunc0 [] [ret] 10]
+[func someFunc1 [] 10 [ret] 20]
+[func someFunc2 [] [ret 10] 20]
+[func someFunc3 [] 10 [ret 20] 30]
+[func someFunc4 [] [ret 10] [ret 20] 30]
 `,
 `
 export function someFunc0 () {
@@ -218,16 +308,10 @@ return 10;
 return 20;
 return 30;
 };
-`,
-  )
+`)
 })
 
-/*
-The contextual sub-macro `.ret` is accessed through an entirely different
-mechanism than an unqualified identifier `ret`. There should be no collision.
-This test verifies that.
-*/
-await t.test(async function test_Func_declare_ret() {
+await t.test(async function test_Func_redeclare_ret() {
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
@@ -236,7 +320,7 @@ await t.test(async function test_Func_declare_ret() {
 [func someFunc []
   [func ret []]
   [ret 20]
-  [.ret [ret 30]]
+  [ret [ret 30]]
   [ret 40]
 ]
 `,
@@ -244,13 +328,24 @@ await t.test(async function test_Func_declare_ret() {
 export function someFunc () {
 function ret () {};
 ret(20);
-return ret(30);
+ret(ret(30));
 return ret(40);
 };
 `)
 })
 
 await t.test(async function test_Func_valid() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[func someFunc]
+`,
+`
+export function someFunc () {};
+`)
+
   await jrt.testModuleCompile(
     jrt.makeModule(),
 `
@@ -320,7 +415,7 @@ return one;
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [one] [.ret one] one]
+[func someFunc [one] [ret one] one]
 `,
 `
 export function someFunc (one) {
@@ -416,7 +511,7 @@ return two;
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] [.ret one] one two two]
+[func someFunc [one two] [ret one] one two two]
 `,
 `
 export function someFunc (one, two) {
@@ -432,7 +527,7 @@ return two;
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] one [.ret one] two two]
+[func someFunc [one two] one [ret one] two two]
 `,
 `
 export function someFunc (one, two) {
@@ -448,7 +543,7 @@ return two;
 `
 [use "jisp:prelude.mjs" *]
 
-[func someFunc [one two] one one [.ret two] two]
+[func someFunc [one two] one one [ret two] two]
 `,
 `
 export function someFunc (one, two) {
@@ -458,39 +553,6 @@ return two;
 return two;
 };
 `)
-})
-
-await t.test(async function test_Func_invalid() {
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[func await []]
-`,
-    `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`,
-  )
-
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[func eval []]
-`,
-    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`,
-  )
-
-  await jrt.testModuleFail(
-    jrt.makeModule(),
-`
-[use "jisp:prelude.mjs" *]
-
-[func someFunc []]
-[func someFunc []]
-`,
-    `redundant declaration of "someFunc" in namespace [object NsLex]`,
-  )
 })
 
 await t.test(async function test_Func_async() {
@@ -501,8 +563,8 @@ await t.test(async function test_Func_async() {
 
 [func.async someFunc []
   [await 10]
-  [.ret 20]
-  [.ret [await 30]]
+  [ret 20]
+  [ret [await 30]]
   [await 40]
 ]
 `,
@@ -513,8 +575,7 @@ return 20;
 return (await 30);
 return (await 40);
 };
-`,
-  )
+`)
 })
 
 if (import.meta.main) ti.flush()
