@@ -33,7 +33,7 @@ t.test(function test_IdentUnqual_isValid() {
 })
 
 t.test(function test_IdentUnqual_parse_invalid() {
-  function test(src) {tu.testParseFail(jniu.IdentUnqual, src)}
+  function test(src) {tu.testParseNone(jniu.IdentUnqual, src)}
 
   test(``)
   test(` `)

@@ -130,7 +130,6 @@ For our purposes, they're identical.
 */
 export class MethodFunc extends MethodFuncBase {
   static get async() {return MethodFuncAsync}
-  static get static() {return MethodFuncStatic}
   compilePrefix() {return ``}
   static reprModuleUrl = import.meta.url
 }

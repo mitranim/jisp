@@ -75,8 +75,7 @@ export class SomeClass0 extends 10 {};
 export class SomeClass1 extends 20(10) {};
 export class SomeClass2 extends 30(20(10)) {};
 export class SomeClass3 extends SomeClass1.someMethod(SomeClass2) {};
-`,
-  )
+`)
 })
 
 await t.test(async function test_Class_func_invalid() {
@@ -145,8 +144,8 @@ await t.test(async function test_Class_func_valid() {
 [class SomeClass3
   [.func someMethod []]
   [.func.async someMethod []]
-  [.func.static someMethod []]
-  [.func.static.async someMethod []]
+  [.static.func someMethod []]
+  [.static.func.async someMethod []]
 ]
 `,
 `
@@ -167,8 +166,7 @@ async someMethod () {};
 static someMethod () {};
 static async someMethod () {};
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Class_let_invalid() {
@@ -213,7 +211,7 @@ await t.test(async function test_Class_let_valid() {
 [class SomeClass2
   [.extend SomeClass1]
   [.let someField 10]
-  [.let.static someField 20]
+  [.static.let someField 20]
 ]
 `,
 `
@@ -230,8 +228,7 @@ export class SomeClass2 extends SomeClass1 {
 someField = 10;
 static someField = 20;
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Class_block_invalid() {
@@ -240,9 +237,9 @@ await t.test(async function test_Class_block_invalid() {
 `
 [use "jisp:prelude.mjs" *]
 
-[class SomeClass [.do [.do]]]
+[class SomeClass [.static [.static]]]
 `,
-    `[object ClassBlock] requires its immediate parent to be an instance of [function Class], got parent [object ClassBlock]`,
+    `[object ClassStatic] requires its immediate parent to be an instance of [function Class], got parent [object ClassStatic]`,
   )
 
   await jrt.testModuleFail(
@@ -250,9 +247,9 @@ await t.test(async function test_Class_block_invalid() {
 `
 [use "jisp:prelude.mjs" *]
 
-[class SomeClass [.do [do [.do]]]]
+[class SomeClass [.static [do [.static]]]]
 `,
-    `[object ClassBlock] requires its immediate parent to be an instance of [function Class], got parent [object Block]`,
+    `[object ClassStatic] requires its immediate parent to be an instance of [function Class], got parent [object Block]`,
   )
 })
 
@@ -263,14 +260,14 @@ await t.test(async function test_Class_block() {
 [use "jisp:prelude.mjs" *]
 
 [class SomeClass
-  [.do]
-  [.do 10]
-  [.do 10 20]
-  [.do 10 20 30]
-  [.do [do]]
-  [.do [do 10]]
-  [.do [do 10 20]]
-  [.do [do 10 20 30]]
+  [.static]
+  [.static 10]
+  [.static 10 20]
+  [.static 10 20 30]
+  [.static [do]]
+  [.static [do 10]]
+  [.static [do 10 20]]
+  [.static [do 10 20 30]]
 ]
 `,
 `
@@ -310,8 +307,7 @@ static {
 };
 };
 };
-`,
-  )
+`)
 })
 
 await t.test(async function test_Class_export() {
@@ -320,7 +316,7 @@ await t.test(async function test_Class_export() {
 `
 [use "jisp:prelude.mjs" *]
 
-[class SomeClass [.do [class SomeClass]]]
+[class SomeClass [.static [class SomeClass]]]
 
 [do [class SomeClass]]
 `,
@@ -333,8 +329,7 @@ class SomeClass {};
 {
 class SomeClass {};
 };
-`,
-  )
+`)
 })
 
 if (import.meta.main) ti.flush()

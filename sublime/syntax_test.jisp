@@ -1,0 +1,565 @@
+;; SYNTAX TEST "jisp.sublime-syntax" ;;
+
+This file is a sketch. A proper syntax test would include assertions for
+expected scopes, which can be checked automatically by ST.
+
+;; ;;
+;; ;;;
+;; ;;;;
+;; ;;;;;
+;; ;; ;; ;;
+
+;;; ;;;
+;;; ;;;;
+;;; ;;;;;
+;;; ;;;;;;
+;;; ;;; ;; ;;
+
+;; some_text ;;
+;; some_text ;;;
+;; some_text ;;;;
+;; some_text ;; ;; ;;
+
+;;; some_text ;;;
+;;; some_text ;;;;
+;;; some_text ;;;;;
+;;; some_text ;;;;;;
+;;; some_text ;;; ;; ;;
+
+;;
+some_text
+;;
+
+;;
+some_text
+;;;
+
+;;
+some_text
+;;;;
+
+;;
+some_text
+;;;;;
+
+;;;
+some_text
+;;;
+
+;;;
+some_text
+;;;;
+
+;;;
+some_text
+;;;;;
+
+;;;
+some_text
+;;;;;;
+
+;;
+some_text
+some_text
+;;
+
+;;
+some_text
+some_text
+;;;
+
+;;
+some_text
+some_text
+;;;;
+
+;;
+some_text
+some_text
+;;;;;
+
+;;;
+some_text
+some_text
+;;;
+
+;;;
+some_text
+some_text
+;;;;
+
+;;;
+some_text
+some_text
+;;;;;
+
+;;;
+some_text
+some_text
+;;;;;;
+
+.0
+.1
+.12
+.123
+
+-.0
+-.1
+-.12
+-.123
+
+.0ident
+.1ident
+.12ident
+.123ident
+
+-.0ident
+-.1ident
+-.12ident
+-.123ident
+
+0ident
+1ident
+12ident
+123ident
+
+0
+1
+12
+123
+
+-0
+-1
+-12
+-123
+
+0.1
+1.2
+12.3
+123.4
+
+-0.1
+-1.2
+-12.3
+-123.4
+
+``
+""
+
+` `
+" "
+
+` ``
+" ""
+
+` ```
+" """
+
+` ````
+" """"
+
+` `""
+" "``
+
+` ` ``
+" " ""
+
+` ` ` `
+" " " "
+
+`one`
+"one"
+
+`\"`
+"\""
+
+`\"``
+"\"""
+
+`\r\n\t\v\\\"`
+"\r\n\t\v\\\""
+
+`\r\n\t\v\\\"``
+"\r\n\t\v\\\"""
+
+` \r \n \t \v \\ \" `
+" \r \n \t \v \\ \" "
+
+` \r \n \t \v \\ \" ``
+" \r \n \t \v \\ \" ""
+
+``` ```
+""" """
+
+``` ````
+""" """"
+
+``` ```""
+""" """``
+
+```one```
+"""one"""
+
+```one````
+"""one""""
+
+```one```""
+"""one"""``
+
+```
+one
+```
+
+```
+one
+````
+
+```
+one
+`````
+
+```
+one
+``````
+
+```
+one
+``` ``
+
+```
+one
+```""
+
+```
+one
+``` ""
+
+"""
+one
+"""
+
+"""
+one
+""""
+
+"""
+one
+"""""
+
+"""
+one
+""""""
+
+"""
+one
+"""``
+
+"""
+one
+""" ``
+
+```
+one
+two
+three
+```
+
+"""
+one
+two
+three
+"""
+
+```
+one
+`
+two
+`
+three
+```
+
+"""
+one
+"
+two
+"
+three
+"""
+
+~ ! @ # % ^ & * : < > ? / \ | = + -
+~~ !! @@ ## %% ^^ && ** :: << >> ?? // \\ || == ++ --
+~~~ !!! @@@ ### %%% ^^^ &&& *** ::: <<< >>> ??? /// \\\ ||| === +++ ---
+~-+ !~- @!~ #@! %#@ ^%# &^% *&^ :*& <:* ><: ?>< /?> \/? |\/ =|\ +=| -+=
+
+~123
+!123
+@123
+#123
+%123
+^123
+&123
+*123
+:123
+<123
+>123
+?123
+/123
+\123
+|123
+=123
++123
+
+123-
+123~
+123!
+123@
+123#
+123%
+123^
+123&
+123*
+123:
+123<
+123>
+123?
+123/
+123\
+123|
+123=
+123+
+123-
+
+~`str`
+!`str`
+@`str`
+#`str`
+%`str`
+^`str`
+&`str`
+*`str`
+:`str`
+<`str`
+>`str`
+?`str`
+/`str`
+\`str`
+|`str`
+=`str`
++`str`
+
+`str`-
+`str`~
+`str`!
+`str`@
+`str`#
+`str`%
+`str`^
+`str`&
+`str`*
+`str`:
+`str`<
+`str`>
+`str`?
+`str`/
+`str`\
+`str`|
+`str`=
+`str`+
+`str`-
+
+~ident
+!ident
+@ident
+#ident
+%ident
+^ident
+&ident
+*ident
+:ident
+<ident
+>ident
+?ident
+/ident
+\ident
+|ident
+=ident
++ident
+
+ident-
+ident~
+ident!
+ident@
+ident#
+ident%
+ident^
+ident&
+ident*
+ident:
+ident<
+ident>
+ident?
+ident/
+ident\
+ident|
+ident=
+ident+
+ident-
+
+one
+one.two
+one .two
+one.two.three
+one .two.three
+one.two .three
+one .two .three
+
+one
+.two
+.three
+
+[].one
+[].one.two
+[].one.two.three
+
+[one] two three
+[one two] three
+[one two three]
+
+[.one].two
+[.one].two.three
+[.one.two].three
+[.one.two.three]
+
+[.one two].three
+[.one.two three]
+
+nil null no ok nan inf
+pre.nil pre.null pre.no pre.ok pre.nan pre.inf
+
+use
+pre.use
+[use]
+[pre.use]
+[use ident]
+[pre.use ident]
+[use ident ident]
+[pre.use ident ident]
+[use *]
+[pre.use *]
+[use ident *]
+[pre.use ident *]
+[use `addr`]
+[pre.use `addr`]
+[use "addr"]
+[pre.use "addr"]
+[use `addr` name]
+[pre.use `addr` name]
+[use "addr" name]
+[pre.use "addr" name]
+[use `addr` *]
+[pre.use `addr` *]
+[use "addr" *]
+[pre.use "addr" *]
+
+const
+pre.const
+[ident const ident]
+[ident pre.const ident]
+[ident const.variant ident]
+[ident pre.const.variant ident]
+[const]
+[pre.const]
+[const     name]
+[pre.const name]
+[const     name val]
+[pre.const name val]
+[const.variant]
+[pre.const.variant]
+[const.variant     name]
+[pre.const.variant name]
+[const.variant     name val]
+[pre.const.variant name val]
+
+func
+pre.func
+[ident func ident]
+[ident pre.func ident]
+[ident func.variant ident]
+[ident pre.func.variant ident]
+[func]
+[pre.func]
+[func.variant]
+[pre.func.variant]
+[func             name]
+[pre.func         name]
+[func.variant     name]
+[pre.func.variant name]
+[func             name []]
+[pre.func         name []]
+[func.variant     name []]
+[pre.func.variant name []]
+[func             name [param]]
+[pre.func         name [param]]
+[func.variant     name [param]]
+[pre.func.variant name [param]]
+[func             name [param param]]
+[pre.func         name [param param]]
+[func.variant     name [param param]]
+[pre.func.variant name [param param]]
+[func             name [param param &]]
+[pre.func         name [param param &]]
+[func.variant     name [param param &]]
+[pre.func.variant name [param param &]]
+[func             name [param param & param]]
+[pre.func         name [param param & param]]
+[func.variant     name [param param & param]]
+[pre.func.variant name [param param & param]]
+[func             name [param param] ident]
+[pre.func         name [param param] ident]
+[func.variant     name [param param] ident]
+[pre.func.variant name [param param] ident]
+[func             name [param param &] ident]
+[pre.func         name [param param &] ident]
+[func.variant     name [param param &] ident]
+[pre.func.variant name [param param &] ident]
+[func             name [param param & param] ident]
+[pre.func         name [param param & param] ident]
+[func.variant     name [param param & param] ident]
+[pre.func.variant name [param param & param] ident]
+[func             name [param] [ident] [ident] [ident] ident]
+[func.variant     name [param] [ident] [ident] [ident] ident]
+[pre.func         name [param] [ident] [ident] [ident] ident]
+[pre.func.variant name [param] [ident] [ident] [ident] ident]
+
+class
+pre.class
+[ident class ident]
+[ident pre.class ident]
+[ident class.variant ident]
+[ident pre.class.variant ident]
+[class]
+[pre.class]
+[class name]
+[pre.class name]
+
+[class name
+  [.func                name]
+  [.static.func         name]
+  [.func.variant        name]
+  [.static.func.variant name]
+
+  [.func                name []]
+  [.static.func         name []]
+  [.func.variant        name []]
+  [.static.func.variant name []]
+
+  [.func                name [param]]
+  [.static.func         name [param]]
+  [.func.variant        name [param]]
+  [.static.func.variant name [param]]
+
+  [.func                name [param param]]
+  [.static.func         name [param param]]
+  [.func.variant        name [param param]]
+  [.static.func.variant name [param param]]
+]

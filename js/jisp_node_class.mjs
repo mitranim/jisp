@@ -28,10 +28,10 @@ export class Class extends jnlm.ListMacro {
   // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
   static makeLiveValInner() {
     const tar = a.npo()
+    tar.static = ClassStatic
+    tar.extend = ClassExtend
     tar.func = jnf.MethodFunc
     tar.let = ClassLet
-    tar.do = ClassBlock
-    tar.extend = ClassExtend
     return tar
   }
 
@@ -112,7 +112,6 @@ export class ClassLetBase extends jnl.Let {
 }
 
 export class ClassLet extends ClassLetBase {
-  static get static() {return ClassLetStatic}
   compilePrefix() {return ``}
   static reprModuleUrl = import.meta.url
 }
@@ -122,7 +121,10 @@ export class ClassLetStatic extends ClassLetBase {
   static reprModuleUrl = import.meta.url
 }
 
-export class ClassBlock extends jnb.Block {
+export class ClassStatic extends jnb.Block {
+  static get func() {return jnf.MethodFuncStatic}
+  static get let() {return ClassLetStatic}
+
   macro() {
     this.reqParentMatch(Class)
     return super.macro()

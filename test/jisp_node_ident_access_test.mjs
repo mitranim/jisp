@@ -9,7 +9,7 @@ import * as jniu from '../js/jisp_node_ident_unqual.mjs'
 import * as jnbrk from '../js/jisp_node_brackets.mjs'
 
 t.test(function test_IdentAccess_parse_invalid() {
-  function test(src) {tu.testParseFail(jnia.IdentAccess, src)}
+  function test(src) {tu.testParseNone(jnia.IdentAccess, src)}
 
   test(``)
   test(` `)

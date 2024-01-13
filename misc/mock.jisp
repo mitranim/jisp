@@ -7,13 +7,13 @@
 [class Text
   [.extend jn.Node]
 
-  [.func.static regexp [] [throw [jm.errMeth `regexp` this]]]
+  [.static.func regexp [] [throw [jm.errMeth `regexp` this]]]
 
   ;; Requires implicit return. ;;
-  [.func.static match [src] [[this.regexp].exec [a.reqStr src]]]
+  [.static.func match [src] [[this.regexp].exec [a.reqStr src]]]
 
   ;; Requires implicit return. ;;
-  [.func.static parse [span]
+  [.static.func parse [span]
     ;;
     TODO better naming.
     If the assigned value is nil, this should immediately return nil.
@@ -31,7 +31,7 @@
   ]
 
   ;; Requires implicit return. ;;
-  [.func.static isValid [val] [jm.isFullMatch val [this.regexp]]]
+  [.static.func isValid [val] [jm.isFullMatch val [this.regexp]]]
 
   ;; Requires implicit return. ;;
   [.func setMatch [mat]

@@ -68,14 +68,19 @@ ${exp}
   }
 }
 
-function testSpan(src) {
+export function testSpan(src) {
   const tar = new jsp.StrSpan().init(src)
   t.is(tar.ownPos(), 0)
   t.is(tar.ownLen(), src.length)
   return tar
 }
 
-export function testParseFail(cls, src) {
+export function testParseThrows(cls, src, msg) {
+  const span = testSpan(src)
+  t.throws(() => cls.parse(span), Error, msg)
+}
+
+export function testParseNone(cls, src) {
   const span = testSpan(src)
 
   const tar = cls.parse(span)

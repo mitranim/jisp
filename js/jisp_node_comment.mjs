@@ -12,7 +12,8 @@ export class CommentBase extends jnt.Text {
 }
 
 export class CommentFenced extends CommentBase {
-  static regexp() {return /^(;{2,})(?!;)([^]*?)(?<!;)(\1)(?!;)/}
+  static regexp() {return /^(;{2,})(?!;)([^]*?)\1/}
+  static validateSuffix(span) {this.validateNoPrefix(span, `;`)}
 
   setMatch(mat) {
     super.setMatch(mat)

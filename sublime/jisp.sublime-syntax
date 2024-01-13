@@ -6,16 +6,13 @@ file_extensions: [jisp]
 
 variables:
   comment_delim: ;
-  comment_fence_begin: '({{comment_delim}}{2,})'
-  comment_fence_end: (?<!{{comment_delim}})\1(?!{{comment_delim}})
+  comment_fence: '({{comment_delim}}{2,})(?!{{comment_delim}})'
 
   string_backtick_delim: '`'
-  string_backtick_fence_begin: '({{string_backtick_delim}}++)'
-  string_backtick_fence_end: (?<!{{string_backtick_delim}})\1(?!{{string_backtick_delim}})
+  string_backtick_fence: '({{string_backtick_delim}}+)(?!{{string_backtick_delim}})'
 
   string_double_delim: '"'
-  string_double_fence_begin: '({{string_double_delim}}++)'
-  string_double_fence_end: (?<!{{string_double_delim}})\1(?!{{string_double_delim}})
+  string_double_fence: '({{string_double_delim}}+)(?!{{string_double_delim}})'
 
   char_escape: \\(?:.|\n)
   accessor: \.
@@ -29,14 +26,14 @@ variables:
 
   # SYNC[ident_oper].
   operator_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
-  operator: '[{{operator_chars}}]++'
+  operator: '[{{operator_chars}}]+'
 
   ident_begin_chars: '[:alpha:]_$'
   ident_chars: '[:alnum:]_$'
   entity_chars: '{{ident_chars}}{{operator_chars}}'
   ident_break_begin: (?<![{{entity_chars}}])
   ident_break_end: (?![{{entity_chars}}])
-  ident: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*+{{ident_break_end}}'
+  ident: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*{{ident_break_end}}'
 
 contexts:
   prototype:
@@ -44,25 +41,33 @@ contexts:
 
   # Should match `Tokenizer`.
   main:
-    - include: punct-match
+    - include: delim-match
     - include: number-match
     - include: string-match
     - include: operator-match
     - include: ident-match
+    - include: punct-match
 
   comment-match:
     - include: comment-fenced-match
 
   comment-fenced-match:
-    - match: '{{comment_fence_begin}}'
+    - match: '{{comment_fence}}'
       scope: comment.block.jisp punctuation.definition.comment.begin.jisp
-      push: [comment-block-meta, comment-fenced-pop]
+      push: [comment-block-meta, comment-fenced-after-pop, comment-fenced-pop]
 
   comment-fenced-pop:
-    - match: '{{comment_fence_end}}'
+    - meta_include_prototype: false
+    - match: \1
       scope: comment.block.jisp punctuation.definition.comment.end.jisp
       pop: 1
     - include: comment-markup
+
+  comment-fenced-after-pop:
+    - meta_include_prototype: false
+    - match: '{{comment_delim}}+'
+      scope: invalid.illegal.jisp
+    - include: now-pop
 
   comment-block-meta:
     - meta_content_scope: comment.block.jisp
@@ -79,13 +84,12 @@ contexts:
         1: markup.heading.jisp
         2: punctuation.definition.heading.begin.jisp
 
-  punct-match:
-    - include: brace-match
-    - include: bracket-match
-    - include: paren-match
-    - include: accessor-match
+  delim-match:
+    - include: braces-match
+    - include: brackets-match
+    - include: parens-match
 
-  brace-match:
+  braces-match:
     - match: \{
       scope: punctuation.section.braces.begin.jisp
       push: brace-pop
@@ -99,7 +103,7 @@ contexts:
       pop: 1
     - include: main
 
-  bracket-match:
+  brackets-match:
     - match: \[
       scope: punctuation.section.brackets.begin.jisp
       push: [bracket-pop, list-head-pop]
@@ -113,7 +117,7 @@ contexts:
       pop: 1
     - include: main
 
-  paren-match:
+  parens-match:
     - match: \(
       scope: punctuation.section.parens.begin.jisp
       push: paren-pop
@@ -127,12 +131,30 @@ contexts:
       pop: 1
     - include: main
 
+  punct-match:
+    - include: accessor-match
+    - include: punct-misc-match
+
   accessor-match:
     - match: '{{accessor}}'
       scope: punctuation.accessor.dot.jisp
 
+  # This punctuation is not supported by our tokenizer and causes parsing
+  # errors when used. It's supported at the level of syntax highlighting
+  # for pseudocode purposes only.
+  punct-misc-match:
+    - match: ','
+      scope: punctuation.separator.jisp
+    - match: ';'
+      scope: punctuation.separator.jisp
+
   number-match:
+    - include: number-invalid-match
     - include: number-dec-match
+
+  number-invalid-match:
+    - match: '-*(\.){{int_dec}}[{{ident_chars}}]*'
+      scope: invalid.illegal.jisp
 
   # Must match `Num.regex`.
   number-dec-match:
@@ -166,16 +188,24 @@ contexts:
         2: punctuation.definition.string.end.jisp
 
   string-backtick-fenced-match:
-    - match: '{{string_backtick_fence_begin}}'
-      scope: punctuation.definition.string.begin.jisp
-      push: string-backtick-fenced-pop
+    - match: '{{string_backtick_fence}}'
+      scope: string.quoted.other.jisp punctuation.definition.string.begin.jisp
+      push: [string-backtick-meta, string-backtick-after-pop, string-backtick-pop]
 
-  string-backtick-fenced-pop:
+  string-backtick-pop:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.other.jisp
-    - match: '{{string_backtick_fence_end}}'
+    - match: \1
       scope: punctuation.definition.string.end.jisp
       pop: 1
+
+  string-backtick-after-pop:
+    - match: '{{string_backtick_delim}}+'
+      scope: invalid.illegal.jisp
+    - include: now-pop
+
+  string-backtick-meta:
+    - meta_content_scope: string.quoted.other.jisp
+    - include: now-pop
 
   string-double-match:
     - include: string-double-empty-match
@@ -191,16 +221,27 @@ contexts:
         2: punctuation.definition.string.end.jisp
 
   string-double-fenced-match:
-    - match: '{{string_double_fence_begin}}'
-      scope: punctuation.definition.string.begin.jisp
-      push: string-double-pop
+    - match: '{{string_double_fence}}'
+      scope: string.quoted.double.jisp punctuation.definition.string.begin.jisp
+      push: [string-double-meta, string-double-after-pop, string-double-pop]
 
   string-double-pop:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.double.jisp
-    - match: '{{string_double_fence_end}}'
+    - include: string-escape-match
+    - match: \1
       scope: punctuation.definition.string.end.jisp
       pop: 1
+
+  string-double-after-pop:
+    - match: '{{string_double_delim}}+'
+      scope: invalid.illegal.jisp
+    - include: now-pop
+
+  string-double-meta:
+    - meta_content_scope: string.quoted.double.jisp
+    - include: now-pop
+
+  string-escape-match:
     - match: '{{char_escape}}'
       scope: constant.character.escape.jisp
 
@@ -265,6 +306,8 @@ contexts:
       scope: keyword.declaration.jisp
       set: [import-addr-pop, ident-access-pop-multi]
 
+  # Semi-placeholder. Instead of special-case string support, we should pop an
+  # arbitrary expression here.
   import-addr-pop:
     - match: '({{string_backtick_delim}})[^{{string_backtick_delim}}]*({{string_backtick_delim}})(?!{{string_backtick_delim}})'
       scope: string.quoted.other.jisp
@@ -312,11 +355,26 @@ contexts:
   func-name-pop:
     - match: '{{ident}}'
       scope: entity.name.function.jisp
-      set: func-params-pop
+      set: params-outer-pop
     - include: nonblank-pop
 
-  # Placeholder.
-  func-params-pop:
+  params-outer-pop:
+    - match: \{
+      scope: punctuation.section.braces.begin.jisp
+      set: [brace-pop, params-inner-pop]
+    - match: \[
+      scope: punctuation.section.brackets.begin.jisp
+      set: [bracket-pop, params-inner-pop]
+    - match: \(
+      scope: punctuation.section.parens.begin.jisp
+      set: [paren-pop, params-inner-pop]
+    - include: nonblank-pop
+
+  params-inner-pop:
+    - match: '{{ident}}'
+      scope: variable.parameter.jisp
+    - match: '&(?!{{operator_chars}})'
+      scope: keyword.jisp
     - include: nonblank-pop
 
   call-class-pop:

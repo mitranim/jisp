@@ -1,6 +1,6 @@
 MAKEFLAGS := --silent --always-make
 MAKE_PAR := $(MAKE) -j 128
-# `--unstable` enables `Deno?.consoleSize` which is used for benchmark printing.
+# `--unstable` enables `Deno.consoleSize` which is used for benchmark printing.
 DENO := deno run -A --no-check --allow-hrtime --unstable
 RUN := $(if $(run),--run="$(run)",)
 VERB_SHORT := $(if $(filter $(verb),true),-v,)
@@ -21,8 +21,6 @@ SRC_JS := ./js
 ifeq ($(verb),true)
 	OK = echo [$@] ok
 endif
-
-default: mock
 
 # TODO also watch files read by tests, in addition to imported by tests.
 test.w:
@@ -47,6 +45,3 @@ else
 	eslint --config=./.eslintrc --ext=mjs $(SRC_JS)
 endif
 	$(OK)
-
-mock:
-	$(DENO) ./mock/run.mjs

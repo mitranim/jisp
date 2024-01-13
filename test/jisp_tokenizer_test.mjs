@@ -2,6 +2,7 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
+import * as jm from '../js/jisp_misc.mjs'
 import * as je from '../js/jisp_err.mjs'
 import * as jt from '../js/jisp_tokenizer.mjs'
 import * as jnbrc from '../js/jisp_node_braces.mjs'
@@ -57,20 +58,20 @@ t.test(function test_Tokenizer_strings() {
   testTokFail("```some_text",           `unrecognized syntax`)
   testTokFail("```some_text`",          `unrecognized syntax`)
   testTokFail("```some_text``",         `unrecognized syntax`)
-  testTokFail("```some_text````",       `unrecognized syntax`)
+  testTokFail("```some_text````",       jm.joinParagraphs(`unexpected "\`"`, `:1:16`))
   testTokFail("````",                   `unrecognized syntax`)
   testTokFail("````some_text",          `unrecognized syntax`)
   testTokFail("````some_text`",         `unrecognized syntax`)
   testTokFail("````some_text``",        `unrecognized syntax`)
   testTokFail("````some_text```",       `unrecognized syntax`)
-  testTokFail("````some_text`````",     `unrecognized syntax`)
+  testTokFail("````some_text`````",     jm.joinParagraphs(`unexpected "\`"`, `:1:18`))
   testTokFail("`````",                  `unrecognized syntax`)
   testTokFail("`````some_text",         `unrecognized syntax`)
   testTokFail("`````some_text`",        `unrecognized syntax`)
   testTokFail("`````some_text``",       `unrecognized syntax`)
   testTokFail("`````some_text```",      `unrecognized syntax`)
   testTokFail("`````some_text````",     `unrecognized syntax`)
-  testTokFail("`````some_text``````",   `unrecognized syntax`)
+  testTokFail("`````some_text``````",   jm.joinParagraphs(`unexpected "\`"`, `:1:20`))
   testTokFail("``````",                 `unrecognized syntax`)
   testTokFail("``````some_text",        `unrecognized syntax`)
   testTokFail("``````some_text`",       `unrecognized syntax`)
@@ -78,7 +79,6 @@ t.test(function test_Tokenizer_strings() {
   testTokFail("``````some_text```",     `unrecognized syntax`)
   testTokFail("``````some_text````",    `unrecognized syntax`)
   testTokFail("``````some_text`````",   `unrecognized syntax`)
-  testTokFail("``````some_text```````", `unrecognized syntax`)
 
   testTok("``", [
     tok => a.isInst(tok, jnst.StrBacktick) && tok.decompile() === "``" && tok.ownVal() === ``,
@@ -141,26 +141,33 @@ string
     ),
   ])
 
-  testTok(`\`
+  /*
+  The input represents a backtick string literal with shorter outer fences
+  (single character in this case) and longer inner fences. At some point we had
+  support for parsing this as a single string. However, it required a complex
+  regex or other complications. In addition, it doesn't seem like a desirable
+  use case. Now, this test verifies that in order to avoid syntactic ambiguity,
+  we treat this as invalid syntax.
+  */
+  testTokFail(`\`
 some
 \`\`\`
 multiline
 \`\`\`
 string
-\``, [
-    tok => (
-      true
-      && a.isInst(tok, jnst.StrBacktick)
-      && tok.decompile() === `\`
+\``, `unexpected "\`"
+
+:3:2`)
+
+  testTokFail(`\`\`\`
 some
-\`\`\`
+\`\`\`\`\`
 multiline
-\`\`\`
+\`\`\`\`\`
 string
-\``
-      && tok.ownVal() === `\n` + `some` + `\n` + "```" + `\n` + `multiline` + `\n` + "```" + `\n` + `string` + `\n`
-    ),
-  ])
+\`\`\``, `unexpected "\`"
+
+:3:4`)
 
   testTok(`\`\`\`some
 multiline
@@ -213,24 +220,15 @@ string
     ),
   ])
 
-  testTok(`\`\`\`
-some
-\`\`\`\`\`
-multiline
-\`\`\`\`\`
-string
-\`\`\``, [
+  // This particular case can be easily violated with an incorrect lookbehind.
+  // TODO move to a specialized string-related test and add more similar test
+  // cases.
+  testTok(`"\\""`, [
     tok => (
       true
-      && a.isInst(tok, jnst.StrBacktick)
-      && tok.decompile() === `\`\`\`
-some
-\`\`\`\`\`
-multiline
-\`\`\`\`\`
-string
-\`\`\``
-      && tok.ownVal() === `\n` + `some` + `\n` + "`````" + `\n` + `multiline` + `\n` + "`````" + `\n` + `string` + `\n`
+      && a.isInst(tok, jnst.StrDouble)
+      && tok.decompile() === `"\\""`
+      && tok.ownVal() === `"`
     ),
   ])
 })
