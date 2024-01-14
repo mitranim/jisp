@@ -1,8 +1,8 @@
 [use `jisp:prelude.mjs` *]
 [use `jisp:ops.mjs` *]
 [import `/Users/m/code/m/js/all.mjs` a]
-[import `./jisp_misc.mjs` jm]
-[import `./jisp_node.mjs` jn]
+[import `./misc.mjs` jm]
+[import `./node.mjs` jn]
 
 [class Text
   [.extend jn.Node]

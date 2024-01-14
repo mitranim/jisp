@@ -17,8 +17,8 @@ module should be used with a mixin-style import (star-import), while the
 TODO choose a better character for the list macro. The colon character is more
 suited for the object literal macro.
 */
-export {List as ':'} from './jisp_node_list.mjs'
-export {Dict as '::'} from './jisp_node_dict.mjs'
+export {List as ':'} from './node_list.mjs'
+export {Dict as '::'} from './node_dict.mjs'
 
 export {
   Assign                as '=',
@@ -46,4 +46,4 @@ export {
   And                   as '&&',
   Or                    as '||',
   Coalesce              as '??',
-} from './jisp_keyword_exprs.mjs'
+} from './keyword_exprs.mjs'

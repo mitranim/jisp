@@ -2,8 +2,8 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as t from '/Users/m/code/m/js/test.mjs'
 import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
-import * as je from '../js/jisp_err.mjs'
-import * as jsp from '../js/jisp_span.mjs'
+import * as je from '../js/err.mjs'
+import * as jsp from '../js/span.mjs'
 
 export const TEST_SRC_URL = new URL(`../test_files/`, import.meta.url)
 export const TEST_TAR_NAME = `.tmp`

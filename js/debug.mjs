@@ -1,4 +1,5 @@
 export {
+  Inspected as inspected,
   Inspect   as inspect,
   Compiling as compiling,
-} from './jisp_debug.mjs'
+} from './debug_nodes.mjs'
