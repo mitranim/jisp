@@ -13,3 +13,8 @@ This is a sketch. TODO add more complicated cases.
 [func quotedIdentAccess [] [quote nameOne.nameTwo]]
 [func quotedIdentOper [] [quote !@#]]
 [func quotedBrackets [] [quote [10 20 30]]]
+[func unquote1 [val] [unquote val]]
+[func unquote2 [val] [unquote [unquote val]]]
+[func unquote3 [val] [unquote [unquote [unquote val]]]]
+[func quoteUnquote [val] [quote [unquote val]]]
+[func quoteUnquoteBrackets [val] [quote [10 [unquote val] `str`]]]

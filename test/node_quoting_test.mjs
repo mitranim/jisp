@@ -290,6 +290,53 @@ await t.test(async function test_Quote_Unquote_execution() {
     t.is(node.childCount(), 3)
     t.is(node.decompile(), `[10 20 30]`)
   }
+
+  function testSame(fun) {
+    function test(val) {t.is(fun(val), val)}
+
+    test(10)
+    test(`str`)
+    test(Symbol.for(``))
+    test([])
+    test({})
+  }
+
+  testSame(mod.unquote1)
+  testSame(mod.unquote2)
+  testSame(mod.unquote3)
+  testSame(mod.quoteUnquote)
+
+  {
+    t.throws(() => mod.quoteUnquoteBrackets(), Error, `expected instance of Node, got undefined
+
+${src}:20:41
+
+[10 [unquote val] \`str\`]]]
+`)
+
+    t.throws(() => mod.quoteUnquoteBrackets(10), Error, `expected instance of Node, got 10
+
+${src}:20:41
+
+[10 [unquote val] \`str\`]]]
+`)
+
+    const inner = new jniu.IdentUnqual().setName(`someName`)
+    const outer = mod.quoteUnquoteBrackets(inner)
+
+    t.is(outer.decompile(), `[10 [unquote val] \`str\`]`)
+    t.inst(outer, jnbrk.Brackets)
+    t.is(outer.childCount(), 3)
+
+    t.inst(outer.reqChildAt(0), jnnu.Num)
+    t.is(outer.reqChildAt(0).reqVal(), 10)
+
+    t.is(outer.reqChildAt(1), inner)
+    t.is(outer.reqChildAt(1).reqName(), `someName`)
+
+    t.inst(outer.reqChildAt(2), jnst.Str)
+    t.is(outer.reqChildAt(2).reqVal(), `str`)
+  }
 })
 
 if (import.meta.main) ti.flush()

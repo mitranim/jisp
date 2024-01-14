@@ -32,6 +32,7 @@ export class MixOwnCodePrinted extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnCodePrinted extends MixCodePrinted.goc(cls) {
       get CodePrinter() {return jcp.CodePrinter}
+
       #prn = undefined
       setCodePrinter(val) {return this.#prn = this.reqInst(val, this.CodePrinter), this}
       initCodePrinter() {return this.#prn ??= new this.CodePrinter()}
