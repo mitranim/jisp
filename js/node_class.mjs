@@ -1,4 +1,5 @@
 import {a} from './dep.mjs'
+import * as jns from './ns.mjs'
 import * as jn from './node.mjs'
 import * as jnlm from './node_list_macro.mjs'
 import * as jnf from './node_func.mjs'
@@ -19,7 +20,7 @@ orphan form of `IdentAccess`. Examples:
     [.let someField someValue]
   ]
 */
-export class Class extends jnlm.ListMacro {
+export class Class extends jns.MixOptOwnNsLexed.goc(jnlm.ListMacro) {
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqName()}
   reqIdent() {return this.reqChildInstAt(0, jniu.IdentUnqual)}

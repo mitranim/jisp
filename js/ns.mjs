@@ -241,13 +241,40 @@ considered to have its own lexical namespace. Also see `MixNsLexed`.
 export class MixOwnNsLexed extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLexed extends je.MixErrer.goc(cls) {
+      get NsLex() {return NsLex}
       #nsLex = undefined
       optNsLex() {return this.#nsLex}
       ownNsLex() {return this.initNsLex()}
       reqNsLex() {return this.initNsLex()}
       initNsLex() {return this.#nsLex ??= this.makeNsLex()}
       makeNsLex() {return new this.NsLex()}
+    }
+  }
+}
+
+/*
+Short for "mixin: optionally own lexically namespaced". This mixin can act as
+either `MixNsLexed` or `MixOwnNsLexed` depending on whether `.initNsLex` has
+been called. Unlike `MixOwnNsLexed`, the namespace is NOT automatically created
+when a descendant asks for it. Creating the namespace is explicitly opt-in.
+*/
+export class MixOptOwnNsLexed extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixOptOwnNsLexed extends je.MixErrer.goc(cls) {
       get NsLex() {return NsLex}
+
+      #nsLex = undefined
+      optNsLex() {return this.#nsLex ?? this.optAncProcure(jm.ownNsLexCall)}
+      ownNsLex() {return this.#nsLex}
+      initNsLex() {return this.#nsLex ??= this.makeNsLex()}
+      makeNsLex() {return new this.NsLex()}
+
+      reqNsLex() {
+        return (
+          this.optNsLex() ??
+          this.throw(`missing lexical namespace at ${a.show(this)}`)
+        )
+      }
     }
   }
 }
@@ -255,12 +282,12 @@ export class MixOwnNsLexed extends a.DedupMixinCache {
 export class MixOwnNsLived extends a.DedupMixinCache {
   static make(cls) {
     return class MixOwnNsLived extends je.MixErrer.goc(cls) {
+      get NsLive() {return NsLive}
       #nsLive = undefined
       optNsLive() {return this.#nsLive}
       reqNsLive() {return this.initNsLive()}
       initNsLive() {return this.#nsLive ??= this.makeNsLive()}
       makeNsLive() {return new this.NsLive()}
-      get NsLive() {return NsLive}
     }
   }
 }

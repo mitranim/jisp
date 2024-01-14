@@ -332,4 +332,66 @@ class SomeClass {};
 `)
 })
 
+await t.test(async function test_Class_declaration_as_statement() {
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[class SomeClass]
+SomeClass
+`,
+`
+export class SomeClass {};
+SomeClass;
+`)
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[class SomeClass [.static SomeClass]]
+`,
+`
+export class SomeClass {
+static {
+SomeClass;
+};
+};
+`)
+})
+
+await t.test(async function test_Class_declaration_as_expression() {
+  await jrt.testModuleFail(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[void [class SomeClass]]
+SomeClass
+`,
+    `unable to find declaration of "SomeClass" at [object IdentUnqual]
+
+:5:1
+
+SomeClass`,
+  )
+
+  await jrt.testModuleCompile(
+    jrt.makeModule(),
+`
+[use "jisp:prelude.mjs" *]
+
+[void [class SomeClass [.static SomeClass]]]
+`,
+`
+void class SomeClass {
+static {
+SomeClass;
+};
+};
+`)
+})
+
 if (import.meta.main) ti.flush()
