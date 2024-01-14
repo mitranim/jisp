@@ -1,7 +1,3 @@
-## TODO
-
-In import/module/root code, consider renaming "resolve" to "ready".
-
 ## Lisps
 
 ### Homo

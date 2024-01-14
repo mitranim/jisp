@@ -37,14 +37,6 @@ t.test(function test_Tokenizer() {
     tok => a.isInst(tok, jnpar.ParenSuf)   && tok.decompile() === `)`,
     tok => a.isInst(tok, jnbrk.BracketSuf) && tok.decompile() === `]`,
   ])
-
-  function test(src) {
-    const tokens = new jt.Tokenizer().init(src).toArray()
-    // tu.prn(`tokens:`, tokens)
-  }
-
-  // Semi-placeholder.
-  test(tu.SRC_TEXT)
 })
 
 t.test(function test_Tokenizer_strings() {

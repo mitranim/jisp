@@ -98,6 +98,20 @@ some_text
 some_text
 ;;;;;;
 
+;; # Markdown heading 1 ;;
+
+;;
+
+# Markdown heading 1
+
+## Markdown heading 2
+
+### Markdown heading 3
+
+Some text followed by # not Markdown heading.
+
+;;
+
 .0
 .1
 .12

@@ -149,17 +149,24 @@ This test is incomplete. TODO verify the following:
   * Self-import doesn't cause `Module..ready` to deadlock.
 */
 await t.test(async function test_Import_self() {
+  const nameSrc = `test.jisp`
+  const nameTar = `test.mjs`
+
+  const mod = jrt.makeModule()
+    .setSrcPathAbs(new URL(nameSrc, tu.TEST_SRC_URL).href)
+    .setTarPathAbs(new URL(nameTar, tu.TEST_TAR_URL).href)
+
   await jrt.testModuleCompile(
-    jrt.makeModuleAddressed(),
+    mod,
 `
 [use "jisp:prelude.mjs" *]
 
-[import "./test.jisp"]
-[import "./test.jisp" self]
+[import "./${nameSrc}"]
+[import "./${nameSrc}" self]
 `,
 `
-import "./test.mjs";
-import * as self from "./test.mjs";
+import "./${nameTar}";
+import * as self from "./${nameTar}";
 `)
 })
 

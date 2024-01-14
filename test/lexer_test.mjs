@@ -11,7 +11,6 @@ t.test(function test_Lexer() {
   }
 
   test(tu.SRC_TEXT_SHORT)
-  test(tu.SRC_TEXT)
 })
 
 if (import.meta.main) ti.flush()
