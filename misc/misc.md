@@ -86,15 +86,3 @@ Code conventions:
   * Getters that may perform expensive work should avoid prefixes such as "get" or "opt". Their name should be a verb to indicate work. Examples include generating new data structures or iterating over data structures.
   * Why:
     * Methods are less error-prone in JS. Missing a property name produces `undefined`. Missing a method name produces a runtime exception.
-
-Common interfaces (non-exhaustive list):
-
-* `.optSpan`. Returns `StrSpan` referring to a region of source code, or `ArrSpan` referring to AST tokens. All AST nodes parsed from source must have a valid `StrSpan`. All AST nodes created by macros must refer to other nodes which ultimately have a valid `StrSpan`.
-
-* `.optSrcNode`. Used by nodes created by macros to replace other nodes. Each replacement node must use this method to refer to another node, ultimately referring to a node parsed from source code.
-
-<!-- FIXME update the following ↓↓↓. The interfaces have changed. -->
-
-* `.ownVal`. Macro-time evaluation. Performs immediate evaluation and returns an arbitrary value usable by macro code. AST tokens parsed from source may return numbers, strings, booleans, etc. Identifier nodes may return the actual runtime values of declarations they refer to. For example, module A declares and exports a class that's usable as a macro, under name "B". Module C imports A and attempts to use B as a macro. The identifier node referring to B may use `.ownVal`, in combination with recursive search, to return the actual evaluated reference to that class from module A, allowing us to call that macro.
-
-* ... TODO more.

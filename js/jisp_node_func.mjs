@@ -10,27 +10,27 @@ import * as jnr from './jisp_node_ret.mjs'
 export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqName()}
-  reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
-  optParams() {return this.optChildInstAt(2, jnnl.NodeList)}
-  reqParams() {return this.reqChildInstAt(2, jnnl.NodeList)}
-  body() {return this.optChildSlice(3)}
-  hasBody() {return this.childCount() > 3}
-  optBodyInit() {return this.optChildSlice(3, -1)}
+  reqIdent() {return this.reqChildInstAt(0, jniu.IdentUnqual)}
+  optParams() {return this.optChildInstAt(1, jnnl.NodeList)}
+  reqParams() {return this.reqChildInstAt(1, jnnl.NodeList)}
+  body() {return this.optChildSlice(2)}
+  hasBody() {return this.childCount() > 2}
+  optBodyInit() {return this.optChildSlice(2, -1)}
   optBodyLast() {return this.hasBody() ? this.reqLastChild() : undefined}
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(2)
-    this.reqIdent().reqCanDeclare()
+    this.reqChildCountMin(1)
     this.reqDeclareLex()
     this.declareParams()
     return this.macroBody()
   }
 
-  macroBody() {return this.macroFrom(3)}
+  macroBody() {return this.macroFrom(2)}
 
   // Override for `Node..reqDeclareLex`.
   reqDeclareLex() {
+    this.reqIdent().reqCanDeclare()
     if (this.isStatement()) {
       return this.reqParent().reqNsLex().addNode(this)
     }
@@ -81,28 +81,27 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
       true
       && val !== this.optChildAt(0)
       && val !== this.optChildAt(1)
-      && val !== this.optChildAt(2)
       && val !== this.optBodyLast()
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Func extends FuncBase {
   static get async() {return FuncAsync}
   static get asyncImplicit() {return FuncAsyncImplicit}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class FuncAsync extends FuncBase {
   compilePrefix() {return `async function`}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
-TODO consider using `.reqParentMatch` to ensure that the parent is either a
-class node, or an object literal node.
+TODO consider using `.reqParentInst` to ensure that the parent is either a class
+node, or an object literal node.
 */
 export class MethodFuncBase extends FuncBase {
   /*
@@ -121,7 +120,10 @@ export class MethodFuncBase extends FuncBase {
 
   compilePrefix() {return ``}
 
-  static reprModuleUrl = import.meta.url
+  // Avoids calling `Ident..reqNotKeyword`.
+  compileName() {return a.reqValidStr(this.reqIdent().decompile())}
+
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -131,21 +133,21 @@ For our purposes, they're identical.
 export class MethodFunc extends MethodFuncBase {
   static get async() {return MethodFuncAsync}
   compilePrefix() {return ``}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class MethodFuncAsync extends MethodFuncBase {
   compilePrefix() {return `async`}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class MethodFuncStatic extends MethodFuncBase {
   static get async() {return MethodFuncStaticAsync}
   compilePrefix() {return `static`}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class MethodFuncStaticAsync extends MethodFuncBase {
   compilePrefix() {return `static async`}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

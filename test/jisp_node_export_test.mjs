@@ -15,7 +15,7 @@ await t.test(async function test_Export_invalid() {
 
 [export]
 `,
-    `[object Export] expected between 2 and 3 children, got 1 children`,
+    `[object Export] expected between 1 and 2 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -25,7 +25,7 @@ await t.test(async function test_Export_invalid() {
 
 [export 10]
 `,
-    `[object Export] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Export] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -35,7 +35,7 @@ await t.test(async function test_Export_invalid() {
 
 [export 10 20 30]
 `,
-    `[object Export] expected between 2 and 3 children, got 4 children`,
+    `[object Export] expected between 1 and 2 children, got 3 children`,
   )
 
   await jrt.testModuleFail(
@@ -55,7 +55,7 @@ await t.test(async function test_Export_invalid() {
 
 [export one two three]
 `,
-    `[object Export] expected between 2 and 3 children, got 4 children`,
+    `[object Export] expected between 1 and 2 children, got 3 children`,
   )
 
   await jrt.testModuleFail(
@@ -66,7 +66,7 @@ await t.test(async function test_Export_invalid() {
 [let one]
 [export one two three]
 `,
-    `[object Export] expected between 2 and 3 children, got 4 children`,
+    `[object Export] expected between 1 and 2 children, got 3 children`,
   )
 
   await jrt.testModuleFail(

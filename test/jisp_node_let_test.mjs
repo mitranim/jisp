@@ -13,7 +13,7 @@ await t.test(async function test_Let() {
 
 [let]
 `,
-    `[object Let] expected between 2 and 3 children, got 1`,
+    `[object Let] expected between 1 and 2 children, got 0`,
   )
 
   await jrt.testModuleFail(
@@ -23,7 +23,7 @@ await t.test(async function test_Let() {
 
 [let one two three]
 `,
-    `[object Let] expected between 2 and 3 children, got 4`,
+    `[object Let] expected between 1 and 2 children, got 3`,
   )
 
   await jrt.testModuleFail(
@@ -33,7 +33,7 @@ await t.test(async function test_Let() {
 
 [let 10 someName]
 `,
-    `[object Let] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Let] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -43,7 +43,7 @@ await t.test(async function test_Let() {
 
 [let 10 20]
 `,
-    `[object Let] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Let] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(

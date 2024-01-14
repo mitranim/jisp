@@ -5,18 +5,16 @@ import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 export class Throw extends jnlm.ListMacro {
-  reqVal() {return this.optChildAt(1)}
-
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
-    return this.macroFrom(1)
+    this.reqChildCount(1)
+    return this.macroFrom(0)
   }
 
   compile() {
     this.reqStatement()
-    return `throw ` + jn.reqCompileNode(this.reqVal())
+    return `throw ` + jn.reqCompileNode(this.reqFirstChild())
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

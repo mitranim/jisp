@@ -25,7 +25,7 @@ class PrintableModuleNodeList extends jcpd.MixOwnCodePrinted.goc(jnmnl.ModuleNod
 await t.test(async function test_Module_parsing_and_compiling_builtins() {
   const fs = jdft.makeTestFs()
   const tar = new PrintableModuleNodeList()
-  const src = await fs.read(new URL(`test_builtins.jisp`, tu.TEST_SRC_URL))
+  const src = await fs.reqRead(new URL(`test_builtins.jisp`, tu.TEST_SRC_URL))
 
   tar.parse(src)
 
@@ -75,7 +75,7 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
     t.inst(node, jnia.IdentAccess)
 
     t.is(a.pk(node), `identQualified`)
-    t.is(node.ownName(), `identQualified`)
+    t.is(node.reqName(), `identQualified`)
 
     {
       const src = node.reqFirstChild()
@@ -84,7 +84,6 @@ await t.test(async function test_Module_parsing_and_compiling_builtins() {
       t.is(src.compile(), `identNamespace`)
     }
 
-    t.is(node.reqDecompileOwn(), `.identQualified`)
     t.is(node.decompile(), `identNamespace.identQualified`)
     t.is(node.compile(), `identNamespace.identQualified`)
   }

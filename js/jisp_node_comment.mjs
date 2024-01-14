@@ -8,13 +8,14 @@ export class CommentBase extends jnt.Text {
 
   isCosmetic() {return true}
   macro() {return this}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class CommentFenced extends CommentBase {
   static regexp() {return /^(;{2,})(?!;)([^]*?)\1/}
   static validateSuffix(span) {this.validateNoPrefix(span, `;`)}
 
+  // Override for `Text..setMatch`.
   setMatch(mat) {
     super.setMatch(mat)
     this.setBody(mat[2])
@@ -30,7 +31,7 @@ export class CommentFenced extends CommentBase {
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -44,6 +45,7 @@ export class CommentSingleLine extends jnt.Text {
   setTerm(val) {return this.#term = this.req(val, a.isStr), this}
   ownTerm() {return this.#term}
 
+  // Override for `Text..setMatch`.
   setMatch(mat) {
     super.setMatch(mat)
     this.setBody(mat[1])
@@ -55,5 +57,5 @@ export class CommentSingleLine extends jnt.Text {
     return `//` + a.laxStr(this.optBody()) + a.laxStr(this.optTerm())
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

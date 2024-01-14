@@ -63,52 +63,55 @@ t.test(function test_IdentAccess_parse_partial() {
   tu.testParsePartial({cls, src: `.one.two.three`, dec: `.one`, rem: `.two.three`})
 })
 
+// See `test_IdentUnqual_from_source_node` for explanations.
 t.test(function test_IdentAccess_child_node_and_source_node() {
-  const expr = new jniu.IdentUnqual().initSpanWith(`one`)
+  const expr = new jniu.IdentUnqual()
+    .setName(`name_one`)
+    .initSpanWith(`source_code_one`)
 
-  t.is(expr.decompile(), `one`)
-  t.is(expr.reqName(), `one`)
+  t.is(expr.reqName(), `name_one`)
+  t.is(expr.decompile(), `source_code_one`)
+  t.is(expr.compile(), `name_one`)
 
-  const access = new jnia.IdentAccess().initSpanWith(`.two`)
+  const access = new jnia.IdentAccess()
+    .setName(`name_two`)
+    .initSpanWith(`.source_code_two`)
 
-  t.is(access.reqName(), `two`)
-  t.is(access.decompile(), `.two`)
+  t.is(access.reqName(), `name_two`)
+  t.is(access.decompile(), `.source_code_two`)
 
   t.throws(() => access.compile(), Error, `missing first child in parent [object IdentAccess]
 
 :1:1
 
-.two`)
+.source_code_two`)
 
   access.setChild(expr)
 
   // Child node's behavior should be unaffected by this relation.
-  t.is(expr.decompile(), `one`)
-  t.is(expr.reqName(), `one`)
-  t.is(expr.compile(), `one`)
+  t.is(expr.reqName(), `name_one`)
+  t.is(expr.decompile(), `source_code_one`)
+  t.is(expr.compile(), `name_one`)
+
+  // Child node has no effect on other properties of `IdentAccess`.
+  t.is(access.reqName(), `name_two`)
+  t.is(access.decompile(), `.source_code_two`)
+  t.is(access.compile(), `name_one.name_two`)
 
   /*
-  Child node must be used in compilation and decompilation, but must not affect
-  the name of the `IdentAccess`.
+  This emulates how an ident's span may be replaced with a completely unrelated
+  span during macroing.
   */
-  t.is(access.reqName(), `two`)
-  t.is(access.decompile(), `one.two`)
-  t.is(access.compile(), `one.two`)
+  access.initSpanWith(`unrelated_source_code`)
 
-  const other = new jnbrk.Brackets().initSpanWith(`[otherIdent "some_input"]`)
-  t.is(other.decompile(), `[otherIdent "some_input"]`)
+  // Source does not affect name.
+  t.is(access.reqName(), `name_two`)
 
-  // See comments in `test_IdentUnqual_from_source_node` for explanations.
-  access.setSrcNode(other)
+  // Source takes priority for decompilation.
+  t.is(access.decompile(), `unrelated_source_code`)
 
-  // Own span takes priority for name.
-  t.is(access.reqName(), `two`)
-
-  // Source node takes priority for decompilation.
-  t.is(access.decompile(), `[otherIdent "some_input"]`)
-
-  // Source node does not affect compilation.
-  t.is(access.compile(), `one.two`)
+  // Source does not affect compilation.
+  t.is(access.compile(), `name_one.name_two`)
 })
 
 await t.test(async function test_IdentAccess_invalid() {

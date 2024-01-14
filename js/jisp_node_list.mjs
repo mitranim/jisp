@@ -4,16 +4,16 @@ import * as jns from './jisp_ns.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
 export class List extends jnlm.ListMacro {
-  macro() {return this.macroFrom(1)}
+  macro() {return this.macroFrom(0)}
 
   compile() {
     return (
       ``
       + `[`
-      + a.reqStr(this.reqPrn().compileExpressions(this.optChildSlice(1)))
+      + a.reqStr(this.reqPrn().compileExpressions(this.optChildArr()))
       + `]`
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

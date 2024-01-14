@@ -21,14 +21,7 @@ See the file `jisp_predecl.mjs` which actually uses this.
 FIXME needs tests.
 */
 export class Predecl extends jnbm.BareMacro {
-  /*
-  This optional method is used by `Ident` to detect macro classes with support
-  for bare-style calling.
-  */
-  static macroBare() {return new this()}
-
   macro() {return this}
-
   compile() {return this.reqValidName(this.reqName())}
 
   reqValidName(name) {
@@ -43,7 +36,7 @@ export class Predecl extends jnbm.BareMacro {
     const dec = nsp.optGet(name)
     if (a.isNil(dec) || dec === this.constructor) return name
 
-    const ctxOwn = this.contextDeep()
+    const ctxOwn = this.context()
     const ctxDec = a.laxStr(a.onlyInst(dec, jn.Node)?.context())
 
     throw new this.Err(jm.joinParagraphs(
@@ -54,5 +47,5 @@ export class Predecl extends jnbm.BareMacro {
     )).setHasCode(!!ctxOwn || !!ctxDec)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

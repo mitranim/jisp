@@ -37,30 +37,37 @@ Non-exhaustive list of missing keywords and operators:
 
 export class Assign extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `=`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Equal extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `===`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class NotEqual extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `!==`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Greater extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `>`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class GreaterOrEqual extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `>=`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Lesser extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `<`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class LesserOrEqual extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `<=`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -87,6 +94,7 @@ export class Add extends jnkem.KeywordExprMacro_1_N {
   unaryPrefix() {return `+`}
   unarySuffix() {return ``}
   binaryInfix() {return `+`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 // See `Add` for some comments and explanations.
@@ -94,12 +102,14 @@ export class Subtract extends jnkem.KeywordExprMacro_1_N {
   unaryPrefix() {return `-`}
   unarySuffix() {return ``}
   binaryInfix() {return `-`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Multiply extends jnkem.KeywordExprMacro_1_N {
   unaryPrefix() {return `1 *`}
   unarySuffix() {return ``}
   binaryInfix() {return `*`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -114,22 +124,26 @@ which approach is used. It seems better to avoid implementing the unary form.
 */
 export class Divide extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `/`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Exponentiate extends jnkem.KeywordExprMacro_1_N {
   unaryPrefix() {return ``}
   unarySuffix() {return `** 1`}
   binaryInfix() {return `**`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Remainder extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `%`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Not extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `false`}
   unaryPrefix() {return `!`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -152,35 +166,43 @@ export class NotNot extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `true`}
   unaryPrefix() {return `!!`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitNot extends jnkem.KeywordExprMacro_1 {
   unaryPrefix() {return `~`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitAnd extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `&`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitOr extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `|`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitXor extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `^`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitShiftLeft extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `<<`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitShiftRight extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `>>`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class BitShiftRightUnsigned extends jnkem.KeywordExprMacro_2_N {
   binaryInfix() {return `>>>`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -193,6 +215,7 @@ export class And extends jnkem.KeywordExprMacro {
   unaryPrefix() {return ``}
   unarySuffix() {return ``}
   binaryInfix() {return `&&`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -205,6 +228,7 @@ export class Or extends jnkem.KeywordExprMacro {
   unaryPrefix() {return ``}
   unarySuffix() {return ``}
   binaryInfix() {return `||`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Coalesce extends jnkem.KeywordExprMacro {
@@ -212,19 +236,23 @@ export class Coalesce extends jnkem.KeywordExprMacro {
   unaryPrefix() {return ``}
   unarySuffix() {return ``}
   binaryInfix() {return `??`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class In extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `in`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Typeof extends jnkem.KeywordExprMacro_1 {
   unaryPrefix() {return `typeof`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Instanceof extends jnkem.KeywordExprMacro_2 {
   binaryInfix() {return `instanceof`}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 // TODO: support bare and 0-N variadic.
@@ -232,12 +260,14 @@ export class Void extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `undefined`}
   unaryPrefix() {return `void`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Await extends jnkem.KeywordExprMacro_0_1 {
   compileNullary() {return `undefined`}
   unaryPrefix() {return `await`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -247,6 +277,7 @@ as a special case to avoid providing `==` which is too easy to misuse.
 export class IsNil extends jnkem.KeywordExprMacro_1 {
   unaryPrefix() {return `null ==`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 /*
@@ -256,4 +287,5 @@ as a special case to avoid providing `!=` which is too easy to misuse.
 export class IsSome extends jnkem.KeywordExprMacro_1 {
   unaryPrefix() {return `null !=`}
   unarySuffix() {return ``}
+  static {this.setReprModuleUrl(import.meta.url)}
 }

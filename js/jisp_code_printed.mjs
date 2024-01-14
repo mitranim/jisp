@@ -21,7 +21,7 @@ export class MixCodePrinted extends a.DedupMixinCache {
 }
 
 function ownCodePrinterCall(src) {
-  return a.isObj(src) && `ownCodePrinter` in src ? src.ownCodePrinter() : undefined
+  return a.isComp(src) && `ownCodePrinter` in src ? src.ownCodePrinter() : undefined
 }
 
 /*

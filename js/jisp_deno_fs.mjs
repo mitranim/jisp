@@ -36,7 +36,7 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
     throw TypeError(`type mismatch: ${a.show(this)} does not support paths like ${showPath(val)}`)
   }
 
-  async read(path) {
+  async reqRead(path) {
     try {
       return await Deno.readTextFile(path)
     }
@@ -49,12 +49,12 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
     }
   }
 
-  readOpt(path) {
+  optRead(path) {
     if (!this.canReach(path)) return undefined
     return skipNotFound(Deno.readTextFile(path))
   }
 
-  async write(path, body) {
+  async reqWrite(path, body) {
     await this.mkdirForFile(path)
     await Deno.writeTextFile(path, body)
   }
@@ -64,16 +64,17 @@ export class DenoFs extends ji.MixInsp.goc(jfs.Fs) {
   with an empty input. However, when the input is empty, these functions seem
   to skip the FS operation entirely.
   */
-  async touch(path) {
-    await this.write(path, await this.read(path))
+  async reqTouch(path) {
+    await this.reqWrite(path, await this.reqRead(path))
   }
 
-  async timestamp(path) {
+  async optTimestamp(path) {
     if (!this.canReach(path)) return undefined
+    return skipNotFound(this.reqTimestamp(path))
+  }
 
-    const stat = await skipNotFound(Deno.stat(path))
-    if (a.isNil(stat)) return undefined
-
+  async reqTimestamp(path) {
+    const stat = await Deno.stat(path)
     const out = stat.mtime?.valueOf()
     if (!a.isFin(out)) {
       throw TypeError(`unexpected non-finite modification time ${a.show(out)} in stat ${a.show(stat)} for path ${showPath(path)}`)

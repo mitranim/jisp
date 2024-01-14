@@ -129,7 +129,7 @@ export class DelimNodeList extends jnnl.NodeList {
   macroFallback() {return this.macroFrom(0)}
 
   compile() {
-    const head = this.optChildAt(0)
+    const head = this.optFirstChild()
     if (!head) {
       throw this.err(`unable to usefully compile empty node list ${a.show(this)}`)
     }
@@ -143,5 +143,5 @@ export class DelimNodeList extends jnnl.NodeList {
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

@@ -8,7 +8,6 @@ identifier declarations derived from an AST node.
 export class MixNamed extends a.DedupMixinCache {
   static make(cls) {
     return class MixNamed extends je.MixErrer.goc(cls) {
-      ownName() {}
       optName() {}
       reqName() {
         return (
@@ -26,14 +25,13 @@ describing an identifier declaration.
 */
 export class MixOwnNamed extends a.DedupMixinCache {
   static make(cls) {
-    return class MixOwnNamed extends MixNamed.goc(cls) {
+    return class MixOwnNamed extends cls {
       #name = undefined
       setName(val) {return this.#name = this.req(val, a.isValidStr), this}
-      ownName() {return this.#name}
       optName() {return this.#name}
       reqName() {
         return (
-          this.ownName() ??
+          this.optName() ??
           this.throw(`missing own name at ${a.show(this)}`)
         )
       }

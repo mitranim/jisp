@@ -69,19 +69,18 @@ via dot operator, may need to override some methods. Our tokenizer must
 represent unqualified identifiers with `IdentUnqual`, and dot-access with
 `IdentAccess`.
 */
-export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
-  static regexpIdentUnqual() {return /^[A-Za-z$_][\w$]*/}
-  static regexpIdentAccess() {return /^[.][A-Za-z$_][\w$]*/}
-  static separator() {return `.`}
+export class Ident extends jnnd.MixOwnNamed.goc(jnt.Text) {
+  static regexpIdentUnqual() {return /^([A-Za-z$_][\w$]*)/}
+  static regexpIdentAccess() {return /^[.]([A-Za-z$_][\w$]*)/}
 
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqName()}
 
-  // Override for `MixNamed`.
-  ownName() {return this.optName()}
-
-  // Override for `MixNamed`.
-  optName() {return this.optDecompileOwn()}
+  // Override for `Text..setMatch`.
+  setMatch(mat) {
+    super.setMatch(mat)
+    return this.setName(mat[1])
+  }
 
   /*
   SYNC[ident_live_val].
@@ -97,7 +96,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     const src = nsp.optLiveVal()
     if (a.isSome(src)) return this.macroWithLiveValSrc(src)
 
-    const val = this.optLiveValFromDec(nsp.optGet(this.optName()))
+    const val = this.optLiveValFromDec(nsp.optGet(this.reqName()))
     if (a.isSome(val)) return this.macroWithLiveVal(val)
 
     return this
@@ -134,7 +133,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     if (jn.isBareMacro(val)) {
       return jn.reqValidMacroResult(this, val.macroBare(this), val)
     }
-    throw this.err(`unexpected reference ${a.show(this.optName())} to live value ${a.show(val)}${src ? ` found in live object ${a.show(src)}` : ``}; to be usable in this position, the live value must be a subclass of \`Node\` with a static method \`.macroBare\``)
+    throw this.err(`unexpected reference ${a.show(this.reqName())} to live value ${a.show(val)}${src ? ` found in live object ${a.show(src)}` : ``}; to be usable in this position, the live value must be a subclass of \`Node\` with a static method \`.macroBare\``)
   }
 
   /*
@@ -149,7 +148,11 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   notions of "keywords" or "reserved words" don't apply to qualified property
   names.
   */
-  compile() {return this.reqNotKeyword().decompile()}
+  compile() {return this.reqNotKeyword().reqName()}
+
+  compileRepr() {
+    return a.reqValidStr(super.compileRepr()) + `.setName(${a.show(this.reqName())})`
+  }
 
   reqDeclareLex() {
     this.reqCanDeclare()
@@ -164,19 +167,19 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
 
   reqNotKeyword() {
     if (!this.isKeyword()) return this
-    throw this.err(`${a.show(this.optName())} is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
+    throw this.err(`${a.show(this.reqName())} is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
   }
 
-  isKeyword() {return jm.jsKeywordNames.has(this.optName())}
+  isKeyword() {return jm.jsKeywordNames.has(this.reqName())}
 
   reqNotReserved() {
     if (!this.isReserved()) return this
-    throw this.err(`${a.show(this.optName())} is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
+    throw this.err(`${a.show(this.reqName())} is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
   }
 
-  isReserved() {return jm.jsReservedNames.has(this.optName())}
+  isReserved() {return jm.jsReservedNames.has(this.reqName())}
 
-  optResolveNs() {return this.optResolveName(this.optName())}
+  optResolveNs() {return this.optResolveName(this.reqName())}
 
   /*
   TODO: consider including all locally available names in the error message.
@@ -187,7 +190,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   reqResolveNs() {
     return (
       this.optResolveNs() ??
-      this.throw(`unable to find declaration of ${a.show(this.optName())} at ${a.show(this)}`)
+      this.throw(`unable to find declaration of ${a.show(this.reqName())} at ${a.show(this)}`)
     )
   }
 
@@ -203,7 +206,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
   reqResolveNsLive() {
     const val = this.reqResolveNs()
     if (val.hasLiveVal()) return val
-    throw this.err(`expected ${a.show(this.optName())} to be declared in a live namespace, but the nearest declaration was found in the non-live namespace ${a.show(val)}`)
+    throw this.err(`expected ${a.show(this.reqName())} to be declared in a live namespace, but the nearest declaration was found in the non-live namespace ${a.show(val)}`)
   }
 
   /*
@@ -241,7 +244,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     const src = this.reqResolveNsLive()
     const val = src.optLiveVal()
     if (a.isSome(val)) return val
-    throw this.err(`expected the namespace declaring ${a.show(this.optName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
+    throw this.err(`expected the namespace declaring ${a.show(this.reqName())} to have to a non-nil live val, found nil in namespace ${a.show(src)}`)
   }
 
   // SYNC[ident_live_val].
@@ -282,8 +285,8 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     TODO: retest and update the comment. The support for treating nil live
     values as non-live has been removed from some other code.
     */
-    const key = this.optName()
-    if (key && (key in src) && a.isNil(src[key])) return undefined
+    const key = this.reqName()
+    if (key in src && a.isNil(src[key])) return undefined
 
     return this.reqDerefLiveVal(src)
   }
@@ -376,8 +379,7 @@ export class Ident extends jnnd.MixNamed.goc(jnt.Text) {
     )
   }
 
-  static reprModuleUrl = import.meta.url;
-
+  static {this.setReprModuleUrl(import.meta.url)}
   [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.optName)}
 }
 

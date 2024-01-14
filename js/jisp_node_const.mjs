@@ -6,15 +6,14 @@ import * as jniu from './jisp_node_ident_unqual.mjs'
 export class Const extends jnlm.ListMacro {
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqName()}
-  reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
-  reqVal() {return this.reqChildAt(2)}
+  reqIdent() {return this.reqChildInstAt(0, jniu.IdentUnqual)}
+  reqVal() {return this.reqChildAt(1)}
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(3)
-    this.reqIdent().reqCanDeclare()
+    this.reqChildCount(2)
     this.reqDeclareLex()
-    return this.macroFrom(2)
+    return this.macroFrom(1)
   }
 
   compile() {
@@ -34,5 +33,11 @@ export class Const extends jnlm.ListMacro {
   compileName() {return jn.optCompileNode(this.reqIdent())}
   compileInfix() {return `=`}
   compileVal() {return jn.optCompileNode(this.reqVal())}
-  static reprModuleUrl = import.meta.url
+
+  reqDeclareLex() {
+    this.reqIdent().reqCanDeclare()
+    return super.reqDeclareLex()
+  }
+
+  static {this.setReprModuleUrl(import.meta.url)}
 }

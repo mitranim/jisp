@@ -16,14 +16,12 @@ export class DebugListMacro extends jnlm.ListMacro {
 /*
 Semi-placeholder. Needs improvements. When inspecting AST nodes, we should print
 their original code context, and we should dereference them to declaration
-sites and source nodes as much as possible, printing each step.
+sites as much as possible, printing each step.
 */
 export class Inspect extends DebugListMacro {
-  reqVal() {return this.reqChildAt(1)}
-
   macro() {
-    this.reqChildCount(2)
-    const val = this.reqVal()
+    this.reqChildCount(1)
+    const val = this.reqFirstChild()
     this.inspect(val)
     return val
   }
@@ -45,7 +43,7 @@ export class Inspect extends DebugListMacro {
 export class Compiling extends DebugListMacro {
   macro() {
     this.log(`compiling module:`, a.pkOpt(this.optModule()))
-    this.reqChildCount(1)
+    this.reqChildCount(0)
     return this
   }
 }

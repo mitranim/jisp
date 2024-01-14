@@ -12,7 +12,7 @@ await t.test(async function test_Assign_invalid() {
 
 [=]
 `,
-    `[object Assign] expected exactly 3 children, got 1 children`,
+    `[object Assign] expected exactly 2 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Assign_invalid() {
 
 [= someName]
 `,
-    `[object Assign] expected exactly 3 children, got 2 children`,
+    `[object Assign] expected exactly 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -32,7 +32,7 @@ await t.test(async function test_Assign_invalid() {
 
 [= someName "some_value" "other_value"]
 `,
-    `[object Assign] expected exactly 3 children, got 4 children`,
+    `[object Assign] expected exactly 2 children, got 3 children`,
   )
 
   await jrt.testModuleFail(
@@ -480,7 +480,7 @@ async function testKeyword_0_1_invalid(name) {
 
 [${name} 10 20]
 `,
-    `expected between 1 and 2 children, got 3 children`,
+    `expected between 0 and 1 children, got 2 children`,
   )
 
   await jrt.testModuleFail(
@@ -491,7 +491,7 @@ async function testKeyword_0_1_invalid(name) {
 
 [${name} 10 20 30]
 `,
-    `expected between 1 and 2 children, got 4 children`,
+    `expected between 0 and 1 children, got 3 children`,
   )
 
   await testKeywordUnaryStatement(name)
@@ -506,7 +506,7 @@ async function testKeyword_1_invalid(name) {
 
 [${name}]
 `,
-    `expected exactly 2 children, got 1 children`,
+    `expected exactly 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -517,7 +517,7 @@ async function testKeyword_1_invalid(name) {
 
 [${name} 10 20]
 `,
-    `expected exactly 2 children, got 3 children`,
+    `expected exactly 1 children, got 2 children`,
   )
 
   await jrt.testModuleFail(
@@ -528,7 +528,7 @@ async function testKeyword_1_invalid(name) {
 
 [${name} 10 20 30]
 `,
-    `expected exactly 2 children, got 4 children`,
+    `expected exactly 1 children, got 3 children`,
   )
 
   testKeywordUnaryStatement(name)
@@ -572,7 +572,7 @@ async function testKeyword_2_invalid(name) {
 
 [${name}]
 `,
-    `expected exactly 3 children, got 1 children`,
+    `expected exactly 2 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -583,7 +583,7 @@ async function testKeyword_2_invalid(name) {
 
 [${name} 10]
 `,
-    `expected exactly 3 children, got 2 children`,
+    `expected exactly 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -594,7 +594,7 @@ async function testKeyword_2_invalid(name) {
 
 [${name} 10 20 30]
 `,
-    `expected exactly 3 children, got 4 children`,
+    `expected exactly 2 children, got 3 children`,
   )
 
   await jrt.testModuleFail(
@@ -634,7 +634,7 @@ async function testKeyword_2_N_invalid(name) {
 
 [${name}]
 `,
-    `expected at least 3 children, got 1 children`,
+    `expected at least 2 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -645,7 +645,7 @@ async function testKeyword_2_N_invalid(name) {
 
 [${name} 10]
 `,
-    `expected at least 3 children, got 2 children`,
+    `expected at least 2 children, got 1 children`,
   )
 
   await jrt.testModuleFail(
@@ -693,7 +693,7 @@ async function testKeyword_1_N_invalid(name) {
 
 [${name}]
 `,
-    `expected at least 2 children, got 1 children`,
+    `expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(

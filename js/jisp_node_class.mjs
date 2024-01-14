@@ -23,7 +23,7 @@ orphan form of `IdentAccess`. Examples:
 export class Class extends jnlm.ListMacro {
   // Used by `a.pk` and `a.Coll`.
   pk() {return this.reqIdent().reqName()}
-  reqIdent() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+  reqIdent() {return this.reqChildInstAt(0, jniu.IdentUnqual)}
 
   // Override for `MixLiveValuedInner`. Provides access to contextual sub-macros.
   static makeLiveValInner() {
@@ -41,10 +41,9 @@ export class Class extends jnlm.ListMacro {
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(2)
-    this.reqIdent().reqCanDeclare()
+    this.reqChildCountMin(1)
     this.reqDeclareLex()
-    return this.macroFrom(2)
+    return this.macroFrom(1)
   }
 
   // Override for `Node..reqDeclareLex`.
@@ -64,16 +63,18 @@ export class Class extends jnlm.ListMacro {
   compilePrefix() {return `class`}
   compileName() {return jn.optCompileNode(this.reqIdent())}
   compileExtend() {return a.laxStr(this.optExtend()?.compileExtend())}
-  compileBody() {return this.reqPrn().compileBracesWithStatements(this.optChildSlice(2))}
+  compileBody() {return this.reqPrn().compileBracesWithStatements(this.optChildSlice(1))}
   isChildStatement() {return true}
+
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ClassExtend extends jnlm.ListMacro {
   macro() {
-    this.reqParentMatch(Class)
+    this.reqParentInst(Class)
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(2)
-    this.macroSyncFrom(1)
+    this.reqChildCountMin(1)
+    this.macroFromSync(0)
     this.reqAncFindInst(Class).setExtend(this)
     return this
   }
@@ -85,7 +86,7 @@ export class ClassExtend extends jnlm.ListMacro {
 
   compileExtend() {
     let prev = ``
-    let ind = 0
+    let ind = -1
     while (++ind < this.childCount()) {
       const next = jn.reqCompileNode(this.reqChildAt(ind))
       prev = prev ? (next + `(` + prev + `)`) : next
@@ -93,32 +94,32 @@ export class ClassExtend extends jnlm.ListMacro {
     return a.optPre(prev, `extends `)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ClassLetBase extends jnl.Let {
   macro() {
-    this.reqParentMatch(Class)
+    this.reqParentInst(Class)
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(2, 3)
+    this.reqChildCountBetween(1, 2)
     this.reqIdent()
-    return this.macroFrom(2)
+    return this.macroFrom(1)
   }
 
   // Override for `Node..reqDeclareLex`.
   reqDeclareLex() {}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ClassLet extends ClassLetBase {
   compilePrefix() {return ``}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ClassLetStatic extends ClassLetBase {
   compilePrefix() {return `static`}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ClassStatic extends jnb.Block {
@@ -126,7 +127,7 @@ export class ClassStatic extends jnb.Block {
   static get let() {return ClassLetStatic}
 
   macro() {
-    this.reqParentMatch(Class)
+    this.reqParentInst(Class)
     return super.macro()
   }
 
@@ -135,5 +136,5 @@ export class ClassStatic extends jnb.Block {
     return `static ` + a.reqStr(this.compileStatement())
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

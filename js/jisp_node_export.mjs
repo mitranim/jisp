@@ -28,16 +28,17 @@ TODO consider a similar macro for re-exporting from another module:
   ]
 */
 export class Export extends jnlm.ListMacro {
-  reqSrc() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
-  optTar() {return this.optChildAt(2)}
-  optTarIdent() {return this.optChildInstAt(2, jniu.IdentUnqual)}
-  optTarStr() {return this.optChildInstAt(2, jnst.Str)}
+  reqSrc() {return this.reqChildInstAt(0, jniu.IdentUnqual)}
+  optTar() {return this.optChildAt(1)}
+  optTarIdent() {return this.optChildInstAt(1, jniu.IdentUnqual)}
+  optTarStr() {return this.optChildInstAt(1, jnst.Str)}
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(2, 3)
+    this.reqChildCountBetween(1, 2)
     this.reqSrc()
-    return this.macroAt(1)
+    // Note: we want to macro the exported name, but not the optional alias.
+    return this.macroChildAt(0)
   }
 
   compile() {
@@ -63,5 +64,5 @@ export class Export extends jnlm.ListMacro {
     return this
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

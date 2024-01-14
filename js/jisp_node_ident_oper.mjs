@@ -3,11 +3,11 @@ import * as jni from './jisp_node_ident.mjs'
 
 export class IdentOper extends jni.Ident {
   // SYNC[ident_oper].
-  static regexp() {return /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/}
+  static regexp() {return /^([\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+)/}
 
   compile() {
-    throw this.err(`unable to compile operator ${a.show(this)} with name ${a.show(this.optName())} to valid JS; operators are meant for compile-only use and should refer only to live values such as macros imported via "use"`)
+    throw this.err(`unable to compile operator ${a.show(this)} with name ${a.show(this.reqName())} to valid JS; operators are meant for compile-only use and should refer only to live values such as macros imported via "use"`)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

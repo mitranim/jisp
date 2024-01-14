@@ -181,31 +181,41 @@ someConst;
   )
 })
 
-t.test(function test_IdentUnqual_from_source_node() {
-  const ident = new jniu.IdentUnqual().initSpanWith(`someIdent`)
-  t.is(ident.decompile(), `someIdent`)
-  t.is(ident.reqName(), `someIdent`)
+/*
+This test verifies that an ident's name and span are independent.
 
-  const other = new jnbrk.Brackets().initSpanWith(`[otherIdent "some_input"]`)
-  t.is(other.decompile(), `[otherIdent "some_input"]`)
+When we parse an ident from source code, we derive the ident's name from the
+source code. However, we also construct idents programmatically without an
+associated span.
+
+When macroing replaces one node with another, we also copy the span from the
+source node to the replacement node. This means that in the general case, for
+any given node class, its span represents arbitrary source code that doesn't
+necessarily match the node's type.
+*/
+t.test(function test_IdentUnqual_from_source_node() {
+  const ident = new jniu.IdentUnqual()
+    .setName(`some_name`)
+    .initSpanWith(`some_source_code`)
+
+  t.is(ident.reqName(), `some_name`)
+  t.is(ident.decompile(), `some_source_code`)
+  t.is(ident.compile(), `some_name`)
 
   /*
-  This situation may occur when `otherIdent` refers to a macro, which, when
-  executed, returns the ident node we're testing. The output of a macro is
-  always linked into its new place in the AST by setting the node it's
-  replacing as its "source node", and here we're verifying how some of the
-  behaviors of `IdentUnqual` are affected by that.
-
-  Macros may return anything, including new nodes or existing nodes found
-  somewhere in the AST. There are no hard rules for what nodes they return.
+  This emulates how an ident's span may be replaced with a completely unrelated
+  span during macroing.
   */
-  ident.setSrcNode(other)
+  ident.initSpanWith(`unrelated_source_code`)
 
-  // Other span takes priority for decompilation.
-  t.is(ident.decompile(), `[otherIdent "some_input"]`)
+  // Source does not affect name.
+  t.is(ident.reqName(), `some_name`)
 
-  // Own span takes priority for name.
-  t.is(ident.reqName(), `someIdent`)
+  // Source takes priority for decompilation.
+  t.is(ident.decompile(), `unrelated_source_code`)
+
+  // Source does not affect compilation.
+  t.is(ident.compile(), `some_name`)
 })
 
 if (import.meta.main) ti.flush()

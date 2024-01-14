@@ -111,7 +111,7 @@ export function testParseComplete(cls, src) {
   const node = cls.parse(srcSpan)
   t.inst(node, cls)
 
-  t.is(node.reqSpan().decompile(), src)
+  t.is(node.reqSpan().view(), src)
   t.is(srcSpan.ownPos(), src.length)
   t.is(srcSpan.ownLen(), src.length)
 
@@ -126,8 +126,8 @@ export function testParsePartial({cls, src, dec, rem}) {
   const node = cls.parse(srcSpan)
   t.inst(node, cls)
 
-  t.is(node.reqSpan().decompile(), dec)
-  t.is(srcSpan.decompile(), rem)
+  t.is(node.reqSpan().view(), dec)
+  t.is(srcSpan.view(), rem)
 
   /*
   The parsing method of the given node class, typically `Text.parse`, should

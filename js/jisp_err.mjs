@@ -54,9 +54,17 @@ TODO drop this from all non-Node types. (Why?)
 export class MixErrer extends a.DedupMixinCache {
   static make(cls) {
     return class MixErrer extends cls {
-      // Subclasses should override this to create errors with contextual
-      // information, such as references to source code.
+      /*
+      Subclasses should override this to create errors with contextual
+      information, such as references to source code.
+      */
       err(...val) {return super.err?.(...val) || Error(...val)}
+
+      /*
+      Subclasses may override this to convert existing errors by adorning them
+      with additional context, when possible.
+      */
+      errFrom(err) {return err}
 
       errMeth(name) {throw this.err(jm.msgMeth(name, this))}
 
@@ -98,6 +106,18 @@ export class MixErrer extends a.DedupMixinCache {
       mismatch. Provided for consistency with `.asReqInst`.
       */
       asOnlyInst(cls) {return a.onlyInst(this, cls)}
+
+      // TODO better naming.
+      withErr(val) {
+        if (a.isPromise(val)) return this.withErrAsync(val)
+        return val
+      }
+
+      // TODO better naming.
+      async withErrAsync(val) {
+        try {return await val}
+        catch (err) {throw this.errFrom(err)}
+      }
     }
   }
 }

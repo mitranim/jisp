@@ -4,21 +4,18 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 
 // Short for "return". Compiles to the JS `return` statement.
 export class Ret extends jnlm.ListMacro {
-  optVal() {return this.optChildAt(1)}
-  reqVal() {return this.reqChildAt(1)}
-
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(1, 2)
-    return this.macroFrom(1)
+    this.reqChildCountBetween(0, 1)
+    return this.macroFrom(0)
   }
 
   compile() {
     this.reqStatement()
-    const val = this.optVal()
+    const val = this.optFirstChild()
     if (val) return `return ` + jn.optCompileNode(val)
     return `return`
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

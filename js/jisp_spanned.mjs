@@ -15,6 +15,7 @@ export class MixOwnSpanned extends a.DedupMixinCache {
       optSpan() {return this.#span}
       initSpan() {return this.#span ??= new this.Span()}
       initSpanWith(...src) {return this.initSpan().init(...src), this}
+      initSpanFrom(src) {return this.initSpan().setFrom(src), this}
 
       /*
       This uses `.optSpan`, not `.ownSpan`, because some of our `Node`
@@ -22,8 +23,6 @@ export class MixOwnSpanned extends a.DedupMixinCache {
       from a range of other nodes they have access to.
       */
       reqSpan() {return this.optSpan() ?? this.throw(`missing span at ${a.show(this)}`)}
-
-      decompile() {return a.laxStr(this.optSpan()?.decompile())}
     }
   }
 }

@@ -6,11 +6,11 @@ export class Declare extends jnu.Use {
 
   async macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
+    this.reqChildCount(1)
     await this.reqImport()
     this.reqNsLex().addMixin(await this.reqNsLive())
     return this
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

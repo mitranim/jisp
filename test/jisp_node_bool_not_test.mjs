@@ -13,7 +13,7 @@ await t.test(async function test_Not() {
 
 [! 10 20]
 `,
-    `[object Not] expected between 1 and 2 children, got 3 children`,
+    `[object Not] expected between 0 and 1 children, got 2 children`,
   )
 
   await jrt.testModuleCompile(

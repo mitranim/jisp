@@ -5,5 +5,5 @@ export class Space extends jnt.Text {
   static regexp() {return /^\s+/}
   isCosmetic() {return true}
   macro() {return this}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

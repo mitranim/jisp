@@ -24,7 +24,7 @@ export class CodePrinter extends a.Emp {
   optCompile(src) {
     if (a.isNil(src)) return ``
     try {return a.reqStr(src.compile())}
-    catch (err) {throw src.toErr(err)}
+    catch (err) {throw src.errFrom(err)}
   }
 
   /*
@@ -34,7 +34,7 @@ export class CodePrinter extends a.Emp {
   */
   reqCompile(src) {
     try {return a.reqValidStr(src.compile())}
-    catch (err) {throw src.toErr(err)}
+    catch (err) {throw src.errFrom(err)}
   }
 
   mapCompile(src) {return this.mapCompact(src, this.optCompile)}

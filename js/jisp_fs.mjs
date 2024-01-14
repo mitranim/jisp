@@ -30,15 +30,13 @@ export class Fs extends a.Emp {
     return tar
   }
 
-  async read() {throw jm.errMeth(`read`, this)}
+  async reqRead() {throw jm.errMeth(`reqRead`, this)}
+  async optRead() {throw jm.errMeth(`optRead`, this)}
 
-  // TODO consider renaming to `optRead` for consistency.
-  async readOpt() {throw jm.errMeth(`readOpt`, this)}
+  async reqWrite() {throw jm.errMeth(`reqWrite`, this)}
 
-  async write() {throw jm.errMeth(`write`, this)}
-
-  // TODO rename to `optTimestamp` for consistency.
-  async timestamp() {throw jm.errMeth(`timestamp`, this)}
+  async optTimestamp() {throw jm.errMeth(`optTimestamp`, this)}
+  async reqTimestamp() {throw jm.errMeth(`reqTimestamp`, this)}
 }
 
 export class MixOwnFsed extends a.DedupMixinCache {

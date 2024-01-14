@@ -92,8 +92,8 @@ export async function testSingleFileCompilation(src, exp) {
   const mod = root.reqModule(src.href)
   await mod.ready()
 
-  const tarText = a.trim(await root.reqFs().read(mod.reqTarUrl()))
-  const expText = a.trim(await root.reqFs().read(exp))
+  const tarText = a.trim(await root.reqFs().reqRead(mod.reqTarUrl()))
+  const expText = a.trim(await root.reqFs().reqRead(exp))
 
   tu.testCompiled(tarText, expText)
 }
@@ -194,7 +194,7 @@ await t.test(async function test_Root_resolution_and_compilation() {
     a.reqValidStr(tarStr)
 
     const tarUrl = new URL(tarStr)
-    const tarText = await root.reqFs().read(tarUrl)
+    const tarText = await root.reqFs().reqRead(tarUrl)
 
     tu.testCompiled(tarText, `
 export const someConst = \`some_const_value\`;

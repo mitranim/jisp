@@ -41,13 +41,10 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
     return this.setSrc(src).setPos(pos ?? 0).setLen(len ?? src.length)
   }
 
-  // TODO consider moving to `StrSpan`.
-  // This interface is expected to always return a string.
-  decompile() {return this.#src.slice(this.#pos, this.#pos + this.#len)}
-
   isEmpty() {return !this.hasMore()}
   hasMore() {return this.#pos < this.#src.length}
   skip(len) {return this.#pos += a.reqNat(len), this}
+  view() {return this.#src.slice(this.#pos, this.#pos + this.#len)}
 
   // Short for "remainder" or "remaining".
   rem() {return this.#src.slice(this.#pos)}
@@ -74,10 +71,15 @@ export class Span extends ji.MixInsp.goc(a.Emp) {
       throw Error(`unable to create range from spans ${a.show(begin)} and ${a.show(end)} with mismatching source`)
     }
 
-    return this
-      .setSrc(beginSrc)
-      .setPos(begin.ownPos())
-      .setLen(end.nextPos() - begin.ownPos())
+    /*
+    Minor cautionary note. We must read all properties before we start writing
+    any properties because one of the provided spans may be the current span.
+    Writing before reading would produce an inconsistent state.
+    */
+    const beginPos = begin.ownPos()
+    const nextPos = end.nextPos()
+
+    return this.setSrc(beginSrc).setPos(beginPos).setLen(nextPos - beginPos)
   }
 
   static optRange(begin, end) {
@@ -151,8 +153,7 @@ export class ReprStrSpan extends jre.MixRepr.goc(StrSpan) {
   optReprSrcName() {return this.#reprSrcName}
   reqReprSrcName() {return this.optReprSrcName() ?? this.throw(`missing name of source string at ${a.show(this)}`)}
 
-  // Override for `MixRepr`.
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ArrSpan extends Span {

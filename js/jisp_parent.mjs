@@ -29,7 +29,82 @@ export class MixParent extends a.DedupMixinCache {
       reqChildParentMatch(val) {
         const par = val.optParent()
         if (par !== this) {
-          throw this.err(`parent-child mismatch: expected child ${a.show(val)} to have parent ${a.show(this)}, found ${a.show(par)}`)
+          throw this.err(`child-parent mismatch: expected child ${a.show(val)} to have parent ${a.show(this)}, found ${a.show(par)}`)
+        }
+        return val
+      }
+    }
+  }
+}
+
+export class MixParentOneToOne extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixParentOneToOne extends MixParentCommon.goc(MixParent.goc(cls)) {
+      #chi = undefined
+      hasChildren() {return a.isSome(this.#chi)}
+      childCount() {return a.isSome(this.#chi) ? 1 : 0}
+
+      *childIter() {
+        const val = this.#chi
+        if (a.isSome(val)) yield val
+      }
+
+      hasOnlyChild(val) {return a.isSome(val) && this.#chi === val}
+
+      optChildAt(ind) {
+        if (ind === 0) return this.#chi
+        this.req(ind, a.isInt)
+        return undefined
+      }
+
+      optFirstChild() {return this.#chi}
+      optLastChild() {return this.#chi}
+
+      clearChildren() {
+        this.#chi = undefined
+        return this
+      }
+
+      setChild(val) {
+        this.#chi = this.toValidChild(val)
+        return this
+      }
+
+      setChildren(...val) {
+        const len = val.length
+        switch (len) {
+          case 0: return this.clearChildren()
+          case 1: return this.setChild(val)
+          default: throw Error(`unable to set ${a.show(len)} children at single-child parent ${a.show(this)}`)
+        }
+      }
+
+      appendChild(val) {
+        if (this.hasChildren()) throw Error(`unable to append child ${a.show(val)} to single-child parent ${a.show(this)} which already has a child`)
+        return this.setChild(val)
+      }
+
+      appendChildren(...val) {
+        for (val of val) this.appendChild(val)
+        return this
+      }
+
+      replaceChildAt(ind, next) {
+        const prev = this.optChildAt(ind)
+
+        if (a.isNil(prev)) {
+          throw this.err(`unable to replace child at index ${a.show(ind)} in parent ${a.show(this)}: no existing child at this index`)
+        }
+
+        if (prev === next) return this
+        return this.setChild(next)
+      }
+
+      // Counterpart to `MixParent..reqChildParentMatch`.
+      reqParentChildMatch(val) {
+        const chi = this.#chi
+        if (val !== chi) {
+          throw this.err(msgParentChildMismatch(this, val))
         }
         return val
       }
@@ -106,6 +181,7 @@ export class MixParentOneToMany extends a.DedupMixinCache {
         }
 
         tar[ind] = val
+        return this
       }
 
       /*
@@ -140,71 +216,21 @@ export class MixParentOneToMany extends a.DedupMixinCache {
         this.opt(next, a.isInt)
         return this.#chi?.slice(...arguments) ?? []
       }
-    }
-  }
-}
 
-export class MixParentOneToOne extends a.DedupMixinCache {
-  static make(cls) {
-    return class MixParentOneToOne extends MixParentCommon.goc(MixParent.goc(cls)) {
-      #chi = undefined
+      // Counterpart to `MixParent..reqChildParentMatch`.
+      reqParentChildMatch(val) {
+        const chi = this.#chi
 
-      hasChildren() {return this.childCount() > 0}
-      childCount() {return a.isSome(this.#chi) ? 1 : 0}
-
-      *childIter() {
-        const val = this.#chi
-        if (a.isSome(val)) yield val
-      }
-
-      hasOnlyChild(val) {return a.isSome(val) && this.#chi === val}
-
-      optChildAt(ind) {
-        this.req(ind, a.isInt)
-        return ind === 0 ? this.#chi : undefined
-      }
-
-      optFirstChild() {return this.#chi}
-      optLastChild() {return this.#chi}
-
-      clearChildren() {
-        this.#chi = undefined
-        return this
-      }
-
-      setChild(val) {
-        this.#chi = this.toValidChild(val)
-        return this
-      }
-
-      setChildren(...val) {
-        const len = val.length
-        switch (len) {
-          case 0: return this.clearChildren()
-          case 1: return this.setChild(val)
-          default: throw Error(`unable to set ${a.show(len)} children at single-child parent ${a.show(this)}`)
-        }
-      }
-
-      appendChild(val) {
-        if (this.hasChildren()) throw Error(`unable to append child ${a.show(val)} to single-child parent ${a.show(this)} which already has a child`)
-        return this.setChild(val)
-      }
-
-      appendChildren(...val) {
-        for (val of val) this.appendChild(val)
-        return this
-      }
-
-      replaceChildAt(ind, next) {
-        const prev = this.optChildAt(ind)
-
-        if (a.isNil(prev)) {
-          throw this.err(`unable to replace child at index ${a.show(ind)} in parent ${a.show(this)}: no existing child at this index`)
+        /*
+        Suboptimal way of testing membership, but probably not one of our
+        bottlenecks. TODO consider converting children to an ordered set.
+        This would come with its own performance penalties.
+        */
+        if (!chi?.includes(val)) {
+          throw this.err(msgParentChildMismatch(this, val))
         }
 
-        if (prev === next) return
-        this.setChild(next)
+        return val
       }
     }
   }
@@ -284,4 +310,8 @@ class MixParentCommon extends a.DedupMixinCache {
       }
     }
   }
+}
+
+function msgParentChildMismatch(par, chi) {
+  return `parent-child mismatch: parent ${a.show(par)} does not contain child ${a.show(chi)}`
 }

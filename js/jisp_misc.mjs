@@ -40,22 +40,22 @@ export function readyCall(val) {return val.ready()}
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function ownNsLexCall(src) {
-  return a.isObj(src) && `ownNsLex` in src ? src.ownNsLex() : undefined
+  return a.isComp(src) && `ownNsLex` in src ? src.ownNsLex() : undefined
 }
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function optLiveValCall(src) {
-  return a.isObj(src) && `optLiveVal` in src ? src.optLiveVal() : undefined
+  return a.isComp(src) && `optLiveVal` in src ? src.optLiveVal() : undefined
 }
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function optLiveValSrcCall(src) {
-  return a.isObj(src) && `optLiveValSrc` in src ? src.optLiveValSrc() : undefined
+  return a.isComp(src) && `optLiveValSrc` in src ? src.optLiveValSrc() : undefined
 }
 
 // Placed in generic utils to minimize cyclic dependencies between higher-level modules.
 export function optLiveValInnerCall(src) {
-  return a.isObj(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
+  return a.isComp(src) && `optLiveValInner` in src ? src.optLiveValInner() : undefined
 }
 
 export function isFullMatch(src, reg) {

@@ -1,0 +1,15 @@
+[use `jisp:prelude.mjs` *]
+
+;;
+This is a sketch. TODO add more complicated cases.
+;;
+
+[func quotedNum [] [quote 123.456]]
+[func quotedStrBacktickSimple [] [quote `some_text`]]
+[func quotedStrBacktickFenced [] [quote ```some_text```]]
+[func quotedStrDoubleSimple [] [quote "some_text"]]
+[func quotedStrDoubleFenced [] [quote """some_text"""]]
+[func quotedIdentUnqual [] [quote someName]]
+[func quotedIdentAccess [] [quote nameOne.nameTwo]]
+[func quotedIdentOper [] [quote !@#]]
+[func quotedBrackets [] [quote [10 20 30]]]

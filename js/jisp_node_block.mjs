@@ -1,5 +1,6 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jns from './jisp_ns.mjs'
+import * as jpn from './jisp_parent_node.mjs'
 import * as jn from './jisp_node.mjs'
 import * as jnlm from './jisp_node_list_macro.mjs'
 
@@ -10,7 +11,7 @@ expression mode, unless it uses an IIFE. See `.compileExpression` below.
 export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   macro() {
     this.reqEveryChildNotCosmetic()
-    return this.macroFrom(1)
+    return this.macroFrom(0)
   }
 
   compile() {
@@ -19,7 +20,7 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   }
 
   compileStatement() {
-    return this.reqPrn().compileBracesWithStatements(this.optChildSlice(1))
+    return this.reqPrn().compileBracesWithStatements(this.optChildArr())
   }
 
   /*
@@ -28,9 +29,9 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   */
   compileExpression() {
     const len = this.childCount()
-    if (len <= 1) return `undefined`
-    if (len === 2) return jn.optCompileNode(this.reqChildAt(1))
-    return this.reqPrn().compileParensWithExpressions(this.optChildSlice(1))
+    if (len <= 0) return `undefined`
+    if (len === 1) return jn.optCompileNode(this.reqFirstChild())
+    return this.reqPrn().compileParensWithExpressions(this.optChildArr())
   }
 
   /*
@@ -53,5 +54,5 @@ export class Block extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   */
   isChildStatement() {return this.isStatement()}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

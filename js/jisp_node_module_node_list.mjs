@@ -102,9 +102,8 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   addAutoImport(src) {
     const tar = new jnim.Import().setChildren(
-      new jn.Empty(),
       new jnst.StrBacktick().setVal(src),
-      new jniu.IdentUnqual().initSpanWith(this.genName()),
+      new jniu.IdentUnqual().setName(this.genName()),
     )
     this.appendChild(tar)
     return tar
@@ -133,8 +132,7 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   */
   addAutoVal(src) {
     const tar = new ConstPrivate().setChildren(
-      new jn.Empty(),
-      new jniu.IdentUnqual().initSpanWith(this.genName()),
+      new jniu.IdentUnqual().setName(this.genName()),
       new jnv.Val().setVal(jnv.Val.reqValid(src)),
     )
     this.appendChild(tar)
@@ -147,7 +145,7 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
     return super[ji.symInsp](tar.funs(this.optModule, this.optNsLex))
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 class ImportMap extends a.TypedMap {

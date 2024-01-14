@@ -2,14 +2,13 @@ import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnc from './jisp_node_const.mjs'
 
 export class Let extends jnc.Const {
-  optVal() {return this.optChildAt(2)}
+  optVal() {return this.optChildAt(1)}
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(2, 3)
-    this.reqIdent().reqCanDeclare()
+    this.reqChildCountBetween(1, 2)
     this.reqDeclareLex()
-    return this.macroFrom(2)
+    return this.macroFrom(1)
   }
 
   compile() {
@@ -30,5 +29,5 @@ export class Let extends jnc.Const {
 
   compilePrefix() {return `let`}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

@@ -31,8 +31,15 @@ export class MixRepr extends a.DedupMixinCache {
       To ensure that this property is defined correctly, we require it to be
       "own". If the property is inherited, we assume that this line wasn't
       copy-pasted correctly, and reject it. See below.
+
+      Copy-paste this: ↓↓↓
+
+        static {this.setReprModuleUrl(import.meta.url)}
       */
-      static reprModuleUrl = import.meta.url
+
+      static setReprModuleUrl(val) {
+        a.priv(this, `reprModuleUrl`, a.reqValidStr(val))
+      }
 
       reqReprModuleUrl() {
         const con = this.constructor

@@ -11,7 +11,7 @@ await t.test(async function test_If_invalid() {
 [use "jisp:prelude.mjs" *]
 [if]
 `,
-    `[object If] expected between 2 and 4 children, got 1`,
+    `[object If] expected between 1 and 3 children, got 0`,
   )
 
   await jrt.testModuleFail(
@@ -20,7 +20,7 @@ await t.test(async function test_If_invalid() {
 [use "jisp:prelude.mjs" *]
 [const someConst [if]]
 `,
-    `[object If] expected between 2 and 4 children, got 1`,
+    `[object If] expected between 1 and 3 children, got 0`,
   )
 
   await jrt.testModuleFail(
@@ -29,7 +29,7 @@ await t.test(async function test_If_invalid() {
 [use "jisp:prelude.mjs" *]
 [if 10 20 30 40]
 `,
-    `[object If] expected between 2 and 4 children, got 5`,
+    `[object If] expected between 1 and 3 children, got 4`,
   )
 
   await jrt.testModuleFail(
@@ -38,7 +38,7 @@ await t.test(async function test_If_invalid() {
 [use "jisp:prelude.mjs" *]
 [const someConst [if 10 20 30 40]]
 `,
-    `[object If] expected between 2 and 4 children, got 5`,
+    `[object If] expected between 1 and 3 children, got 4`,
   )
 })
 
@@ -50,13 +50,65 @@ await t.test(async function test_If_as_statement() {
 
 [if 10]
 [if 10 20]
+[if 10 [do 20]]
 [if 10 20 30]
+[if 10 20 [do 30]]
+[if 10 [do 20] 30]
+[if 10 [do 20] [do 30]]
+[if 10 [const someName 20]]
+[if 10 [const someName 20] [const someName 30]]
 `,
 `
 if (10);
-if (10) 20;
-if (10) 20;
-else 30;
+if (10) {
+20;
+};
+if (10) {
+{
+20;
+};
+};
+if (10) {
+20;
+}
+else {
+30;
+};
+if (10) {
+20;
+}
+else {
+{
+30;
+};
+};
+if (10) {
+{
+20;
+};
+}
+else {
+30;
+};
+if (10) {
+{
+20;
+};
+}
+else {
+{
+30;
+};
+};
+if (10) {
+const someName = 20;
+};
+if (10) {
+const someName = 20;
+}
+else {
+const someName = 30;
+};
 `)
 })
 

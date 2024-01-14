@@ -22,107 +22,107 @@ that may want to specialize.
 export class KeywordExprMacro extends jnlm.ListMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    return this.macroFrom(1)
+    return this.macroFrom(0)
   }
 
   compile() {
     const len = this.childCount()
 
     return this.compileStatementOrExpression(
-      len === 1
+      len === 0
       ? this.compileNullary()
-      : len === 2
-      ? this.compileUnary(this.reqChildAt(1))
-      : this.compileVariadic(this.optChildSlice(1))
+      : len === 1
+      ? this.compileUnary()
+      : this.compileVariadic()
     )
   }
 
   compileNullary() {throw this.errMeth(`compileNullary`)}
 
-  compileUnary(src) {
+  compileUnary() {
     return a.spaced(
       a.reqStr(this.unaryPrefix()),
-      jn.optCompileNode(src),
+      jn.optCompileNode(this.reqFirstChild()),
       a.reqStr(this.unarySuffix()),
     )
   }
 
-  compileVariadic(src) {
+  compileVariadic() {
     return this.reqPrn()
-      .mapCompile(src)
+      .mapCompile(this.optChildArr())
       .join(` ` + a.reqStr(this.binaryInfix()) + ` `)
   }
 
   unaryPrefix() {throw this.errMeth(`unaryPrefix`)}
   unarySuffix() {throw this.errMeth(`unarySuffix`)}
   binaryInfix() {throw this.errMeth(`binaryInfix`)}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_0_1 extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(1, 2)
-    return this.macroFrom(1)
+    this.reqChildCountBetween(0, 1)
+    return this.macroFrom(0)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_1 extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
-    return this.macroFrom(1)
+    this.reqChildCount(1)
+    return this.macroFrom(0)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_0_2 extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(1, 3)
-    return this.macroFrom(1)
+    this.reqChildCountBetween(0, 2)
+    return this.macroFrom(0)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_2 extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(3)
-    return this.macroFrom(1)
+    this.reqChildCount(2)
+    return this.macroFrom(0)
   }
 
   compile() {
     return this.compileStatementOrExpression(a.spaced(
-      jn.optCompileNode(this.reqChildAt(1)),
+      jn.optCompileNode(this.reqChildAt(0)),
       a.reqStr(this.binaryInfix()),
-      jn.optCompileNode(this.reqChildAt(2)),
+      jn.optCompileNode(this.reqChildAt(1)),
     ))
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_1_N extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(2)
-    return this.macroFrom(1)
+    this.reqChildCountMin(1)
+    return this.macroFrom(0)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class KeywordExprMacro_2_N extends KeywordExprMacro {
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(3)
-    return this.macroFrom(1)
+    this.reqChildCountMin(2)
+    return this.macroFrom(0)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

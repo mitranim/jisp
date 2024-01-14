@@ -8,8 +8,8 @@ export class New extends jnlm.ListMacro {
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountMin(2)
-    return this.macroFrom(1)
+    this.reqChildCountMin(1)
+    return this.macroFrom(0)
   }
 
   compile() {
@@ -17,20 +17,22 @@ export class New extends jnlm.ListMacro {
 
     return (
       `new `
-      + a.reqStr(prn.optCompile(this.reqChildAt(1)))
-      + a.reqStr(prn.compileParensWithExpressions(this.optChildSlice(2)))
+      + a.reqStr(prn.optCompile(this.reqFirstChild()))
+      + a.reqStr(prn.compileParensWithExpressions(this.optChildSlice(1)))
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class NewTarget extends jnbm.BareMacro {
+  macro() {return this}
+
   /*
   This should be safe from collisions because in JS, `new` is a keyword, and
   `new.target` is special syntax supported at the parser level.
   */
   compile() {return `new.target`}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

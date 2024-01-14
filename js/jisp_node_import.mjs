@@ -113,15 +113,17 @@ export class Import extends jnib.ImportBase {
     return this
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class ImportMeta extends jnbm.BareMacro {
+  macro() {return this}
+
   /*
   This should be safe from collisions because in JS, `import` is a keyword, and
   `import.meta` is special syntax supported at the parser level.
   */
   compile() {return `import.meta`}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

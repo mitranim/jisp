@@ -8,7 +8,6 @@ import * as jch from './jisp_child.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jsp from './jisp_span.mjs'
 import * as jsn from './jisp_spanned.mjs'
-import * as jnsd from './jisp_node_sourced.mjs'
 import * as jcpd from './jisp_code_printed.mjs'
 import * as jnsl from './jisp_ns_lexed.mjs'
 import * as jlv from './jisp_live_valued.mjs'
@@ -25,14 +24,11 @@ node-to-node relations, generating descriptive errors, and more. See the
 
 ## Relations
 
-The base class `Node` supports the following relations:
-
-  * `MixChild` implements relation from child to parent.
-  * `MixOwnNodeSourced` implements relation from derived node to source node.
-
-The base class does not implement relations from parent to child. Such relations
-are implemented by certain subclasses such as `NodeList`, which uses
-`MixParentOneToMany`, or `IdentAccess`, which uses `MixParentOneToOne`.
+The base class `Node` supports only relations from child to parent, via the
+mixin `MixChild`. The base class does not implement relations from parent to
+child. Such relations are implemented by certain subclasses such as `NodeList`,
+which uses `MixParentOneToMany`, or `IdentAccess`, which uses
+`MixParentOneToOne`.
 
 The main purpose of our `Lexer` is to convert a flat stream of tokens into a
 tree of parent and child nodes. Each "parent node" ensures that its child nodes
@@ -43,8 +39,7 @@ consider it their parent node, resulting in bilateral relations:
                child
 
 During macroing, we often replace nodes with other nodes. This changes the
-parent-to-child relations, and also uses the derived-to-source relations to
-trace derived nodes back to source nodes.
+parent-to-child relations.
 
 Example of relation changes due to macroing.
 
@@ -63,38 +58,32 @@ new child, the new child gets the old parent, bilaterally.
    role = child ↓    ↑ role = parent
                 child1
 
-The new child refers to the old child as its source node, unilaterally.
-
-                child1
-  role = source ↓
-                child0
-
-The old child keeps its old parent, unilaterally.
+The old child keeps its old parent, unilaterally. This should be of little
+relevance because we tend to discard the old child, keeping only its source
+span, if any.
 
                 parent
                      ↑ role = parent
                 child0
 
-Note: each relation type must avoid cycles. At the time of writing, `MixChild`
-and `MixOwnNodeSourced` prevent cycles. `MixParentOneToOne` and
-`MixParentOneToMany` do not prevent cycles directly, but they should prevent
-cycles indirectly, by ensuring that each child node refers to the parent, which
-involves `MixChild`, which should prevent cycles.
+Each relation type must avoid cycles. At the time of writing, `MixChild`
+prevents cycles. `MixParentOneToOne` and `MixParentOneToMany` do not prevent
+cycles directly, but they should prevent cycles indirectly, by ensuring that
+each child node refers to the parent, which involves `MixChild`, which should
+prevent cycles.
 */
 export class Node extends (
   jlv.MixLiveValuedInner.goc(
     jnsl.MixNsLexed.goc(
       jcpd.MixCodePrinted.goc(
-        jnsd.MixOwnNodeSourced.goc(
-          jsn.MixOwnSpanned.goc(
-            // `MixParent` is added here for `.reqChildParentMatch`.
-            // It does not implement actual storage of child nodes.
-            jp.MixParent.goc(
-              jch.MixChild.goc(
-                jre.MixRepr.goc(
-                  ji.MixInsp.goc(
-                    a.Emp
-                  )
+        jsn.MixOwnSpanned.goc(
+          // `MixParent` is added here for `.reqChildParentMatch`.
+          // It does not implement actual storage of child nodes.
+          jp.MixParent.goc(
+            jch.MixChild.goc(
+              jre.MixRepr.goc(
+                ji.MixInsp.goc(
+                  a.Emp
                 )
               )
             )
@@ -108,7 +97,7 @@ export class Node extends (
   get Err() {return je.Err}
 
   err(msg, opt) {
-    const ctx = this.contextDeep()
+    const ctx = this.context()
     if (!ctx) return new this.Err(msg, opt)
     return new this.Err(jm.joinParagraphs(msg, ctx), opt).setHasCode(true)
   }
@@ -117,7 +106,7 @@ export class Node extends (
   Error conversion. When possible and relevant, this should adorn the error with
   additional context.
   */
-  toErr(err) {
+  errFrom(err) {
     if (!this.optSpan()) return err
     if (a.isInst(err, je.Err) && err.optHasCode()) return err
     return this.err(jm.renderErrLax(err), {cause: err})
@@ -126,20 +115,7 @@ export class Node extends (
   // Override for `MixOwnSpanned`.
   get Span() {return jsp.ReprStrSpan}
 
-  optSpan() {return super.optSpan() || this.optSrcNode()?.optSpan()}
-
   context() {return a.laxStr(this.spanWithPath(this.optSpan())?.context())}
-
-  contextDeep() {
-    const src = a.laxStr(this.optSrcNodeDeep()?.contextDeep())
-    const own = a.laxStr(this.spanWithPath(this.ownSpan())?.context())
-    if (!own) return src
-
-    return jm.joinParagraphs(
-      own,
-      (src && jm.joinParagraphs(`context of source node:`, src)),
-    )
-  }
 
   spanWithPath(span) {
     if (span && !span.ownPath()) {
@@ -171,17 +147,8 @@ export class Node extends (
   reqDeclareLex() {return this.reqParent().reqNsLex().addNode(this)}
 
   macro() {return this.errMeth(`macro`)}
-
   compile() {throw this.errMeth(`compile`)}
-  decompile() {return a.laxStr(this.optDecompileSrcNode() ?? this.optDecompileOwn())}
-
-  optDecompileOwn() {return this.optSpan()?.decompile()}
-  reqDecompileOwn() {return a.reqStr(this.reqSpan().decompile())}
-
-  optDecompileSrcNode() {return this.optSrcNode()?.decompile()}
-  reqDecompileSrcNode() {return a.reqStr(this.reqSrcNode().decompile())}
-
-  optSrcNodeDeep() {return this.optSrcNode() ?? this.optParentNode()?.optSrcNodeDeep()}
+  decompile() {return a.laxStr(this.optSpan()?.view())}
 
   /*
   Minor shortcut for subclasses that may compile either in expression mode or in
@@ -217,12 +184,13 @@ export class Node extends (
     if (!span?.hasMore()) return
 
     const mod = this.reqModuleNodeList()
-    span.setReprImportName(mod.reqAutoImportName(span.reqReprModuleUrl()))
+
+    span.setReprSrcName(mod.reqAutoValName(span.ownSrc()))
 
     const path = span.optPath()
     if (path) span.setReprPathName(mod.reqAutoValName(path))
 
-    span.setReprSrcName(mod.reqAutoValName(span.ownSrc()))
+    span.setReprImportName(mod.reqAutoImportName(span.reqReprModuleUrl()))
   }
 
   initReprImport() {
@@ -283,6 +251,14 @@ export class Node extends (
 
   optParentNode() {return a.onlyInst(this.optParent(), Node)}
 
+  // TODO consider supporting variadic input, for cases like `MethodFunc`.
+  reqParentInst(cls) {
+    this.req(cls, a.isCls)
+    const tar = this.reqParent()
+    if (a.isInst(tar, cls)) return tar
+    throw this.err(`${a.show(this)} requires its immediate parent to be an instance of ${a.show(cls)}, got parent ${a.show(tar)}`)
+  }
+
   optModule() {return this.optAncFindType(jm.symTypeModule)}
   reqModule() {return this.reqAncFindType(jm.symTypeModule)}
 
@@ -314,8 +290,7 @@ export class Node extends (
   mapDeep(fun) {return fun(this.mapChildrenDeep(fun))}
   mapChildrenDeep(fun) {return a.reqFun(fun), this}
 
-  static reprModuleUrl = import.meta.url;
-
+  static {this.setReprModuleUrl(import.meta.url)}
   [ji.symInsp](tar) {return tar.funs(this.decompile)}
 }
 
@@ -340,74 +315,7 @@ export class Empty extends Node {
     return ``
   }
 
-  static reprModuleUrl = import.meta.url
-}
-
-/*
-Takes a node and performs recursive macroing, taking care to convert arbitrary
-errors to node-specific errors, terminate when relevant, and switch between
-synchronous and asynchronous mode when needed. Also see `macroNodeSync` which
-enforces synchronous mode.
-
-Implementation notes.
-
-Macroing stops when a node returns itself. This convention is used by all "nop"
-macro implementations such as those on primitive literals. It's also used by
-macro implementations that perform side effects without replacing the node,
-such as those on identifiers.
-
-This could be implemented either with a loop or with recursive calls. The
-current implementation uses recursive calls because in case of accidental
-infinite recursion, this causes an immediate stack overflow exception instead
-of looping forever, at least in synchronous mode.
-*/
-export function macroNode(prev) {
-  if (a.isNil(prev)) return undefined
-  const next = macroCall(prev)
-  if (a.isPromise(next)) return macroNodeAsyncWith(prev, next)
-  if (prev === next) return prev
-  return macroNode(replaceNode(prev, next))
-}
-
-export function macroNodeSync(prev) {
-  if (a.isNil(prev)) return undefined
-  const next = macroCall(prev)
-  if (a.isPromise(next)) throw prev.err(msgMacroNodeSync(prev))
-  if (prev === next) return prev
-  return macroNodeSync(replaceNode(prev, next))
-}
-
-function msgMacroNodeSync(val) {
-  return `expected node ${a.show(val)} to macro synchronously, but received a promise`
-}
-
-async function macroNodeAsyncWith(prev, next) {
-  a.reqInst(prev, Node)
-
-  try {next = await next}
-  catch (err) {throw prev.toErr(err)}
-
-  if (prev === next) return prev
-  return macroNode(replaceNode(prev, next))
-}
-
-export function reqMacroReprNode(prev) {
-  const next = macroReprCall(prev)
-  if (prev === next) return prev
-  return reqMacroReprNode(replaceNode(prev, next))
-}
-
-export function replaceNode(prev, next) {
-  a.reqInst(prev, Node)
-  if (a.isNil(next)) return new Empty()
-
-  if (!a.isInst(next, Node)) {
-    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with non-node ${a.show(next)}`)
-  }
-  if (prev === next) {
-    throw prev.err(`unexpected attempt to replace node ${a.show(prev)} with itself; indicates an internal error in macro-related code`)
-  }
-  return next.setParent(prev.optParent()).setSrcNode(prev)
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export function optCompileNode(src) {
@@ -429,28 +337,43 @@ export function reqCompileReprNode(src) {
   throw src.err(`expected ${a.show(src)} to compile to a string representation of its AST constructor, got ${a.show(out)}`)
 }
 
-function macroCall(src) {
+export function macroCall(src) {
   a.reqInst(src, Node)
-  try {return src.macro()}
-  catch (err) {throw src.toErr(err)}
+  try {return src.withErr(src.macro())}
+  catch (err) {throw src.errFrom(err)}
 }
 
-function macroReprCall(src) {
+export function macroCallSync(src) {
   a.reqInst(src, Node)
-  try {return src.macroRepr()}
-  catch (err) {throw src.toErr(err)}
+  let out
+  try {out = src.macro()}
+  catch (err) {throw src.errFrom(err)}
+  return reqMacroResultSync(src, out)
+}
+
+export function macroReprCall(src) {
+  a.reqInst(src, Node)
+  let out
+  try {out = src.macroRepr()}
+  catch (err) {throw src.errFrom(err)}
+  return reqMacroResultSync(src, out)
 }
 
 function compileCall(src) {
   a.reqInst(src, Node)
   try {return src.compile()}
-  catch (err) {throw src.toErr(err)}
+  catch (err) {throw src.errFrom(err)}
 }
 
 function compileReprCall(src) {
   a.reqInst(src, Node)
   try {return src.compileRepr()}
-  catch (err) {throw src.toErr(err)}
+  catch (err) {throw src.errFrom(err)}
+}
+
+function reqMacroResultSync(src, out) {
+  if (a.isPromise(out)) throw src.err(msgMacroNodeSync(src))
+  return out
 }
 
 // For internal use by code that invokes macro functions.

@@ -432,19 +432,35 @@ async function testModuleNotRecompiled(mod, root) {
   We're not comparing with `mod.compile()` because a module that hasn't been
   read would compile to an empty string.
   */
-  await root.reqFs().read(mod.reqTarUrl())
+  await root.reqFs().reqRead(mod.reqTarUrl())
 }
 
 async function testModuleCode(mod, root) {
   t.is(
-    (await root.reqFs().read(mod.reqTarUrl())),
+    (await root.reqFs().reqRead(mod.reqTarUrl())),
     (mod.compile()),
     tu.insp(mod),
   )
 }
 
 async function moduleTouch(mod, root) {
-  await root.reqFs().touch(mod.reqSrcUrl())
+  await root.reqFs().reqTouch(mod.reqSrcUrl())
 }
+
+// TODO add tests for other failure cases.
+await t.test(async function test_Module_readiness_missing_file_jisp() {
+  const root = new jr.Root().setFs(jdft.makeTestFs())
+  const src = new URL(`some_missing_file.jisp`, tu.TEST_SRC_URL)
+  const mod = root.reqModule(src.href)
+
+  t.is(mod.reqSrcPathAbs(), src.href)
+  t.throws(() => mod.reqTarPathAbs(), Error, `missing target path at [object Module]`)
+  await t.throws(async () => mod.ready(), Error, `No such file or directory (os error 2), stat '${src.pathname}'`)
+
+  t.is(
+    mod.reqTarPathAbs(),
+    new URL(`b20863e2e17a6c7fa45bc7bb6ee19f4b7e7359a7bf2f05b704d82d2987acf10a/some_missing_file.mjs`, tu.TEST_TAR_URL).href,
+  )
+})
 
 if (import.meta.main) ti.flush()

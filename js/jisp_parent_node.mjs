@@ -1,23 +1,67 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
+import * as jc from './jisp_conf.mjs'
 import * as jm from './jisp_misc.mjs'
 import * as ji from './jisp_insp.mjs'
 import * as jp from './jisp_parent.mjs'
 import * as jn from './jisp_node.mjs'
 
+/*
+This file defines versions of "parent" mixins with specialized features for
+`Node` subclasses, most notably with support for macroing and compiling child
+nodes.
+
+Macro-related internals have about 3 times more code than they should, because
+we support both synchronous and asynchronous modes, automatically switching
+between the two. Async is unavoidable for some macros, most notably `Use` and
+`Import`. However, async has huge overheads, so sync is the default.
+
+Macroing stops when a node returns itself. This convention is used by all "nop"
+macro implementations such as those on primitive literals. It's also used by
+macro implementations that perform side effects without replacing the node,
+such as those on identifiers.
+
+Recursive macroing could be implemented either with a loop or with recursive
+calls. The current implementation uses recursive calls because in case of
+accidental infinite recursion, this causes an immediate stack overflow
+exception instead of looping forever, at least in synchronous mode.
+*/
+
 export class MixParentNodeOneToOne extends a.DedupMixinCache {
   static make(cls) {
-    return class MixParentNodeOneToOne extends jp.MixParentOneToOne.goc(cls) {
-      // Override for `MixParent`.
-      reqValidChild(val) {return super.reqValidChild(this.reqInst(val, jn.Node))}
+    return class MixParentNodeOneToOne extends MixParentNodeCommon.goc(jp.MixParentOneToOne.goc(cls)) {
+      macroFirstChild() {
+        const next = jn.macroCall(this.optFirstChild())
+        if (a.isPromise(next)) return this.macroFirstChildAsync(next)
+        return this.replacedFirstChild(next)?.macroFirstChild() ?? this
+      }
+
+      macroFirstChildSync() {
+        return (
+          undefined
+          ?? this.replacedFirstChildSync(jn.macroCallSync(this.optFirstChild()))?.macroFirstChildSync()
+          ?? this
+        )
+      }
+
+      async macroFirstChildAsync(next) {
+        return this.replacedFirstChild(await next)?.macroFirstChild() ?? this
+      }
 
       /*
       Implements support for macroing in "representation" mode, which is used
       by the macro `Quote`.
       */
       macroRepr() {
-        const chi = this.optFirstChild()
-        if (chi) this.setChild(jn.reqMacroReprNode(chi))
+        this.macroReprChildren()
         return super.macroRepr()
+      }
+
+      macroReprChildren() {
+        return (
+          undefined
+          ?? this.replacedFirstChildSync(jn.macroReprCall(this.optFirstChild()))?.macroReprChildren()
+          ?? this
+        )
       }
 
       /*
@@ -29,6 +73,26 @@ export class MixParentNodeOneToOne extends a.DedupMixinCache {
         const chi = this.optFirstChild()
         if (chi) out += `.setChild(${jn.reqCompileReprNode(chi)})`
         return out
+      }
+
+      replacedFirstChild(next) {
+        if (a.isPromise(next)) return this.replacedFirstChildAsync(next)
+        return this.replacedFirstChildSync(next)
+      }
+
+      replacedFirstChildSync(next) {
+        this.optInst(next, jn.Node)
+
+        const prev = this.optFirstChild()
+        if (prev === next) return undefined
+        if (a.isNil(next)) return this.clearChildren()
+
+        if (prev) next.setSpan(prev.optSpan())
+        return this.setChild(next)
+      }
+
+      async replacedFirstChildAsync(next) {
+        return this.replacedFirstChildSync(await next)
       }
 
       // Override for `Node..mapChildrenDeep`.
@@ -50,10 +114,7 @@ export class MixParentNodeOneToOne extends a.DedupMixinCache {
 
 export class MixParentNodeOneToMany extends a.DedupMixinCache {
   static make(cls) {
-    return class MixParentNodeOneToMany extends jp.MixParentOneToMany.goc(cls) {
-      // Override for `MixParent`.
-      reqValidChild(val) {return super.reqValidChild(this.reqInst(val, jn.Node))}
-
+    return class MixParentNodeOneToMany extends MixParentNodeCommon.goc(jp.MixParentOneToMany.goc(cls)) {
       // Override for `MixOwnSpanned`.
       optSpan() {
         return (
@@ -62,58 +123,48 @@ export class MixParentNodeOneToMany extends a.DedupMixinCache {
         )
       }
 
-      /*
-      This should run synchronously by default, but automatically switch into async
-      mode when a child node's `.macro` method returns a promise. We want
-      synchronicity by default because async / await has huge overheads, but we
-      must support async macroing because it's unavoidable for some macros,
-      starting with `Use`.
-      */
       macroFrom(ind) {
         this.req(ind, a.isNat)
-
         while (ind < this.childCount()) {
-          const val = jn.macroNode(this.reqChildAt(ind))
-          if (a.isPromise(val)) return this.macroAsyncWith(ind, val)
-          this.replaceChildAt(ind, val)
+          const val = this.macroChildAt(ind++)
+          if (a.isPromise(val)) return this.macroFromAsync(ind, val)
+        }
+        return this
+      }
+
+      macroFromSync(ind) {
+        this.req(ind, a.isNat)
+        while (ind < this.childCount()) this.macroChildAtSync(ind++)
+        return this
+      }
+
+      async macroFromAsync(ind, val) {
+        this.req(ind, a.isNat)
+        if (a.isPromise(val)) await val
+        while (ind < this.childCount()) {
+          val = this.macroChildAt(ind)
+          if (a.isPromise(val)) await val
           ind++
         }
-
         return this
       }
 
-      macroSyncFrom(ind) {
-        this.req(ind, a.isNat)
-        while (ind < this.childCount()) this.macroSyncAt(ind++)
-        return this
+      macroChildAt(ind) {
+        const next = jn.macroCall(this.reqChildAt(ind))
+        if (a.isPromise(next)) return this.macroChildAtAsync(ind, next)
+        return this.replacedChildAt(ind, next)?.macroChildAt(ind) ?? this
       }
 
-      async macroAsyncFrom(ind) {
-        this.req(ind, a.isNat)
-        while (ind < this.childCount()) await this.macroAsyncAt(ind++)
-        return this
+      macroChildAtSync(ind) {
+        return (
+          undefined
+          ?? this.replacedChildAt(ind, jn.macroCallSync(this.reqChildAt(ind)))?.macroChildAtSync(ind)
+          ?? this
+        )
       }
 
-      async macroAsyncWith(ind, val) {
-        this.replaceChildAt(ind, await val)
-        return this.macroAsyncFrom(ind + 1)
-      }
-
-      macroAt(ind) {
-        const val = jn.macroNode(this.reqChildAt(ind))
-        if (a.isPromise(val)) return this.replaceChildAsyncAt(ind, val)
-        this.replaceChildAt(ind, val)
-        return this
-      }
-
-      macroSyncAt(ind) {
-        this.replaceChildAt(ind, jn.macroNodeSync(this.reqChildAt(ind)))
-        return this
-      }
-
-      async macroAsyncAt(ind) {
-        this.replaceChildAt(ind, await jn.macroNode(this.reqChildAt(ind)))
-        return this
+      async macroChildAtAsync(ind, next) {
+        return this.replacedChildAt(ind, await next)?.macroChildAt(ind) ?? this
       }
 
       /*
@@ -121,11 +172,22 @@ export class MixParentNodeOneToMany extends a.DedupMixinCache {
       by the macro `Quote`.
       */
       macroRepr() {
-        let ind = -1
-        while (++ind < this.childCount()) {
-          this.replaceChildAt(ind, jn.reqMacroReprNode(this.reqChildAt(ind)))
-        }
+        this.macroReprChildren()
         return super.macroRepr()
+      }
+
+      macroReprChildren() {
+        let ind = -1
+        while (++ind < this.childCount()) this.macroReprChildAt(ind)
+        return this
+      }
+
+      macroReprChildAt(ind) {
+        return (
+          undefined
+          ?? this.replacedChildAt(ind, jn.macroReprCall(this.reqChildAt(ind)))?.macroReprChildAt(ind)
+          ?? this
+        )
       }
 
       /*
@@ -155,6 +217,29 @@ export class MixParentNodeOneToMany extends a.DedupMixinCache {
         return val
       }
 
+      reqChildInstAt(ind, cls) {
+        const out = this.reqChildAt(ind)
+        if (a.isInst(out, cls)) return out
+        throw out.err(`${a.show(this)} expected the child node at index ${ind} to be an instance of ${a.show(cls)}, found ${a.show(out)}`)
+      }
+
+      optChildInstAt(ind, cls) {
+        const out = this.optChildAt(ind)
+        if (a.isNil(out)) return undefined
+        if (a.isInst(out, cls)) return out
+        throw out.err(`${a.show(this)} expected the child node at index ${ind} to be either nil or an instance of ${a.show(cls)}, found ${a.show(out)}`)
+      }
+
+      replacedChildAt(ind, next) {
+        this.optInst(next, jn.Node)
+
+        const prev = this.reqChildAt(ind)
+        if (prev === next) return undefined
+
+        if (prev) next.setSpan(prev.optSpan())
+        return this.replaceChildAt(ind, next)
+      }
+
       // Override for `Node..mapChildrenDeep`.
       mapChildrenDeep(fun) {return this.mapChildrenDeepFrom(fun, 0)}
 
@@ -171,6 +256,22 @@ export class MixParentNodeOneToMany extends a.DedupMixinCache {
         tar = super[ji.symInsp](tar)
         if (this.hasChildren()) return tar.funs(this.optChildArr)
         return tar
+      }
+    }
+  }
+}
+
+class MixParentNodeCommon extends a.DedupMixinCache {
+  static make(cls) {
+    return class MixParentNodeCommon extends cls {
+      // Override for `MixParent`.
+      reqValidChild(val) {return super.reqValidChild(this.reqInst(val, jn.Node))}
+
+      // Override for `Node..isChildStatement`.
+      isChildStatement(val) {
+        super.isChildStatement(val)
+        if (jc.conf.getDebug()) this.reqParentChildMatch(val)
+        return false
       }
     }
   }

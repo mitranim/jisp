@@ -12,7 +12,7 @@ await t.test(async function test_Func_invalid() {
 
 [func]
 `,
-    `[object Func] expected at least 2 children, got 1 children`,
+    `[object Func] expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Func_invalid() {
 
 [func 10]
 `,
-    `[object Func] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Func] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -32,7 +32,7 @@ await t.test(async function test_Func_invalid() {
 
 [func []]
 `,
-    `[object Func] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Brackets]`,
+    `[object Func] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Brackets]`,
   )
 
   await jrt.testModuleFail(
@@ -214,7 +214,7 @@ await t.test(async function test_Func_ret() {
 
 [ret 10 20]
 `,
-    `[object Ret] expected between 1 and 2 children, got 3 children`,
+    `[object Ret] expected between 0 and 1 children, got 2 children`,
   )
 
   await jrt.testModuleFail(
@@ -224,7 +224,7 @@ await t.test(async function test_Func_ret() {
 
 [ret 10 20]
 `,
-    `[object Ret] expected between 1 and 2 children, got 3 children`,
+    `[object Ret] expected between 0 and 1 children, got 2 children`,
   )
 
   await jrt.testModuleFail(

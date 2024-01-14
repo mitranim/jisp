@@ -5,17 +5,23 @@ import * as jnlm from './jisp_node_list_macro.mjs'
 import * as jniu from './jisp_node_ident_unqual.mjs'
 
 export class Quote extends jnlm.ListMacro {
-  reqVal() {return this.reqChildAt(1)}
-
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
+    this.reqChildCount(1)
     return this.macroRepr()
   }
 
-  compile() {return jn.reqCompileReprNode(this.reqVal())}
+  /*
+  This avoids calling `Node..macroRepr` for the current node, to avoid
+  pointlessly importing `Quote`'s module into the compiled code.
+  */
+  macroRepr() {return this.macroReprChildren()}
 
-  static reprModuleUrl = import.meta.url
+  compile() {return this.compileRepr()}
+
+  compileRepr() {return jn.reqCompileReprNode(this.reqFirstChild())}
+
+  static {this.setReprModuleUrl(import.meta.url)}
 }
 
 export class Unquote extends jnlm.ListMacro {
@@ -23,14 +29,12 @@ export class Unquote extends jnlm.ListMacro {
   Special interface supported by `DelimNodeList`.
   Allows this macro to be invoked inside `Quote`.
   */
-  static macroReprList(src) {return new this()}
-
-  reqVal() {return this.reqChildAt(1)}
+  static macroReprList(src) {return this.macroList(src)}
 
   macro() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
-    return this.macroFrom(1)
+    this.reqChildCount(1)
+    return this.macroFrom(0)
   }
 
   /*
@@ -43,7 +47,7 @@ export class Unquote extends jnlm.ListMacro {
   Override for `Node..compileRepr`. This should be indirectly invoked by `Quote`
   when macroing (interpolating).
   */
-  compileRepr() {return jn.reqCompileNode(this.reqVal())}
+  compileRepr() {return jn.reqCompileNode(this.reqFirstChild())}
 
   /*
   Implementing this method in addition to `.compileRepr` allows nested unquotes
@@ -51,5 +55,5 @@ export class Unquote extends jnlm.ListMacro {
   */
   compile() {return this.compileRepr()}
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

@@ -13,7 +13,7 @@ await t.test(async function test_Const() {
 
 [const]
 `,
-    `[object Const] expected exactly 3 children, got 1`,
+    `[object Const] expected exactly 2 children, got 0`,
   )
 
   await jrt.testModuleFail(
@@ -23,7 +23,7 @@ await t.test(async function test_Const() {
 
 [const one]
 `,
-    `[object Const] expected exactly 3 children, got 2`,
+    `[object Const] expected exactly 2 children, got 1`,
   )
 
   await jrt.testModuleFail(
@@ -33,7 +33,7 @@ await t.test(async function test_Const() {
 
 [const one two three]
 `,
-    `[object Const] expected exactly 3 children, got 4`,
+    `[object Const] expected exactly 2 children, got 3`,
   )
 
   await jrt.testModuleFail(
@@ -43,7 +43,7 @@ await t.test(async function test_Const() {
 
 [const 10 20]
 `,
-    `[object Const] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Const] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(

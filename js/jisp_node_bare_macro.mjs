@@ -5,6 +5,7 @@ import * as jn from './jisp_node.mjs'
 Base class for macro-style `Node` classes intended for bare-style calling.
 The typical input (source node) for such macros is `Ident`.
 Compare the base class `ListMacro` intended for list-style calling.
+Note that it's possible for one macro class to implement both styles.
 */
 export class BareMacro extends jn.Node {
   /*
@@ -13,7 +14,5 @@ export class BareMacro extends jn.Node {
   */
   static macroBare() {return new this()}
 
-  macro() {return this}
-
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

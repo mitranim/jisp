@@ -12,7 +12,7 @@ await t.test(async function test_New() {
 
 [new]
 `,
-    `[object New] expected at least 2 children, got 1`,
+    `[object New] expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(

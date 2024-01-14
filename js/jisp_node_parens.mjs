@@ -8,5 +8,5 @@ export class ParenSuf extends jnet.ExactText {static src() {return `)`}}
 export class Parens extends jndnl.DelimNodeList {
   static prefix() {return ParenPre.src()}
   static suffix() {return ParenSuf.src()}
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

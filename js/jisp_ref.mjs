@@ -66,5 +66,5 @@ export class MixRef extends a.DedupMixinCache {
 }
 
 function ownDeref(src) {
-  return a.isObj(src) && `ownDeref` in src ? src.ownDeref() : undefined
+  return a.isComp(src) && `ownDeref` in src ? src.ownDeref() : undefined
 }

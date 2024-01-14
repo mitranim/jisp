@@ -171,8 +171,7 @@ waits until its dependency B is also resolved / compiled to disk, and fail if
 it doesn't wait for dependencies.
 */
 await t.test(async function test_Import_transitive() {
-  const fs = jdft.makeTestFs()
-  const root = new jr.Root().setFs(fs)
+  const root = new jr.Root().setFs(jdft.makeTestFs())
 
   await import(
     await root.reqModuleReadyPath(

@@ -12,7 +12,7 @@ await t.test(async function test_Class_invalid() {
 
 [class]
 `,
-    `[object Class] expected at least 2 children, got 1 children`,
+    `[object Class] expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -22,7 +22,7 @@ await t.test(async function test_Class_invalid() {
 
 [class 10]
 `,
-    `[object Class] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object Class] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -45,7 +45,7 @@ await t.test(async function test_Class_extend_invalid() {
 
 [class SomeClass [.extend]]
 `,
-    `[object ClassExtend] expected at least 2 children, got 1 children`,
+    `[object ClassExtend] expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -86,7 +86,7 @@ await t.test(async function test_Class_func_invalid() {
 
 [class SomeClass [.func]]
 `,
-    `[object MethodFunc] expected at least 2 children, got 1 children`,
+    `[object MethodFunc] expected at least 1 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -96,7 +96,7 @@ await t.test(async function test_Class_func_invalid() {
 
 [class SomeClass [.func 10 []]]
 `,
-    `[object MethodFunc] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object MethodFunc] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -106,7 +106,7 @@ await t.test(async function test_Class_func_invalid() {
 
 [class SomeClass [.func someMethod 10]]
 `,
-    `[object MethodFunc] expected the child node at index 2 to be either nil or an instance of [function NodeList], found [object Num]`,
+    `[object MethodFunc] expected the child node at index 1 to be either nil or an instance of [function NodeList], found [object Num]`,
   )
 
   await jrt.testModuleFail(
@@ -177,7 +177,7 @@ await t.test(async function test_Class_let_invalid() {
 
 [class SomeClass [.let]]
 `,
-    `[object ClassLet] expected between 2 and 3 children, got 1 children`,
+    `[object ClassLet] expected between 1 and 2 children, got 0 children`,
   )
 
   await jrt.testModuleFail(
@@ -187,7 +187,7 @@ await t.test(async function test_Class_let_invalid() {
 
 [class SomeClass [.let 10]]
 `,
-    `[object ClassLet] expected the child node at index 1 to be an instance of [function IdentUnqual], found [object Num]`,
+    `[object ClassLet] expected the child node at index 0 to be an instance of [function IdentUnqual], found [object Num]`,
   )
 })
 

@@ -55,12 +55,10 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
 
     span.skip(1)
     next.setChild(prev)
+    next.initSpan().setRange(prev.reqSpan(), next.reqSpan())
 
     return this.lexNext(lex, next)
   }
-
-  // Override for `MixNamed`.
-  optName() {return a.stripPre(this.optDecompileOwn(), this.constructor.separator())}
 
   macro() {
     const chi = this.optFirstChild()
@@ -72,12 +70,12 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
       See the comment on `IdentAccess..optDerefLiveVal` for the explanation of
       this special case.
       */
-      if (jn.isBareMacro(src)) return this.setChild(jn.macroNodeSync(chi))
+      if (jn.isBareMacro(src)) return this.macroFirstChild()
 
       return this.macroWithLiveValSrc(src)
     }
 
-    return this.setChild(jn.macroNodeSync(chi))
+    return this.macroFirstChild()
   }
 
   /*
@@ -89,37 +87,14 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
     return this.macroWithLiveValSrc(this.reqResolveLiveValSrcFromAnc())
   }
 
+  // Override for `Node..compile`.
   compile() {
     return (
       ``
       + jn.reqCompileNode(this.reqFirstChild())
-      + a.reqStr(this.reqDecompileOwn())
+      + `.`
+      + a.reqValidStr(this.reqName())
     )
-  }
-
-  // Override for `Node`.
-  decompile() {
-    return this.optDecompileSrcNode() ?? (
-      a.laxStr(this.optFirstChild()?.decompile()) +
-      a.reqStr(this.reqDecompileOwn())
-    )
-  }
-
-  /*
-  Unused, TODO drop.
-
-  TODO consistent naming scheme for spans generated from combining expressions.
-  It would be simpler to just override `.optSpan` or replace `.ownSpan`, but we
-  ALSO need access to the original `.ownSpan`.
-  */
-  optSpanRange() {
-    const spanOwn = this.ownSpan()
-    if (!spanOwn) return undefined
-
-    const spanSrc = this.optFirstChild()?.optSpan()
-    if (!spanSrc) return spanOwn
-
-    return new this.Span().setRange(spanSrc, spanOwn)
   }
 
   /*
@@ -144,7 +119,7 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
   }
 
   optResolveLiveValSrcFromAnc() {
-    const key = this.optName()
+    const key = this.reqName()
     if (!key) return undefined
 
     return this.optParent()?.optAncProcure(function optResolveLiveVal(val) {
@@ -201,5 +176,5 @@ export class IdentAccess extends jpn.MixParentNodeOneToOne.goc(jni.Ident) {
     return super.optDerefLiveVal(src)
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

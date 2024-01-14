@@ -159,17 +159,17 @@ export class ImportBase extends (
   arbitrary expression. Requiring the address to be a literal string should be
   done only in statement mode.
   */
-  reqAddr() {return this.reqChildAt(1)}
-  optAddrStr() {return this.optChildAt(1)?.asOnlyInst(jnst.Str)}
-  reqAddrStr() {return this.reqChildInstAt(1, jnst.Str)}
+  reqAddr() {return this.reqChildAt(0)}
+  optAddrStr() {return this.optChildAt(0)?.asOnlyInst(jnst.Str)}
+  reqAddrStr() {return this.reqChildInstAt(0, jnst.Str)}
   optSrcPath() {return this.optAddrStr()?.reqVal()}
   reqSrcPath() {return this.reqAddrStr().reqVal()}
-  optDest() {return this.optChildAt(2)}
-  reqDest() {return this.reqChildAt(2)}
-  optDestName() {return this.optChildAt(2)?.asOnlyInst(jniu.IdentUnqual)}
-  reqDestName() {return this.reqChildInstAt(2, jniu.IdentUnqual)}
-  optDestOper() {return this.optChildAt(2)?.asOnlyInst(jnio.IdentOper)}
-  reqDestOper() {return this.reqChildInstAt(2, jnio.IdentOper)}
+  optDest() {return this.optChildAt(1)}
+  reqDest() {return this.reqChildAt(1)}
+  optDestName() {return this.optChildAt(1)?.asOnlyInst(jniu.IdentUnqual)}
+  reqDestName() {return this.reqChildInstAt(1, jniu.IdentUnqual)}
+  optDestOper() {return this.optChildAt(1)?.asOnlyInst(jnio.IdentOper)}
+  reqDestOper() {return this.reqChildInstAt(1, jnio.IdentOper)}
 
   // Indicates the expected operator name for the "star" / "mixin" form.
   mixinName() {return `*`}
@@ -198,7 +198,7 @@ export class ImportBase extends (
 
   macroStatement() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCountBetween(2, 3)
+    this.reqChildCountBetween(1, 2)
 
     /*
     In statement mode, the address must be a literal string, because that's the
@@ -222,9 +222,9 @@ export class ImportBase extends (
   */
   macroExpression() {
     this.reqEveryChildNotCosmetic()
-    this.reqChildCount(2)
+    this.reqChildCount(1)
     if (this.optAddrStr()) return this.macroModeUnnamed()
-    return this.macroFrom(1)
+    return this.macroFrom(0)
   }
 
   macroModeUnnamed() {return this}
@@ -409,5 +409,5 @@ export class ImportBase extends (
     )
   }
 
-  static reprModuleUrl = import.meta.url
+  static {this.setReprModuleUrl(import.meta.url)}
 }

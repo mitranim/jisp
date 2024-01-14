@@ -151,7 +151,7 @@ export class Module extends (
 
     const root = this.reqRoot()
     this.setTarPathAbs(await root.srcUrlStrToTarUrlStr(src))
-    this.fromJSON(a.jsonDecode(await root.optFs()?.readOpt(this.reqMetaUrl())))
+    this.fromJSON(a.jsonDecode(await root.optFs()?.optRead(this.reqMetaUrl())))
     return this
   }
 
@@ -221,7 +221,7 @@ export class Module extends (
   }
 
   async read() {
-    this.parse(await this.reqRoot().reqFs().read(this.reqSrcUrl()))
+    this.parse(await this.reqRoot().reqFs().reqRead(this.reqSrcUrl()))
     return this
   }
 
@@ -241,10 +241,10 @@ export class Module extends (
     const metaBody = a.jsonEncode(this)
 
     await Promise.all([
-      fs.write(tarUrl, tarBody),
-      fs.write(metaUrl, metaBody),
+      fs.reqWrite(tarUrl, tarBody),
+      fs.reqWrite(metaUrl, metaBody),
     ])
-    this.setTarTime(await fs.timestamp(tarUrl))
+    this.setTarTime(await fs.reqTimestamp(tarUrl))
     return this
   }
 
@@ -360,7 +360,7 @@ export class Module extends (
     await this.init()
     const tar = this.reqTarUrl()
     const fs = this.reqRoot().reqFs()
-    return fs.canReach(tar) ? fs.timestamp(tar) : 0
+    return fs.canReach(tar) ? fs.optTimestamp(tar) : 0
   }
 
   /*
@@ -375,7 +375,7 @@ export class Module extends (
   optSrcTime() {return this.#srcTime ??= this.optSrcTimeAsync()}
 
   async optSrcTimeAsync() {
-    if (this.hasFileExtSrc()) return this.reqRoot().reqFs().timestamp(this.reqSrcUrl())
+    if (this.hasFileExtSrc()) return this.reqRoot().reqFs().reqTimestamp(this.reqSrcUrl())
     return undefined
   }
 
