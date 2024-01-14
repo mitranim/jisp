@@ -5,7 +5,6 @@ import * as jn from './node.mjs'
 import * as jnlm from './node_list_macro.mjs'
 import * as jnnl from './node_node_list.mjs'
 import * as jniu from './node_ident_unqual.mjs'
-import * as jnr from './node_ret.mjs'
 
 export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
   // Used by `a.pk` and `a.Coll`.
@@ -90,7 +89,6 @@ export class FuncBase extends jns.MixOwnNsLexed.goc(jnlm.ListMacro) {
 
 export class Func extends FuncBase {
   static get async() {return FuncAsync}
-  static get asyncImplicit() {return FuncAsyncImplicit}
   static {this.setReprModuleUrl(import.meta.url)}
 }
 

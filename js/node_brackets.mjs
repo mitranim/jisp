@@ -1,4 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnet from './node_exact_text.mjs'
 import * as jndnl from './node_delim_node_list.mjs'
 

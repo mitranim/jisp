@@ -248,6 +248,7 @@ export function replaceExt(src, exp) {
 }
 */
 
+/*
 function sliceUntil(src, str) {
   src = a.reqStr(src)
   str = a.reqStr(str)
@@ -255,6 +256,7 @@ function sliceUntil(src, str) {
   if (ind >= 0) return src.slice(0, ind)
   return src
 }
+*/
 
 export function isAbsUrlStr(val) {
   return isAbsFileUrlStr(val) || isAbsNetworkUrlStr(val)

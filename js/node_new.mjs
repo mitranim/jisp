@@ -1,6 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnlm from './node_list_macro.mjs'
-import * as jniu from './node_ident_unqual.mjs'
 import * as jnbm from './node_bare_macro.mjs'
 
 export class New extends jnlm.ListMacro {

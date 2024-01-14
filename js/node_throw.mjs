@@ -1,6 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jm from './misc.mjs'
-import * as jns from './ns.mjs'
 import * as jn from './node.mjs'
 import * as jnlm from './node_list_macro.mjs'
 

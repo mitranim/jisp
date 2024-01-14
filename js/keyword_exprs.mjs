@@ -1,4 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnke from './node_keyword_expr.mjs'
 
 /*

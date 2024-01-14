@@ -1,6 +1,5 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jc from './conf.mjs'
-import * as jm from './misc.mjs'
 import * as ji from './insp.mjs'
 import * as jp from './parent.mjs'
 import * as jn from './node.mjs'

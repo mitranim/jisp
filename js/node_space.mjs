@@ -1,4 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jnt from './node_text.mjs'
 
 export class Space extends jnt.Text {

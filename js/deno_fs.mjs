@@ -1,5 +1,4 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as p from '/Users/m/code/m/js/path.mjs'
 import * as io from '/Users/m/code/m/js/io_deno.mjs'
 import * as jm from './misc.mjs'
 import * as ji from './insp.mjs'

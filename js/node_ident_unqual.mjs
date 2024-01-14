@@ -1,4 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jni from './node_ident.mjs'
 
 /*

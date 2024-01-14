@@ -1,5 +1,4 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as je from './err.mjs'
 import * as jn from './node.mjs'
 import * as jnlm from './node_list_macro.mjs'
 import * as jnf from './node_func.mjs'

@@ -1,8 +1,5 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './node.mjs'
-import * as jnnl from './node_node_list.mjs'
 import * as jnlm from './node_list_macro.mjs'
-import * as jniu from './node_ident_unqual.mjs'
 
 export class Quote extends jnlm.ListMacro {
   macro() {

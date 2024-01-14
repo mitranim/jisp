@@ -388,7 +388,7 @@ export function reqValidMacroResultSync(src, out, fun) {
   a.reqInst(src, Node)
   if (a.isNil(out)) return undefined
   if (a.isInst(out, Node)) return out
-  throw src.err(`expected macro function ${a.show(fun)} to return nil or instance of ${a.show(jn.Node)}, got unexpected value ${a.show(out)}`)
+  throw src.err(`expected macro function ${a.show(fun)} to return nil or instance of ${a.show(Node)}, got unexpected value ${a.show(out)}`)
 }
 
 // For internal use by code that invokes macro functions.
@@ -415,4 +415,8 @@ which is supported by `DelimNodeList` and used by `ListMacro`.
 */
 export function isBareMacro(val) {
   return a.isSubCls(val, Node) && `macroBare` in val
+}
+
+function msgMacroNodeSync(val) {
+  return `expected node ${a.show(val)} to macro synchronously, but received a promise`
 }

@@ -1,4 +1,3 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
 import * as jn from './node.mjs'
 
 /*

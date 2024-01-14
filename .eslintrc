@@ -92,7 +92,7 @@
     "no-unused-labels": "error",
     // "no-unused-vars": "error",
     "no-useless-catch": "error",
-    "no-useless-escape": "error",
+    // "no-useless-escape": "error",
     "no-with": "error",
     // "require-yield": "error",
     "use-isnan": "error",

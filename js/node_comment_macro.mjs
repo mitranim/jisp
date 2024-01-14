@@ -1,5 +1,4 @@
 import * as jn from './node.mjs'
-import * as jnlm from './node_list_macro.mjs'
 
 /*
 This deviates from our naming conventions in order to avoid confusion with node

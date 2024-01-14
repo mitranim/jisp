@@ -1,5 +1,4 @@
 import * as a from '/Users/m/code/m/js/all.mjs'
-import * as jc from './conf.mjs'
 import * as jm from './misc.mjs'
 
 export class Err extends Error {
