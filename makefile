@@ -45,3 +45,9 @@ else
 	eslint --config=./.eslintrc --ext=mjs $(SRC_JS)
 endif
 	$(OK)
+
+mock:
+	$(DENO) ./run.mjs
+
+mock.w:
+	$(WATCH) -e=jisp -- $(MAKE) mock

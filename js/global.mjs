@@ -39,6 +39,10 @@ export {
   _ as decodeURIComponent,
   _ as encodeURI,
   _ as encodeURIComponent,
+  _ as setTimeout,
+  _ as clearTimeout,
+  _ as setInterval,
+  _ as clearInterval,
 
   /*
   Built-in classes and namespaces.

@@ -1,5 +1,5 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
-import * as t from '/Users/m/code/m/js/test.mjs'
+import {a} from '../js/dep.mjs'
+import {t} from './test_dep.mjs'
 import * as ti from './test_init.mjs'
 import * as tu from './test_util.mjs'
 import * as jnnu from '../js/node_num.mjs'

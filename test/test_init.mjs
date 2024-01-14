@@ -1,7 +1,7 @@
-import '/Users/m/code/m/js/cli_emptty.mjs'
-import * as t from '/Users/m/code/m/js/test.mjs'
-import * as c from '/Users/m/code/m/js/cli.mjs'
+import {t, c} from './test_dep.mjs'
 import * as jc from '../js/conf.mjs'
+
+c.emptty()
 
 /*
 Should be sufficiently large to show any non-overflow stack traces, but also

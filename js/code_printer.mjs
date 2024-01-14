@@ -1,4 +1,4 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
+import {a} from './dep.mjs'
 
 /*
 A code printer should be owned by an ancestor of the AST hierarchy, such as

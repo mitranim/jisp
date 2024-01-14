@@ -1,5 +1,4 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
-import * as p from '/Users/m/code/m/js/path.mjs'
+import {a, p} from './dep.mjs'
 import * as jc from './conf.mjs'
 import * as jm from './misc.mjs'
 import * as je from './err.mjs'

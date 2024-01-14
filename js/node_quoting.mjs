@@ -1,6 +1,10 @@
 import * as jn from './node.mjs'
 import * as jnlm from './node_list_macro.mjs'
 
+/*
+Similar to quoting in traditional Lisps. Takes an arbitrary AST node and
+compiles it to an expression that constructs an equivalent node when executed.
+*/
 export class Quote extends jnlm.ListMacro {
   macro() {
     this.reqEveryChildNotCosmetic()

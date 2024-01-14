@@ -1,4 +1,4 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
+import {a} from './dep.mjs'
 
 export const symInsp     = Symbol.for(`jisp.insp`)
 export const symInspCls  = Symbol.for(`jisp.insp.cls`)

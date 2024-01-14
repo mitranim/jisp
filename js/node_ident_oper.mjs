@@ -1,4 +1,4 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
+import {a} from './dep.mjs'
 import * as jni from './node_ident.mjs'
 
 export class IdentOper extends jni.Ident {

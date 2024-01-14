@@ -1,4 +1,4 @@
-import * as a from '/Users/m/code/m/js/all.mjs'
+import {a} from './dep.mjs'
 import * as ji from './insp.mjs'
 import * as jm from './misc.mjs'
 import * as jns from './ns.mjs'
