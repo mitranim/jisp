@@ -14,7 +14,7 @@ such as `prelude.mjs` and `global.mjs`.
 export class Use extends jnib.ImportBase {
   /*
   Compare `Import..reqResolve` which registers the imported module as a
-  dependency of the source file, not a dependency of the target file.
+  dependency of the target file, not a dependency of the source file.
   */
   async reqResolve() {
     await super.reqResolve()

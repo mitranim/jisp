@@ -24,7 +24,7 @@ export function hasInternalTypeModuleNodeList(val) {
   return hasInternalType(val, symTypeModuleNodeList)
 }
 
-export function isStrOrArr(val) {return a.isStr(val) || a.isTrueArr(val)}
+export function isStrOrArr(val) {return a.isStr(val) || a.isArr(val)}
 export function reqStrOrArr(val) {return a.req(val, isStrOrArr)}
 export function preview(src) {return a.ell(src, 128)}
 export function errMeth(name, val) {throw TypeError(msgMeth(name, val))}
@@ -117,38 +117,46 @@ Should exactly match the set of names which, in ES5+, can be used on their own
 as expressions, but can not be redeclared. Attempting to redeclare such names
 typically causes a syntax error in ES.
 
-Some of these names may be declared in module scope. We provide an easy way via
-the following statement:
+To avoid generating syntactically invalid JS, we should prevent user code from
+using ES keywords and reserved names in declarations. Note that such names can
+still be used for exports. Even in ES, there are absolutely no restrictions on
+exported names.
+
+Some of these names may be used on their own as expressions. In other words,
+some of these names act as regular identifiers or nullary keywords. The
+simplest way to make them available in Jisp code is by declaring them as
+globals:
 
   [declare `jisp:global.mjs`]
 
 Some of these names can be used only in specific contexts. Examples include
-`arguments` and `super`. It's worth understanding that even names which are
-only available contextually are still reserved globally. At the time of
-writing, this rule holds for all contextual names and keywords in ES. This
-prevents contextually-provided names and keywords from accidentally masking
-user-defined names, because user-defined names are not allowed to match any
-keywords or reserved names.
+`arguments` and `super`. It's worth understanding that in ES, all names which
+have contextual meaning are always reserved globally. At the time of writing,
+this rule holds for all contextual names and keywords in ES. This prevents
+contextually-provided names and keywords from accidentally masking user-defined
+names, because user-defined names are not allowed to match any keywords or
+reserved names.
 
-In Jisp, we should NOT implicitly add names to any non-root scope. That's
-because Jisp does not have keywords or reserved names. If, for example, we
-implicitly declared `arguments` and `this` in scopes of regular functions,
-there's a possibility that in some cases, these names would accidentally mask
-identical names already in scope. We prevent user code from using ES keywords
-and reserved names in declarations, but they can be used in exports. So for
-example it's possible to export a macro named `this`, import it via the "star"
-form of the `use` macro, and refer to it in Jisp code. Implicitly declaring
-`this` in function scopes would mask that name, breaking user expectations. The
-conclusion is that languages without keywords or reserved names should avoid
-the (anti-) pattern of implicitly-added names.
+In Jisp, contextual names must also avoid collision with user-defined names.
+However, Jisp does not reserve any names, and never will. This means that
+implicit, contextual declarations must be optional in both directions:
+ancestor-wise and descendant-wise. Ancestor-wise means that if any such
+declaration would mask a name already available in the current lexical scope,
+then the declaration must be skipped. Descendant-wise means that any descendant
+user code is allowed to redeclare such names.
+
+For example, `Func` would contextually declare the macro `ret`, if and only if
+the name `ret` is completely missing from the current scope. If the name `ret`
+is already declared, then `Func` does not declare it in its namespace. If it
+does declare `ret`, it places that declaration in a "mixin" of its lexical
+namespace, thus allowing redeclaration. At the time of writing, we don't have
+such contextual declarations, but we may add them in the future.
 
 Notably, this set does not include `undefined` because at the time of writing,
 it is NOT a reserved name in ES. It's a regular predeclared identifier. In
-ES5+, the predeclared `undefined` in root scope can't be reassigned; any such
-attempt is ignored in loose mode and causes a runtime exception in strict mode.
-However, assigning to `undefined` is not a syntax error, and user code is
-allowed to redeclare `undefined` locally. For all intents and purposes,
-`undefined` is a regular identifier.
+ES5+, the predeclared `undefined` can't be reassigned or redeclared in root
+scope, but can be redeclared in local scope. Because Jisp code never runs in
+root scope, for our intents and purposes, `undefined` is a regular identifier.
 */
 export const jsReservedNames = new StrSet([`arguments`, `eval`, `false`, `null`, `super`, `this`, `true`])
 

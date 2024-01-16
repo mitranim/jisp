@@ -287,7 +287,7 @@ function testTokFail(src, msg) {
 
 function testTok(src, funs) {
   src = a.trim(src)
-  a.reqArr(funs)
+  a.reqTrueArr(funs)
 
   const tokens = new jt.Tokenizer().init(src).toArray()
 

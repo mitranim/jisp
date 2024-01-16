@@ -39,7 +39,7 @@ export class Val extends jv.MixOwnValued.goc(jn.Node) {
   static compile(node, val) {
     if (a.isNil(val) || a.isBool(val) || a.isNum(val)) return String(val)
     if (a.isStr(val)) return a.jsonEncode(val)
-    if (a.isTrueArr(val)) return this.compileArr(node, val)
+    if (a.isArr(val)) return this.compileArr(node, val)
     if (a.isDict(val)) return this.compileDict(node, val)
     throw node.err(this.msgInvalid(val))
   }

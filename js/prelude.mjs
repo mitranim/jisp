@@ -44,6 +44,7 @@ export {
   NotEqual   as neq,
   In         as in,
   Typeof     as typeof,
+  IsTypeof   as isTypeof,
   Instanceof as instanceof,
   Void       as void,
   Await      as await,

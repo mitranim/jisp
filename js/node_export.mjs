@@ -60,7 +60,7 @@ export class Export extends jnlm.ListMacro {
 
   reqCanCompile() {
     this.reqStatement()
-    if (!this.isInModuleRoot()) throw this.err(`${a.show(this)} can be used only in module root`)
+    if (!this.isInModuleTop()) throw this.err(`${a.show(this)} can be used only in module root`)
     return this
   }
 

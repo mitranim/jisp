@@ -157,7 +157,7 @@ export class ReprStrSpan extends jre.MixRepr.goc(StrSpan) {
 }
 
 export class ArrSpan extends Span {
-  setSrc(val) {return super.setSrc(a.reqArr(val))}
+  setSrc(val) {return super.setSrc(a.reqTrueArr(val))}
   optHead() {return this.at(this.ownPos())}
   at(ind) {return this.ownSrc()[a.reqNat(ind)]}
   atRel(off) {return this.at(this.ownPos() + a.reqNat(off))}

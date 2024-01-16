@@ -289,11 +289,11 @@ export class Module extends (
   }
 
   optTarUrlToTarAddr(src) {
+    if (a.isNil(src)) return undefined
     this.reqInst(src, jm.Url)
     return jm.toPosixRel(src.optRelTo(this.optTarUrl()?.toDir()))
   }
 
-  // Unused, TODO drop.
   reqTarUrlToTarAddr(src) {
     this.reqInst(src, jm.Url)
     return jm.toPosixRel(src.reqRelTo(this.reqTarUrl().toDir()))

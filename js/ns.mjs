@@ -1,4 +1,5 @@
 import {a} from './dep.mjs'
+import * as jm from './misc.mjs'
 import * as ji from './insp.mjs'
 import * as je from './err.mjs'
 import * as jmi from './mixable.mjs'

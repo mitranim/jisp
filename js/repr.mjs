@@ -21,6 +21,9 @@ export class MixRepr extends a.DedupMixinCache {
     return class MixRepr extends je.MixErrer.goc(cls) {
       /*
       This line must be EXACTLY copy-pasted into EVERY descendant class.
+      Copy-paste this: ↓↓↓
+
+        static {this.setReprModuleUrl(import.meta.url)}
 
       This property, when defined correctly, allows us to automatically import
       the current class into any generated code that uses this class. More
@@ -31,10 +34,6 @@ export class MixRepr extends a.DedupMixinCache {
       To ensure that this property is defined correctly, we require it to be
       "own". If the property is inherited, we assume that this line wasn't
       copy-pasted correctly, and reject it. See below.
-
-      Copy-paste this: ↓↓↓
-
-        static {this.setReprModuleUrl(import.meta.url)}
       */
 
       static setReprModuleUrl(val) {

@@ -19,7 +19,7 @@ TODO:
 TODO: support for JS bigints (new node class).
 */
 export class Num extends jv.MixOwnValued.goc(jnt.Text) {
-  static regexp() {return /^-?\d+(_\d+)*(?:[.]\d+(_\d+)*)?(?![\w$])/}
+  static regexp() {return /^-?\d+(?:_\d+)*(?:[.]\d+(?:_\d+)*)?(?![\w$])/}
 
   /*
   Should be used to store a string representation of a numeric literal when
@@ -90,5 +90,7 @@ export class Num extends jv.MixOwnValued.goc(jnt.Text) {
 
   static {this.setReprModuleUrl(import.meta.url)}
 
-  [ji.symInsp](tar) {return super[ji.symInsp](tar).funs(this.ownVal)}
+  [ji.symInsp](tar) {
+    return super[ji.symInsp](tar).funs(this.ownStrVal, this.optVal)
+  }
 }

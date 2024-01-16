@@ -85,13 +85,16 @@ export class ClassExtend extends jnlm.ListMacro {
   }
 
   compileExtend() {
-    let prev = ``
+    let out = ``
     let ind = -1
     while (++ind < this.childCount()) {
-      const next = jn.reqCompileNode(this.reqChildAt(ind))
-      prev = prev ? (next + `(` + prev + `)`) : next
+      out = (
+        ``
+        + jn.reqCompileNode(this.reqChildAt(ind))
+        + (out && (`(` + out + `)`))
+      )
     }
-    return a.optPre(prev, `extends `)
+    return a.optPre(out, `extends `)
   }
 
   static {this.setReprModuleUrl(import.meta.url)}

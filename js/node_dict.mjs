@@ -23,7 +23,7 @@ export class Dict extends jnlm.ListMacro {
   compile() {
     if (!(this.childCount() >= 1)) return `{}`
 
-    const src = a.reqArr(this.optChildArr())
+    const src = a.reqTrueArr(this.optChildArr())
     const len = src.length
 
     if (len % 2) {

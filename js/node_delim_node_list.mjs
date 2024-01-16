@@ -45,37 +45,34 @@ export class DelimNodeList extends jnnl.NodeList {
   Macro functions are "live values" found in the current lexical scope by
   resolving identifiers. See `Ident..reqLiveVal` and other similar methods.
 
-  This supports two different types of macro functions: subclasses of `Node`
-  and regular functions.
-
-  Subclasses of `Node` receive special treatment. They "opt into" specific
-  styles of macroing, by implementing certain optional methods. To enable
-  list-style calling, a `Node` subclass needs to implement the optional static
-  method `.macroList`. See the base class `ListMacro` used by various macro
-  classes. If the given live value is a `Node` subclass which does not
-  implement this method, we ignore it here, and macro the children of this
-  node list one by one. In such cases, the identifier in the call position
-  will handle that live value using its own rules. See also:
-
-    * `Ident` which implements support for "bare" calls.
-    * `DelimNodeList` which implements support for "list" and "repr list" calls.
-    * `BareMacro` which is used for "bare" calls.
-    * `ListMacro` which is used for "list" calls.
-    * `Unquote` which is used for "repr list" calls in `Quote`.
-
-  Regular functions are treated like in traditional Lisps: they receive their
-  arguments as AST nodes and must return AST nodes.
-
-  One notable difference with traditional Lisps is that our AST consists of
+  Just like in traditional Lisps, macro functions receive AST nodes as arguments
+  and must return AST nodes. Unlike in traditional Lisps, our AST consists of
   specialized objects, not arbitrary values. Regardless of how a macro function
   is invoked, it must return nil or an instance of `Node`. Any other return
-  value is invalid and causes an immediate exception.
+  value is invalid and causes an immediate exception. Also unlike in traditional
+  Lisps, macros can be either regular functions or classes, and can optionally
+  declare support for alternative calling styles. See below.
 
-  When invoking a regular macro function, in addition to providing the elements
-  of the node list as arguments, we also provide the list itself, as `this`.
-  The type of `this` is typically a subclass of `DelimNodeList`, such as
-  `Brackets`. Macro functions can use methods of `DelimNodeList` to validate
-  their inputs, and have access to the AST even when invoked with no arguments.
+  If the macro function doesn't declare support for alternative calling styles,
+  then we simply call it, passing list elements as arguments. We also provide
+  the list itself, as `this`. The type of `this` is typically a subclass of
+  `DelimNodeList`, such as `Brackets`. Macro functions can use methods of
+  `DelimNodeList` to validate their inputs, and have access to the AST even
+  when invoked with no arguments.
+
+  If the macro function has the optional static method `.macroList`, we call
+  this method instead of calling the function. This allows to implement macros
+  as classes and directly reference them in call positions. Most macros that
+  ship with the language are implemented this way. See the base class
+  `ListMacro` used by various macro classes.
+
+  If the macro function has the optional static method `.macroBare`, we don't
+  invoke it here. Bare-style calling is supported at the level of `Ident`.
+
+  If the macro function has the optional static method `.macroReprList`, it's
+  treated like `.macroList` when macroing in "representation" mode. See the
+  method `DelimNodeList..macroRepr` which supports this. Also see `Quote`
+  which actually uses this mode.
 
   TODO add tests for various macro behaviors, and for nil return values.
 
@@ -96,13 +93,12 @@ export class DelimNodeList extends jnnl.NodeList {
       throw this.err(`unexpected non-function live value ${a.show(fun)} in call position`)
     }
 
-    if (a.isSubCls(fun, jn.Node)) {
-      if (jn.isListMacro(fun)) {
-        return jn.reqValidMacroResult(this, fun.macroList(this), fun)
-      }
+    if (jn.isListMacro(fun)) {
+      return jn.reqValidMacroResult(this, fun.macroList(this), fun)
+    }
+    if (jn.isBareMacro(fun)) {
       return this.macroFallback()
     }
-
     return jn.reqValidMacroResult(this, fun.apply(this, this.optChildSlice(1)), fun)
   }
 

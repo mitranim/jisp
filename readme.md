@@ -2,7 +2,17 @@ Jisp rework, beta version.
 
 ## Setup
 
-Running scripts and tests currently requires `deno` and `make`, which should be installed globally. Some Make tasks also require `watchexec`.
+The build system requires the following executables in your shell environment:
+
+  * `make`
+  * `deno`
+  * `watchexec`
+
+On MacOS, `make` is preinstalled, and the rest can be installed with Homebrew:
+
+```sh
+brew install deno watchexec
+```
 
 ## Run
 
@@ -14,7 +24,7 @@ make test
 make test.w
 ```
 
-Running Jisp code requires an entry script written in JS. An example is provided with the repository. See `run.mjs`. Use any of the following Make tasks to run Jisp code.
+Running Jisp code requires an entry script written in JS. An example is provided with the repository. See `run.mjs`. Use any of the following Make tasks.
 
 ```sh
 make mock

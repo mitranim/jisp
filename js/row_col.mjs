@@ -1,7 +1,7 @@
 import {a} from './dep.mjs'
 import * as ji from './insp.mjs'
 
-// Internal tool for calculating `row:col` from scalar positions in text.
+// Internal tool for calculating row/col from linear position.
 export class RowCol extends ji.MixInsp.goc(a.Emp) {
   #row = undefined
   setRow(val) {return this.#row = a.reqNat(val), this}

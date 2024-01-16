@@ -49,10 +49,10 @@ export class ModuleNodeList extends jns.MixOwnNsLexed.goc(jnnl.NodeList) {
   isChildStatement() {return true}
 
   /*
-  Override for `Node..isModuleRoot`. Enables features that work only in module
+  Override for `Node..isModuleTop`. Enables features that work only in module
   root due to JS limitations.
   */
-  isModuleRoot() {return true}
+  isModuleTop() {return true}
 
   /*
   Override for `Node..err` to avoid appending source code context to error

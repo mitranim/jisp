@@ -106,8 +106,8 @@ export class Import extends jnib.ImportBase {
     if (!this.isStatement()) {
       throw this.err(`statement mode of ${a.show(this)} can be used only in statement position`)
     }
-    if (!this.isInModuleRoot()) {
-      throw this.err(`statement mode of ${a.show(this)} can be used only in module root`)
+    if (!this.isInModuleTop()) {
+      throw this.err(`statement mode of ${a.show(this)} can be used only at the top level of a module`)
     }
     return this
   }

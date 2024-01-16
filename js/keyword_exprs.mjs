@@ -249,6 +249,11 @@ export class Typeof extends jnke.KeywordExpr_1 {
   static {this.setReprModuleUrl(import.meta.url)}
 }
 
+export class IsTypeof extends jnke.KeywordExpr_2 {
+  binaryInfix() {return `=== typeof`}
+  static {this.setReprModuleUrl(import.meta.url)}
+}
+
 export class Instanceof extends jnke.KeywordExpr_2 {
   binaryInfix() {return `instanceof`}
   static {this.setReprModuleUrl(import.meta.url)}

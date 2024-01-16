@@ -36,12 +36,13 @@ which are actually unary operators (like `typeof`), binary operators (like
 `instanceof`), declarations (like `const` or `function`), and so on.
 
 Jisp does not have keywords. Names such as `typeof` or `const` are regular
-identifiers. We can't directly compile such names into JS, because that would
-generate invalid JS that fails to parse. However, we can use such names to
-reference macros, which also removes those identifiers from the AST. We also
-ensure that such names are never accidentally compiled into JS, by detecting
-such attempts and throwing descriptive exceptions pointing to the offending
-Jisp code. See the methods `Ident..reqNotKeyword` and `Ident..compile`.
+identifiers. We can't compile identifiers with those names into JS identifiers,
+because that would generate invalid JS that fails to parse. However, we can use
+such names to reference macros. Macro execution removes those identifiers from
+the AST. We also ensure that such names are never accidentally compiled into
+JS, by detecting such attempts and throwing descriptive exceptions pointing to
+the offending Jisp code. See the methods `Ident..reqNotKeyword` and
+`Ident..compile`.
 
 ## Reserved names
 

@@ -233,15 +233,15 @@ export class Node extends (
   }
 
   /*
-  Enables special JS semantics only available in module root, most notably the
-  ability to use `import` and `export` statements. Should be overridden in
-  subclasses.
+  Enables special JS semantics only available at the top level of a module,
+  most notably the ability to use `import` and `export` statements. Should
+  be overridden in subclasses.
   */
-  isModuleRoot() {return false}
+  isModuleTop() {return false}
 
-  isInModuleRoot() {return a.laxBool(this.optParentNode()?.isModuleRoot())}
+  isInModuleTop() {return a.laxBool(this.optParentNode()?.isModuleTop())}
 
-  isExportable() {return this.isStatement() && this.isInModuleRoot()}
+  isExportable() {return this.isStatement() && this.isInModuleTop()}
 
   /*
   Some node types may override this to indicate that they may be safely elided
@@ -399,22 +399,28 @@ export async function reqValidMacroResultAsync(src, out, fun) {
 }
 
 /*
-The optional method `.macroList` is implemented by `ListMacro` and its
-subclasses. This interface allows our `Node` subclasses to optionally
-implement support for list-style calling.
+The optional method `.macroList` is supported by `DelimNodeList` and used by
+`ListMacro` and its subclasses. This interface allows us to implement macros
+as subclasses of `Node` and directly reference them in macro call positions.
+Most macros that ship with the language are implemented this way. Without this
+interface, every macro implemented as a `Node` subclass would require an
+associated wrapper function.
 */
 export function isListMacro(val) {
-  return a.isSubCls(val, Node) && `macroList` in val
+  return a.isComp(val) && `macroList` in val && a.isFun(val.macroList)
 }
 
 /*
-The optional method `.macroBare` is implemented by `BareMacro` and its
-subclasses. This interface allows our `Node` subclasses to optionally
-implement support for bare-style calling. Compare list-style calling
-which is supported by `DelimNodeList` and used by `ListMacro`.
+The optional method `.macroBare` is supported by `Ident` and used by `BareMacro`
+and its subclasses. This interface allows for bare-style macro calls, where the
+input to a macro is an identifier referencing that macro, not the enclosing list
+if any.
+
+Compare list-style calling which is supported by `DelimNodeList` and used by
+`ListMacro` and its subclasses.
 */
 export function isBareMacro(val) {
-  return a.isSubCls(val, Node) && `macroBare` in val
+  return a.isComp(val) && `macroBare` in val && a.isFun(val.macroBare)
 }
 
 function msgMacroNodeSync(val) {

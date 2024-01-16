@@ -92,7 +92,7 @@ contexts:
   braces-match:
     - match: \{
       scope: punctuation.section.braces.begin.jisp
-      push: brace-pop
+      push: [brace-pop, list-head-pop]
     - match: \}
       scope: punctuation.section.braces.end.jisp invalid.illegal.jisp
 
@@ -120,7 +120,7 @@ contexts:
   parens-match:
     - match: \(
       scope: punctuation.section.parens.begin.jisp
-      push: paren-pop
+      push: [paren-pop, list-head-pop]
     - match: \)
       scope: punctuation.section.parens.end.jisp invalid.illegal.jisp
 
