@@ -1,20 +1,13 @@
-import {a} from '../js/dep.mjs'
-import {t} from './test_dep.mjs'
+import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
+import * as c from '../js/core.mjs'
 import * as pre from '../js/prelude.mjs'
-import * as jmo from '../js/module.mjs'
-import * as jns from '../js/ns.mjs'
-import * as jcpd from '../js/code_printed.mjs'
 
 const src = Deno.readTextFileSync(new URL(`../test_files/test_bench.jisp`, import.meta.url))
 
-const live = new jns.NsLiveUnref().setLiveVal(pre)
-
-class TestModule extends jcpd.MixOwnCodePrinted.goc(jmo.Module) {
+class TestModule extends c.Module {
   testRun() {
-    const list = this.reqNodeList()
-    list.reqNsLex().addMixin(live)
-    list.parse(src).macro().compile()
+    c.joinStatements(c.compileNodes(c.macroNodes(c.ctxWithModule(c.ctxWithMixin(pre), this), [...new this.Reader(src)])))
   }
 }
 

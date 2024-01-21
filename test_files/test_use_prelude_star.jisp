@@ -1,5 +1,0 @@
-[use `jisp:prelude.mjs` *]
-
-[import `https://example.com/some_js_module.mjs` someLib]
-[const someConst `some_const_value`]
-[func someFunc [] `some_func_value`]

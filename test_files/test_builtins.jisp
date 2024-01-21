@@ -1,20 +1,11 @@
-;;
-When the tokenizer runs in default mode, this comment should be omitted
-from the AST. Preserving comments and whitespace is an opt-in setting.
-When preserving comments and whitespace, this should be the first node
-in the AST.
-;;
+;; This comment should be elided from the AST and the compiled code. ;;
 
-10
+123n
 
-20.30
+123.456
 
 `string_backtick`
 
 "string_double"
 
-identUnqualified
-
-identNamespace.identQualified
-
-[40 50 60]
+[10 [20 30 [40 50 60]]]

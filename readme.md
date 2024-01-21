@@ -27,6 +27,8 @@ make test.w
 Running Jisp code requires an entry script written in JS. An example is provided with the repository. See `run.mjs`. Use any of the following Make tasks.
 
 ```sh
+touch main.jisp
+
 make mock
 make mock.w
 make mock.w clear=true

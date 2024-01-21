@@ -1,5 +1,0 @@
-[use `jisp:prelude.mjs` *]
-
-[const someConst `some_const_value`]
-
-[func someFunc [] `some_func_value`]

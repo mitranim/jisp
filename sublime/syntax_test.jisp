@@ -112,26 +112,31 @@ Some text followed by # not Markdown heading.
 
 ;;
 
+;; Invalid: ;;
 .0
 .1
 .12
 .123
 
+;; Invalid: ;;
 -.0
 -.1
 -.12
 -.123
 
+;; Invalid: ;;
 .0ident
 .1ident
 .12ident
 .123ident
 
+;; Invalid: ;;
 -.0ident
 -.1ident
 -.12ident
 -.123ident
 
+;; Invalid: ;;
 0ident
 1ident
 12ident
@@ -156,6 +161,31 @@ Some text followed by # not Markdown heading.
 -1.2
 -12.3
 -123.4
+
+;; Invalid: ;;
+0nident
+-0nident
+1nident
+-1nident
+12nident
+-12nident
+
+;; Invalid: ;;
+0.0n
+-0.0n
+0.1n
+-0.1n
+0.12n
+-0.12n
+12.34n
+-12.34n
+
+0n
+-0n
+1n
+-1n
+12n
+-12n
 
 ``
 ""
@@ -305,6 +335,7 @@ three
 ~~~ !!! @@@ ### %%% ^^^ &&& *** ::: <<< >>> ??? /// \\\ ||| === +++ ---
 ~-+ !~- @!~ #@! %#@ ^%# &^% *&^ :*& <:* ><: ?>< /?> \/? |\/ =|\ +=| -+=
 
+;; Invalid: ;;
 ~123
 !123
 @123
@@ -323,6 +354,13 @@ three
 =123
 +123
 
+;; Invalid: ;;
+--123
++-123
+-+123
+++123
+
+;; Invalid: ;;
 123-
 123~
 123!
@@ -343,6 +381,7 @@ three
 123+
 123-
 
+;; Invalid: ;;
 ~`str`
 !`str`
 @`str`
@@ -361,6 +400,26 @@ three
 =`str`
 +`str`
 
+;; Valid: ;;
+~ `str`
+! `str`
+@ `str`
+# `str`
+% `str`
+^ `str`
+& `str`
+* `str`
+: `str`
+< `str`
+> `str`
+? `str`
+/ `str`
+\ `str`
+| `str`
+= `str`
++ `str`
+
+;; Invalid: ;;
 `str`-
 `str`~
 `str`!
@@ -381,6 +440,28 @@ three
 `str`+
 `str`-
 
+;; Valid: ;;
+`str` -
+`str` ~
+`str` !
+`str` @
+`str` #
+`str` %
+`str` ^
+`str` &
+`str` *
+`str` :
+`str` <
+`str` >
+`str` ?
+`str` /
+`str` \
+`str` |
+`str` =
+`str` +
+`str` -
+
+;; Invalid: ;;
 ~ident
 !ident
 @ident
@@ -399,6 +480,26 @@ three
 =ident
 +ident
 
+;; Valid: ;;
+~ ident
+! ident
+@ ident
+# ident
+% ident
+^ ident
+& ident
+* ident
+: ident
+< ident
+> ident
+? ident
+/ ident
+\ ident
+| ident
+= ident
++ ident
+
+;; Invalid: ;;
 ident-
 ident~
 ident!
@@ -418,6 +519,27 @@ ident|
 ident=
 ident+
 ident-
+
+;; Valid: ;;
+ident -
+ident ~
+ident !
+ident @
+ident #
+ident %
+ident ^
+ident &
+ident *
+ident :
+ident <
+ident >
+ident ?
+ident /
+ident \
+ident |
+ident =
+ident +
+ident -
 
 one
 one.two
@@ -557,23 +679,43 @@ pre.class
 [pre.class name]
 
 [class name
-  [.func                name]
-  [.static.func         name]
-  [.func.variant        name]
-  [.static.func.variant name]
+  [meth                name]
+  [static.meth         name]
+  [meth.variant        name]
+  [static.meth.variant name]
 
-  [.func                name []]
-  [.static.func         name []]
-  [.func.variant        name []]
-  [.static.func.variant name []]
+  [.meth                name]
+  [.static.meth         name]
+  [.meth.variant        name]
+  [.static.meth.variant name]
 
-  [.func                name [param]]
-  [.static.func         name [param]]
-  [.func.variant        name [param]]
-  [.static.func.variant name [param]]
+  [meth                name []]
+  [static.meth         name []]
+  [meth.variant        name []]
+  [static.meth.variant name []]
 
-  [.func                name [param param]]
-  [.static.func         name [param param]]
-  [.func.variant        name [param param]]
-  [.static.func.variant name [param param]]
+  [.meth                name []]
+  [.static.meth         name []]
+  [.meth.variant        name []]
+  [.static.meth.variant name []]
+
+  [meth                name [param]]
+  [static.meth         name [param]]
+  [meth.variant        name [param]]
+  [static.meth.variant name [param]]
+
+  [.meth                name [param]]
+  [.static.meth         name [param]]
+  [.meth.variant        name [param]]
+  [.static.meth.variant name [param]]
+
+  [meth                name [param param]]
+  [static.meth         name [param param]]
+  [meth.variant        name [param param]]
+  [static.meth.variant name [param param]]
+
+  [.meth                name [param param]]
+  [.static.meth         name [param param]]
+  [.meth.variant        name [param param]]
+  [.static.meth.variant name [param param]]
 ]
