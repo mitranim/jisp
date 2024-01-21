@@ -86,6 +86,7 @@ export class Reader extends Span {
 
   more() {return this.skippedCosmetic(), this.hasMore()}
 
+  // SYNC[delim].
   reqDelim() {
     const head = this.src[this.pos]
     if (

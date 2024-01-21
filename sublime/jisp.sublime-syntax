@@ -20,21 +20,33 @@ variables:
   space: \s*
   eol: (?:\n|$)
 
+  # SYNC[delim].
+  delim_chars: '\s\{\}\[\]\(\)'
+
   # int_bin: '(?:[0-1][0-1_]*)'
   # int_oct: '(?:[0-7][0-7_]*)'
   int_dec: '(?:[0-9][0-9_]*)'
   # int_hex: '(?:[0-9a-f][0-9a-f_]*)'
 
-  # SYNC[ident_oper].
-  operator_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
-  operator: '[{{operator_chars}}]+'
+  # Our reader should recognize any sequence of these characters as a symbol.
+  # However, some should be recognized as invalid, like `...` or `one!@#`.
+  sym: '{{sym_break_begin}}[{{sym_chars}}]+{{sym_break_end}}'
+  sym_chars: '{{accessor}}{{ident_chars}}{{operator_chars}}'
+  sym_break_begin: (?<![{{sym_chars}}])
+  sym_break_end: (?![{{sym_chars}}])
 
+  # SYNC[ident_unqual].
+  ident: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*{{ident_break_end}}'
   ident_begin_chars: '[:alpha:]_$'
   ident_chars: '[:alnum:]_$'
-  entity_chars: '{{ident_chars}}{{operator_chars}}'
   ident_break_begin: (?<![{{ident_chars}}])
   ident_break_end: (?![{{ident_chars}}])
-  ident: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*{{ident_break_end}}'
+
+  # SYNC[ident_oper].
+  operator: '{{operator_break_begin}}[{{operator_chars}}]+{{operator_break_end}}'
+  operator_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
+  operator_break_begin: (?<![{{operator_chars}}])
+  operator_break_end: (?![{{operator_chars}}])
 
 contexts:
   prototype:
@@ -45,8 +57,7 @@ contexts:
     - include: delim-match
     - include: number-match
     - include: string-match
-    - include: operator-match
-    - include: ident-match
+    - include: sym-match
     - include: punct-match
 
   comment-match:
@@ -55,7 +66,7 @@ contexts:
   comment-fenced-match:
     - match: '{{comment_fence}}'
       scope: comment.block.jisp punctuation.definition.comment.begin.jisp
-      push: [req-delim-pop, comment-block-meta, comment-fenced-pop]
+      push: [req-delim-pop-now, comment-block-meta, comment-fenced-pop]
 
   comment-fenced-pop:
     - meta_include_prototype: false
@@ -87,7 +98,7 @@ contexts:
   braces-match:
     - match: \{
       scope: punctuation.section.braces.begin.jisp
-      push: [braces-pop, list-head-pop]
+      push: [braces-meta, braces-pop, list-head-pop]
     - match: \}
       scope: punctuation.section.braces.end.jisp invalid.illegal.jisp
 
@@ -96,15 +107,18 @@ contexts:
     - include: main
 
   brace-pop:
-    - meta_scope: meta.block.jisp meta.braces.jisp
     - match: \}
       scope: punctuation.section.braces.end.jisp
       pop: 1
 
+  braces-meta:
+    - meta_content_scope: meta.block.jisp meta.braces.jisp
+    - include: now-pop
+
   brackets-match:
     - match: \[
       scope: punctuation.section.brackets.begin.jisp
-      push: [brackets-pop, list-head-pop]
+      push: [brackets-meta, brackets-pop, list-head-pop]
     - match: \]
       scope: punctuation.section.brackets.end.jisp invalid.illegal.jisp
 
@@ -113,15 +127,18 @@ contexts:
     - include: main
 
   bracket-pop:
-    - meta_scope: meta.block.jisp meta.brackets.jisp
     - match: \]
       scope: punctuation.section.brackets.end.jisp
       pop: 1
 
+  brackets-meta:
+    - meta_content_scope: meta.block.jisp meta.brackets.jisp
+    - include: now-pop
+
   parens-match:
     - match: \(
       scope: punctuation.section.parens.begin.jisp
-      push: [parens-pop, list-head-pop]
+      push: [parens-meta, parens-pop, list-head-pop]
     - match: \)
       scope: punctuation.section.parens.end.jisp invalid.illegal.jisp
 
@@ -130,10 +147,13 @@ contexts:
     - include: main
 
   paren-pop:
-    - meta_scope: meta.block.jisp meta.parens.jisp
     - match: \)
       scope: punctuation.section.parens.end.jisp
       pop: 1
+
+  parens-meta:
+    - meta_content_scope: meta.block.jisp meta.parens.jisp
+    - include: now-pop
 
   punct-match:
     - include: accessor-match
@@ -141,6 +161,12 @@ contexts:
   accessor-match:
     - match: '{{accessor}}'
       scope: punctuation.accessor.dot.jisp
+
+  accessor-pop-now:
+    - match: '{{accessor}}'
+      scope: punctuation.accessor.dot.jisp
+      pop: 1
+    - include: now-pop
 
   number-match:
     - include: number-bigint-match
@@ -152,7 +178,7 @@ contexts:
       captures:
         1: keyword.operator.arithmetic.jisp
         2: constant.numeric.suffix.jisp
-      push: req-delim-pop
+      push: req-delim-pop-now
 
   # Must match `Num.regex`.
   number-dec-match:
@@ -165,14 +191,14 @@ contexts:
       captures:
         1: keyword.operator.arithmetic.jisp
         2: punctuation.separator.decimal.jisp
-      push: req-delim-pop
+      push: req-delim-pop-now
 
   number-dec-int-match:
     - match: '(-)?{{int_dec}}'
       scope: constant.numeric.jisp
       captures:
         1: keyword.operator.arithmetic.jisp
-      push: req-delim-pop
+      push: req-delim-pop-now
 
   string-match:
     - include: string-backtick-match
@@ -194,7 +220,7 @@ contexts:
   string-backtick-fenced-match:
     - match: '{{string_backtick_fence}}'
       scope: string.quoted.other.jisp punctuation.definition.string.begin.jisp
-      push: [req-delim-pop, string-backtick-meta, string-backtick-pop]
+      push: [req-delim-pop-now, string-backtick-meta, string-backtick-pop]
 
   string-backtick-pop:
     - meta_include_prototype: false
@@ -222,7 +248,7 @@ contexts:
   string-double-fenced-match:
     - match: '{{string_double_fence}}'
       scope: string.quoted.double.jisp punctuation.definition.string.begin.jisp
-      push: [req-delim-pop, string-double-meta, string-double-pop]
+      push: [req-delim-pop-now, string-double-meta, string-double-pop]
 
   string-double-pop:
     - meta_include_prototype: false
@@ -239,33 +265,42 @@ contexts:
     - match: '{{char_escape}}'
       scope: constant.character.escape.jisp
 
+  sym-match:
+    - include: sym-constant-match
+    - include: ident-match
+    - include: operator-match
+
+  ident-match:
+    - include: ident-unqual-match
+
   operator-match:
     - match: '{{operator}}'
       scope: keyword.operator.jisp
-      push: req-delim-after-sym-pop
+      push: req-delim-after-sym-pop-now
 
-  ident-match:
-    - include: ident-constant-match
-    - include: ident-unqual-match
-
-  # Questionable special case, provided for syntactical consistency with other
-  # languages. Unlike most languages, Jisp does not have any keywords or
-  # reserved words, and these "constants" are regular identifiers exported by
-  # prelude, which is completely optional. They can be used unqualified or
-  # qualified, and more importantly, they can be renamed or replaced. There is
-  # really totally nothing special about them. We may reconsider this.
-  ident-constant-match:
-    - match: '{{ident_break_begin}}(?:nil|null|no|ok|nan|inf){{ident_break_end}}'
+  # This special case is a little shaky. Unlike most languages, Jisp does not
+  # have any keywords or reserved words, and it's perfectly possible for these
+  # names to refer to something other than the built-in constants. However, the
+  # vast majority of code is expected to simply `[declare globals]` and never
+  # redeclare them. The only issue here is that we accidentally scope these
+  # names as constants even when they're qualified. Should fix that and scope
+  # them as constants only when unqualified.
+  #
+  # This includes `void` because the `void` macro exported by our prelude module
+  # supports the "bare" mode which compiles to `undefined`, and we assume that
+  # if anyone redeclares `void`, the redeclaration will have similar behaviors.
+  # Note that `void` is a keyword in JS, so the chances of accidental collision
+  # are slim.
+  sym-constant-match:
+    - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_break_end}}'
       scope: constant.language.jisp
-      push: req-delim-after-sym-pop
+      push: req-delim-pop-now
 
-  # Naming refers to `IdentUnqual`.
   ident-unqual-match:
     - match: '{{ident}}'
       scope: variable.other.jisp
-      push: req-delim-after-sym-pop
+      push: req-delim-after-sym-pop-now
 
-  # Naming refers to `IdentAccess`.
   ident-access-pop-multi:
     - match: '({{accessor}}){{space}}({{ident}})'
       captures:
@@ -283,7 +318,7 @@ contexts:
   call-unknown-pop-opt:
     - match: '{{ident}}(?!{{accessor}})'
       scope: variable.function.jisp
-      set: req-delim-after-sym-pop
+      set: req-delim-after-sym-pop-now
 
   call-known-pop-opt:
     - include: call-use-pop
@@ -297,12 +332,12 @@ contexts:
   call-use-pop:
     - match: '{{ident_break_begin}}use{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [import-addr-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [import-addr-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   call-import-pop:
     - match: '{{ident_break_begin}}import{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [import-addr-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [import-addr-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   # Semi-placeholder. Instead of special-case string support, we should pop an
   # arbitrary expression here.
@@ -312,54 +347,54 @@ contexts:
       captures:
         1: punctuation.definition.string.begin.jisp
         2: punctuation.definition.string.end.jisp
-      set: [import-decl-pop, req-delim-pop]
+      set: [import-decl-pop, req-delim-pop-now]
 
     - match: '({{string_double_delim}})[^{{string_double_delim}}]*({{string_double_delim}})(?!{{string_double_delim}})'
       scope: string.quoted.double.jisp
       captures:
         1: punctuation.definition.string.begin.jisp
         2: punctuation.definition.string.end.jisp
-      set: [import-decl-pop, req-delim-pop]
+      set: [import-decl-pop, req-delim-pop-now]
 
     - include: nonblank-pop
 
   import-decl-pop:
     - match: '{{ident}}'
       scope: meta.binding.name.jisp variable.other.jisp
-      set: req-delim-after-sym-pop
+      set: req-delim-after-sym-pop-now
     - include: nonblank-pop
 
   call-const-pop:
     - match: '{{ident_break_begin}}const{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [declare-variable-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [declare-variable-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   call-let-pop:
     - match: '{{ident_break_begin}}let{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [declare-variable-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [declare-variable-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   declare-variable-pop:
     - match: '{{ident}}'
       scope: meta.binding.name.jisp entity.name.jisp
-      set: req-delim-after-sym-pop
+      set: req-delim-after-sym-pop-now
     - include: nonblank-pop
 
   call-func-pop:
     - match: '{{ident_break_begin}}func{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [func-name-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [func-name-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   func-name-pop:
     - match: '{{ident}}'
       scope: entity.name.function.jisp
-      set: [params-outer-pop, req-delim-after-sym-pop]
+      set: [params-outer-pop, req-delim-after-sym-pop-now]
     - include: nonblank-pop
 
   call-meth-pop:
     - match: '{{ident_break_begin}}meth{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [func-name-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [func-name-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   params-outer-pop:
     - match: \{
@@ -388,27 +423,27 @@ contexts:
   params-inner-match:
     - match: '{{ident}}(?!{{accessor}})'
       scope: variable.parameter.jisp
-      push: req-delim-after-sym-pop
+      push: req-delim-after-sym-pop-now
     - include: main
 
   call-class-pop:
     - match: '{{ident_break_begin}}class{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [class-name-pop, ident-access-pop-multi, req-delim-after-sym-pop]
+      set: [class-name-pop, ident-access-pop-multi, req-delim-after-sym-pop-now]
 
   class-name-pop:
     - match: '{{ident}}'
       scope: entity.name.class.jisp
-      set: req-delim-after-sym-pop
+      set: req-delim-after-sym-pop-now
     - include: nonblank-pop
 
-  req-delim-after-sym-pop:
-    - match: '[^.\s{}\[\]()]+'
+  req-delim-after-sym-pop-now:
+    - match: '[^{{accessor}}{{delim_chars}}]+'
       scope: invalid.illegal.jisp
     - include: now-pop
 
-  req-delim-pop:
-    - match: '[^\s{}\[\]()]+'
+  req-delim-pop-now:
+    - match: '[^{{delim_chars}}]+'
       scope: invalid.illegal.jisp
     - include: now-pop
 
