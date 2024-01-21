@@ -32,5 +32,6 @@ await import(`./keyword_exprs_test.mjs`)
 await import(`./node_class_test.mjs`)
 await import(`./node_export_test.mjs`)
 await import(`./node_quoting_test.mjs`)
+await import(`./test_bench.mjs`)
 
 if (import.meta.main) ti.flush()

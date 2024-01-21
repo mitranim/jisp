@@ -1,0 +1,52 @@
+;;
+This file should be used for benching.
+
+This assumes that the prelude is pre-imported into the module scope in mixin
+mode. We do that for this benchmark because our `use` macro is asynchonous,
+but we want to run the benchmark synchronously.
+;;
+
+123
+123.456
+`some_string`
+"some_string"
+
+````
+some
+multiline
+string
+````
+
+""""
+some
+multiline
+string
+""""
+
+[const pubConst [func privFunc [one two three]
+  [if one two three]
+]]
+
+[func pubFunc [one two three]
+  [if one [do two three] [do one two three]]
+  [if one [do two three] [do one two three]]
+  [if one [do two three] [do one two three]]
+]
+
+[class PubCls
+  [.extend pubFunc]
+
+  [.let someField `some_value`]
+
+  [.func someMethod [one two three]
+    [if one [do two three] [do one two three]]
+    [if one [do two three] [do one two three]]
+    [if one [do two three] [do one two three]]
+  ]
+
+  [.static
+    [if 10 20 30]
+    [if 10 20 30]
+    [if 10 20 30]
+  ]
+]
