@@ -112,6 +112,4 @@ async function skipNotFound(val) {
   }
 }
 
-function showPath(val) {
-  return a.isScalar(val) ? a.show(a.render(val)) : a.show(val)
-}
+function showPath(val) {return a.show(a.renderOpt(val) ?? val)}

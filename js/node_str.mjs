@@ -88,7 +88,7 @@ export class StrDouble extends Str {
   */
   decode(val) {
     a.reqStr(val)
-    if (val.includes(`\\`)) return JSON.parse(`"` + a.reqStr(val) + `"`)
+    if (val.includes(`\\`)) return JSON.parse(`"` + val + `"`)
     return val
   }
 

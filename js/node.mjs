@@ -54,17 +54,17 @@ Step 1.
 Macroing `child0` causes it to replace itself with `child1`. The parent gets a
 new child, the new child gets the old parent, bilaterally.
 
-                parent
-   role = child ↓    ↑ role = parent
-                child1
+               parent
+  role = child ↓    ↑ role = parent
+               child1
 
 The old child keeps its old parent, unilaterally. This should be of little
 relevance because we tend to discard the old child, keeping only its source
 span, if any.
 
-                parent
-                     ↑ role = parent
-                child0
+               parent
+                    ↑ role = parent
+               child0
 
 Each relation type must avoid cycles. At the time of writing, `MixChild`
 prevents cycles. `MixParentOneToOne` and `MixParentOneToMany` do not prevent

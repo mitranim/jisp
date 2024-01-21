@@ -23,7 +23,8 @@ ifeq ($(verb),true)
 	OK = echo [$@] ok
 endif
 
-# TODO also watch files read by tests, in addition to imported by tests.
+# TODO also watch files read by tests, in addition to those imported by tests,
+# by passing their paths to Deno's `--watch` flag.
 test.w:
 	$(DENO) --watch $(TEST) --watch
 

@@ -41,11 +41,9 @@ export class Module extends (
   This doesn't include timestamps because they may change afterwards.
   More specifically, they may change between compilation passes.
 
-  During a single compilation pass, each module should be generated 0 or 1
-  times. 0 times is when the given module is used as-is. 1 time is when the
-  given module requires compilation or recompilation. This means once a
-  timestamp of some target module is obtained, it doesn't change during that
-  compilation pass.
+  During a single compilation pass, each Jisp module may be reused as-is or
+  recompiled, but no more than once. This means once a timestamp of some target
+  module is obtained, it doesn't change during that compilation pass.
 
   A target timestamp from a previous compilation pass is invalid for the next
   compilation pass. It may change if the target was originally generated from
