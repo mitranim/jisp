@@ -380,23 +380,26 @@ export function $do() {
 }
 
 export function doAsStatement(...src) {
-  if (c.isVacuous(src)) return []
-  const ctx = c.ctxWithStatement(c.ctxReqStatement(this))
-  return new c.Raw(c.compileBlock(c.macroNodes(ctx, src)))
+  src = c.macroNodes(c.ctxWithStatement(c.ctxReqStatement(this)), src)
+  src = c.compileNodes(src).join(c.statementSep)
+  return src ? new c.Raw(c.wrapBracesMultiLine(src)) : []
 }
 
 export function doAsExpression(...src) {
-  if (c.isVacuous(src)) return undefined
-  const ctx = c.ctxToExpression(this)
-  if (src.length === 1) return c.macroNode(ctx, src[0])
-  return new c.Raw(c.compileSequenceExpression(c.macroNodes(ctx, src)))
+  src = c.compileNodes(c.macroNodes(c.ctxToExpression(this), src))
+  switch (src.length) {
+    case 0: return undefined
+    case 1: return new c.Raw(src[0])
+    default: return new c.Raw(c.wrapParens(src.join(c.expressionSep)))
+  }
 }
 
 export {$void as void}
 
-export function $void(...src) {
-  if (c.isVacuous(src)) return undefined
-  const out = `void ` + c.compileNode(doAsExpression.apply(this, arguments))
+export function $void() {
+  let out = doAsExpression.apply(this, arguments)
+  if (!out) return undefined
+  out = `void ` + out
   return new c.Raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
 }
 
@@ -409,6 +412,11 @@ export function ret(val) {
   c.ctxReqStatement(this)
   val = arguments.length ? c.compileNode(c.macroNode(Object.create(this), val)) : ``
   if (val) return new c.Raw(`return ` + val)
+  return new c.Raw(`return`)
+}
+
+ret.default = function retBare() {
+  c.ctxReqStatement(this)
   return new c.Raw(`return`)
 }
 
@@ -684,7 +692,7 @@ export function isSome(val) {
 }
 
 export function list(...src) {
-  return new c.Raw(c.wrapBrackets(c.joinExpressions(macroCompileExprs(this, src))))
+  return new c.Raw(c.wrapBrackets(macroCompileExprs(this, src).join(c.expressionSep)))
 }
 
 export function dict(...src) {
@@ -697,7 +705,7 @@ export function dict(...src) {
   const buf = []
   let ind = 0
   while (ind < len) buf.push(dictEntry(ctx, src[ind++], src[ind++]))
-  const out = c.wrapBraces(c.joinExpressions(buf))
+  const out = c.wrapBraces(buf.join(c.expressionSep))
   return new c.Raw(sta ? c.wrapParens(out) : out)
 }
 
@@ -716,33 +724,6 @@ function dictKey(val) {
   if (c.isSym(val)) return identOrStr(val.description)
   throw SyntaxError(`dict keys must be identifiers, strings, or numbers; got ${c.show(val)}`)
 }
-
-/*
-export function dict1(...src) {
-  const out = Object.create(null)
-  const len = src.length
-  if (!len) return out
-  if (len % 2) throw SyntaxError(`expected an even number of inputs, got ${len} inputs`)
-
-  const ctx = c.ctxToExpression(this)
-  let ind = 0
-  while (ind < len) {
-    out[toValidDictKey(src[ind++])] = c.macroNode(ctx, src[ind++])
-  }
-  return out
-}
-
-function toValidDictKey(val) {
-  if (c.isFin(val)) return String(val)
-  if (c.isBigInt(val)) return String(val)
-  if (c.isStr(val)) return val
-  if (c.isSym(val)) {
-    const desc = val.description
-    if (c.regIdentFull.test(desc)) return desc
-  }
-  throw SyntaxError(`dict keys must be identifiers, strings, or numbers; got ${c.show(val)}`)
-}
-*/
 
 export function get(...src) {
   src = macroCompileExprs(this, src).map(bracketedOpt).join(`?.`)

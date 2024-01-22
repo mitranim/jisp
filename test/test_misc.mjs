@@ -223,5 +223,15 @@ t.test(function test_objFlat() {
 })
 
 t.bench(function bench_reqArity() {c.reqArity(arguments.length, 0)})
+t.bench(function bench_Raw_overhead_0() {new c.Raw()})
+t.bench(function bench_Raw_overhead_1() {`` + new c.Raw()})
+t.bench(function bench_Raw_overhead_2() {`` + new c.Raw().toString()})
+t.bench(function bench_Raw_overhead_3() {`` + new c.Raw().valueOf()})
+t.bench(function bench_Raw_overhead_4() {`` + new c.Raw().compile()})
+t.bench(function bench_Raw_overhead_5() {new c.Raw(new c.Raw())})
+t.bench(function bench_Raw_overhead_6() {new c.Raw(new c.Raw().valueOf())})
+t.bench(function bench_Raw_overhead_7() {new c.Raw(new c.Raw().toString())})
+t.bench(function bench_Raw_overhead_8() {c.compileNode(new c.Raw())})
+t.bench(function bench_Raw_overhead_9() {new c.Raw(c.laxStr(undefined))})
 
 if (import.meta.main) ti.flush()

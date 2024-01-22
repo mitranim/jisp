@@ -1,7 +1,8 @@
 import * as ti from './test_init.mjs'
 
-await import(`./test_misc.mjs`)
 await import(`./test_deno.mjs`)
+await import(`./test_node.mjs`)
+await import(`./test_misc.mjs`)
 await import(`./test_read.mjs`)
 await import(`./test_macro.mjs`)
 await import(`./test_compile.mjs`)

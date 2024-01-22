@@ -1,13 +1,11 @@
-import 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.51/cli_emptty.mjs'
-import * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.51/test.mjs'
-import * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.51/cli.mjs'
+import '/Users/m/code/m/js/cli_emptty.mjs'
+import * as t from '/Users/m/code/m/js/test.mjs'
+import * as cl from '/Users/m/code/m/js/cli.mjs'
 import * as c from '../js/core.mjs'
-import * as d from '../js/deno.mjs'
 import * as p from '../js/prelude.mjs'
 
-export * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.51/test.mjs'
-export * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.51/cli.mjs'
-
+export * as t from '/Users/m/code/m/js/test.mjs'
+export * as cl from '/Users/m/code/m/js/cli.mjs'
 
 /*
 Should be sufficiently large to show any non-overflow stack traces, but also
@@ -16,6 +14,9 @@ of stack overflow.
 */
 Error.stackTraceLimit = 1024
 // Error.stackTraceLimit = Infinity
+
+export const DENO = c.isComp(globalThis.Deno)
+export const NODE = c.isComp(globalThis.process)
 
 export const cli = cl.Flag.os()
 export const TEST = cli.boolOpt(`test`)
@@ -54,6 +55,13 @@ export function flush() {
   }
 }
 
+// Our `core.mjs` expects this global, which is part of web standards.
+if (NODE) globalThis.crypto ??= await import(`crypto`)
+
+export const fs = DENO
+  ? new (await import(`../js/deno.mjs`)).DenoFs()
+  : new (await import(`../js/node.mjs`)).NodeFs()
+
 export const TEST_TAR_NAME = `.tmp_test`
 export const TEST_TAR_URL = new URL(`../.tmp_test/`, import.meta.url)
 export const TEST_SRC_URL = new URL(`../test_files/`, import.meta.url)
@@ -63,19 +71,11 @@ export const TEST_TAR_SUB_URL = new URL(
   TEST_TAR_URL,
 )
 
-c.ctxGlobal[c.symFs] = new d.DenoFs()
+c.ctxGlobal[c.symFs] = fs
 c.ctxGlobal[c.symTar] = TEST_TAR_URL.href
 c.ctxGlobal.use = p.use
 
-export function clearTar() {
-  try {
-    Deno.removeSync(TEST_TAR_URL, {recursive: true})
-  }
-  catch (err) {
-    if (err instanceof Deno.errors.NotFound) return
-    throw err
-  }
-}
+export function clearTar() {return fs.remove(TEST_TAR_URL)}
 
 export function reqFinPos(val) {
   if (c.isFin(val) && val > 0) return val
@@ -127,6 +127,10 @@ export function ownVals(src) {
   for (const key of Object.getOwnPropertySymbols(src)) out[key] = src[key]
   for (const key of Object.getOwnPropertyNames(src)) out[key] = src[key]
   return out
+}
+
+export function inspect(val) {
+  return globalThis.Deno?.inspect(val) ?? c.show(val)
 }
 
 // Indicates benchmark accuracy. Should be ±0 nanoseconds.

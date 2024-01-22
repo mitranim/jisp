@@ -15,12 +15,6 @@ nodes from it.
 /*
 Describes a view over a source string, spanning from position A to position B,
 where positions may be anywhere in the source string.
-
-Technical note on length. The property `.len` must reflect the native property
-`.length` of the underlying string. JS strings use UTF-16, and `.length` counts
-UTF-16 code units, not characters. For simplicity and performance, we use the
-same length for most operations. We count characters only when really needed,
-such as for row/col positioning.
 */
 export class Span {
   src = ``
@@ -290,11 +284,11 @@ newlines normalized. The returned row and col are 0-indexed. Callers may want
 to increment them when formatting to a string, to match the near-universal
 1-indexing convention.
 
-Regular JS strings are encoded as UTF-16. The indexing syntax `str[ind]`
-and various methods such as `.slice` use UTF-16 code points, not Unicode
-characters. However, the `for..of` loop iterates Unicode characters, not
-UTF-16 points, and the chunk length at each iteration can be above 1, when
-surrogate pairs are found.
+Regular JS strings are encoded as UTF-16. The indexing syntax `str[ind]` and
+various string methods such as `.slice` use UTF-16 code points, not Unicode
+characters. However, the `for..of` loop iterates Unicode characters, not UTF-16
+points, and the chunk length at each iteration can be above 1, when surrogate
+pairs are found.
 */
 export function rowCol(src, pos) {
   reqStr(src)
@@ -780,9 +774,9 @@ prototypically, just like native scopes which they represent.
 Declared names are stored as regular properties. Internal data is stored using
 symbolic properties. There is no collision.
 
-When the value of declared name is nil, the declaration is runtime-only.
-When the value of declared name is non-nil, it may be used during macroing,
-for example by calling it as function.
+When the value of a declared name is nil, the declaration is runtime-only.
+When the value of a declared name is non-nil, it may be used during macroing,
+for example by calling it as a function.
 */
 
 /*
@@ -798,9 +792,9 @@ export const symStatement = Symbol.for(`jisp.statement`)
 export const symMixin = Symbol.for(`jisp.mixin`)
 
 /*
-Global context, the prototype of root contexts, which are prototypes of module
-contexts, and so on. User code is free to add global declarations by modifying
-this context.
+Global context. Used as the prototype of module contexts. User code is free to
+add global declarations by mutating this context. In particular, user code
+should add the `use` macro from the prelude module. See `run_deno.mjs`.
 */
 export const ctxGlobal = Object.create(null)
 ctxGlobal[symModules] = new Modules()

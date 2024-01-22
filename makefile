@@ -2,6 +2,7 @@ MAKEFLAGS := --silent --always-make
 MAKE_PAR := $(MAKE) -j 128
 # `--unstable` enables `Deno.consoleSize` which is used for benchmark printing.
 DENO := deno run -A --no-check --allow-hrtime --unstable
+NODE := node
 RUN := $(if $(run),--run="$(run)",)
 VERB_SHORT := $(if $(filter $(verb),true),-v,)
 VERB_LONG := $(if $(filter $(verb),true),--verb,)
@@ -48,9 +49,16 @@ else
 endif
 	$(OK)
 
-mock:
-	$(DENO) ./run.mjs
+mock.deno:
+	$(DENO) ./run_deno.mjs
 	$(OK)
 
-mock.w:
-	$(WATCH) -e=jisp -- $(MAKE) mock verb=$(or $(verb),true)
+mock.deno.w:
+	$(WATCH) -e=jisp -- $(MAKE) mock.deno verb=$(or $(verb),true)
+
+mock.node:
+	$(NODE) ./run_node.mjs
+	$(OK)
+
+mock.node.w:
+	$(WATCH) -e=jisp -- $(MAKE) mock.node verb=$(or $(verb),true)

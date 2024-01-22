@@ -8,7 +8,8 @@
 !/readme.md
 !/todo.md
 !/misc.md
-!/run.mjs
+!/run_deno.mjs
+!/run_node.mjs
 
 !/js
 !/sublime

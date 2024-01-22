@@ -229,21 +229,21 @@ t.test(function test_do_expression() {
   t.is(p.do.call(ctx, []), undefined)
   t.is(p.do.call(ctx, [], []), undefined)
 
-  t.is(p.do.call(ctx, [], [undefined], [[[]]]).compile(), `(undefined())`)
-  t.is(p.do.call(ctx, 10), 10)
-  t.eq(p.do.call(ctx, [10]), [10])
-  t.eq(p.do.call(ctx, [[10]]), [[10]])
-  t.eq(p.do.call(ctx, [undefined]), [undefined])
-  t.eq(p.do.call(ctx, [[undefined]]), [[undefined]])
-  t.is(p.do.call(ctx, 10, []).compile(), `(10)`)
-  t.is(p.do.call(ctx, [], 10, []).compile(), `(10)`)
+  t.is(p.do.call(ctx, [], [undefined], [[[]]]).compile(), `undefined()`)
+  t.is(p.do.call(ctx, 10).compile(), `10`)
+  t.eq(p.do.call(ctx, [10]).compile(), `10()`)
+  t.eq(p.do.call(ctx, [[10]]).compile(), `10()()`)
+  t.eq(p.do.call(ctx, [undefined]).compile(), `undefined()`)
+  t.eq(p.do.call(ctx, [[undefined]]).compile(), `undefined()()`)
+  t.is(p.do.call(ctx, 10, []).compile(), `10`)
+  t.is(p.do.call(ctx, [], 10, []).compile(), `10`)
   t.is(p.do.call(ctx, 10, 20).compile(), `(10, 20)`)
   t.is(p.do.call(ctx, 10, 20, 30).compile(), `(10, 20, 30)`)
   t.is(p.do.call(ctx, 10, [], 20, [[]], 30).compile(), `(10, 20, 30)`)
   t.is(p.do.call(ctx, 10, [undefined], 20, [[null]], 30).compile(), `(10, undefined(), 20, null()(), 30)`)
 
-  t.is(p.do.call(ctx, ti.macReqExpressionOne), `one`)
-  t.is(p.do.call(ctx, [], ti.macReqExpressionOne, []).compile(), `("one")`)
+  t.is(p.do.call(ctx, ti.macReqExpressionOne).compile(), `"one"`)
+  t.is(p.do.call(ctx, [], ti.macReqExpressionOne, []).compile(), `"one"`)
   t.is(p.do.call(ctx, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(), `("one", "two")`)
 })
 
@@ -383,7 +383,16 @@ t.test(function test_void_statement() {
   )
 })
 
-t.test(function test_ret() {
+t.test(function test_ret_bare() {
+  ti.fail(() => m.ret.default.call(null), `expected statement context, got expression context`)
+  ti.fail(() => m.ret.default.call(null, ti.macUnreachable), `expected statement context, got expression context`)
+
+  const ctx = c.ctxWithStatement(null)
+  t.is(m.ret.default.call(ctx).compile(), `return`)
+  t.is(m.ret.default.call(ctx, ti.macUnreachable).compile(), `return`)
+})
+
+t.test(function test_ret_statement() {
   let ctx = null
   ti.fail(() => m.ret.call(ctx, 10, 20), `expected no more than 1 inputs, got 2 inputs`)
   ti.fail(() => m.ret.call(ctx, 10), `expected statement context, got expression context`)

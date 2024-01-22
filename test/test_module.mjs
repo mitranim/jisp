@@ -100,9 +100,9 @@ await t.test(async function test_module_jisp_reachable_missing() {
   await ti.fail(async () => mod.ready(), `No such file or directory (os error 2), stat '${url.pathname}'`)
 })
 
-ti.clearTar()
-
 await t.test(async function test_module_jisp_without_dependencies() {
+  await ti.clearTar()
+
   const path = new URL(`../test_files/test_builtins.jisp`, import.meta.url).href
   const mod = await mods.getInit(path)
   const hash = await c.strHash(`test_files:.tmp_test`)

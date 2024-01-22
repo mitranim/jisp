@@ -35,35 +35,44 @@ class TestModule extends c.Module {
 
   testReadSrc() {return fs.read(new URL(this.srcPath))}
   testReadTar() {return fs.read(new URL(this.tarPath))}
-  async testTouch() {await fs.touch(new URL(this.srcPath))}
+
+  async testTouch() {
+    /*
+    Would prefer `Deno.writeFile` or `Deno.writeTextFile` with `{append: true}`
+    with an empty input. However, when the input is empty, these functions seem
+    to skip the FS operation entirely.
+    */
+    const path = new URL(this.srcPath)
+    await fs.write(path, await fs.read(path))
+  }
 
   testTarNone() {
     if (this.testTarTimestamp) {
-      throw Error(`module has unexpected initial target timestamp ${this.testTarTimestamp}: ${Deno.inspect(this)}`)
+      throw Error(`module has unexpected initial target timestamp ${this.testTarTimestamp}: ${ti.inspect(this)}`)
     }
   }
 
   testTarSome() {
     if (!this.testTarTimestamp) {
-      throw Error(`module lacks initial target timestamp: ${Deno.inspect(this)}`)
+      throw Error(`module lacks initial target timestamp: ${ti.inspect(this)}`)
     }
   }
 
   async testOutdated() {
     if (!(await this.isUpToDate())) return
-    throw Error(`module unexpectedly up to date: ${Deno.inspect(this)}`)
+    throw Error(`module unexpectedly up to date: ${ti.inspect(this)}`)
   }
 
   async testUpToDate() {
     if (await this.isUpToDate()) return
-    throw Error(`module unexpectedly outdated: ${Deno.inspect(this)}`)
+    throw Error(`module unexpectedly outdated: ${ti.inspect(this)}`)
   }
 
   testMade = false
 
   async make(...src) {
     if (this.testMade) {
-      throw Error(`redundant attempt to remake module: ${Deno.inspect(this)}`)
+      throw Error(`redundant attempt to remake module: ${ti.inspect(this)}`)
     }
     this.testMade = true
     return super.make(...src)
@@ -73,7 +82,7 @@ class TestModule extends c.Module {
     this.testUpToDate()
 
     if (!this.testMade) {
-      throw Error(`expected module to be remade: ${Deno.inspect(this)}`)
+      throw Error(`expected module to be remade: ${ti.inspect(this)}`)
     }
 
     const timeInit = ti.optFinPos(this.testTarTimestamp)
@@ -82,7 +91,7 @@ class TestModule extends c.Module {
     t.ok(
       (!timeInit || (timeInit < timeCurrent)),
       c.joinParagraphs(
-        `module: ` + Deno.inspect(this),
+        `module: ` + ti.inspect(this),
         `initial time: ` + timeInit,
         `current time: ` + timeCurrent,
       ),
@@ -95,7 +104,7 @@ class TestModule extends c.Module {
     this.testUpToDate()
 
     if (this.testMade) {
-      throw Error(`expected module to be not remade: ${Deno.inspect(this)}`)
+      throw Error(`expected module to be not remade: ${ti.inspect(this)}`)
     }
 
     await this.testCode()
@@ -105,7 +114,7 @@ class TestModule extends c.Module {
     if (!this.isJispModule()) return
     const src = c.reqStr(await this.testReadSrc(this))
     const tar = c.reqStr(await this.testReadTar(this))
-    t.is(tar, (await this.compile(c.ctxGlobal, src)), Deno.inspect(this))
+    t.is(tar, (await this.compile(c.ctxGlobal, src)), ti.inspect(this))
   }
 }
 

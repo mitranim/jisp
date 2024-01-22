@@ -3,7 +3,7 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 import * as pre from '../js/prelude.mjs'
 
-const src = Deno.readTextFileSync(new URL(`../test_files/test_bench.jisp`, import.meta.url))
+const src = await ti.fs.read(new URL(`../test_files/test_bench.jisp`, import.meta.url))
 
 class TestModule extends c.Module {
   testRun() {
