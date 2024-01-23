@@ -393,12 +393,10 @@ t.test(function test_ret_bare() {
 })
 
 t.test(function test_ret_statement() {
-  let ctx = null
-  ti.fail(() => m.ret.call(ctx, 10, 20), `expected no more than 1 inputs, got 2 inputs`)
-  ti.fail(() => m.ret.call(ctx, 10), `expected statement context, got expression context`)
-  ti.fail(() => m.ret.call(ctx), `expected statement context, got expression context`)
+  ti.fail(() => m.ret.call(null), `expected statement context, got expression context`)
+  ti.fail(() => m.ret.call(null, 10), `expected statement context, got expression context`)
 
-  ctx = c.ctxWithStatement(null)
+  const ctx = c.ctxWithStatement(null)
   ti.fail(() => m.ret.call(ctx, sym(`one`)), `missing declaration of "one"`)
   ti.fail(() => m.ret.call(ctx, ti.macUnreachable), `unreachable`)
 
@@ -409,6 +407,56 @@ t.test(function test_ret_statement() {
   t.is(m.ret.call(ctx, null).compile(), `return null`)
   t.is(m.ret.call(ctx, 10).compile(), `return 10`)
   t.is(m.ret.call(ctx, ti.macReqExpression).compile(), `return "expression_value"`)
+
+  t.is(
+    m.ret.call(ctx, 10, 20).compile(),
+    `{
+10;
+return 20
+}`)
+
+  t.is(
+    m.ret.call(ctx, ti.macReqStatementOne, ti.macReqExpressionTwo).compile(),
+    `{
+"one";
+return "two"
+}`)
+
+  t.is(
+    m.ret.call(ctx, 10, 20, 30).compile(),
+    `{
+10;
+20;
+return 30
+}`)
+
+  t.is(
+    m.ret.call(ctx, ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
+    `{
+"one";
+"two";
+return "three"
+}`)
+
+  t.is(
+    m.ret.call(ctx, [], ti.macReqStatementOne, [[]], ti.macReqStatementTwo, [[[]]], ti.macReqStatementThree, []).compile(),
+    `{
+"one";
+"two";
+"three";
+return
+}`)
+
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    m.ret.call(ctx, [m.const, sym(`one`), 10], []).compile(),
+    `{
+const one = 10;
+return
+}`)
+
+  t.own(ctx, {[c.symStatement]: undefined})
 })
 
 function testFuncCommon(ctx) {
@@ -455,14 +503,14 @@ t.test(function test_func_expression() {
 
   t.is(
     p.func.call(ctx, sym(`one`), []).compile(),
-    `function one(){}`,
+    `function one () {}`,
   )
   t.own(ctx, {})
 
   // Function name should be in scope in function body.
   t.is(
     p.func.call(ctx, sym(`one`), [], sym(`one`)).compile(),
-    `function one(){
+    `function one () {
 return one
 }`)
   t.own(ctx, {})
@@ -470,7 +518,7 @@ return one
   // Should be able to redeclare function name in parameters.
   t.is(
     p.func.call(ctx, sym(`one`), [sym(`one`)], sym(`one`)).compile(),
-    `function one(one){
+    `function one (one) {
 return one
 }`)
   t.own(ctx, {})
@@ -478,7 +526,7 @@ return one
   // Should be able to redeclare function name in function body.
   t.is(
     p.func.call(ctx, sym(`one`), [], [p.const, sym(`one`), 10], []).compile(),
-    `function one(){
+    `function one () {
 const one = 10;
 return
 }`)
@@ -500,7 +548,7 @@ return
 
   t.is(
     p.func.call(ctx, sym(`one`), [sym(`two`)], sym(`two`)).compile(),
-    `function one(two){
+    `function one (two) {
 return two
 }`)
   t.own(ctx, {})
@@ -512,14 +560,14 @@ return two
 
   t.is(
     p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10).compile(),
-    `function one(two, three){
+    `function one (two, three) {
 return 10
 }`
   )
 
   t.is(
     p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10, 20).compile(),
-    `function one(two, three){
+    `function one (two, three) {
 10;
 return 20
 }`
@@ -527,7 +575,7 @@ return 20
 
   t.is(
     p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10, 20, 30).compile(),
-    `function one(two, three){
+    `function one (two, three) {
 10;
 20;
 return 30
@@ -536,14 +584,14 @@ return 30
 
   t.is(
     p.func.call(ctx, sym(`one`), [], ti.macReqExpressionOne).compile(),
-    `function one(){
+    `function one () {
 return "one"
 }`
   )
 
   t.is(
     p.func.call(ctx, sym(`one`), [], ti.macReqStatementOne, ti.macReqExpressionTwo).compile(),
-    `function one(){
+    `function one () {
 "one";
 return "two"
 }`
@@ -551,7 +599,7 @@ return "two"
 
   t.is(
     p.func.call(ctx, sym(`one`), [], ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
-    `function one(){
+    `function one () {
 "one";
 "two";
 return "three"
@@ -560,13 +608,13 @@ return "three"
 
   t.is(
     p.func.call(ctx, sym(`one`), [], [[[]]]).compile(),
-    `function one(){
+    `function one () {
 return
 }`)
 
   t.is(
     p.func.call(ctx, sym(`one`), [], [[[]]], 10, [[[]]]).compile(),
-    `function one(){
+    `function one () {
 10;
 return
 }`)
@@ -579,7 +627,7 @@ t.test(function test_func_statement() {
 
   t.is(
     p.func.call(ctx, sym(`one`), []).compile(),
-    `function one(){}`,
+    `function one () {}`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
@@ -592,7 +640,7 @@ t.test(function test_func_statement() {
   // Function name should be in scope in function body.
   t.is(
     p.func.call(ctx, sym(`two`), [], sym(`two`)).compile(),
-    `function two(){
+    `function two () {
 return two
 }`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
@@ -600,7 +648,7 @@ return two
   // Should be able to redeclare function name in parameters.
   t.is(
     p.func.call(ctx, sym(`three`), [sym(`three`)], sym(`three`)).compile(),
-    `function three(three){
+    `function three (three) {
 return three
 }`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined})
@@ -608,7 +656,7 @@ return three
   // Should be able to redeclare function name in function body.
 t.is(
   p.func.call(ctx, sym(`four`), [], [p.const, sym(`four`), 10], []).compile(),
-  `function four(){
+  `function four () {
 const four = 10;
 return
 }`)
@@ -623,7 +671,7 @@ return
 
   t.is(
     p.func.call(ctx, sym(`six`), [], ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
-    `function six(){
+    `function six () {
 "one";
 "two";
 return "three"
@@ -637,7 +685,7 @@ t.test(function test_func_export() {
 
   t.is(
     p.func.call(ctx, sym(`one`), []).compile(),
-    `export function one(){}`,
+    `export function one () {}`,
   )
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
 
@@ -645,7 +693,7 @@ t.test(function test_func_export() {
 
   t.is(
     p.func.call(ctx, sym(`one`), []).compile(),
-    `function one(){}`,
+    `function one () {}`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 })
@@ -654,7 +702,7 @@ t.test(function test_func_mixin() {
   function test(ctx) {
     t.is(
       p.func.call(ctx, sym(`one`), [], function mac() {ctx = this}, []).compile(),
-      `function one(){
+      `function one () {
 undefined;
 return
 }`)
@@ -718,7 +766,7 @@ return
     let ctx = null
     t.is(
       p.func.call(ctx, sym(`ret`), [], function mac() {ctx = this}, []).compile(),
-      `function ret(){
+      `function ret () {
 undefined;
 return
 }`)
@@ -866,19 +914,21 @@ t.test(function test_meth() {
 
   {
     const ctx = Object.create(null)
-    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one(){}`)
+    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
     t.own(ctx, {})
   }
 
   {
     const ctx = c.ctxWithStatement(null)
-    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one(){}`)
+    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
     t.own(ctx, {[c.symStatement]: undefined})
   }
 
   /*
   Unlike function names, method names may be keywords or reserved names.
   They can also be strings. However, they must be otherwise valid identifiers.
+  This means that using a symbol to define a method and access a method is a
+  reversible roundtrip.
   */
   {
     ti.fail(() => m.meth.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
@@ -891,28 +941,28 @@ t.test(function test_meth() {
       )
     }
 
-    name(sym(`await`), `await(){}`)
-    name(sym(`eval`),  `eval(){}`)
-    name(``,           `""(){}`)
-    name(`one`,        `"one"(){}`)
+    name(sym(`await`), `await () {}`)
+    name(sym(`eval`),  `eval () {}`)
+    name(``,           `"" () {}`)
+    name(`one`,        `"one" () {}`)
   }
 
   t.is(
     m.meth.call(null, sym(`one`), [], 10).compile(),
-    `one(){
+    `one () {
 return 10
 }`)
 
   t.is(
     m.meth.call(null, sym(`one`), [], 10, 20).compile(),
-    `one(){
+    `one () {
 10;
 return 20
 }`)
 
   t.is(
     m.meth.call(null, sym(`one`), [], 10, 20, 30).compile(),
-    `one(){
+    `one () {
 10;
 20;
 return 30
@@ -931,7 +981,7 @@ return 30
           return 10
         },
       ).compile(),
-      `one(two, three){
+      `one (two, three) {
 "one";
 "two";
 return 10
@@ -1019,7 +1069,7 @@ function compileStatic(val) {return `static ` + val}
 t.test(function test_static_meth() {
   t.is(
     m.$static.meth.call(null, sym(`one`), []).compile(),
-    `static one(){}`,
+    `static one () {}`,
   )
 })
 
@@ -1050,7 +1100,7 @@ t.test(function test_class_misc() {
     ).compile(),
 
     `class one extends 20(10) {
-two(three){
+two (three) {
 30;
 return 40
 };
@@ -1059,7 +1109,7 @@ static {
 60;
 70
 };
-static five(six){
+static five (six) {
 return 80
 };
 static seven = 90
@@ -1714,16 +1764,16 @@ t.test(function test_and()      {testVariadic(p.and,      ``, ` && `, ``)})
 t.test(function test_or()       {testVariadic(p.or,       ``, ` || `, ``)})
 t.test(function test_coalesce() {testVariadic(p.coalesce, ``, ` ?? `, ``)})
 
-function testVariadic(fun, pre, inf, suf) {
+function testVariadic(fun, pre, inf, suf, fallback) {
   c.reqFun(fun)
   c.reqStr(pre)
   c.reqStr(inf)
   c.reqStr(suf)
 
   function test(ctx) {
-    t.is(fun.call(ctx), undefined)
-    t.is(fun.call(ctx, []), undefined)
-    t.is(fun.call(ctx, [], [[]]), undefined)
+    t.is(fun.call(ctx), fallback)
+    t.is(fun.call(ctx, []), fallback)
+    t.is(fun.call(ctx, [], [[]]), fallback)
 
     if (pre || suf) {
       t.is(fun.call(ctx, 10).compile(), c.wrapParens(pre + `10` + suf))
@@ -1761,11 +1811,14 @@ t.test(function test_divide()                {testVariadic(p.divide,            
 t.test(function test_multiply()              {testVariadic(p.multiply,              `1 * `, ` * `,   ``)})
 t.test(function test_exponentiate()          {testVariadic(p.exponentiate,          ``,     ` ** `,  ` ** 1`)})
 t.test(function test_remainder()             {testVariadic(p.remainder,             ``,     ` % `,   ``)})
-t.test(function test_bitAnd()                {testVariadic(p.bitAnd,                ``,     ` & `,   ` & 0`)})
-t.test(function test_bitOr()                 {testVariadic(p.bitOr,                 ``,     ` | `,   ` | 0`)})
-t.test(function test_bitXor()                {testVariadic(p.bitXor,                ``,     ` ^ `,   ` ^ 0`)})
-t.test(function test_bitShiftLeft()          {testVariadic(p.bitShiftLeft,          ``,     ` << `,  ` << 0`)})
-t.test(function test_bitShiftRight()         {testVariadic(p.bitShiftRight,         ``,     ` >> `,  ` >> 0`)})
-t.test(function test_bitShiftRightUnsigned() {testVariadic(p.bitShiftRightUnsigned, ``,     ` >>> `, ` >>> 0`)})
+t.test(function test_bitAnd()                {testVariadic(p.bitAnd,                ``,     ` & `,   ` & 0`,   0)})
+t.test(function test_bitOr()                 {testVariadic(p.bitOr,                 ``,     ` | `,   ` | 0`,   0)})
+t.test(function test_bitXor()                {testVariadic(p.bitXor,                ``,     ` ^ `,   ` ^ 0`,   0)})
+t.test(function test_bitShiftLeft()          {testVariadic(p.bitShiftLeft,          ``,     ` << `,  ` << 0`,  0)})
+t.test(function test_bitShiftRight()         {testVariadic(p.bitShiftRight,         ``,     ` >> `,  ` >> 0`,  0)})
+t.test(function test_bitShiftRightUnsigned() {testVariadic(p.bitShiftRightUnsigned, ``,     ` >>> `, ` >>> 0`, 0)})
+
+t.test(function test_assignIncrement() {testUnary(p.assignIncrement, `++`)})
+t.test(function test_assignDecrement() {testUnary(p.assignDecrement, `--`)})
 
 if (import.meta.main) ti.flush()

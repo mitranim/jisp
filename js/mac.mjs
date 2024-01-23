@@ -5,8 +5,6 @@ Non-exhaustive list of missing keywords and operators:
 
   Assignments:
 
-    ++   (assign increment)
-    --   (assign decrement)
     +=   (assign add)
     -=   (assign subtract)
     *=   (assign multiply)
@@ -407,17 +405,31 @@ $void.default = function voidBare() {
   return c.ctxIsStatement(this) ? [] : undefined
 }
 
-export function ret(val) {
-  c.reqArityMax(arguments.length, 1)
+export function ret(...src) {
   c.ctxReqStatement(this)
-  val = arguments.length ? c.compileNode(c.macroNode(Object.create(this), val)) : ``
-  if (val) return new c.Raw(`return ` + val)
-  return new c.Raw(`return`)
+
+  switch (src.length) {
+    case 0: return new c.Raw(`return`)
+    case 1: return new c.Raw(retStatements(this, src))
+    default:
+      return new c.Raw(c.wrapBracesMultiLine(retStatements(c.ctxWithStatement(this), src)))
+  }
 }
 
 ret.default = function retBare() {
   c.ctxReqStatement(this)
   return new c.Raw(`return`)
+}
+
+function retStatements(ctx, src) {return retStatementsOpt(ctx, src) || `return`}
+
+function retStatementsOpt(ctx, src) {
+  return c.joinStatements(c.reqArr(src).map(retStatement, ctx))
+}
+
+function retStatement(val, ind, src) {
+  if (ind < src.length - 1) return c.compileNode(c.macroNode(this, val))
+  return c.joinSpaced(`return`, c.compileNode(c.macroNode(Object.create(this), val)))
 }
 
 export function func(name, params, ...body) {
@@ -430,7 +442,7 @@ export function func(name, params, ...body) {
   return new c.Raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `function`,
-    compileFunc(name, params, ...macroFuncBody(ctx, body)),
+    compileFunc(name, params, retStatementsOpt(ctx, body)),
   ))
 }
 
@@ -443,17 +455,12 @@ function declareSyms(ctx, src) {
   for (const val of c.reqArr(src)) c.ctxDeclare(ctx, val)
 }
 
-function macroFuncBody(ctx, src) {
-  c.reqArr(src)
-  let ind = -1
-  let max = src.length - 1
-  while (++ind < max) src[ind] = c.macroNode(ctx, src[ind])
-  if (ind <= max) src[ind] = ret.call(ctx, src[ind])
-  return src
-}
-
-function compileFunc(name, params, ...rest) {
-  return c.compileNode(name) + c.compileSequenceExpression(params) + c.compileBlock(rest)
+function compileFunc(name, params, body) {
+  return c.joinSpaced(
+    c.compileNode(name),
+    c.compileSequenceExpression(params),
+    c.wrapBracesMultiLine(body),
+  )
 }
 
 /*
@@ -529,7 +536,7 @@ export function meth(name, params, ...body) {
   const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
   declareSyms(ctx, params)
   ctx[c.symStatement] = undefined
-  return new c.Raw(compileFunc(name, params, ...macroFuncBody(ctx, body)))
+  return new c.Raw(compileFunc(name, params, retStatementsOpt(ctx, body)),)
 }
 
 export const methMixin = Object.create(funcMixin)
@@ -561,9 +568,9 @@ export function reqFieldName(val) {
 }
 
 export function $static(...src) {
-  if (c.isVacuous(src)) return []
-  const ctx = c.ctxWithStatement(ctxReqClass(this))
-  return new c.Raw(`static ` + c.compileBlock(c.macroNodes(ctx, src)))
+  src = c.compileStatements(c.macroNodes(c.ctxWithStatement(ctxReqClass(this)), src))
+  if (!src) return []
+  return new c.Raw(`static ` + c.wrapBracesMultiLine(src))
 }
 
 $static.meth = classStaticMeth
@@ -907,7 +914,7 @@ export function remainder(...src) {
 export function bitAnd(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` & 0`))
     default: return new c.Raw(c.wrapParens(src.join(` & `)))
   }
@@ -916,7 +923,7 @@ export function bitAnd(...src) {
 export function bitOr(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` | 0`))
     default: return new c.Raw(c.wrapParens(src.join(` | `)))
   }
@@ -925,7 +932,7 @@ export function bitOr(...src) {
 export function bitXor(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` ^ 0`))
     default: return new c.Raw(c.wrapParens(src.join(` ^ `)))
   }
@@ -934,7 +941,7 @@ export function bitXor(...src) {
 export function bitShiftLeft(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` << 0`))
     default: return new c.Raw(c.wrapParens(src.join(` << `)))
   }
@@ -943,7 +950,7 @@ export function bitShiftLeft(...src) {
 export function bitShiftRight(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` >> 0`))
     default: return new c.Raw(c.wrapParens(src.join(` >> `)))
   }
@@ -952,8 +959,18 @@ export function bitShiftRight(...src) {
 export function bitShiftRightUnsigned(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
-    case 0: return undefined
+    case 0: return 0
     case 1: return new c.Raw(c.wrapParens(src[0] + ` >>> 0`))
     default: return new c.Raw(c.wrapParens(src.join(` >>> `)))
   }
+}
+
+export function assignIncrement(val) {
+  c.reqArity(arguments.length, 1)
+  return unaryPrefix(this, `++`, val)
+}
+
+export function assignDecrement(val) {
+  c.reqArity(arguments.length, 1)
+  return unaryPrefix(this, `--`, val)
 }

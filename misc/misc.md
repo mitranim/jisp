@@ -15,7 +15,7 @@ Most Lisp-style languages, including Jisp, violate this. You could say they make
 
 ### Special
 
-Traditional Lisps have something called "special forms". The most minimal set of "special forms" typically consists of the following: `lambda`, `set`, `if`.
+Traditional Lisps have something called "special forms". The most minimal set of "special forms" typically includes `lambda` and `if`.
 
 In my understanding, what makes them "special" and distinct from other definitions is that each of them, in order to function correctly, needs several components: how to handle the provided AST nodes at macro time; how to evaluate at runtime; how to compile. This power is often not available to user code, which can define only forms with _one_ component. User macros define macro-time AST transforms. User functions define runtime execution.
 

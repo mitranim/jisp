@@ -249,6 +249,10 @@ t.test(function test_macro_unknown_object() {
   same({})
   same({one: 10})
   same(Object.create({one: 10}))
+
+  same({macro() {return this}})
+  t.is(mac({macro() {return 10}}), 10)
+  t.is(mac({macro() {return ti.macSomeValue}}), `some_value`)
 })
 
 t.test(function test_macro_symbol_sync() {

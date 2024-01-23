@@ -50,4 +50,6 @@ export {
   bitShiftLeft,          bitShiftLeft          as '<<',
   bitShiftRight,         bitShiftRight         as '>>',
   bitShiftRightUnsigned, bitShiftRightUnsigned as '>>>',
+  assignIncrement,       assignIncrement       as '++',
+  assignDecrement,       assignDecrement       as '--',
 } from './mac.mjs'

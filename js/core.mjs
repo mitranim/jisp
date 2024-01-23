@@ -328,7 +328,7 @@ export function macroNode(ctx, tar, src) {
   if (isFun(tar)) return macroFun(ctx, tar)
   if (isSym(tar)) return macroSym(ctx, tar)
   if (isArr(tar)) return macroList(ctx, tar)
-  // if (isObj(tar)) return macroObj(ctx, tar)
+  if (isObj(tar)) return macroObj(ctx, tar)
   return tar
 }
 
@@ -378,12 +378,11 @@ export function macroList(ctx, src) {
   catch (err) {throw errWithContext(err, src)}
 }
 
-// Unused, under consideration. Needs testing.
 export function macroObj(ctx, src) {
   try {
     reqObj(src)
     if (`macro` in src && isFun(src.macro)) {
-      return macroNode(ctx, src.macro(ctx))
+      return macroNode(ctx, src.macro(ctx), src)
     }
     return src
   }
@@ -473,13 +472,6 @@ export function wrapParens(src) {return `(` + reqStr(src) + `)`}
 export const statementSep = `;\n`
 export const expressionSep = `, `
 export const dictEntrySep = `: `
-
-/*
-True if the given value would definitely compile to an empty string.
-Note that there are edge cases when this returns `false` but the node
-still compiles to an empty string. Only `true` can be trusted.
-*/
-export function isVacuous(src) {return isArr(src) && src.every(isVacuous)}
 
 export class Raw extends String {compile() {return this.valueOf()}}
 
@@ -1347,16 +1339,17 @@ function showFunName(fun) {return fun.name || showFun(fun)}
 function getCon(val) {return isComp(val) && `constructor` in val ? val.constructor : undefined}
 function getName(val) {return isComp(val) && `name` in val ? val.name : undefined}
 function getDefault(val) {return isComp(val) && `default` in val ? val.default : undefined}
-function last(src) {return reqArr(src)[src.length - 1]}
 function init(src) {return reqArr(src).slice(0, -1)}
+function last(src) {return reqArr(src)[src.length - 1]}
 function repeat(val, len) {return Array(len).fill(val)}
 
+export function joinDense(...src) {return join(src, ``)}
 export function joinSpaced(...src) {return join(src, ` `)}
 export function joinLines(...src) {return join(src, `\n`)}
 export function joinParagraphs(...src) {return join(src, `\n\n`)}
 
 export function join(src, sep) {
-  reqValidStr(sep)
+  reqStr(sep)
   let out = ``
   if (isSome(src)) {
     for (src of reqArr(src)) if (optStr(src)) out += (out && sep) + src
