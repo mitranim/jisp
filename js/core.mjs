@@ -495,9 +495,9 @@ export class Module {
 
   /*
   Short for "target path". Must be absolute; see `reqCanonicalModulePath`.
-  In Jisp modules, must end with `.mjs`, and is inited asynchronously;
-  callers must use `await .init()` before accessing this field.
-  In other modules, must be equal to the source path.
+  In Jisp modules, must end with `.mjs` and be located in the target directory
+  configured via `ctxGlobal[symTar]`. In other modules, must be equal to the
+  source path.
   */
   tarPath = undefined /* : reqCanonicalModulePath */
 
@@ -521,16 +521,11 @@ export class Module {
   pk() {return this.srcPath}
 
   init() {
-    return this.#init ??= (
-      this.isJispModule()
-      ? this.initJispModule()
-      : ((this.tarPath = this.srcPath), this)
-    )
+    return this.#init ??= this.isJispModule() ? this.initJispModule() : this
   }
   #init = undefined
 
   async initJispModule() {
-    this.tarPath ??= reqValidStr(await srcToTar(this.srcPath))
     const fs = ctxGlobal[symFs]
     const src = await fs?.readOpt(toMetaUrl(this.tarPath))
     if (src) this.fromJSON(JSON.parse(src))
@@ -680,7 +675,6 @@ export class Module {
   optTarTime() {return this.tarTime ??= this.tarTimeAsync()}
 
   async tarTimeAsync() {
-    await this.init()
     const tar = reqToUrl(this.tarPath)
     const fs = ctxReqFs(ctxGlobal)
     if (!fs.canReach(tar)) return this.tarTime = 0
@@ -693,6 +687,7 @@ export class Module {
   actually be cachable. TODO reconsider.
   */
   async timeMax() {
+    // May obtain dependency information from metadata file.
     await this.init()
 
     return onlyFin(Math.max(...await Promise.all([
@@ -731,7 +726,7 @@ export class Module {
 function moduleReady(key) {return ctxReqModules(ctxGlobal).getReady(key)}
 
 async function moduleTimeMax(key) {
-  return (await ctxReqModules(ctxGlobal).getInit(key)).timeMax()
+  return (await ctxReqModules(ctxGlobal).getOrMake(key)).timeMax()
 }
 
 export class Modules extends Map {
@@ -739,18 +734,19 @@ export class Modules extends Map {
 
   set(key, val) {return super.set(key, reqInst(val, this.Module))}
 
-  getInit(key) {
+  getOrMake(key) {
     if (this.has(key)) return this.get(key)
     const out = this.make(key)
     super.set(key, out)
-    return out.init()
+    return out
   }
 
-  async getReady(key) {return (await this.getInit(key)).ready()}
+  getReady(key) {return this.getOrMake(key).ready()}
 
   make(key) {
     const out = new this.Module()
     out.srcPath = reqCanonicalModulePath(key)
+    out.tarPath = reqValidStr(srcToTar(ctxGlobal, key))
     return out
   }
 }
@@ -792,11 +788,21 @@ export const ctxGlobal = Object.create(null)
 ctxGlobal[symModules] = new Modules()
 
 export function ctxIsModule(ctx) {return hasOwn(ctx, symModule)}
-export function ctxIsStatement(ctx) {return hasOwn(ctx, symStatement)}
-export function ctxIsExportable(ctx) {return ctxIsModule(ctx) && ctxIsStatement(ctx)}
 
 export function ctxReqModule(ctx) {
   return ctx[symModule] ?? panic(Error(`missing module in context ${show(ctx)}`))
+}
+
+export function ctxReqIsModule(ctx) {
+  if (ctxIsModule(ctx)) return ctx
+  throw Error(`expected module context`)
+}
+
+export function ctxWithModule(ctx, mod) {
+  ctx = Object.create(ctx)
+  ctx[symModule] = mod
+  ctx[symStatement] = undefined
+  return ctx
 }
 
 export function ctxReqModules(ctx) {
@@ -845,7 +851,9 @@ export function ctxReqParentMixin(ctx) {
   return out
 }
 
-export function ctxReqStatement(ctx) {
+export function ctxIsStatement(ctx) {return hasOwn(ctx, symStatement)}
+
+export function ctxReqIsStatement(ctx) {
   if (ctxIsStatement(ctx)) return ctx
   throw Error(`expected statement context, got expression context`)
 }
@@ -866,13 +874,6 @@ export function ctxWithMixin(ctx) {
   return ctx
 }
 
-export function ctxWithModule(ctx, mod) {
-  ctx = Object.create(ctx)
-  ctx[symModule] = mod
-  ctx[symStatement] = undefined
-  return ctx
-}
-
 export function ctxImportSrcUrl(ctx, src) {
   reqStr(src)
 
@@ -888,6 +889,8 @@ export function ctxImportSrcUrl(ctx, src) {
 
   throw Error(`unable to resolve ${show(src)} into import URL`)
 }
+
+export function ctxIsExportable(ctx) {return ctxIsModule(ctx) && ctxIsStatement(ctx)}
 
 export function ctxCompileExport(ctx) {
   return ctxIsExportable(ctx) ? `export` : ``
@@ -917,9 +920,8 @@ async function ctxMapAsync(ctx, src, fun, ind, out, val) {
 */
 
 // SYNC[accessor].
-const accessor = `.`
-
-const ellipsis = `…`
+export const accessor = `.`
+export const ellipsis = `…`
 
 export function isSymUnqual(val) {return isSym(val) && !val.description.includes(accessor)}
 export function isSymAccess(val) {return isSym(val) && val.description.includes(accessor)}
@@ -1116,26 +1118,30 @@ export function isJispModulePath(val) {
 
 export const srcsToTars = Object.create(null)
 
-export function srcToTar(src) {
+export function srcToTar(ctx, src) {
   if (isJispModulePath(src)) {
-    return srcsToTars[src] ??= srcToTarAsync(ctxGlobal, src)
+    return srcsToTars[src] ??= srcToTarUncached(ctxGlobal, src)
   }
   return reqCanonicalModulePath(src)
 }
 
-export async function srcToTarAsync(ctx, src) {
-  reqStr(src)
+export function srcToTarUncached(ctx, src) {
+  src = reqValidStr(src)
 
-  const tar = pathClean(ctxReqTar(ctx))
-  const name = pathFileNameWithoutExt(src) + fileExtJs
+  const srcPath = pathSplit(src)
+  const tarName = init(last(srcPath).split(pathExtSep)).join(pathExtSep) + fileExtJs
   const main = ctx[symMain]
-  const srcDir = pathClean(reqToUrl(`.`, src).href)
+  const tar = reqValidStr(ctxReqTar(ctx))
+  const rel = pathSplit(main ? reqValidStr(main) : tar)
+  const pre = commonPrefixLen(init(srcPath), rel)
+  const ups = rel.length - pre
 
-  if (main && pathClean(main) === srcDir) return pathJoin(tar, name)
-
-  const key = pathsWithoutCommonPrefix(srcDir, tar).map(pathArrJoin).join(`:`)
-  const hash = await strHash(key)
-  return pathJoin(tar, hash, name)
+  return pathJoin(
+    tar,
+    String(ups || ``),
+    ...srcPath.slice(pre, -1),
+    tarName,
+  )
 }
 
 /*
@@ -1380,13 +1386,14 @@ export function patchDecl(tar, src) {
   return tar
 }
 
-const pathPosixSep = `/`
+export const pathExtSep = `.`
+export const pathPosixSep = `/`
 
 export function isStrWithScheme(val) {return isStr(val) && /^\w+:/.test(val)}
 
 export function isStrAbsOrRelExplicit(val) {
-  return (
-    isStr(val) && (val.startsWith(`/`) || val.startsWith(`./`) || val.startsWith(`../`))
+  return isStr(val) && (
+    val.startsWith(pathPosixSep) || val.startsWith(`./`) || val.startsWith(`../`)
   )
 }
 
@@ -1415,33 +1422,35 @@ export function reqToUrl(path, base) {
   }
 }
 
+/*
+More or less the inverse of the `URL` constructor. Should be built-in, but
+isn't. Prepending `./` isn't necessary for `URL` roundtrips, but necessary
+for relative imports, which is where this function is actually used.
+*/
 export function optUrlRel(src, tar) {
   src = optToUrl(src)
   tar = optToUrl(tar)
   if (!isUrlSameOrigin(src, tar)) return undefined
 
-  ;[src, tar] = pathsWithoutCommonPrefix(src.pathname, tar.pathname)
-  const ups = src.length - 1
+  src = src.pathname.split(pathPosixSep)
+  tar = tar.pathname.split(pathPosixSep)
 
-  /*
-  Prepending `./` makes the path explicitly relative. Unnecessary in many
-  situations, but necessary for relative imports, which is where this function
-  is actually used.
-  */
-  const pre = ups > 0 ? repeat(`..`, ups) : [`.`]
-  return pathArrJoin(pre.concat(tar))
-}
+  const srcMax = src.length - 1
+  const tarMax = tar.length - 1
 
-function pathsWithoutCommonPrefix(src, tar) {
-  src = reqStr(src).split(pathPosixSep).filter(Boolean)
-  tar = reqStr(tar).split(pathPosixSep).filter(Boolean)
-  let len = -1
-  while (++len < src.length && len < tar.length && src[len] === tar[len]) {}
-  if (len) {
-    src = src.slice(len)
-    tar = tar.slice(len)
+  // Not equivalent to `commonPrefixLen`.
+  let ind = 0
+  while (ind < srcMax && ind < tarMax && src[ind] === tar[ind]) ind++
+
+  const ups = srcMax - ind
+  const rem = tar.slice(ind).join(pathPosixSep)
+
+  if (rem) {
+    if (ups > 0) return `../`.repeat(ups) + rem
+    return `./` + rem
   }
-  return [src, tar]
+  if (ups > 0) return Array(ups).fill(`..`).join(pathPosixSep)
+  return `.`
 }
 
 /*
@@ -1459,10 +1468,6 @@ function isUrlSameOrigin(one, two) {
   )
 }
 
-export function pathDir(src) {return init(reqStr(src).split(pathPosixSep)).join(pathPosixSep)}
-export function pathFileName(src) {return last(reqStr(src).split(pathPosixSep))}
-export function pathFileNameWithoutExt(src) {return init(pathFileName(src).split(`.`)).join(`.`)}
-
 // Incomplete: doesn't drop leading `./`.
 export function pathClean(src) {
   const len = pathPosixSep.length
@@ -1471,29 +1476,28 @@ export function pathClean(src) {
   return src
 }
 
-export function pathArrJoin(src) {
+export function pathJoin(...src) {return pathJoinArr(src)}
+
+export function pathJoinArr(src) {
   let out = ``
   for (src of reqArr(src)) {
-    src = pathClean(src)
-    if (src) out += (out && pathPosixSep) + src
+    src = reqStr(src)
+    if (out && src && !out.endsWith(pathPosixSep) && !src.startsWith(pathPosixSep)) {
+      out += pathPosixSep
+    }
+    out += src
   }
   return out
 }
 
-export function pathJoin(...src) {return pathArrJoin(src)}
-
-export async function strHash(src) {
-  src = new TextEncoder().encode(reqStr(src))
-  src = await crypto.subtle.digest(`sha-256`, src)
-  return arrHex(new Uint8Array(src))
+export function pathSplit(src) {
+  return reqStr(src).split(pathPosixSep).filter(Boolean)
 }
 
-export function arrHex(src) {
-  reqInst(src, Uint8Array)
-  let out = ``
-  for (src of src) {
-    if (src < 0x10) out += `0`
-    out += src.toString(16)
-  }
-  return out
+function commonPrefixLen(one, two) {
+  reqArr(one)
+  reqArr(two)
+  let len = -1
+  while (++len < one.length && len < two.length && Object.is(one[len], two[len])) {}
+  return len
 }

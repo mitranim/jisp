@@ -3,34 +3,60 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
 t.test(function test_optUrlRel() {
-  function test(src, tar, exp) {t.is(c.optUrlRel(src, tar), exp)}
+  function test(src, tar, exp) {
+    t.is(
+      c.reqToUrl(exp, src).href,
+      tar,
+      `relative: ` + exp,
+      `source:   ` + src,
+    )
 
-  test(undefined,         undefined,          undefined)
-  test(`one:`,            undefined,          undefined)
-  test(undefined,         `one:`,             undefined)
-  test(`one:two`,         `three:four`,       undefined)
-  test(`one:two`,         `three:four/five`,  undefined)
-  test(`one:two/three`,   `four:five`,        undefined)
-  test(`one:two/three`,   `one://two/three`,  undefined)
-  test(`one://two/three`, `one:two/three`,    undefined)
-  test(`one://two`,       `three://two`,      undefined)
-  test(`one://two/three`, `four://two/three`, undefined)
+    t.is(
+      c.optUrlRel(src, tar),
+      exp,
+      `source: ` + src,
+      `target: ` + tar,
+    )
+  }
 
-  test(`one:`,                    `one:`,               `.`)
-  test(`one:two`,                 `one:two`,            `.`)
-  test(`one:two/three`,           `one:two/three`,      `.`)
-  test(`one:`,                    `one:two`,            `./two`)
-  test(`one:`,                    `one:two/three/four`, `./two/three/four`)
-  test(`one:two`,                 `one:`,               `.`)
-  test(`one:two/three`,           `one:`,               `..`)
-  test(`one:two/three/four`,      `one:`,               `../..`)
-  test(`one:two`,                 `one:two/three`,      `./three`)
-  test(`one:two`,                 `one:two/three/four`, `./three/four`)
-  test(`one:two/three`,           `one:four/five/six`,  `../four/five/six`)
-  test(`one:two/three`,           `one:two`,            `.`)
-  test(`one:two/three/four/five`, `one:two`,            `../..`)
-  test(`one:two/three/four/five`, `one:two/five`,       `../../five`)
-  test(`one:two/three/four/five`, `one:two/five/six`,   `../../five/six`)
+  test(`file:///one/two/three.four`, `file:///one/two/three.four`, `./three.four`)
+  test(`file:///one/two/three.four`, `file:///one/two/`,           `.`)
+  test(`file:///one/two/three.four`, `file:///one/two`,            `../two`)
+  test(`file:///one/two/three.four`, `file:///one/`,               `..`)
+  test(`file:///one/two/three.four`, `file:///one`,                `../../one`)
+  test(`file:///one/two/three.four`, `file:///`,                   `../..`)
+
+  test(`file:///one/two/`, `file:///one/two/three.four`, `./three.four`)
+  test(`file:///one/two/`, `file:///one/two/`,           `.`)
+  test(`file:///one/two/`, `file:///one/two`,            `../two`)
+  test(`file:///one/two/`, `file:///one/`,               `..`)
+  test(`file:///one/two/`, `file:///one`,                `../../one`)
+  test(`file:///one/two/`, `file:///`,                   `../..`)
+
+  test(`file:///one/two`, `file:///one/two/three.four`, `./two/three.four`)
+  test(`file:///one/two`, `file:///one/two/`,           `./two/`)
+  test(`file:///one/two`, `file:///one/two`,            `./two`)
+  test(`file:///one/two`, `file:///one/`,               `.`)
+  test(`file:///one/two`, `file:///one`,                `../one`)
+  test(`file:///one/two`, `file:///`,                   `..`)
+
+  test(`file:///one`, `file:///one/two/three.four`, `./one/two/three.four`)
+  test(`file:///one`, `file:///one/two/`,           `./one/two/`)
+  test(`file:///one`, `file:///one/two`,            `./one/two`)
+  test(`file:///one`, `file:///one/`,               `./one/`)
+  test(`file:///one`, `file:///one`,                `./one`)
+  test(`file:///one`, `file:///`,                   `.`)
+
+  test(`file:///`, `file:///one/two/three.four`, `./one/two/three.four`)
+  test(`file:///`, `file:///one/two/`,           `./one/two/`)
+  test(`file:///`, `file:///one/two`,            `./one/two`)
+  test(`file:///`, `file:///one/`,               `./one/`)
+  test(`file:///`, `file:///one`,                `./one`)
+  test(`file:///`, `file:///`,                   `.`)
+
+  test(`file:///one/two.three`, `file:///four/five.six`, `../four/five.six`)
+  test(`file:///one/two.three`, `file:///four/`,         `../four/`)
+  test(`file:///one/two.three`, `file:///four`,          `../four`)
 })
 
 t.test(function test_isCanonicalModulePath() {
@@ -88,54 +114,36 @@ t.test(function test_isCanonicalModulePath() {
   t.no(c.isCanonicalModulePath(`one://two/three.jisp?four`))
 })
 
-await t.test(async function test_strToHash() {
-  await ti.fail(async () => c.strHash(),   `expected variant of isStr, got undefined`)
-  await ti.fail(async () => c.strHash(10), `expected variant of isStr, got 10`)
-
-  const one = `7692c3ad3540bb803c020b3aee66cd8887123234ea0c6e7143c0add73ff431ed`
-  t.is(await c.strHash(`one`), one)
-  t.is(await c.strHash(`one`), one)
-
-  const two = `3fc4ccfe745870e2c0d99f71f30ff0656c8dedd41cc1d7d3d376b0dbe685e2f3`
-  t.is(await c.strHash(`two`), two)
-  t.is(await c.strHash(`two`), two)
-})
-
-await t.test(async function test_srcToTarAsync() {
+t.test(function test_srcToTarUncached() {
   const ctx = Object.create(c.ctxGlobal)
+  const tar = c.reqValidStr(ctx[c.symTar])
+  t.is(tar, ti.TEST_TAR_URL.href)
+
   const src0 = new URL(`src_0/file_0.jisp`, import.meta.url).href
   const src1 = new URL(`src_1/file_1.jisp`, import.meta.url).href
 
-  const hash0 = await c.strHash(`test/src_0:` + c.reqValidStr(ti.TEST_TAR_NAME))
-  const hash1 = await c.strHash(`test/src_1:` + c.reqValidStr(ti.TEST_TAR_NAME))
+  t.is(ctx[c.symMain], undefined)
 
-  // t.is(hash0, `1fff0a191264737c7ab1058e5442c2cfdee95b16169ec136d18807b4a2a22c19`)
-  // t.is(hash1, `9bdc4494d0ae99bd24f3545c16d2f2e6485260b12ae1771fad76557e4f6f9af3`)
+  t.is(
+    c.srcToTarUncached(ctx, src0),
+    new URL(`1/test/src_0/file_0.mjs`, ti.TEST_TAR_URL).href,
+  )
 
-  const tar0 = new URL(c.pathJoin(hash0, `file_0.mjs`), ti.TEST_TAR_URL).href
-  const tar1 = new URL(c.pathJoin(hash1, `file_1.mjs`), ti.TEST_TAR_URL).href
-
-  t.is(await c.srcToTarAsync(ctx, src0), tar0)
-  t.is(await c.srcToTarAsync(ctx, src1), tar1)
+  t.is(
+    c.srcToTarUncached(ctx, src1),
+    new URL(`1/test/src_1/file_1.mjs`, ti.TEST_TAR_URL).href,
+  )
 
   ctx[c.symMain] = new URL(`src_0`, import.meta.url).href
 
   t.is(
-    await c.srcToTarAsync(ctx, src0),
+    c.srcToTarUncached(ctx, src0),
     new URL(`file_0.mjs`, ti.TEST_TAR_URL).href,
-    `
-    for a file located in the source directory specified as "main",
-    the target path must not include a hash
-    `,
   )
 
   t.is(
-    await c.srcToTarAsync(ctx, src1),
-    tar1,
-    `
-    for a file located in any directory not specified as "main",
-    the target path must still include a hash
-    `,
+    c.srcToTarUncached(ctx, src1),
+    new URL(`1/src_1/file_1.mjs`, ti.TEST_TAR_URL).href,
   )
 })
 

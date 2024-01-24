@@ -3,11 +3,10 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
 const fs = c.ctxReqFs(c.ctxGlobal)
-const tarBase = c.ctxReqTar(c.ctxGlobal)
 const mods = c.ctxReqModules(c.ctxGlobal)
 
 t.test(function test_modules_invalid() {
-  function fail(src, msg) {return ti.fail(() => mods.getInit(src), msg)}
+  function fail(src, msg) {return ti.fail(() => mods.getOrMake(src), msg)}
 
   fail(`./`,              `expected canonical module path, got "./"`)
   fail(`./one`,           `expected canonical module path, got "./one"`)
@@ -34,9 +33,9 @@ t.test(function test_modules_invalid() {
 
 t.test(function test_module_implicit_relative() {
   const path = `one/two`
-  const mod = mods.getInit(path)
+  const mod = mods.getOrMake(path)
 
-  t.is(mod,         mods.getInit(path))
+  t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
   t.is(mod.tarPath, path)
@@ -45,9 +44,9 @@ t.test(function test_module_implicit_relative() {
 
 await t.test(async function test_module_non_jisp_unreachable() {
   const path = `one://two/three.four`
-  const mod = mods.getInit(path)
+  const mod = mods.getOrMake(path)
 
-  t.is(mod,         mods.getInit(path))
+  t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
   t.is(mod.tarPath, path)
@@ -60,9 +59,9 @@ await t.test(async function test_module_non_jisp_unreachable() {
 
 await t.test(async function test_module_non_jisp_reachable_missing() {
   const path = new URL(`missing_file.mjs`, import.meta.url).href
-  const mod = mods.getInit(path)
+  const mod = mods.getOrMake(path)
 
-  t.is(mod,         mods.getInit(path))
+  t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
   t.is(mod.tarPath, path)
@@ -75,9 +74,9 @@ await t.test(async function test_module_non_jisp_reachable_missing() {
 
 await t.test(async function test_module_non_jisp_reachable_existing() {
   const path = import.meta.url
-  const mod = mods.getInit(path)
+  const mod = mods.getOrMake(path)
 
-  t.is(mod,         mods.getInit(path))
+  t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
   t.is(mod.tarPath, path)
@@ -91,7 +90,7 @@ await t.test(async function test_module_non_jisp_reachable_existing() {
 await t.test(async function test_module_jisp_reachable_missing() {
   const url = new URL(`missing_file.jisp`, import.meta.url)
   const path = url.href
-  const mod = await mods.getInit(path)
+  const mod = await mods.getOrMake(path)
 
   t.is(mod.pk(), path)
   t.is(mod.srcPath, path)
@@ -104,11 +103,10 @@ await t.test(async function test_module_jisp_without_dependencies() {
   await ti.clearTar()
 
   const path = new URL(`../test_files/test_builtins.jisp`, import.meta.url).href
-  const mod = await mods.getInit(path)
-  const hash = await c.strHash(`test_files:.tmp_test`)
-  const tar = c.pathJoin(tarBase, hash, `test_builtins.mjs`)
+  const mod = await mods.getOrMake(path)
+  const tar = new URL(`1/test_files/test_builtins.mjs`, ti.TEST_TAR_URL).href
 
-  t.is(mod,         mods.getInit(path))
+  t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
   t.is(mod.tarPath, tar)

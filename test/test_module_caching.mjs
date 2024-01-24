@@ -121,17 +121,17 @@ class TestModule extends c.Module {
 class TestModules extends c.Modules {
   get Module() {return TestModule}
 
-  async init() {
-    this.modMain             = await (await this.getInit(new URL(`test_caching_main.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modPrelude          = await (await this.getInit(new URL(`../js/prelude.mjs`, import.meta.url).href)).testInit()
-    this.modUsed             = await (await this.getInit(new URL(`test_caching_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modUsedMjs          = await (await this.getInit(new URL(`test_caching_used.mjs`, ti.TEST_SRC_URL).href)).testInit()
-    this.modUsedUsed         = await (await this.getInit(new URL(`test_caching_used_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modUsedImported     = await (await this.getInit(new URL(`test_caching_used_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modImported         = await (await this.getInit(new URL(`test_caching_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modImportedMjs      = await (await this.getInit(new URL(`test_caching_imported.mjs`, ti.TEST_SRC_URL).href)).testInit()
-    this.modImportedUsed     = await (await this.getInit(new URL(`test_caching_imported_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
-    this.modImportedImported = await (await this.getInit(new URL(`test_caching_imported_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
+  async testInit() {
+    this.modMain             = await (await this.getOrMake(new URL(`test_caching_main.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modPrelude          = await (await this.getOrMake(new URL(`../js/prelude.mjs`, import.meta.url).href)).testInit()
+    this.modUsed             = await (await this.getOrMake(new URL(`test_caching_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modUsedMjs          = await (await this.getOrMake(new URL(`test_caching_used.mjs`, ti.TEST_SRC_URL).href)).testInit()
+    this.modUsedUsed         = await (await this.getOrMake(new URL(`test_caching_used_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modUsedImported     = await (await this.getOrMake(new URL(`test_caching_used_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modImported         = await (await this.getOrMake(new URL(`test_caching_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modImportedMjs      = await (await this.getOrMake(new URL(`test_caching_imported.mjs`, ti.TEST_SRC_URL).href)).testInit()
+    this.modImportedUsed     = await (await this.getOrMake(new URL(`test_caching_imported_used.jisp`, ti.TEST_SRC_URL).href)).testInit()
+    this.modImportedImported = await (await this.getOrMake(new URL(`test_caching_imported_imported.jisp`, ti.TEST_SRC_URL).href)).testInit()
     return this
   }
 }
@@ -163,7 +163,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   await ti.clearTar()
 
   await t.test(async function test_module_graph_from_scratch() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modMain.testTarNone()
@@ -204,7 +204,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_unchanged() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modMain.testUpToDate()
@@ -234,7 +234,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_main() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modMain.testTouch()
@@ -266,7 +266,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_used() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modUsed.testTouch()
@@ -298,7 +298,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_used_mjs() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modUsedMjs.testTouch()
@@ -330,7 +330,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_used_used() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modUsedUsed.testTouch()
@@ -362,7 +362,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_used_imported() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modUsedImported.testTouch()
@@ -394,7 +394,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_imported() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modImported.testTouch()
@@ -426,7 +426,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_imported() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modImportedMjs.testTouch()
@@ -458,7 +458,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_imported_used() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modImportedUsed.testTouch()
@@ -490,7 +490,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 
   await t.test(async function test_touch_imported_imported() {
-    const mods = await reinitModules().init()
+    const mods = await reinitModules().testInit()
     const {modMain, modPrelude, modUsed, modUsedMjs, modUsedUsed, modUsedImported, modImported, modImportedMjs, modImportedUsed, modImportedImported} = mods
 
     await modImportedImported.testTouch()

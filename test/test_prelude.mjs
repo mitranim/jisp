@@ -10,9 +10,9 @@ function id(val) {return val}
 t.test(function test_export() {
   ti.fail(() => p.export.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
   ti.fail(() => p.export.call(null, 10, 20, 30), `expected between 1 and 2 inputs, got 3 inputs`)
-  ti.fail(() => p.export.call(null, sym(`one`), sym(`two`)), `expected statement context, got expression context`)
+  ti.fail(() => p.export.call(null, sym(`one`), sym(`two`)), `expected module context`)
 
-  let ctx = c.ctxWithStatement(null)
+  let ctx = c.ctxWithModule(null)
   ti.fail(() => p.export.call(ctx, sym(`one`)), `missing declaration of "one"`)
   ti.fail(() => p.export.call(ctx, sym(`one.two`)), `missing declaration of "one"`)
   ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.three`)), `missing declaration of "one"`)

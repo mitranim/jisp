@@ -55,9 +55,6 @@ export function flush() {
   }
 }
 
-// Our `core.mjs` expects this global, which is part of web standards.
-if (NODE) globalThis.crypto ??= await import(`crypto`)
-
 export const fs = DENO
   ? new (await import(`../js/deno.mjs`)).DenoFs()
   : new (await import(`../js/node.mjs`)).NodeFs()
@@ -66,16 +63,19 @@ export const TEST_TAR_NAME = `.tmp_test`
 export const TEST_TAR_URL = new URL(`../.tmp_test/`, import.meta.url)
 export const TEST_SRC_URL = new URL(`../test_files/`, import.meta.url)
 
-export const TEST_TAR_SUB_URL = new URL(
-  (await c.strHash(`test_files:.tmp_test`)) + `/`,
-  TEST_TAR_URL,
-)
+/*
+When `ctxGlobal[symMain]` is unset, the relative paths of files written to the
+target directory are resolved relatively to the target directory itself, and as
+a result, for source files located in `TEST_SRC_URL`, their target files should
+be written to this directory.
+*/
+export const TEST_TAR_SUB_URL = new URL(`1/test_files/`, TEST_TAR_URL)
 
 c.ctxGlobal[c.symFs] = fs
 c.ctxGlobal[c.symTar] = TEST_TAR_URL.href
 c.ctxGlobal.use = p.use
 
-export function clearTar() {return fs.remove(TEST_TAR_URL)}
+export function clearTar() {return fs.removeOpt(TEST_TAR_URL)}
 
 export function reqFinPos(val) {
   if (c.isFin(val) && val > 0) return val

@@ -115,7 +115,7 @@ export const symStar = Symbol.for(`*`)
 
 export function use(src, name) {
   c.reqArityBetween(arguments.length, 1, 2)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
   if (name === symStar) return useAsMixin.call(this, src)
   if (c.isSome(name)) return useAsNamed.apply(this, arguments)
   return useAsAnon.apply(this, arguments)
@@ -155,13 +155,13 @@ async function ctxSrcDepPathFromUrl(ctx, src) {
   return c.reqValidStr((await c.ctxReqModules(ctx).getReady(src)).tarPath)
 }
 
-async function ctxTarDepPathFromUrl(ctx, src) {
+function ctxTarDepPathFromUrl(ctx, src) {
   const own = ctx[c.symModule]
   own?.addTarDep(src)
 
   const tar = (
     c.isJispPath(src)
-    ? c.reqValidStr((await c.ctxReqModules(ctx).getInit(src)).tarPath)
+    ? c.reqValidStr(c.ctxReqModules(ctx).getOrMake(src).tarPath)
     : src
   )
   return c.optUrlRel(own?.tarPath, tar) ?? tar
@@ -175,30 +175,33 @@ export function $import() {
   return importAsExpression.apply(this, arguments)
 }
 
-async function importAsExpression(src) {
+function importAsExpression(src) {
   c.reqArity(arguments.length, 1)
   if (c.isStr(src)) {
-    return new c.Raw(`import(${c.compileNode(await ctxTarDepPath(this, src))})`)
+    return new c.Raw(`import(${c.compileNode(ctxTarDepPath(this, src))})`)
   }
   return new c.Raw(`import(${c.compileNode(c.macroNode(this, src))})`)
 }
 
 function importAsStatement(src, name) {
   c.reqArityBetween(arguments.length, 1, 2)
+  c.ctxReqIsModule(this)
+  c.ctxReqIsStatement(this)
+
   if (name === symStar) return importAsStatementAsMixin.call(this, src)
   if (c.isSome(name)) return importAsStatementAsNamed.apply(this, arguments)
   return importAsStatementAsAnon.call(this, src)
 }
 
-async function importAsStatementAsAnon(src) {
+function importAsStatementAsAnon(src) {
   c.reqArity(arguments.length, 1)
-  return new c.Raw(`import ${c.compileNode(await ctxTarDepPath(this, src))}`)
+  return new c.Raw(`import ${c.compileNode(ctxTarDepPath(this, src))}`)
 }
 
-async function importAsStatementAsNamed(src, name) {
+function importAsStatementAsNamed(src, name) {
   c.reqArity(arguments.length, 2)
   c.ctxDeclare(this, name)
-  return new c.Raw(`import * as ${name.description} from ${c.compileNode(await ctxTarDepPath(this, src))}`)
+  return new c.Raw(`import * as ${name.description} from ${c.compileNode(ctxTarDepPath(this, src))}`)
 }
 
 async function importAsStatementAsMixin(src) {
@@ -209,7 +212,7 @@ async function importAsStatementAsMixin(src) {
   if (!c.isStrRelImplicit(src)) {
     src = c.ctxImportSrcUrl(this, src).href
     tar = await ctxSrcDepPathFromUrl(this, src)
-    rel = await ctxTarDepPathFromUrl(this, src)
+    rel = ctxTarDepPathFromUrl(this, src)
   }
 
   const mix = c.ctxReqParentMixin(this)
@@ -243,7 +246,7 @@ class ImportAsMixin extends Set {
 
 export function declare(src) {
   c.reqArity(arguments.length, 1)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
   if (c.isSym(src)) return declareSym.call(this, src.description)
   if (c.isStr(src)) return declareStr.call(this, src)
   throw TypeError(`expected either symbol or string, got ${c.show(src)}`)
@@ -270,7 +273,8 @@ export {$export as export}
 
 export function $export(name, alias) {
   c.reqArityBetween(arguments.length, 1, 2)
-  c.ctxReqStatement(this)
+  c.ctxReqIsModule(this)
+  c.ctxReqIsStatement(this)
 
   name = c.symIdent(c.macroNode(this, name))
   if (arguments.length <= 1) return new c.Raw(`export {${name}}`)
@@ -292,7 +296,7 @@ export {$const as const}
 
 export function $const(name, val) {
   c.reqArity(arguments.length, 2)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
 
   val = c.macroNode(Object.create(this), val)
   c.ctxDeclare(this, name)
@@ -310,7 +314,7 @@ export {$let as let}
 
 export function $let(name, val) {
   c.reqArityBetween(arguments.length, 1, 2)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
 
   const pre = c.joinSpaced(c.ctxCompileExport(this), `let`, name.description)
 
@@ -330,7 +334,7 @@ export function $if() {
 
 export function ifAsStatement(predicate, branchThen, branchElse) {
   c.reqArityMax(arguments.length, 3)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
   if (!arguments.length) return []
 
   predicate = c.macroNode(Object.create(this), predicate)
@@ -378,7 +382,7 @@ export function $do() {
 }
 
 export function doAsStatement(...src) {
-  src = c.macroNodes(c.ctxWithStatement(c.ctxReqStatement(this)), src)
+  src = c.macroNodes(c.ctxWithStatement(c.ctxReqIsStatement(this)), src)
   src = c.compileNodes(src).join(c.statementSep)
   return src ? new c.Raw(c.wrapBracesMultiLine(src)) : []
 }
@@ -406,7 +410,7 @@ $void.default = function voidBare() {
 }
 
 export function ret(...src) {
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
 
   switch (src.length) {
     case 0: return new c.Raw(`return`)
@@ -417,7 +421,7 @@ export function ret(...src) {
 }
 
 ret.default = function retBare() {
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
   return new c.Raw(`return`)
 }
 
@@ -442,7 +446,7 @@ export function func(name, params, ...body) {
   return new c.Raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `function`,
-    compileFunc(name, params, retStatementsOpt(ctx, body)),
+    funcCompile(name, params, retStatementsOpt(ctx, body)),
   ))
 }
 
@@ -455,7 +459,7 @@ function declareSyms(ctx, src) {
   for (const val of c.reqArr(src)) c.ctxDeclare(ctx, val)
 }
 
-function compileFunc(name, params, body) {
+function funcCompile(name, params, body) {
   return c.joinSpaced(
     c.compileNode(name),
     c.compileSequenceExpression(params),
@@ -536,7 +540,7 @@ export function meth(name, params, ...body) {
   const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
   declareSyms(ctx, params)
   ctx[c.symStatement] = undefined
-  return new c.Raw(compileFunc(name, params, retStatementsOpt(ctx, body)),)
+  return new c.Raw(funcCompile(name, params, retStatementsOpt(ctx, body)),)
 }
 
 export const methMixin = Object.create(funcMixin)
@@ -588,7 +592,7 @@ export {$throw as throw}
 
 export function $throw(val) {
   c.reqArity(arguments.length, 1)
-  c.ctxReqStatement(this)
+  c.ctxReqIsStatement(this)
   val = c.compileNode(c.macroNode(Object.create(this), val))
   if (val) return new c.Raw(`throw ` + val)
   throw errEmpty()
