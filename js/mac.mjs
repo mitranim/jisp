@@ -247,24 +247,24 @@ class ImportAsMixin extends Set {
 export function declare(src) {
   c.reqArity(arguments.length, 1)
   c.ctxReqIsStatement(this)
-  if (c.isSym(src)) return declareSym.call(this, src.description)
-  if (c.isStr(src)) return declareStr.call(this, src)
+  if (c.isSym(src)) return declareSym(this, src.description)
+  if (c.isStr(src)) return declareStr(this, src)
   throw TypeError(`expected either symbol or string, got ${c.show(src)}`)
 }
 
-function declareSym(src) {
-  const val = c.ctxReqGet(this, src)
+function declareSym(ctx, src) {
+  const val = c.ctxReqGet(ctx, src)
   if (c.isDict(val)) {
-    c.patchDecl(c.ctxReqParentMixin(this), val)
+    c.patchDecl(c.ctxReqParentMixin(ctx), val)
     return []
   }
   throw TypeError(`expected to resolve ${c.show(src)} to plain object, got ${c.show(val)}`)
 }
 
-async function declareStr(src) {
+async function declareStr(ctx, src) {
   c.patchDecl(
-    c.ctxReqParentMixin(this),
-    await import(await ctxSrcDepPath(this, src)),
+    c.ctxReqParentMixin(ctx),
+    await import(await ctxSrcDepPath(ctx, src)),
   )
   return []
 }
@@ -436,6 +436,17 @@ function retStatement(val, ind, src) {
   return c.joinSpaced(`return`, c.compileNode(c.macroNode(Object.create(this), val)))
 }
 
+export function guard(cond, ...body) {
+  c.ctxReqIsStatement(this)
+  if (!arguments.length) return undefined
+
+  return new c.Raw(c.joinSpaced(
+    `if`,
+    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
+    ret.apply(this, body).compile(),
+  ))
+}
+
 export function func(name, params, ...body) {
   c.reqArityMin(arguments.length, 1)
 
@@ -452,6 +463,7 @@ export function func(name, params, ...body) {
 
 export const funcMixin = Object.create(null)
 funcMixin.ret = ret
+funcMixin.guard = guard
 funcMixin.arguments = undefined
 funcMixin.this = undefined
 
@@ -540,7 +552,7 @@ export function meth(name, params, ...body) {
   const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
   declareSyms(ctx, params)
   ctx[c.symStatement] = undefined
-  return new c.Raw(funcCompile(name, params, retStatementsOpt(ctx, body)),)
+  return new c.Raw(funcCompile(name, params, retStatementsOpt(ctx, body)))
 }
 
 export const methMixin = Object.create(funcMixin)
@@ -581,21 +593,23 @@ $static.meth = classStaticMeth
 $static.field = classStaticField
 
 export function classStaticMeth() {
-  return new c.Raw(`static ` + c.compileNode(meth.apply(this, arguments)))
+  return new c.Raw(`static ` + meth.apply(this, arguments).compile())
 }
 
 export function classStaticField() {
-  return new c.Raw(`static ` + c.compileNode(field.apply(this, arguments)))
+  return new c.Raw(`static ` + field.apply(this, arguments).compile())
 }
 
 export {$throw as throw}
 
 export function $throw(val) {
   c.reqArity(arguments.length, 1)
-  c.ctxReqIsStatement(this)
-  val = c.compileNode(c.macroNode(Object.create(this), val))
-  if (val) return new c.Raw(`throw ` + val)
-  throw errEmpty()
+
+  val = c.compileNode(c.macroNode(c.ctxToExpression(this), val))
+  if (!val) throw errEmpty()
+
+  if (c.ctxIsStatement(this)) return new c.Raw(`throw ` + val)
+  return new c.Raw(`(err => {throw err})(${val})`)
 }
 
 function errEmpty() {return SyntaxError(`unexpected empty input`)}

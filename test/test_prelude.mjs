@@ -459,6 +459,52 @@ return
   t.own(ctx, {[c.symStatement]: undefined})
 })
 
+t.test(function test_guard() {
+  function mac(ctx, ...src) {return c.macroNode(ctx, [m.guard, ...src])}
+
+  ti.fail(() => mac(null), `expected statement context, got expression context`)
+  const ctx = c.ctxWithStatement(null)
+
+  t.is(mac(ctx), undefined)
+  t.is(mac(ctx, 10).compile(), `if (10) return`)
+  t.is(mac(ctx, 10, 20).compile(), `if (10) return 20`)
+
+  t.is(mac(ctx, 10, 20, 30).compile(), `if (10) {
+20;
+return 30
+}`)
+
+  t.is(mac(ctx, 10, 20, 30, 40).compile(), `if (10) {
+20;
+30;
+return 40
+}`)
+
+  t.is(
+    mac(
+      ctx,
+      ti.macReqExpressionOne,
+      ti.macReqStatementTwo,
+      ti.macReqStatementThree,
+      ti.macReqExpression,
+    ).compile(), `if ("one") {
+"two";
+"three";
+return "expression_value"
+}`)
+
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    mac(ctx, 10, [p.const, sym(`one`), 20], 30).compile(),
+    `if (10) {
+const one = 20;
+return 30
+}`)
+
+  t.own(ctx, {[c.symStatement]: undefined})
+})
+
 function testFuncCommon(ctx) {
   ti.fail(() => p.func.call(ctx),                 `expected at least 1 inputs, got 0 inputs`)
   ti.fail(() => p.func.call(ctx, 10),             `expected variant of isSym, got 10`)
@@ -728,7 +774,7 @@ return
 
     t.eq(ti.objFlat(test(ctx)), [
       {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, arguments: undefined, this: undefined, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: undefined, this: undefined, one: undefined},
       {ret: 10},
     ])
   }
@@ -741,7 +787,7 @@ return
 
     t.eq(ti.objFlat(test(ctx)), [
       {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, one: undefined},
       {ret: 10, arguments: 20, this: 30},
     ])
   }
@@ -757,7 +803,7 @@ return
       {[c.symStatement]: undefined},
       // Unlike the other "mixin" properties, the function's name is added to
       // its mixin scope unconditionally.
-      {[c.symMixin]: undefined, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, one: undefined},
       {ret: 10, arguments: 20, this: 30, one: 40},
     ])
   }
@@ -774,7 +820,7 @@ return
     t.eq(ti.objFlat(ctx), [
       {[c.symStatement]: undefined},
       // Function name takes priority over mixin properties.
-      {[c.symMixin]: undefined, arguments: undefined, this: undefined, ret: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: undefined, this: undefined, ret: undefined},
     ])
   }
 })
@@ -1118,18 +1164,19 @@ static seven = 90
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 })
 
-t.test(function test_throw() {
-  ti.fail(
-    () => p.throw.call(null),
-    `expected 1 inputs, got 0 inputs`,
-  )
+t.test(function test_throw_expression() {
+  ti.fail(() => p.throw.call(null), `expected 1 inputs, got 0 inputs`)
+  ti.fail(() => p.throw.call(null, []), `unexpected empty input`)
 
-  ti.fail(
-    () => p.throw.call(null, 10),
-    `expected statement context, got expression context`,
-  )
+  t.is(p.throw.call(null, undefined).compile(), `(err => {throw err})(undefined)`)
+  t.is(p.throw.call(null, null).compile(), `(err => {throw err})(null)`)
+  t.is(p.throw.call(null, 10).compile(), `(err => {throw err})(10)`)
+  t.is(p.throw.call(null, ti.macReqExpression).compile(), `(err => {throw err})("expression_value")`)
+})
 
+t.test(function test_throw_statement() {
   const ctx = c.ctxWithStatement(null)
+  ti.fail(() => p.throw.call(ctx), `expected 1 inputs, got 0 inputs`)
   ti.fail(() => p.throw.call(ctx, []), `unexpected empty input`)
 
   t.is(p.throw.call(ctx, undefined).compile(), `throw undefined`)
