@@ -84,34 +84,55 @@ export function reqFinPos(val) {
 
 export function optFinPos(val) {return c.isNil(val) ? val : reqFinPos(val)}
 
-// Minor shortcut. We don't use distinct error classes here.
+// Minor shortcut. We don't particularly care about error subclasses here.
 export function fail(fun, msg) {return t.throws(fun, Error, msg)}
 
-export function macUnreachable() {throw Error(`unreachable`)}
-
-export function macReqStatement() {
-  if (c.ctxIsStatement(this)) return `statement_value`
-  throw Error(`expected statement context, got expression context ${c.show(this)}`)
+function makeMac(fun) {
+  const tar = Object.create(null)
+  tar.macro = fun
+  return tar
 }
 
-export function macReqExpression() {
-  if (!c.ctxIsStatement(this)) return `expression_value`
-  throw Error(`expected expression context, got statement context ${c.show(this)}`)
-}
+export const macUnreachable = makeMac(function unreachable() {throw Error(`unreachable`)})
 
-export function macSomeValue() {return `some_value`}
+export const macReqStatement = makeMac(function reqStatement(ctx) {
+  if (c.ctxIsStatement(ctx)) return `statement_value`
+  throw Error(`expected statement context, got expression context ${c.show(ctx)}`)
+})
 
-export function macOne() {return `one`}
-export function macTwo() {return `two`}
-export function macThree() {return `three`}
+export const macReqExpression = makeMac(function reqExpression(ctx) {
+  if (!c.ctxIsStatement(ctx)) return `expression_value`
+  throw Error(`expected expression context, got statement context ${c.show(ctx)}`)
+})
 
-export function macReqExpressionOne() {return macReqExpression.call(this), `one`}
-export function macReqExpressionTwo() {return macReqExpression.call(this), `two`}
-export function macReqExpressionThree() {return macReqExpression.call(this), `three`}
+export const macSomeValue = makeMac(function funSomeValue() {return `some_value`})
+export const macOne = makeMac(function funOne() {return `one`})
+export const macTwo = makeMac(function funTwo() {return `two`})
+export const macThree = makeMac(function funThree() {return `three`})
 
-export function macReqStatementOne() {return macReqStatement.call(this), `one`}
-export function macReqStatementTwo() {return macReqStatement.call(this), `two`}
-export function macReqStatementThree() {return macReqStatement.call(this), `three`}
+export const macReqExpressionOne = makeMac(function funReqExpressionOne(ctx) {
+  return macReqExpression.macro(ctx), `one`
+})
+
+export const macReqExpressionTwo = makeMac(function funReqExpressionTwo(ctx) {
+  return macReqExpression.macro(ctx), `two`
+})
+
+export const macReqExpressionThree = makeMac(function funReqExpressionThree(ctx) {
+  return macReqExpression.macro(ctx), `three`
+})
+
+export const macReqStatementOne = makeMac(function funReqStatementOne(ctx) {
+  return macReqStatement.macro(ctx), `one`
+})
+
+export const macReqStatementTwo = makeMac(function funReqStatementTwo(ctx) {
+  return macReqStatement.macro(ctx), `two`
+})
+
+export const macReqStatementThree = makeMac(function funReqStatementThree(ctx) {
+  return macReqStatement.macro(ctx), `three`
+})
 
 export function objFlat(src) {
   const out = []

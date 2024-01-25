@@ -87,20 +87,33 @@ t.test(function test_compile() {
   test([10, 20, 30],                     `10(20, 30)`)
   test([10, undefined, 20, null, 30],    `10(undefined, 20, null, 30)`)
 
-  fail(Object(false),             `unable to compile unrecognized object [object Boolean]`)
-  fail(Object(true),              `unable to compile unrecognized object [object Boolean]`)
-  fail(Object(0n),                `unable to compile unrecognized object [object BigInt]`)
-  fail(Object(123n),              `unable to compile unrecognized object [object BigInt]`)
-  fail(Object(0),                 `unable to compile unrecognized object [object Number]`)
-  fail(Object(123.456),           `unable to compile unrecognized object [object Number]`)
-  fail(Object(Symbol(`sym`)),     `unable to compile unrecognized object [object Symbol]`)
-  fail(Object(Symbol.for(`sym`)), `unable to compile unrecognized object [object Symbol]`)
-  fail(Object(`str`),             `unable to compile unrecognized object [object String]`)
+  fail(Object(false),             `unable to usefully compile object [object Boolean]`)
+  fail(Object(true),              `unable to usefully compile object [object Boolean]`)
+  fail(Object(0n),                `unable to usefully compile object [object BigInt]`)
+  fail(Object(123n),              `unable to usefully compile object [object BigInt]`)
+  fail(Object(0),                 `unable to usefully compile object [object Number]`)
+  fail(Object(123.456),           `unable to usefully compile object [object Number]`)
+  fail(Object(Symbol(`sym`)),     `unable to usefully compile object [object Symbol]`)
+  fail(Object(Symbol.for(`sym`)), `unable to usefully compile object [object Symbol]`)
+  fail(Object(`str`),             `unable to usefully compile object [object String]`)
+
+  function fun() {throw Error(`some_error`)}
+  fail(fun, `unable to usefully compile function [function fun]`)
+
+  fail({fun}, `unable to usefully compile function [function fun]; hint: arbitrary nodes can compile by implementing the method ".compile"
+
+source function:
+
+[function fun]`)
+
+  fun.compile = function compile() {return `some_code`}
+  test(fun, `some_code`)
+  test({fun}, `({"fun": some_code})`)
 
   test(Object.create(null), `({})`)
-  fail(Object.create(Object.create(null)), `unable to compile unrecognized object {}`)
-  fail(Object.create(Object.create(Object.create(null))), `unable to compile unrecognized object {}`)
-  fail(Object.create({}), `unable to compile unrecognized object {}`)
+  fail(Object.create(Object.create(null)), `unable to usefully compile object {}`)
+  fail(Object.create(Object.create(Object.create(null))), `unable to usefully compile object {}`)
+  fail(Object.create({}), `unable to usefully compile object {}`)
 
   test({}, `({})`)
   test({one: 10}, `({"one": 10})`)
@@ -113,25 +126,27 @@ t.test(function test_compile() {
   test({10: []}, `({"10": undefined})`)
   test({10: 20, 30: []}, `({"10": 20, "30": undefined})`)
   test({10: 20, 30: [], 40: 50}, `({"10": 20, "30": undefined, "40": 50})`)
-
   test([10, {one: 20}, [30, {two: 40}]], `10(({"one": 20}), 30(({"two": 40})))`)
 
-  fail(Promise.resolve(), `unable to compile unrecognized object [object Promise]`)
+  fail(Promise.resolve(), `unable to usefully compile object [object Promise]`)
+
+  test({compile: undefined}, `({"compile": undefined})`)
+  test({compile: 123}, `({"compile": 123})`)
+  fail({compile() {}}, `expected variant of isStr, got undefined`)
+  fail({compile() {return 123}}, `expected variant of isStr, got 123`)
+  test({compile() {return `some_code`}}, `some_code`)
+  test(Object.create(null, {compile: {value() {return `some_code`}}}), `some_code`)
+  test(new class SomeNode {compile() {return `some_code`}}(), `some_code`)
 
   test(new c.Raw(`some_code`), `some_code`)
   test(new c.Raw(`"some_code"`), `"some_code"`)
 
-  function unreachable() {throw Error(`some_error`)}
-  fail(unreachable, `unable to usefully compile function node [function unreachable]`)
-
-  fail({unreachable}, `unable to usefully compile function node [function unreachable]
-
-source node:
-
-{unreachable: [function unreachable]}`)
-
-  unreachable.compile = function compile() {return `some_code`}
-  fail(unreachable, `unable to usefully compile function node [function unreachable]`)
+  test(/(?:)/, `/(?:)/`)
+  test(/(?:)/g, `/(?:)/g`)
+  test(/(?:)/gi, `/(?:)/gi`)
+  test(/one/, `/one/`)
+  test(/one/g, `/one/g`)
+  test(/one/gi, `/one/gi`)
 })
 
 t.test(function test_compile_error_context_without_spans() {
@@ -140,7 +155,11 @@ t.test(function test_compile_error_context_without_spans() {
 
   const src = [[[10, 20, unreachable, 30, 40]]]
 
-  fail(src, `unable to usefully compile function node [function unreachable]
+  fail(src, `unable to usefully compile function [function unreachable]; hint: arbitrary nodes can compile by implementing the method ".compile"
+
+source function:
+
+[function unreachable]
 
 source node:
 
@@ -181,7 +200,11 @@ f388a68c22544962b27a2e117934dce1
   function fail(src, msg) {return ti.fail(() => c.compileNode(src), msg)}
   function unreachable() {throw Error(`some_error`)}
 
-  fail(src, `unable to usefully compile function node [function unreachable]
+  fail(src, `unable to usefully compile function [function unreachable]; hint: arbitrary nodes can compile by implementing the method ".compile"
+
+source function:
+
+[function unreachable]
 
 source node context:
 

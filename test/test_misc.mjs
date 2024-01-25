@@ -168,8 +168,8 @@ t.test(function test_ctxReqGet() {
   fail({},        `one.two.three`, `missing declaration of "one"`)
 
   test({one: undefined}, `one`,           undefined)
-  test({one: undefined}, `one.two`,       undefined)
-  test({one: undefined}, `one.two.three`, undefined)
+  fail({one: undefined}, `one.two`,       `missing property "two" in undefined`)
+  fail({one: undefined}, `one.two.three`, `missing property "two" in undefined`)
 
   test({one: 123}, `one`,           123)
   fail({one: 123}, `one.two`,       `missing property "two" in 123`)
@@ -230,16 +230,22 @@ t.test(function test_objFlat() {
   ])
 })
 
+/*
+These were written out of curiosity. Our actual bottlenecks are in parsing and
+macroing.
+*/
 t.bench(function bench_reqArity() {c.reqArity(arguments.length, 0)})
-t.bench(function bench_Raw_overhead_0() {new c.Raw()})
-t.bench(function bench_Raw_overhead_1() {`` + new c.Raw()})
-t.bench(function bench_Raw_overhead_2() {`` + new c.Raw().toString()})
-t.bench(function bench_Raw_overhead_3() {`` + new c.Raw().valueOf()})
-t.bench(function bench_Raw_overhead_4() {`` + new c.Raw().compile()})
-t.bench(function bench_Raw_overhead_5() {new c.Raw(new c.Raw())})
-t.bench(function bench_Raw_overhead_6() {new c.Raw(new c.Raw().valueOf())})
-t.bench(function bench_Raw_overhead_7() {new c.Raw(new c.Raw().toString())})
-t.bench(function bench_Raw_overhead_8() {c.compileNode(new c.Raw())})
-t.bench(function bench_Raw_overhead_9() {new c.Raw(c.laxStr(undefined))})
+t.bench(function bench_raw_overhead_Raw_0() {new c.Raw()})
+t.bench(function bench_raw_overhead_raw_0() {c.raw()})
+t.bench(function bench_raw_overhead_Raw_1() {`` + new c.Raw()})
+t.bench(function bench_raw_overhead_raw_1() {`` + c.raw()})
+t.bench(function bench_raw_overhead_Raw_2() {`` + new c.Raw().toString()})
+t.bench(function bench_raw_overhead_Raw_3() {`` + new c.Raw().valueOf()})
+t.bench(function bench_raw_overhead_Raw_4() {`` + new c.Raw().compile()})
+t.bench(function bench_raw_overhead_Raw_5() {new c.Raw(new c.Raw())})
+t.bench(function bench_raw_overhead_Raw_6() {new c.Raw(new c.Raw().valueOf())})
+t.bench(function bench_raw_overhead_Raw_7() {new c.Raw(new c.Raw().toString())})
+t.bench(function bench_raw_overhead_Raw_8() {c.compileNode(new c.Raw())})
+t.bench(function bench_raw_overhead_Raw_9() {new c.Raw(c.laxStr(undefined))})
 
 if (import.meta.main) ti.flush()

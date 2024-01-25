@@ -3,7 +3,7 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 import * as p from '../js/prelude.mjs'
 
-function sym(val) {return Symbol.for(val)}
+function sym(val) {return Symbol.for(c.reqStr(val))}
 function testNone(val) {t.eq(val, [])}
 
 const preludeUrl = new URL(`../js/prelude.mjs`, import.meta.url).href
@@ -14,7 +14,6 @@ const existingJsFileUrl = new URL(`test_simple_export.mjs`, ti.TEST_SRC_URL).hre
 const existingJispFileSrcUrl = new URL(`test_simple_export.jisp`, ti.TEST_SRC_URL).href
 const existingJispFileTarUrl = new URL(`test_simple_export.mjs`, ti.TEST_TAR_SUB_URL).href
 const missingJsUrl = `one://two.three/four.mjs`
-const missingJispUrl = `one://two.three/four.jisp`
 
 await t.test(async function test_use() {
   if (ti.WATCH) return
@@ -82,9 +81,9 @@ t.test(function test_import_expression() {
     () => p.import.call(ctx, ti.macReqStatement),
     `expected statement context, got expression context {}
 
-source function:
+source node:
 
-[function macReqStatement]`,
+{macro: [function reqStatement]}`,
   )
 
   t.is(p.import.call(ctx, undefined).compile(),           `import(undefined)`)
@@ -173,14 +172,18 @@ await t.test(async function test_import_statement_mixin() {
 
   t.is(out.compile(), `import ${JSON.stringify(existingJsFileUrl)}`)
 
-  c.macroNode(ctx, sym(`one`))
+  function ref(src) {
+    t.is(c.compileNode(c.macroNode(ctx, sym(src))), src)
+  }
+
+  ref(`one`)
   t.is(out.compile(), `import {one} from ${JSON.stringify(existingJsFileUrl)}`)
 
-  c.macroNode(ctx, sym(`two`))
+  ref(`two`)
   t.is(out.compile(), `import {one, two} from ${JSON.stringify(existingJsFileUrl)}`)
 
-  c.macroNode(ctx, sym(`one`))
-  c.macroNode(ctx, sym(`two`))
+  ref(`one`)
+  ref(`two`)
   t.is(out.compile(), `import {one, two} from ${JSON.stringify(existingJsFileUrl)}`)
 })
 
@@ -346,6 +349,22 @@ function testImport(ctx, compile) {
   t.is(p.import.call(ctx, missingJsUrl).compile(), compile(missingJsUrl))
 }
 
+t.test(function test_import_meta() {
+  const ctx = Object.create(null)
+
+  function run(src) {return c.compileNode(c.macroNode(ctx, src))}
+  ti.fail(() => run(sym(`import.meta`)), `missing declaration of "import"`)
+
+  ctx.import = p.import
+  t.is(run(sym(`import.meta`)), `import.meta`)
+
+  /*
+  Unfortunate current limitation. We'd like to fix this eventually. For now, use
+  code can assign `import.meta` to a variable to read its properties.
+  */
+  ti.fail(() => run(sym(`import.meta.url`)), `missing property "url" in import.meta`)
+})
+
 function makeTestModule() {
   const mod = new c.Module()
   mod.srcPath = new URL(`test.jisp`, ti.TEST_SRC_URL).href
@@ -385,7 +404,19 @@ t.test(function test_declare_sym() {
 
   ti.fail(
     () => p.declare.call(ctx, sym(`one.two`)),
-    `expected to resolve "one.two" to plain object, got undefined`,
+    `missing property "two" in undefined`,
+  )
+
+  ctx.one = 123
+
+  ti.fail(
+    () => p.declare.call(ctx, sym(`one`)),
+    `expected to resolve "one" to plain object, got 123`,
+  )
+
+  ti.fail(
+    () => p.declare.call(ctx, sym(`one.two`)),
+    `missing property "two" in 123`,
   )
 
   ctx = c.ctxWithStatement(null)

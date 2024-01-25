@@ -2,7 +2,7 @@ import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
-function sym(val) {return Symbol.for(val)}
+function sym(val) {return Symbol.for(c.reqStr(val))}
 
 t.test(function test_Span() {
   const span = new c.Span()

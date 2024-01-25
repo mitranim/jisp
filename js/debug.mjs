@@ -1,17 +1,34 @@
 import * as c from './core.mjs'
 
+/*
+Same as `comment` in prelude. Sometimes convenient when messing around and
+enabling / disabling debug expressions.
+*/
+export function comment() {}
+
+/*
+Sometimes convenient when messing around and enabling / disabling debug
+expressions.
+*/
+export function id(val) {
+  c.reqArity(arguments.length, 1)
+  return val
+}
+
 export function compiling() {
   c.reqArityNullary(arguments.length)
-  c.ctxReqIsStatement(this)
   console.log(`[debug] compiling module:`, c.ctxReqModule(this).pk())
   return []
 }
 
+export function compiled(src) {
+  c.reqArity(arguments.length, 1)
+  console.log(`[debug] compiled:`, c.compileNode(c.macroNode(ctxBranch(this), src)))
+  return src
+}
+
 export function compile(...src) {
-  c.ctxReqIsStatement(this)
-  for (src of src) {
-    console.log(`[debug] compiled:`, c.compileNode(c.macroNode(ctxBranch(this), src)))
-  }
+  console.log(`[debug] compiled:`, c.compileStatements(c.macroNodes(ctxBranch(this), src)))
   return []
 }
 
@@ -24,7 +41,6 @@ export function inspected(val) {
 }
 
 export function inspect(...src) {
-  c.ctxReqIsStatement(this)
   for (src of src) inspectNode(this, src)
   return []
 }
@@ -45,4 +61,9 @@ function inspectSym(ctx, src) {
     else return
   }
   console.log(`[debug] value:`, ctx)
+}
+
+export function ctx() {
+  console.log(`[debug] context:`, this)
+  return []
 }

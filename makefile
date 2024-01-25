@@ -45,7 +45,7 @@ lint:
 ifeq ($(shell which eslint),)
 	deno lint --rules-exclude=no-empty,require-yield,require-await,constructor-super,no-self-assign
 else
-	eslint --config=./.eslintrc --ext=mjs $(SRC_DIR)
+	eslint --config=./.eslintrc --ext=mjs $(SRC_DIR) $(TEST_DIR)
 endif
 	$(OK)
 

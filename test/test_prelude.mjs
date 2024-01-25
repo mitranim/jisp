@@ -4,7 +4,7 @@ import * as c from '../js/core.mjs'
 import * as p from '../js/prelude.mjs'
 import * as m from '../js/mac.mjs'
 
-function sym(val) {return Symbol.for(val)}
+function sym(val) {return Symbol.for(c.reqStr(val))}
 function id(val) {return val}
 
 t.test(function test_export() {
@@ -141,9 +141,9 @@ t.test(function test_if_expression() {
 
   ti.fail(() => p.if.call(ctx, ti.macReqStatement), `expected statement context, got expression context null
 
-source function:
+source node:
 
-[function macReqStatement]`)
+{macro: [function reqStatement]}`)
 
   t.is(p.if.call(ctx, 10, 20).compile(), `(10 ? 20 : undefined)`)
   t.is(p.if.call(ctx, 10, 20, 30).compile(), `(10 ? 20 : 30)`)
@@ -321,12 +321,12 @@ const two = 20
 
 t.test(function test_void_bare() {
   let ctx = null
-  t.is(p.void.default.call(ctx),                    undefined)
-  t.is(p.void.default.call(ctx, ti.macUnreachable), undefined)
+  t.is(p.void.macro(ctx),                    undefined)
+  t.is(p.void.macro(ctx, ti.macUnreachable), undefined)
 
   ctx = c.ctxWithStatement(null)
-  t.eq(p.void.default.call(ctx),                    [])
-  t.eq(p.void.default.call(ctx, ti.macUnreachable), [])
+  t.eq(p.void.macro(ctx),                    [])
+  t.eq(p.void.macro(ctx, ti.macUnreachable), [])
 })
 
 t.test(function test_void_expression() {
@@ -384,12 +384,12 @@ t.test(function test_void_statement() {
 })
 
 t.test(function test_ret_bare() {
-  ti.fail(() => m.ret.default.call(null), `expected statement context, got expression context`)
-  ti.fail(() => m.ret.default.call(null, ti.macUnreachable), `expected statement context, got expression context`)
+  ti.fail(() => m.ret.macro(null), `expected statement context, got expression context`)
+  ti.fail(() => m.ret.macro(null, ti.macUnreachable), `expected statement context, got expression context`)
 
   const ctx = c.ctxWithStatement(null)
-  t.is(m.ret.default.call(ctx).compile(), `return`)
-  t.is(m.ret.default.call(ctx, ti.macUnreachable).compile(), `return`)
+  t.is(m.ret.macro(ctx).compile(), `return`)
+  t.is(m.ret.macro(ctx, ti.macUnreachable).compile(), `return`)
 })
 
 t.test(function test_ret_statement() {
@@ -747,7 +747,7 @@ t.test(function test_func_export() {
 t.test(function test_func_mixin() {
   function test(ctx) {
     t.is(
-      p.func.call(ctx, sym(`one`), [], function mac() {ctx = this}, []).compile(),
+      p.func.call(ctx, sym(`one`), [], {macro(val) {ctx = val}}, []).compile(),
       `function one () {
 undefined;
 return
@@ -811,7 +811,7 @@ return
   {
     let ctx = null
     t.is(
-      p.func.call(ctx, sym(`ret`), [], function mac() {ctx = this}, []).compile(),
+      p.func.call(ctx, sym(`ret`), [], {macro(val) {ctx = val}}, []).compile(),
       `function ret () {
 undefined;
 return
@@ -837,7 +837,7 @@ t.test(function test_class_invalid() {
 t.test(function test_class_declaration_and_export() {
   function run(ctx) {
     return [
-      p.class.call(ctx, sym(`one`), function mac() {ctx = this; return []}),
+      p.class.call(ctx, sym(`one`), {macro(val) {ctx = val; return []}}),
       ctx,
     ]
   }
@@ -980,17 +980,10 @@ t.test(function test_meth() {
     ti.fail(() => m.meth.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
     ti.fail(() => m.meth.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
 
-    function name(src, exp) {
-      t.is(
-        m.meth.call(null, src, []).compile(),
-        exp,
-      )
-    }
-
-    name(sym(`await`), `await () {}`)
-    name(sym(`eval`),  `eval () {}`)
-    name(``,           `"" () {}`)
-    name(`one`,        `"one" () {}`)
+    testMethBasic(sym(`await`), `await () {}`)
+    testMethBasic(sym(`eval`),  `eval () {}`)
+    testMethBasic(``,           `"" () {}`)
+    testMethBasic(`one`,        `"one" () {}`)
   }
 
   t.is(
@@ -1021,11 +1014,11 @@ return 30
       m.meth.call(null, sym(`one`), [sym(`two`), sym(`three`)],
         ti.macReqStatementOne,
         ti.macReqStatementTwo,
-        function mac() {
-          ti.macReqExpression.call(this)
-          ctx = this
+        {macro(val) {
+          ti.macReqExpression.macro(val)
+          ctx = val
           return 10
-        },
+        }},
       ).compile(),
       `one (two, three) {
 "one";
@@ -1040,6 +1033,13 @@ return 10
     ])
   }
 })
+
+function testMethBasic(src, exp) {
+  t.is(
+    m.meth.call(null, src, []).compile(),
+    exp,
+  )
+}
 
 t.test(function test_field() {
   ti.fail(() => m.field.call(null),                 `expected between 1 and 2 inputs, got 0 inputs`)
@@ -1209,12 +1209,12 @@ function testNew(ctx) {
 
   ti.fail(
     () => p.new.call(ctx, [], SomeNode),
-    `Class constructor SomeNode cannot be invoked without 'new'`,
+    `unexpected function node [function SomeNode] in non-call position`,
   )
 
   ti.fail(
     () => p.new.call(ctx, [], sym(`one`)),
-    `unexpected reference "one" to value [function SomeNode]`,
+    `unexpected function node [function SomeNode] in non-call position`,
   )
 
   t.is(
@@ -1251,6 +1251,18 @@ function testNew(ctx) {
 
   t.own(p.new.call(ctx, SomeNode, 10, 20, 30), {src: [10, 20, 30]})
   t.own(p.new.call(ctx, sym(`one`), 10, 20, 30), {src: [10, 20, 30]})
+
+  function run(src) {return c.compileNode(c.macroNode(ctx, src))}
+  ti.fail(() => run(sym(`new.target`)), `missing declaration of "new"`)
+
+  ctx.new = p.new
+  t.is(run(sym(`new.target`)), `new.target`)
+
+  /*
+  Unfortunate current limitation. We'd like to fix this eventually. For now, use
+  code can assign `new.target` to a variable to read its properties.
+  */
+  ti.fail(() => run(sym(`new.target.name`)), `missing property "name" in new.target`)
 }
 
 t.test(function test_typeof() {testUnary(p.typeof, `typeof`)})
@@ -1267,7 +1279,6 @@ function testUnary(fun, pre) {
       `(${pre} "expression_value")`,
     )
   }
-
 
   test(null)
   test(c.ctxWithStatement(null))
@@ -1307,7 +1318,7 @@ t.test(function test_instof() {testBinary(p.instof, `instanceof`)})
 
 function testBinary(fun, inf) {
   function test(ctx) {
-    ti.fail(() => fun.call(ctx),         `expected 2 inputs, got 0 inputs`)
+    ti.fail(() => fun.call(ctx), `expected 2 inputs, got 0 inputs`)
 
     t.is(
       fun.call(ctx, [], []).compile(),
@@ -1341,12 +1352,74 @@ function testBinary(fun, inf) {
 
 t.test(function test_in() {testBinary(p.in, `in`)})
 
-t.test(function test_isNil() {testUnary(p.isNil, `null ==`)})
-t.test(function test_isSome() {testUnary(p.isSome, `null !=`)})
+/*
+Most of these checks are redundant with more fundamental tests for symbol
+macroing and compilation, and list macroing and compilation. Ultimately,
+just verifying that `is` is a symbol with `Object.is` tells you the rest
+of this behavior.
+*/
+t.test(function test_is() {
+  t.is(p.is, sym(`Object.is`))
+
+  ti.fail(() => c.macroNode(null, sym(`is`)), `missing declaration of "is"`)
+  ti.fail(() => c.macroNode(null, p.is), `missing declaration of "Object"`)
+
+  const ctx = Object.create(null)
+  ctx.is = p.is
+  ti.fail(() => c.macroNode(ctx, sym(`is`)), `missing declaration of "Object"`)
+  ti.fail(() => c.macroNode(ctx, p.is), `missing declaration of "Object"`)
+
+  ctx.Object = undefined
+  t.is(c.macroNode(ctx, sym(`is`)), sym(`Object.is`))
+  t.is(c.macroNode(ctx, p.is), sym(`Object.is`))
+  t.is(c.compileNode(sym(`Object.is`)), `Object.is`)
+
+  t.eq(c.macroNode(ctx, [sym(`is`), 10, 20]), [p.is, 10, 20])
+  t.eq(c.macroNode(ctx, [p.is, 10, 20]), [p.is, 10, 20])
+  t.is(c.compileNode([p.is, 10, 20]), `Object.is(10, 20)`)
+
+  t.eq(c.macroNode(ctx, [10, sym(`is`), 20]), [10, p.is, 20])
+  t.eq(c.macroNode(ctx, [10, p.is, 20]), [10, p.is, 20])
+  t.is(c.compileNode([10, p.is, 20]), `10(Object.is, 20)`)
+})
+
+t.test(function test_isNil() {
+  testUnary(p.isNil, `null ==`)
+  testCompilable(p.isNil, `(a => a == null)`)
+})
+
+t.test(function test_isSome() {
+  testUnary(p.isSome, `null !=`)
+  testCompilable(p.isSome, `(a => a != null)`)
+})
+
+function testCompilable(src, exp) {
+  function test(ctx) {
+    t.is(src.compile(), exp)
+
+    t.is(c.compileNode(                 src),  exp)
+    t.is(c.compileNode(c.macroNode(ctx, src)), exp)
+
+    t.is(c.compileNode([src]),         exp + `()`)
+    t.is(c.compileNode([src, 10]),     exp + `(10)`)
+    t.is(c.compileNode([src, 10, 20]), exp + `(10, 20)`)
+
+    t.is(c.compileNode(                 [10, src]),      `10(${exp})`)
+    t.is(c.compileNode(c.macroNode(ctx, [10, src])),     `10(${exp})`)
+    t.is(c.compileNode(                 [10, src, 20]),  `10(${exp}, 20)`)
+    t.is(c.compileNode(c.macroNode(ctx, [10, src, 20])), `10(${exp}, 20)`)
+    t.is(c.compileNode(                 [10, 20, src]),  `10(20, ${exp})`)
+    t.is(c.compileNode(c.macroNode(ctx, [10, 20, src])), `10(20, ${exp})`)
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+}
 
 t.test(function test_list() {
   testList(null)
   testList(c.ctxWithStatement(null))
+  testCompilable(p.list, `((...a) => a)`)
 })
 
 function testList(ctx) {
@@ -1497,90 +1570,6 @@ t.test(function test_dict() {
   )
 })
 
-/*
-t.test(function test_dict1() {
-  function fail(ctx) {
-    ti.fail(
-      () => m.dict1.call(ctx, 10),
-      `expected an even number of inputs, got 1 inputs`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, []),
-      `expected an even number of inputs, got 1 inputs`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, 10, 20, 30),
-      `expected an even number of inputs, got 3 inputs`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, 10, [], 30),
-      `expected an even number of inputs, got 3 inputs`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, undefined, 10),
-      `dict keys must be identifiers, strings, or numbers; got undefined`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, [], 10),
-      `dict keys must be identifiers, strings, or numbers; got []`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, NaN, 10),
-      `dict keys must be identifiers, strings, or numbers; got NaN`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, Infinity, 10),
-      `dict keys must be identifiers, strings, or numbers; got Infinity`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, -Infinity, 10),
-      `dict keys must be identifiers, strings, or numbers; got -Infinity`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, sym(`one.two`), 10),
-      `dict keys must be identifiers, strings, or numbers; got one.two`,
-    )
-
-    ti.fail(
-      () => m.dict1.call(ctx, sym(`!@#`), 10),
-      `dict keys must be identifiers, strings, or numbers; got !@#`,
-    )
-  }
-
-  fail(null)
-  fail(c.ctxWithStatement(null))
-
-  function test(ctx) {
-    t.eq(m.dict1.call(ctx), {})
-    t.eq(m.dict1.call(ctx, -0, -0), {0: -0})
-    t.eq(m.dict1.call(ctx, 10, 20), {10: 20})
-    t.eq(m.dict1.call(ctx, 10, 20, 30, 40), {10: 20, 30: 40})
-    t.eq(m.dict1.call(ctx, 10, []), {10: []})
-    t.eq(m.dict1.call(ctx, 10, [], 20, 30), {10: [], 20: 30})
-    t.eq(m.dict1.call(ctx, 10, [], 20, 30, 40, [[]]), {10: [], 20: 30, 40: [[]]})
-    t.eq(m.dict1.call(ctx, 10n, 20n), {10: 20n})
-    t.eq(m.dict1.call(ctx, 10n, 20n, 30n, 40n), {10: 20n, 30: 40n})
-    t.eq(m.dict1.call(ctx, `one`, `two`), {one: `two`})
-    t.eq(m.dict1.call(ctx, `one`, `two`, `three`, `four`), {one: `two`, three: `four`})
-    t.eq(m.dict1.call(ctx, `one`, 10, `two`, 20), {one: 10, two: 20})
-    t.eq(m.dict1.call(ctx, sym(`one`), `two`, sym(`three`), `four`), {one: `two`, three: `four`})
-    t.eq(m.dict1.call(ctx, sym(`one`), 10, sym(`two`), 20), {one: 10, two: 20})
-  }
-
-  test(null)
-  test(c.ctxWithStatement(null))
-})
-*/
-
 t.bench(function bench_dict_compile_core() {
   c.compileDict({one: 10, two: 20, three: 30, four: 40})
 })
@@ -1588,12 +1577,6 @@ t.bench(function bench_dict_compile_core() {
 t.bench(function bench_dict_compile_macro() {
   p.dict.call(null, `one`, 10, `two`, 20, `three`, 30, `four`, 40).compile()
 })
-
-/*
-t.bench(function bench_dict_compile_macro_1() {
-  c.compileDict(m.dict1.call(null, `one`, 10, `two`, 20, `three`, 30, `four`, 40))
-})
-*/
 
 t.test(function test_get() {
   function test(ctx) {
@@ -1807,9 +1790,20 @@ t.test(function test_assign() {
   t.is(p.assign.call(ctx, sym(`!@#`), 10).compile(), `(!@# = 10)`)
 })
 
-t.test(function test_and()      {testVariadic(p.and,      ``, ` && `, ``)})
-t.test(function test_or()       {testVariadic(p.or,       ``, ` || `, ``)})
-t.test(function test_coalesce() {testVariadic(p.coalesce, ``, ` ?? `, ``)})
+t.test(function test_and() {
+  testVariadic(p.and, ``, ` && `, ``)
+  testCompilable(p.and, `((a, b) => a && b)`)
+})
+
+t.test(function test_or() {
+  testVariadic(p.or, ``, ` || `, ``)
+  testCompilable(p.or, `((a, b) => a || b)`)
+})
+
+t.test(function test_coalesce() {
+  testVariadic(p.coalesce, ``, ` ?? `, ``)
+  testCompilable(p.coalesce, `((a, b) => a ?? b)`)
+})
 
 function testVariadic(fun, pre, inf, suf, fallback) {
   c.reqFun(fun)
@@ -1842,30 +1836,122 @@ function testVariadic(fun, pre, inf, suf, fallback) {
   test(c.ctxWithStatement(null))
 }
 
-t.test(function test_not() {testUnary(p.not,    `!`)})
-t.test(function test_yes() {testUnary(p.yes, `!!`)})
+t.test(function test_not() {
+  testUnary(p.not, `!`)
+  testCompilable(p.not, `(a => !a)`)
+})
 
-t.test(function test_eq()  {testBinary(p.eq,  `===`)})
-t.test(function test_neq() {testBinary(p.neq, `!==`)})
-t.test(function test_gt()  {testBinary(p.gt,  `>`)})
-t.test(function test_lt()  {testBinary(p.lt,  `<`)})
-t.test(function test_gte() {testBinary(p.gte, `>=`)})
-t.test(function test_lte() {testBinary(p.lte, `<=`)})
+t.test(function test_yes() {
+  testUnary(p.yes, `!!`)
+  testCompilable(p.yes, `(a => !!a)`)
+})
 
-t.test(function test_add()                   {testVariadic(p.add,                   `+ `,   ` + `,   ``)})
-t.test(function test_subtract()              {testVariadic(p.subtract,              `- `,   ` - `,   ``)})
-t.test(function test_divide()                {testVariadic(p.divide,                ``,     ` / `,   ``)})
-t.test(function test_multiply()              {testVariadic(p.multiply,              `1 * `, ` * `,   ``)})
-t.test(function test_exponentiate()          {testVariadic(p.exponentiate,          ``,     ` ** `,  ` ** 1`)})
-t.test(function test_remainder()             {testVariadic(p.remainder,             ``,     ` % `,   ``)})
-t.test(function test_bitAnd()                {testVariadic(p.bitAnd,                ``,     ` & `,   ` & 0`,   0)})
-t.test(function test_bitOr()                 {testVariadic(p.bitOr,                 ``,     ` | `,   ` | 0`,   0)})
-t.test(function test_bitXor()                {testVariadic(p.bitXor,                ``,     ` ^ `,   ` ^ 0`,   0)})
-t.test(function test_bitShiftLeft()          {testVariadic(p.bitShiftLeft,          ``,     ` << `,  ` << 0`,  0)})
-t.test(function test_bitShiftRight()         {testVariadic(p.bitShiftRight,         ``,     ` >> `,  ` >> 0`,  0)})
-t.test(function test_bitShiftRightUnsigned() {testVariadic(p.bitShiftRightUnsigned, ``,     ` >>> `, ` >>> 0`, 0)})
+t.test(function test_eq()  {
+  testBinary(p.eq, `===`)
+  testCompilable(p.eq, `((a, b) => a === b)`)
+})
+
+t.test(function test_neq() {
+  testBinary(p.neq, `!==`)
+  testCompilable(p.neq, `((a, b) => a !== b)`)
+})
+
+t.test(function test_gt()  {
+  testBinary(p.gt, `>`)
+  testCompilable(p.gt, `((a, b) => a > b)`)
+})
+
+t.test(function test_lt()  {
+  testBinary(p.lt, `<`)
+  testCompilable(p.lt, `((a, b) => a < b)`)
+})
+
+t.test(function test_gte() {
+  testBinary(p.gte, `>=`)
+  testCompilable(p.gte, `((a, b) => a >= b)`)
+})
+
+t.test(function test_lte() {
+  testBinary(p.lte, `<=`)
+  testCompilable(p.lte, `((a, b) => a <= b)`)
+})
+
+t.test(function test_add() {
+  testVariadic(p.add, `+ `, ` + `, ``)
+  testCompilable(p.add, `((a, b) => a + b)`)
+})
+
+t.test(function test_subtract() {
+  testVariadic(p.subtract, `- `, ` - `, ``)
+  testCompilable(p.subtract, `((a, b) => a - b)`)
+})
+
+t.test(function test_divide() {
+  testVariadic(p.divide, ``, ` / `, ``)
+  testCompilable(p.divide, `((a, b) => a / b)`)
+})
+
+t.test(function test_multiply() {
+  testVariadic(p.multiply, `1 * `, ` * `, ``)
+  testCompilable(p.multiply, `((a, b) => a * b)`)
+})
+
+t.test(function test_exponentiate() {
+  testVariadic(p.exponentiate, ``, ` ** `,` ** 1`)
+  testCompilable(p.exponentiate, `((a, b) => a ** b)`)
+})
+
+t.test(function test_remainder() {
+  testVariadic(p.remainder, ``, ` % `, ``)
+  testCompilable(p.remainder, `((a, b) => a % b)`)
+})
+
+t.test(function test_bitAnd() {
+  testVariadic(p.bitAnd, ``, ` & `, ` & 0`, 0)
+  testCompilable(p.bitAnd, `((a, b) => a & b)`)
+})
+
+t.test(function test_bitOr() {
+  testVariadic(p.bitOr, ``, ` | `, ` | 0`, 0)
+  testCompilable(p.bitOr, `((a, b) => a | b)`)
+})
+
+t.test(function test_bitXor() {
+  testVariadic(p.bitXor, ``, ` ^ `, ` ^ 0`, 0)
+  testCompilable(p.bitXor, `((a, b) => a ^ b)`)
+})
+
+t.test(function test_bitShiftLeft() {
+  testVariadic(p.bitShiftLeft, ``, ` << `, ` << 0`,0)
+  testCompilable(p.bitShiftLeft, `((a, b) => a << b)`)
+})
+
+t.test(function test_bitShiftRight() {
+  testVariadic(p.bitShiftRight, ``, ` >> `, ` >> 0`, 0)
+  testCompilable(p.bitShiftRight, `((a, b) => a >> b)`)
+})
+
+t.test(function test_bitShiftRightUnsigned() {
+  testVariadic(p.bitShiftRightUnsigned, ``, ` >>> `, ` >>> 0`, 0)
+  testCompilable(p.bitShiftRightUnsigned, `((a, b) => a >>> b)`)
+})
 
 t.test(function test_assignIncrement() {testUnary(p.assignIncrement, `++`)})
 t.test(function test_assignDecrement() {testUnary(p.assignDecrement, `--`)})
+
+t.test(function test_regexp() {
+  ti.fail(() => p.regexp.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
+  ti.fail(() => p.regexp.call(null, 10), `expected variant of isStr, got 10`)
+  ti.fail(() => p.regexp.call(null, ``, 20), `expected variant of isStr, got 20`)
+  ti.fail(() => p.regexp.call(null, `?`), `Invalid regular expression: /?/: Nothing to repeat`)
+  ti.fail(() => p.regexp.call(null, ``, `blah`), `Invalid flags supplied to RegExp constructor 'blah'`)
+
+  t.inst(p.regexp.call(null, ``), RegExp)
+
+  t.is(p.regexp.call(null, ``        ).toString(), /(?:)/  .toString())
+  t.is(p.regexp.call(null, ``,    `g`).toString(), /(?:)/g .toString())
+  t.is(p.regexp.call(null, `one`     ).toString(), /one/   .toString())
+  t.is(p.regexp.call(null, `one`, `g`).toString(), /one/g  .toString())
+})
 
 if (import.meta.main) ti.flush()

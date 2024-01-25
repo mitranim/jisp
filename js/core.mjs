@@ -325,11 +325,12 @@ export function rowCol(src, pos) {
 export function macroNode(ctx, tar, src) {
   if (Object.is(tar, src)) return tar
   if (isPromise(tar)) return macroNodeAsync(ctx, tar, src)
-  if (isFun(tar)) return macroFun(ctx, tar)
-  if (isSym(tar)) return macroSym(ctx, tar)
-  if (isArr(tar)) return macroList(ctx, tar)
-  if (isObj(tar)) return macroObj(ctx, tar)
-  return tar
+  switch (typeof tar) {
+    case `function`: return macroFun(ctx, tar)
+    case `symbol`: return macroSym(ctx, tar)
+    case `object`: return macroObj(ctx, tar)
+    default: return tar
+  }
 }
 
 async function macroNodeAsync(ctx, tar, src) {
@@ -338,22 +339,34 @@ async function macroNodeAsync(ctx, tar, src) {
 }
 
 export function macroFun(ctx, src) {
-  try {return macroNode(ctx, src.call(ctx), src)}
+  try {
+    if (canMacro(src)) return macroNode(ctx, src.macro(ctx), src)
+    if (canCompile(src)) return src
+  }
   catch (err) {throw errWithContext(err, src)}
+
+  throw TypeError(joinParagraphs(
+    `unexpected function node ${show(src)} in non-call position; hint: macro functions may be used in arbitrary positions by implementing the method ".macro" and/or the method ".compile"`,
+    nodeContext(src),
+  ))
 }
 
 export function macroSym(ctx, src) {
   try {
     const path = reqSym(src).description
-    const val = ctxReqGet(ctx, path)
+    const name = ctxReqDeclared(ctx, path)
+    const val = ctx[name]
     if (isNil(val)) return src
-
-    const fun = getDefault(val)
-    if (isFun(fun)) return macroNode(ctx, fun.call(ctx, src), src)
-
-    throw Error(`unexpected reference ${show(path)} to value ${show(val)}`)
+    return macroNode(ctx, reqGet(val, strWithoutNs(path, name)), src)
   }
   catch (err) {throw errWithContext(err, src)}
+}
+
+export function macroObj(ctx, src) {
+  if (isArr(src)) return macroList(ctx, src)
+  try {if (canMacro(src)) return macroNode(ctx, src.macro(ctx), src)}
+  catch (err) {throw errWithContext(err, src)}
+  return src
 }
 
 export function macroList(ctx, src) {
@@ -361,30 +374,11 @@ export function macroList(ctx, src) {
     reqArr(src)
     if (!src.length) return src
 
-    const head = src[0]
-    if (isFun(head)) {
-      return macroNode(ctx, head.apply(ctx, src.slice(1)), src)
-    }
-
-    if (isSym(head)) {
-      const val = ctxReqGet(ctx, head.description)
-      if (isFun(val)) {
-        return macroNode(ctx, val.apply(ctx, src.slice(1)), src)
-      }
-    }
+    let val = src[0]
+    if (isSym(val)) val = optGet(ctx, val.description)
+    if (isFun(val)) return macroNode(ctx, val.apply(ctx, src.slice(1)), src)
 
     return macroNodes(ctxToExpression(ctx), src)
-  }
-  catch (err) {throw errWithContext(err, src)}
-}
-
-export function macroObj(ctx, src) {
-  try {
-    reqObj(src)
-    if (`macro` in src && isFun(src.macro)) {
-      return macroNode(ctx, src.macro(ctx), src)
-    }
-    return src
   }
   catch (err) {throw errWithContext(err, src)}
 }
@@ -404,20 +398,32 @@ export function compileNode(src) {
     case `symbol`: return reqStr(src.description)
     case `string`: return JSON.stringify(src)
     case `object`: return isNil(src) ? `null` : compileObj(src)
-    default: throw TypeError(`unable to usefully compile ${typeof src} node ${show(src)}`)
+    default: return compileFallback(src)
   }
+}
+
+export function compileFallback(src) {
+  try {if (canCompile(src)) return reqStr(src.compile())}
+  catch (err) {throw errWithContext(err, src)}
+  throw TypeError(msgCompile(src))
+}
+
+function msgCompile(src) {
+  return joinParagraphs(
+    `unable to usefully compile ${typeof src} ${show(src)}; hint: arbitrary nodes can compile by implementing the method ".compile"`,
+    nodeContext(src),
+  )
 }
 
 export function compileObj(src) {
   if (isArr(src)) return compileList(src)
-  if (isDict(src)) return compileDict(src)
+  if (isInst(src, RegExp)) return reqStr(src.toString())
 
-  try {
-    reqObj(src)
-    if (`compile` in src && isFun(src.compile)) return reqStr(src.compile())
-    throw TypeError(`unable to compile unrecognized object ${show(src)}`)
-  }
+  try {if (canCompile(src)) return reqStr(src.compile())}
   catch (err) {throw errWithContext(err, src)}
+
+  if (isDict(src)) return compileDict(src)
+  throw TypeError(msgCompile(src))
 }
 
 export function compileList(src) {
@@ -437,9 +443,7 @@ Technical note. This doesn't support symbolic keys because `Symbol` may be
 redeclared / masked in the current scope, and compilation doesn't have access
 to context.
 */
-export function compileDict(src) {
-  return wrapParens(compileDictExpr(src))
-}
+export function compileDict(src) {return wrapParens(compileDictExpr(src))}
 
 export function compileDictExpr(src) {
   try {
@@ -474,6 +478,8 @@ export const expressionSep = `, `
 export const dictEntrySep = `: `
 
 export class Raw extends String {compile() {return this.valueOf()}}
+
+export function raw(...src) {return new Raw(join(src, ``))}
 
 export function reprNode(src) {return nodeSpan(src)?.view() || show(src)}
 
@@ -818,21 +824,34 @@ export function ctxReqTar(ctx) {
 }
 
 export function ctxReqGet(ctx, path) {
-  reqStr(path)
+  const name = ctxReqDeclared(ctx, path)
+  return reqGet(ctx[name], strWithoutNs(path, name))
+}
 
-  let name = strNs(path)
+export function ctxReqDeclared(ctx, path) {
+  const name = strNs(path)
   if (!(isComp(ctx) && name in ctx)) throw Error(`missing declaration of ${show(name)}`)
+  return name
+}
 
-  let val = ctx[name]
-  if (isNil(val)) return val
-
-  while ((path = strWithoutNs(path, name))) {
-    name = strNs(path)
-    if (!(isComp(val) && name in val)) throw Error(`missing property ${show(name)} in ${show(val)}`)
-    val = val[name]
+export function reqGet(src, path) {
+  while (reqStr(path)) {
+    const name = strNs(path)
+    if (!(isComp(src) && name in src)) throw Error(`missing property ${show(name)} in ${show(src)}`)
+    src = src[name]
+    path = strWithoutNs(path, name)
   }
+  return src
+}
 
-  return val
+export function optGet(src, path) {
+  while (isComp(src) && reqStr(path)) {
+    const name = strNs(path)
+    if (!(name in src)) return undefined
+    src = src[name]
+    path = strWithoutNs(path, name)
+  }
+  return src
 }
 
 export function ctxDeclare(ctx, key, val) {
@@ -1144,6 +1163,9 @@ export function srcToTarUncached(ctx, src) {
   )
 }
 
+function canMacro(val) {return isComp(val) && `macro` in val && isFun(val.macro)}
+function canCompile(val) {return isComp(val) && `compile` in val && isFun(val.compile)}
+
 /*
 # Generic utils
 
@@ -1344,10 +1366,8 @@ function showFun(val) {return `[function ${val.name || val}]`}
 function showFunName(fun) {return fun.name || showFun(fun)}
 function getCon(val) {return isComp(val) && `constructor` in val ? val.constructor : undefined}
 function getName(val) {return isComp(val) && `name` in val ? val.name : undefined}
-function getDefault(val) {return isComp(val) && `default` in val ? val.default : undefined}
 function init(src) {return reqArr(src).slice(0, -1)}
 function last(src) {return reqArr(src)[src.length - 1]}
-function repeat(val, len) {return Array(len).fill(val)}
 
 export function joinDense(...src) {return join(src, ``)}
 export function joinSpaced(...src) {return join(src, ` `)}

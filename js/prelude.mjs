@@ -19,6 +19,7 @@ export {
   await,
   instof,
   in,
+  is,
   isNil,
   isSome,
   list,                  list                  as ':',
@@ -52,4 +53,5 @@ export {
   bitShiftRightUnsigned, bitShiftRightUnsigned as '>>>',
   assignIncrement,       assignIncrement       as '++',
   assignDecrement,       assignDecrement       as '--',
+  regexp,
 } from './mac.mjs'
