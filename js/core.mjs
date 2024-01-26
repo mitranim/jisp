@@ -55,6 +55,21 @@ export class Span {
   }
 }
 
+// SYNC[ident_unqual].
+export const regIdentBegin = /^[A-Za-z_$][\w$]*/
+export const regIdentFull  = /^[A-Za-z_$][\w$]*$/
+
+// SYNC[oper_unqual].
+export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
+export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
+
+export const regSpace       = /^\s+/
+export const regComment     = /^(;{2,})(?!;)([^]*?)\1/
+export const regBigInt      = /^(-?\d+(?:_\d+)*)n/
+export const regFloat       = /^-?\d+(?:_\d+)*(?:[.]\d+(?:_\d+)*)?/
+export const regStrBacktick = /^(?:``(?!`)|(`+)(?!`)([^]*?)\1)/
+export const regStrDouble   = /^(?:""(?!")|("+)(?!")((?:\\[^]|[^])*?)\1)/
+
 export class Reader extends Span {
   *[Symbol.iterator]() {
     let val
@@ -127,7 +142,7 @@ export class Reader extends Span {
   }
 
   readBigInt() {
-    const mat = this.view().match(/^(-?\d+(?:_\d+)*)n/)
+    const mat = this.view().match(regBigInt)
     if (!mat) return undefined
 
     const out = BigInt(mat[1])
@@ -137,7 +152,7 @@ export class Reader extends Span {
   }
 
   readFloat() {
-    const mat = this.view().match(/^-?\d+(?:_\d+)*(?:[.]\d+(?:_\d+)*)?/)
+    const mat = this.view().match(regFloat)
     if (!mat) return undefined
 
     const src = reqStr(mat[0])
@@ -148,7 +163,7 @@ export class Reader extends Span {
   }
 
   readStrBacktick() {
-    const mat = this.view().match(/^(?:``(?!`)|(`+)(?!`)([^]*?)\1)/)
+    const mat = this.view().match(regStrBacktick)
     if (!mat) return undefined
 
     const out = laxStr(mat[2])
@@ -158,7 +173,7 @@ export class Reader extends Span {
   }
 
   readStrDouble() {
-    const mat = this.view().match(/^(?:""(?!")|("+)(?!")((?:\\[^]|[^])*?)\1)/)
+    const mat = this.view().match(regStrDouble)
     if (!mat) return undefined
 
     const out = this.decodeStr(laxStr(mat[2]))
@@ -188,10 +203,8 @@ export class Reader extends Span {
   }
 
   skippedSymUnqual() {return this.skippedSymIdent() || this.skippedSymOper()}
-  skippedSymIdent() {return this.skippedReg(this.regIdent())}
-  skippedSymOper() {return this.skippedReg(this.regOper())}
-  regIdent() {return regIdentBegin}
-  regOper() {return regOperBegin}
+  skippedSymIdent() {return this.skippedReg(regIdentBegin)}
+  skippedSymOper() {return this.skippedReg(regOperBegin)}
 
   spanSince(ind) {
     reqNat(ind)
@@ -204,11 +217,8 @@ export class Reader extends Span {
     return this.pos > pos
   }
 
-  skippedComment() {
-    return this.skippedReg(/^(;{2,})(?!;)([^]*?)\1/) && (this.reqDelim(), true)
-  }
-
-  skippedSpace() {return this.skippedReg(/^\s+/)}
+  skippedComment() {return this.skippedReg(regComment) && (this.reqDelim(), true)}
+  skippedSpace() {return this.skippedReg(regSpace)}
 
   skippedPrefix(pre) {
     reqValidStr(pre)
@@ -217,24 +227,12 @@ export class Reader extends Span {
 
   // Assumes that the regex starts with `^`.
   skippedReg(reg) {return this.skipped(this.view().match(reqReg(reg))?.[0].length)}
-
   skipped(len) {return laxNat(len) > 0 && (this.skip(len), true)}
-
   hasPrefix(pre) {return this.view().startsWith(reqStr(pre))}
 
   reqNoPrefix(pre) {
     reqValidStr(pre)
     if (this.hasPrefix(pre)) throw this.err(`unexpected ${show(pre)}`)
-  }
-
-  reqNoSymAfterNum() {
-    const rem = this.view()
-    if (this.regIdentChar().test(rem)) {
-      throw this.err(`unexpected identifier characters after numeric literal`)
-    }
-    if (this.regOperChar().test(rem)) {
-      throw this.err(`unexpected operator characters after numeric literal`)
-    }
   }
 
   errUnrec(msg) {
@@ -251,14 +249,6 @@ export function nodeSpanHas(node) {return nodeSpans.has(node)}
 export function nodeSpanSet(node, span) {
   if (isNil(span)) return
   nodeSpans.set(reqComp(node), reqInst(span, Span))
-}
-
-// Unused. TODO use or remove.
-export function nodeSpanCopy(src, out) {
-  if (src === out || !isComp(out)) return
-  const val = nodeSpans.get(src)
-  if (isNil(val)) return
-  nodeSpans.set(out, val)
 }
 
 export function nodeContext(src) {
@@ -463,9 +453,10 @@ export function compileNodes(src) {
 }
 
 export function compileBlock(src) {return wrapBracesMultiLine(compileStatements(src))}
-export function compileStatements(src) {return joinStatements(compileNodes(src))}
-export function compileSequenceExpression(src) {return wrapParens(compileSequence(src))}
-export function compileSequence(src) {return compileNodes(src).join(expressionSep)}
+export function compileStatements(src) {return compileNodes(src).join(statementSep)}
+export function compileExpressions(src) {return compileNodes(src).join(expressionSep)}
+export function compileExpressionsInParens(src) {return wrapParens(compileExpressions(src))}
+export function compileExpressionsInBraces(src) {return wrapBraces(compileExpressions(src))}
 export function joinExpressions(src) {return join(src, expressionSep)}
 export function joinStatements(src) {return join(src, statementSep)}
 export function wrapBraces(src) {return `{` + reqStr(src) + `}`}
@@ -974,14 +965,6 @@ export function reqStrIdentLike(val) {
   throw SyntaxError(`${show(val)} does not represent a valid JS identifier`)
 }
 
-// SYNC[ident_unqual].
-export const regIdentBegin = /^[A-Za-z_$][\w$]*/
-export const regIdentFull  = /^[A-Za-z_$][\w$]*$/
-
-// SYNC[oper_unqual].
-export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
-export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
-
 export function reqNotKeyword(val) {
   if (!keywordNames.has(val)) return val
   throw SyntaxError(`${show(val)} is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
@@ -1004,7 +987,7 @@ Reference:
 
   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#reserved_words
 */
-export const keywordNames = new Set([`await`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `export`, `extends`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `package`, `private`, `protected`, `public`, `return`, `static`, `switch`, `throw`, `try`, `typeof`, `var`, `void`, `while`, `with`, `yield`])
+export const keywordNames = new Set([`await`, `break`, `case`, `catch`, `class`, `const`, `continue`, `debugger`, `default`, `delete`, `do`, `else`, `enum`, `export`, `extends`, `finally`, `for`, `function`, `if`, `implements`, `import`, `in`, `instanceof`, `interface`, `let`, `new`, `package`, `private`, `protected`, `public`, `return`, `static`, `switch`, `throw`, `try`, `typeof`, `var`, `void`, `while`, `with`, `yield`])
 
 export function reqNotReservedName(val) {
   if (!reservedNames.has(val)) return val
@@ -1387,18 +1370,25 @@ export function join(src, sep) {
 Differences from `Object.assign`:
 
   * Iterates ALL enumerable properties, including inherited properties.
-  * Assigns only new properties, ignoring existing properties.
+  * Does not reassign inherited properties.
 */
 export function patch(tar, src) {
   reqObj(tar)
-  for (const key in optObj(src)) if (!(key in tar)) tar[key] = src[key]
+  for (const key in optObj(src)) if (canPatch(tar, key)) tar[key] = src[key]
   return tar
 }
 
+export function canPatch(tar, key) {
+  reqObj(tar)
+  return hasOwn(tar, key) || !(key in tar)
+}
+
 /*
-Similar to `patch` but assigns empty values. Intended for cases where we have
+Similar to `patch` but assigns empty values and skips ALL pre-existing
+properties. Intended for cases such as the `declare` macro, where we have
 access to a dictionary of usable key-values, like an imported module, but want
-to only declare names without making those values accessible at compile time.
+to only declare names without making those values accessible at compile time,
+and without replacing any already-existing declarations.
 */
 export function patchDecl(tar, src) {
   reqObj(tar)

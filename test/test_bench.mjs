@@ -11,6 +11,9 @@ class TestModule extends c.Module {
   }
 }
 
+function nop() {}
+
+t.bench(function bench_module_read() {nop([...new c.Reader(src)])})
 t.bench(function bench_module_roundtrip() {new TestModule().testRun()})
 
 if (import.meta.main) ti.flush()

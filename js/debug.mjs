@@ -1,10 +1,10 @@
 import * as c from './core.mjs'
 
 /*
-Same as `comment` in prelude. Sometimes convenient when messing around and
+Similar to `comment` in prelude. Sometimes convenient when messing around and
 enabling / disabling debug expressions.
 */
-export function comment() {}
+export function comment() {return []}
 
 /*
 Sometimes convenient when messing around and enabling / disabling debug
@@ -21,14 +21,16 @@ export function compiling() {
   return []
 }
 
-export function compiled(src) {
-  c.reqArity(arguments.length, 1)
-  console.log(`[debug] compiled:`, c.compileNode(c.macroNode(ctxBranch(this), src)))
-  return src
+export function compiled(...src) {
+  return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
 
-export function compile(...src) {
-  console.log(`[debug] compiled:`, c.compileStatements(c.macroNodes(ctxBranch(this), src)))
+export function compile() {
+  const val = compiled.apply(this, arguments)
+  if (val) {
+    console.log(`[debug] compiled:`)
+    console.log(val)
+  }
   return []
 }
 

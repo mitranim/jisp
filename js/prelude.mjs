@@ -8,6 +8,7 @@ export {
   const,
   let,
   if,
+  when,
   do,
   void,
   func,
@@ -54,4 +55,6 @@ export {
   assignIncrement,       assignIncrement       as '++',
   assignDecrement,       assignDecrement       as '--',
   regexp,
+  while,
+  pipe,
 } from './mac.mjs'

@@ -107,13 +107,13 @@ globals.WeakMap = undefined
 globals.WeakRef = undefined
 globals.WeakSet = undefined
 
-export function comment() {}
+export function comment() {return []}
 
 export const symStar = Symbol.for(`*`)
 
 export function use(src, name) {
-  c.reqArityBetween(arguments.length, 1, 2)
   c.ctxReqIsStatement(this)
+  c.reqArityBetween(arguments.length, 1, 2)
   if (name === symStar) return useAsMixin.call(this, src)
   if (c.isSome(name)) return useAsNamed.apply(this, arguments)
   return useAsAnon.apply(this, arguments)
@@ -133,7 +133,7 @@ async function useAsNamed(src, name) {
 
 async function useAsMixin(src) {
   c.reqArity(arguments.length, 1)
-  Object.assign(c.ctxReqParentMixin(this), await import(await ctxSrcDepPath(this, src)))
+  c.patch(c.ctxReqParentMixin(this), await import(await ctxSrcDepPath(this, src)))
   return []
 }
 
@@ -184,9 +184,9 @@ function importAsExpression(src) {
 }
 
 function importAsStatement(src, name) {
-  c.reqArityBetween(arguments.length, 1, 2)
   c.ctxReqIsModule(this)
   c.ctxReqIsStatement(this)
+  c.reqArityBetween(arguments.length, 1, 2)
 
   if (name === symStar) return importAsStatementAsMixin.call(this, src)
   if (c.isSome(name)) return importAsStatementAsNamed.apply(this, arguments)
@@ -218,7 +218,7 @@ async function importAsStatementAsMixin(src) {
   const mix = c.ctxReqParentMixin(this)
   const out = new ImportAsMixin(rel)
   for (const key of Object.keys(await import(tar))) {
-    mix[key] = new ImportRef(key, out)
+    if (c.canPatch(mix, key)) mix[key] = new ImportRef(key, out)
   }
   return out
 }
@@ -240,8 +240,8 @@ class ImportRef extends c.Raw {
 }
 
 export function declare(src) {
-  c.reqArity(arguments.length, 1)
   c.ctxReqIsStatement(this)
+  c.reqArity(arguments.length, 1)
   if (c.isSym(src)) return declareSym(this, src.description)
   if (c.isStr(src)) return declareStr(this, src)
   throw TypeError(`expected either symbol or string, got ${c.show(src)}`)
@@ -267,9 +267,9 @@ async function declareStr(ctx, src) {
 export {$export as export}
 
 export function $export(name, alias) {
-  c.reqArityBetween(arguments.length, 1, 2)
   c.ctxReqIsModule(this)
   c.ctxReqIsStatement(this)
+  c.reqArityBetween(arguments.length, 1, 2)
 
   name = c.symIdent(c.macroNode(this, name))
   if (arguments.length <= 1) return c.raw(`export {`, name, `}`)
@@ -290,8 +290,8 @@ function identOrStr(val) {
 export {$const as const}
 
 export function $const(name, val) {
-  c.reqArity(arguments.length, 2)
   c.ctxReqIsStatement(this)
+  c.reqArity(arguments.length, 2)
 
   val = c.macroNode(Object.create(this), val)
   c.ctxDeclare(this, name)
@@ -308,8 +308,8 @@ export function $const(name, val) {
 export {$let as let}
 
 export function $let(name, val) {
-  c.reqArityBetween(arguments.length, 1, 2)
   c.ctxReqIsStatement(this)
+  c.reqArityBetween(arguments.length, 1, 2)
 
   const pre = c.joinSpaced(c.ctxCompileExport(this), `let`, name.description)
 
@@ -328,13 +328,15 @@ export function $if() {
 }
 
 export function ifAsStatement(predicate, branchThen, branchElse) {
-  c.reqArityMax(arguments.length, 3)
   c.ctxReqIsStatement(this)
+  c.reqArityMax(arguments.length, 3)
   if (!arguments.length) return []
 
+  const ctx = Object.create(this)
   predicate = c.macroNode(Object.create(this), predicate)
-  branchThen &&= doAsStatement.call(this, branchThen)
-  branchElse &&= doAsStatement.call(this, branchElse)
+  ctx[c.symStatement] = undefined
+  branchThen = c.macroNode(ctx, branchThen)
+  branchElse = c.macroNode(ctx, branchElse)
 
   predicate = c.compileNode(predicate)
   branchThen = c.isSome(branchThen) ? c.compileNode(branchThen) : ``
@@ -342,10 +344,12 @@ export function ifAsStatement(predicate, branchThen, branchElse) {
 
   if (!predicate && !branchThen && !branchElse) return []
 
-  return c.raw(c.joinSpaced(
-    `if`,
-    c.wrapParens(predicate || `undefined`),
-    (branchThen || `{}`),
+  return c.raw(c.joinLines(
+    c.joinSpaced(
+      `if`,
+      c.wrapParens(predicate || `undefined`),
+      (branchThen || `{}`),
+    ),
     (branchElse && (`else ` + branchElse)),
   ))
 }
@@ -367,6 +371,14 @@ export function ifAsExpression(predicate, branchThen, branchElse) {
     `:`,
     (c.compileNode(branchElse) || `undefined`),
   )))
+}
+
+export function when(cond, ...body) {
+  switch (arguments.length) {
+    case 0: return ctxVoid(this)
+    case 1: return [$void, cond]
+    default: return [$if, cond, [$do, ...body]]
+  }
 }
 
 export {$do as do}
@@ -395,14 +407,14 @@ export {$void as void}
 
 export function $void() {
   let out = doAsExpression.apply(this, arguments)
-  if (!out) return undefined
+  if (!out) return ctxVoid(this)
   out = `void ` + out
   return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
 }
 
-$void.macro = function voidBare(ctx) {
-  return c.ctxIsStatement(ctx) ? [] : undefined
-}
+$void.macro = ctxVoid
+
+export function ctxVoid(ctx) {return c.ctxIsStatement(ctx) ? [] : undefined}
 
 export function ret(...src) {
   c.ctxReqIsStatement(this)
@@ -413,7 +425,7 @@ export function ret(...src) {
   }
 }
 
-ret.macro = function retBare(ctx) {return c.ctxReqIsStatement(ctx), this}
+ret.macro = selfStatement
 ret.compile = () => `return`
 
 function retStatements(ctx, src) {return retStatementsOpt(ctx, src) || `return`}
@@ -427,15 +439,11 @@ function retStatement(val, ind, src) {
   return c.joinSpaced(`return`, c.compileNode(c.macroNode(Object.create(this), val)))
 }
 
-export function guard(cond, ...body) {
-  c.ctxReqIsStatement(this)
-  if (!arguments.length) return undefined
+function selfStatement(ctx) {return c.ctxReqIsStatement(ctx), this}
 
-  return c.raw(c.joinSpaced(
-    `if`,
-    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
-    ret.apply(this, body).compile(),
-  ))
+export function guard(cond, ...body) {
+  if (body.length) return [$if, cond, [ret, ...body]]
+  return [$if, cond, ret]
 }
 
 export function func(name, params, ...body) {
@@ -465,7 +473,7 @@ function declareSyms(ctx, src) {
 function funcCompile(name, params, body) {
   return c.joinSpaced(
     c.compileNode(name),
-    c.compileSequenceExpression(params),
+    c.compileExpressionsInParens(params),
     c.wrapBracesMultiLine(body),
   )
 }
@@ -505,8 +513,8 @@ export function $class(name, ...rest) {
 export const classMixin = Object.create(null)
 classMixin.static = $static
 classMixin.extend = extend
-classMixin.meth = meth
 classMixin.field = field
+classMixin.meth = meth
 classMixin.super = undefined
 
 export const symClass = Symbol.for(`jisp.class`)
@@ -614,7 +622,7 @@ export function $new(...src) {
   if (c.isFun(head)) return new head(...src.slice(1))
 
   if (c.isSym(head)) {
-    const val = c.ctxReqGet(this, head.description)
+    const val = c.optGet(this, head.description)
     if (c.isFun(val)) return new val(...src.slice(1))
   }
 
@@ -1058,3 +1066,48 @@ export function regexp(src, flags) {
   c.reqArityBetween(arguments.length, 1, 2)
   return new RegExp(c.reqStr(src), c.optStr(flags))
 }
+
+export {$while as while}
+
+export function $while(cond, ...body) {
+  c.ctxReqIsStatement(this)
+  c.reqArityMin(arguments.length, 1)
+
+  return c.raw(c.joinSpaced(
+    `while`,
+    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
+    body.length
+    ? c.compileBlock(c.macroNodes(c.ctxWithStatement(c.patch(c.ctxWithMixin(this), loopMixin)), body))
+    : `{}`
+  ))
+}
+
+export const loopMixin = Object.create(null)
+loopMixin.break = $break
+loopMixin.continue = $continue
+
+export {$break as break}
+
+export function $break() {
+  throw SyntaxError(`"break" must be mentioned, not called; loop labels are not currently supported`)
+}
+
+$break.macro = selfStatement
+$break.compile = () => `break`
+
+export {$continue as continue}
+
+export function $continue() {
+  throw SyntaxError(`"continue" must be mentioned, not called; loop labels are not currently supported`)
+}
+
+$continue.macro = selfStatement
+$continue.compile = () => `continue`
+
+export function pipe(name, ...exprs) {
+  c.reqSymUnqual(name)
+  if (!exprs.length) return name
+  return [$do, ...exprs.map(assignWith, name), name]
+}
+
+function assignWith(val) {return [assign, this, val]}

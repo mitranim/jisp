@@ -8,11 +8,11 @@ function sym(val) {return Symbol.for(c.reqStr(val))}
 function id(val) {return val}
 
 t.test(function test_export() {
-  ti.fail(() => p.export.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
-  ti.fail(() => p.export.call(null, 10, 20, 30), `expected between 1 and 2 inputs, got 3 inputs`)
-  ti.fail(() => p.export.call(null, sym(`one`), sym(`two`)), `expected module context`)
+  ti.fail(() => p.export.call(null), `expected module context`)
 
   let ctx = c.ctxWithModule(null)
+  ti.fail(() => p.export.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
+  ti.fail(() => p.export.call(ctx, 10, 20, 30), `expected between 1 and 2 inputs, got 3 inputs`)
   ti.fail(() => p.export.call(ctx, sym(`one`)), `missing declaration of "one"`)
   ti.fail(() => p.export.call(ctx, sym(`one.two`)), `missing declaration of "one"`)
   ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.three`)), `missing declaration of "one"`)
@@ -41,11 +41,11 @@ t.test(function test_export() {
 })
 
 t.test(function test_const() {
-  ti.fail(() => p.const.call(null), `expected 2 inputs, got 0 inputs`)
-  ti.fail(() => p.const.call(null, 10), `expected 2 inputs, got 1 inputs`)
-  ti.fail(() => p.const.call(null, sym(`one`), 10), `expected statement context, got expression context`)
+  ti.fail(() => p.const.call(null), `expected statement context, got expression context`)
 
   let ctx = c.ctxWithStatement(null)
+  ti.fail(() => p.const.call(ctx), `expected 2 inputs, got 0 inputs`)
+  ti.fail(() => p.const.call(ctx, 10), `expected 2 inputs, got 1 inputs`)
   ti.fail(() => p.const.call(ctx, sym(`one.two`), 10), `"one.two" does not represent a valid JS identifier`)
   ti.fail(() => p.const.call(ctx, sym(`!@#`), 10), `"!@#" does not represent a valid JS identifier`)
   ti.fail(() => p.const.call(ctx, sym(`await`), 10), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
@@ -78,10 +78,10 @@ t.test(function test_const() {
 })
 
 t.test(function test_let() {
-  ti.fail(() => p.let.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
-  ti.fail(() => p.let.call(null, sym(`one`), 10), `expected statement context, got expression context`)
+  ti.fail(() => p.let.call(null), `expected statement context, got expression context`)
 
   let ctx = c.ctxWithStatement(null)
+  ti.fail(() => p.let.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
   ti.fail(() => p.let.call(ctx, sym(`one.two`), 10), `"one.two" does not represent a valid JS identifier`)
   ti.fail(() => p.let.call(ctx, sym(`!@#`), 10), `"!@#" does not represent a valid JS identifier`)
 
@@ -153,7 +153,7 @@ source node:
 })
 
 t.test(function test_if_statement() {
-  const ctx = c.ctxWithStatement(null)
+  let ctx = c.ctxWithStatement(null)
 
   ti.fail(
     () => p.if.call(ctx, 10, 20, 30, 40),
@@ -169,25 +169,16 @@ t.test(function test_if_statement() {
   t.is(p.if.call(ctx, 10, []).compile(), `if (10) {}`)
   t.is(p.if.call(ctx, 10, [], []).compile(), `if (10) {}`)
 
-  t.is(p.if.call(ctx, [], 10).compile(), `if (undefined) {
-10
-}`)
+  t.is(p.if.call(ctx, [], 10).compile(), `if (undefined) 10`)
 
-  t.is(p.if.call(ctx, [], 10, 20).compile(), `if (undefined) {
-10
-} else {
-20
-}`)
+  t.is(p.if.call(ctx, [], 10, 20).compile(), `if (undefined) 10
+else 20`)
 
-  t.is(p.if.call(ctx, 10, [], 20).compile(), `if (10) {} else {
-20
-}`)
+  t.is(p.if.call(ctx, 10, [], 20).compile(), `if (10) {}
+else 20`)
 
-  t.is(p.if.call(ctx, 10, 20, 30).compile(), `if (10) {
-20
-} else {
-30
-}`)
+  t.is(p.if.call(ctx, 10, 20, 30).compile(), `if (10) 20
+else 30`)
 
   t.is(
     p.if.call(
@@ -196,30 +187,95 @@ t.test(function test_if_statement() {
       ti.macReqStatementTwo,
       ti.macReqStatementThree,
     ).compile(),
-    `if ("one") {
-"two"
-} else {
-"three"
-}`,
+    `if ("one") "two"
+else "three"`,
   )
-
   t.own(ctx, {[c.symStatement]: undefined})
 
+  ctx = c.ctxWithModule(null)
+  t.is(p.const.call(ctx, sym(`one`), 10).compile(), `export const one = 10`)
+  ctx = c.ctxWithModule(null)
+
+  /*
+  This verifies that the branches are macroed in sub-contexts or a sub-context.
+  The resulting code in this example is actually invalid syntax in JS because
+  the branch statements are declarations which are supposed to be block-scoped
+  in strict mode. The same happens with `let`, `function`, and `class`, but not
+  with `var`. We're not especially concerned with preventing this at the level
+  of our compiler because having a branch consisting of just one declaration
+  statement is pretty useless.
+  */
   t.is(
     p.if.call(
       ctx,
-      false,
-      [p.const, sym(`one`), 10],
-      [p.const, sym(`one`), 20],
+      ti.macReqExpressionOne,
+      [p.const, sym(`two`), 10],
+      [p.const, sym(`three`), 20],
     ).compile(),
-    `if (false) {
-const one = 10
-} else {
-const one = 20
-}`,
+    `if ("one") const two = 10
+else const three = 20`,
   )
 
-  t.own(ctx, {[c.symStatement]: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined})
+})
+
+t.test(function test_when() {
+  function mac(ctx, ...src) {return c.macroNode(ctx, [m.when, ...src])}
+
+  const expr = Object.create(null)
+  const stat = c.ctxWithStatement(expr)
+
+  t.is(mac(expr), undefined)
+  t.eq(mac(stat), [])
+
+  t.is(mac(expr, []), undefined)
+  t.eq(mac(stat, []), [])
+
+  t.is(mac(expr, [], [[]]).compile(), `(undefined ? undefined : undefined)`)
+  t.eq(mac(stat, [], [[]]), [])
+
+  t.is(mac(expr, [], [[]], [[[]]]).compile(), `(undefined ? undefined : undefined)`)
+  t.eq(mac(stat, [], [[]], [[[]]]), [])
+
+  t.is(mac(expr, 10).compile(), `(void 10)`)
+  t.is(mac(stat, 10).compile(), `void 10`)
+
+  t.is(mac(expr, 10, 20).compile(), `(10 ? 20 : undefined)`)
+  t.is(mac(stat, 10, 20).compile(), `if (10) {
+20
+}`)
+
+  t.is(mac(expr, 10, 20, 30).compile(), `(10 ? (20, 30) : undefined)`)
+  t.is(mac(stat, 10, 20, 30).compile(), `if (10) {
+20;
+30
+}`)
+
+  t.is(mac(expr, 10, 20, 30, 40).compile(), `(10 ? (20, 30, 40) : undefined)`)
+  t.is(mac(stat, 10, 20, 30, 40).compile(), `if (10) {
+20;
+30;
+40
+}`)
+
+  t.is(mac(expr, [], 10, 20, 30, 40).compile(), `(undefined ? (10, 20, 30, 40) : undefined)`)
+  t.is(mac(stat, [], 10, 20, 30, 40).compile(), `if (undefined) {
+10;
+20;
+30;
+40
+}`)
+
+  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(), `("one" ? "two" : undefined)`)
+  t.is(mac(stat, ti.macReqExpressionOne, ti.macReqStatementTwo).compile(), `if ("one") {
+"two"
+}`)
+
+  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(), `("one" ? ("two", "three") : undefined)`)
+  t.is(mac(stat, ti.macReqExpressionOne, ti.macReqStatementTwo, ti.macReqStatementThree).compile(), `if ("one") {
+"two";
+"three"
+}`)
 })
 
 t.test(function test_do_expression() {
@@ -359,10 +415,10 @@ t.test(function test_void_expression() {
 t.test(function test_void_statement() {
   const ctx = c.ctxWithStatement(null)
 
-  t.eq(p.void.call(ctx), undefined)
-  t.eq(p.void.call(ctx, []), undefined)
-  t.eq(p.void.call(ctx, [], []), undefined)
-  t.eq(p.void.call(ctx, [], [[]]), undefined)
+  t.eq(p.void.call(ctx), [])
+  t.eq(p.void.call(ctx, []), [])
+  t.eq(p.void.call(ctx, [], []), [])
+  t.eq(p.void.call(ctx, [], [[]]), [])
 
   t.is(p.void.call(ctx, undefined).compile(), `void undefined`)
   t.is(p.void.call(ctx, null).compile(), `void null`)
@@ -465,7 +521,7 @@ t.test(function test_guard() {
   ti.fail(() => mac(null), `expected statement context, got expression context`)
   const ctx = c.ctxWithStatement(null)
 
-  t.is(mac(ctx), undefined)
+  t.is(mac(ctx).compile(), `if (undefined) return`)
   t.is(mac(ctx, 10).compile(), `if (10) return`)
   t.is(mac(ctx, 10, 20).compile(), `if (10) return 20`)
 
@@ -1252,6 +1308,23 @@ function testNew(ctx) {
   t.own(p.new.call(ctx, SomeNode, 10, 20, 30), {src: [10, 20, 30]})
   t.own(p.new.call(ctx, sym(`one`), 10, 20, 30), {src: [10, 20, 30]})
 
+  ti.fail(
+    () => p.new.call(ctx, sym(`one.two`)),
+    `missing property "two" in [function SomeNode]`,
+  )
+
+  ctx.one = undefined
+
+  t.is(p.new.call(ctx, sym(`one`)).compile(), `new one()`)
+  t.is(p.new.call(ctx, sym(`one.two`)).compile(), `new one.two()`)
+
+  t.is(p.new.call(ctx, sym(`one`), ti.macReqExpressionOne).compile(), `new one("one")`)
+  t.is(p.new.call(ctx, sym(`one.two`), ti.macReqExpressionOne).compile(), `new one.two("one")`)
+}
+
+t.test(function test_new_target() {
+  const ctx = Object.create(null)
+
   function run(src) {return c.compileNode(c.macroNode(ctx, src))}
   ti.fail(() => run(sym(`new.target`)), `missing declaration of "new"`)
 
@@ -1263,7 +1336,7 @@ function testNew(ctx) {
   code can assign `new.target` to a variable to read its properties.
   */
   ti.fail(() => run(sym(`new.target.name`)), `missing property "name" in new.target`)
-}
+})
 
 t.test(function test_typeof() {testUnary(p.typeof, `typeof`)})
 
@@ -1952,6 +2025,208 @@ t.test(function test_regexp() {
   t.is(p.regexp.call(null, ``,    `g`).toString(), /(?:)/g .toString())
   t.is(p.regexp.call(null, `one`     ).toString(), /one/   .toString())
   t.is(p.regexp.call(null, `one`, `g`).toString(), /one/g  .toString())
+})
+
+t.test(function test_while() {
+  ti.fail(() => p.while.call(null), `expected statement context, got expression context`)
+
+  const ctx = c.ctxWithStatement(null)
+  ti.fail(() => p.while.call(ctx), `expected at least 1 inputs, got 0 inputs`)
+
+  t.is(p.while.call(ctx, []).compile(), `while (undefined) {}`)
+  t.is(p.while.call(ctx, false).compile(), `while (false) {}`)
+  t.is(p.while.call(ctx, ti.macReqExpressionOne).compile(), `while ("one") {}`)
+
+  t.is(
+    p.while.call(ctx, [], 10).compile(),
+    `while (undefined) {
+10
+}`)
+
+  t.is(
+    p.while.call(ctx, 10, 20).compile(),
+    `while (10) {
+20
+}`)
+
+  t.is(
+    p.while.call(ctx, 10, 20, 30).compile(),
+    `while (10) {
+20;
+30
+}`)
+
+  t.is(
+    p.while.call(ctx, ti.macReqExpressionOne, ti.macReqStatementTwo, ti.macReqStatementThree).compile(),
+    `while ("one") {
+"two";
+"three"
+}`)
+
+  t.is(
+    p.while.call(
+      ctx,
+      ti.macReqExpressionOne,
+      [p.const, sym(`two`), ti.macReqExpressionThree],
+    ).compile(),
+    `while ("one") {
+const two = "three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.while.call(ctx, sym(`break`)),
+    `missing declaration of "break"`,
+  )
+
+  ti.fail(
+    () => p.while.call(ctx, sym(`continue`)),
+    `missing declaration of "continue"`,
+  )
+
+  ti.fail(
+    () => p.while.call(ctx, [], [sym(`break`)]),
+    `"break" must be mentioned, not called; loop labels are not currently supported`,
+  )
+
+  ti.fail(
+    () => p.while.call(ctx, [], [sym(`continue`)]),
+    `"continue" must be mentioned, not called; loop labels are not currently supported`,
+  )
+
+  t.is(
+    p.while.call(ctx, [], sym(`break`)).compile(),
+    `while (undefined) {
+break
+}`)
+
+  t.is(
+    p.while.call(ctx, [], sym(`continue`)).compile(),
+    `while (undefined) {
+continue
+}`)
+
+  t.is(
+    p.while.call(ctx, 10, 20, sym(`break`), 30).compile(),
+    `while (10) {
+20;
+break;
+30
+}`)
+
+  t.is(
+    p.while.call(ctx, 10, 20, sym(`continue`), 30).compile(),
+    `while (10) {
+20;
+continue;
+30
+}`)
+
+  {
+    let tar
+    t.is(
+      p.while.call(ctx, 10, {macro(val) {tar = val; return []}}).compile(),
+      `while (10) {}`,
+    )
+    t.eq(ti.objFlat(tar), [
+      {[c.symStatement]: undefined},
+      {[c.symMixin]: undefined, ...m.loopMixin},
+      ...ti.objFlat(ctx),
+    ])
+  }
+
+  {
+    const sub = c.ctxWithStatement(ctx)
+    sub.break = 123
+
+    let tar
+    t.is(
+      p.while.call(
+        sub,
+        10,
+        sym(`break`),
+        sym(`continue`),
+        {macro(val) {tar = val; return []}},
+      ).compile(),
+      `while (10) {
+123;
+continue
+}`)
+
+    t.eq(ti.objFlat(tar), [
+      {[c.symStatement]: undefined},
+      {[c.symMixin]: undefined, continue: m.continue},
+      ...ti.objFlat(sub),
+    ])
+  }
+})
+
+t.test(function test_pipe() {
+  function mac(ctx, ...src) {return c.macroNode(ctx, [m.pipe, ...src])}
+
+  function fail(ctx) {
+    ti.fail(() => mac(ctx), `expected unqualified symbol, got undefined`)
+    ti.fail(() => mac(ctx, 10), `expected unqualified symbol, got 10`)
+    ti.fail(() => mac(ctx, sym(`one.two`)), `expected unqualified symbol, got one.two`)
+    ti.fail(() => mac(ctx, sym(`one`)), `missing declaration of "one"`)
+  }
+
+  const expr = Object.create(null)
+  const stat = c.ctxWithStatement(expr)
+
+  fail(expr)
+  fail(stat)
+
+  expr.one = undefined
+
+  t.is(mac(expr, sym(`one`)), sym(`one`))
+  t.is(mac(stat, sym(`one`)), sym(`one`))
+
+  t.is(
+    mac(expr, sym(`one`), 10).compile(),
+    `((one = 10), one)`,
+  )
+
+  t.is(
+    mac(stat, sym(`one`), 10).compile(),
+    `{
+one = 10;
+one
+}`)
+
+  t.is(
+    mac(expr, sym(`one`), 10, 20).compile(),
+    `((one = 10), (one = 20), one)`,
+  )
+
+  t.is(
+    mac(stat, sym(`one`), 10, 20).compile(),
+    `{
+one = 10;
+one = 20;
+one
+}`)
+
+  t.is(
+    mac(expr, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
+    `((one = "two"), (one = "three"), one)`,
+  )
+
+  t.is(
+    mac(stat, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
+    `{
+one = "two";
+one = "three";
+one
+}`)
+
+  t.is(
+    mac(stat, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
+    `{
+one = "two";
+one = "three";
+one
+}`)
 })
 
 if (import.meta.main) ti.flush()

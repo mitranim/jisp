@@ -19,10 +19,10 @@ await t.test(async function test_use() {
   if (ti.WATCH) return
 
   let ctx = Object.create(c.ctxGlobal)
-  await ti.fail(async () => p.use.call(ctx),     `expected between 1 and 2 inputs, got 0 inputs`)
-  await ti.fail(async () => p.use.call(ctx, ``), `expected statement context, got expression context`)
+  await ti.fail(async () => p.use.call(ctx), `expected statement context, got expression context`)
 
   ctx = c.ctxWithStatement(ctx)
+  await ti.fail(async () => p.use.call(ctx),        `expected between 1 and 2 inputs, got 0 inputs`)
   await ti.fail(async () => p.use.call(ctx, 10),    `expected variant of isStr, got 10`)
   await ti.fail(async () => p.use.call(ctx, ``),    `Relative import path "" not prefixed with / or ./ or ../`)
   await ti.fail(async () => p.use.call(ctx, `one`), `Relative import path "one" not prefixed with / or ./ or ../`)
@@ -69,7 +69,15 @@ async function testUseMixin(ctx, src, tar) {
   testNone(await p.use.call(ctx, src, sym(`*`)))
 
   t.own(ctx, {[c.symStatement]: undefined})
-  t.own(c.ctxReqParentMixin(ctx), {[c.symMixin]: undefined, ...await import(tar)})
+
+  const exp = {[c.symMixin]: undefined, ...await import(tar)}
+
+  // This property is assigned to the global context in `test_init.mjs`.
+  // The mixin form of `use` is expected to skip inherited properties
+  // when assigning to the mixin context.
+  delete exp.use
+
+  t.own(c.ctxReqParentMixin(ctx), exp)
 }
 
 t.test(function test_import_expression() {
@@ -373,14 +381,13 @@ function makeTestModule() {
 }
 
 t.test(function test_declare_invalid() {
-  ti.fail(() => p.declare.call(null), `expected 1 inputs, got 0 inputs`)
-  ti.fail(() => p.declare.call(null, undefined), `expected statement context, got expression context`)
+  ti.fail(() => p.declare.call(null), `expected statement context, got expression context`)
 
   const ctx = c.ctxWithStatement(null)
-
+  ti.fail(() => p.declare.call(ctx),            `expected 1 inputs, got 0 inputs`)
   ti.fail(() => p.declare.call(ctx, undefined), `expected either symbol or string, got undefined`)
-  ti.fail(() => p.declare.call(ctx, 10), `expected either symbol or string, got 10`)
-  ti.fail(() => p.declare.call(ctx, []), `expected either symbol or string, got []`)
+  ti.fail(() => p.declare.call(ctx, 10),        `expected either symbol or string, got 10`)
+  ti.fail(() => p.declare.call(ctx, []),        `expected either symbol or string, got []`)
 })
 
 t.test(function test_declare_sym() {
@@ -469,11 +476,10 @@ t.test(function test_declare_sym() {
 
 await t.test(async function test_declare_str() {
   let ctx = Object.create(c.ctxGlobal)
-
-  await ti.fail(async () => p.declare.call(ctx),     `expected 1 inputs, got 0 inputs`)
-  await ti.fail(async () => p.declare.call(ctx, ``), `expected statement context, got expression context`)
+  await ti.fail(async () => p.declare.call(ctx), `expected statement context, got expression context`)
 
   ctx = c.ctxWithStatement(ctx)
+  await ti.fail(async () => p.declare.call(ctx),     `expected 1 inputs, got 0 inputs`)
   await ti.fail(async () => p.declare.call(ctx, ``), `missing mixin namespace in context {[Symbol(jisp.statement)]: undefined}`)
 
   ctx = c.ctxWithStatement(c.ctxWithMixin(ctx))
