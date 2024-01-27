@@ -890,6 +890,186 @@ t.test(function test_class_invalid() {
   ti.fail(() => p.class.call(null, sym(`eval`)),    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 })
 
+t.test(function test_fn_empty() {
+  function test(ctx) {
+    t.is(p.fn.call(ctx).compile(), `(() => {})`)
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+})
+
+t.test(function test_fn_expr() {
+  function test(ctx) {
+    t.is(p.fn.call(ctx, []).compile(), `(() => {})`)
+    t.is(p.fn.call(ctx, 10).compile(), `(() => 10)`)
+    t.is(p.fn.call(ctx, ti.macReqExpression).compile(), `(() => "expression_value")`)
+
+    ti.fail(() => p.fn.call(ctx, sym(`ret`)), `missing declaration of "ret"`)
+    ti.fail(() => p.fn.call(ctx, sym(`guard`)), `missing declaration of "guard"`)
+
+    t.is(p.fn.call(ctx, sym(`$0`)).compile(), `(($0) => $0)`)
+    t.is(p.fn.call(ctx, sym(`$1`)).compile(), `(($0, $1) => $1)`)
+    t.is(p.fn.call(ctx, sym(`$2`)).compile(), `(($0, $1, $2) => $2)`)
+    t.is(p.fn.call(ctx, sym(`$6`)).compile(), `(($0, $1, $2, $3, $4, $5, $6) => $6)`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$0`), sym(`$0`)]).compile(), `(($0) => ($0 + $0))`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$0`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => ($0 + $6))`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$6`), sym(`$0`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => ($6 + $0))`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$3`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => ($3 + $6))`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$6`), sym(`$3`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => ($6 + $3))`)
+    t.is(p.fn.call(ctx, [p.add, sym(`$6`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => ($6 + $6))`)
+    t.is(p.fn.call(ctx, [[[sym(`$0`)]]]).compile(), `(($0) => $0()()())`)
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+})
+
+t.test(function test_fn_block() {
+  function test(ctx) {
+    t.is(p.fn.call(ctx, [], [[]]).compile(), `(() => {
+return
+})`)
+
+    t.is(p.fn.call(ctx, 10, []).compile(), `(() => {
+10;
+return
+})`)
+
+    t.is(p.fn.call(ctx, 10, 20).compile(), `(() => {
+10;
+return 20
+})`)
+
+    t.is(p.fn.call(ctx, [], 10, [[]], 20, [[[]]]).compile(), `(() => {
+10;
+20;
+return
+})`)
+
+    t.is(p.fn.call(ctx, ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(), `(() => {
+"one";
+"two";
+return "three"
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$0`)).compile(), `(($0) => {
+return $0
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$1`)).compile(), `(($0, $1) => {
+return $1
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$0`), sym(`$1`)).compile(), `(($0, $1) => {
+$0;
+return $1
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$2`)).compile(), `(($0, $1, $2) => {
+return $2
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$0`), sym(`$1`), sym(`$2`)).compile(), `(($0, $1, $2) => {
+$0;
+$1;
+return $2
+})`)
+
+    t.is(p.fn.call(ctx, [], sym(`$6`)).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return $6
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$0`), sym(`$0`)]).compile(), `(($0) => {
+return ($0 + $0)
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$0`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return ($0 + $6)
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$6`), sym(`$0`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return ($6 + $0)
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$3`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return ($3 + $6)
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$6`), sym(`$3`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return ($6 + $3)
+})`)
+
+    t.is(p.fn.call(ctx, [], [p.add, sym(`$6`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+return ($6 + $6)
+})`)
+
+    t.is(p.fn.call(ctx, [p.subtract, sym(`$0`)], [p.add, sym(`$6`), sym(`$6`)]).compile(), `(($0, $1, $2, $3, $4, $5, $6) => {
+(- $0);
+return ($6 + $6)
+})`)
+
+    t.is(p.fn.call(ctx, [sym(`$0`)], [[sym(`$1`)]], [[[sym(`$2`)]]]).compile(), `(($0, $1, $2) => {
+$0();
+$1()();
+return $2()()()
+})`)
+
+    t.is(
+      p.fn.call(ctx,
+        [p.assign, sym(`$1`), sym(`$0`)],
+        [p.assign, sym(`$0`), sym(`$1`)],
+        [],
+      ).compile(), `(($0, $1) => {
+$1 = $0;
+$0 = $1;
+return
+})`)
+
+    t.is(
+      p.fn.call(ctx,
+        sym(`ret`),
+        [sym(`ret`), 10],
+        [sym(`ret`), 20, 30],
+        [sym(`guard`)],
+        [sym(`guard`), 40],
+        [sym(`guard`), 50, 60],
+        [],
+      ).compile(), `(() => {
+return;
+return 10;
+{
+20;
+return 30
+};
+if (undefined) return;
+if (40) return;
+if (50) return 60;
+return
+})`)
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+
+  {
+    const ctx = c.ctxWithStatement(null)
+
+    t.is(
+      p.fn.call(ctx,
+        [p.const, sym(`one`), sym(`$0`)],
+        [p.let, sym(`two`), sym(`$1`)],
+        sym(`$2`),
+      ).compile(), `(($0, $1, $2) => {
+const one = $0;
+let two = $1;
+return $2
+})`)
+
+    t.own(ctx, {[c.symStatement]: undefined})
+  }
+})
+
 t.test(function test_class_declaration_and_export() {
   function run(ctx) {
     return [

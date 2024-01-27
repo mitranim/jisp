@@ -21,18 +21,20 @@ export function compiling() {
   return []
 }
 
-export function compiled(...src) {
+export function compiledString(...src) {
   return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
 
-export function compile() {
-  const val = compiled.apply(this, arguments)
+export function compiled(...src) {
+  const val = compiledString.apply(this, arguments)
   if (val) {
     console.log(`[debug] compiled:`)
     console.log(val)
   }
-  return []
+  return c.raw(compiledString.apply(this, arguments))
 }
+
+export function compile() {return compiled.apply(this, arguments), []}
 
 function ctxBranch(ctx) {return Object.assign(Object.create(ctx), ctx)}
 

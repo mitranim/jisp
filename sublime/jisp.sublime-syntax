@@ -271,6 +271,7 @@ contexts:
     - include: operator-match
 
   ident-match:
+    - include: ident-fn-param-match
     - include: ident-unqual-match
 
   operator-match:
@@ -295,6 +296,13 @@ contexts:
     - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_break_end}}'
       scope: constant.language.jisp
       push: req-delim-pop-now
+
+  ident-fn-param-match:
+    - match: '{{ident_break_begin}}([$])\d+{{ident_break_end}}'
+      scope: variable.parameter.jisp
+      captures:
+        1: storage.modifier.jisp
+      push: req-delim-after-sym-pop-now
 
   ident-unqual-match:
     - match: '{{ident}}'

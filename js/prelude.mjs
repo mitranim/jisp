@@ -12,6 +12,7 @@ export {
   do,
   void,
   func,
+  fn,
   class,
   throw,
   new,

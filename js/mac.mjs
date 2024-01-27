@@ -428,18 +428,18 @@ export function ret(...src) {
 ret.macro = selfStatement
 ret.compile = () => `return`
 
-function retStatements(ctx, src) {return retStatementsOpt(ctx, src) || `return`}
+export function retStatements(ctx, src) {return retStatementsOpt(ctx, src) || `return`}
 
-function retStatementsOpt(ctx, src) {
+export function retStatementsOpt(ctx, src) {
   return c.joinStatements(c.reqArr(src).map(retStatement, ctx))
 }
 
-function retStatement(val, ind, src) {
+export function retStatement(val, ind, src) {
   if (ind < src.length - 1) return c.compileNode(c.macroNode(this, val))
   return c.joinSpaced(`return`, c.compileNode(c.macroNode(Object.create(this), val)))
 }
 
-function selfStatement(ctx) {return c.ctxReqIsStatement(ctx), this}
+export function selfStatement(ctx) {return c.ctxReqIsStatement(ctx), this}
 
 export function guard(cond, ...body) {
   if (body.length) return [$if, cond, [ret, ...body]]
@@ -491,6 +491,60 @@ function ctxWithFuncDecl(ctx, name, src) {
 
   return Object.create(ctx)
 }
+
+export function fn(src) {
+  switch (arguments.length) {
+    case 0: return c.raw(`(() => {})`)
+    case 1: return fnExpr.call(this, src)
+    default: return fnBlock.apply(this, arguments)
+  }
+}
+
+export function fnExpr(src) {
+  const han = new FnOrdHan()
+  src = c.macroNode(new Proxy(Object.create(this), han), src)
+  return c.raw(compileFn(han.arity, c.compileNode(src)))
+}
+
+export function fnBlock(...src) {
+  const han = new FnOrdHan()
+  const ctx = new Proxy(c.ctxWithStatement(c.patch(c.ctxWithMixin(this), fnMixin)), han)
+  src = c.wrapBracesMultiLine(retStatementsOpt(ctx, src))
+  return c.raw(compileFn(han.arity, src))
+}
+
+const fnMixin = Object.create(null)
+fnMixin.ret = ret
+fnMixin.guard = guard
+
+function compileFn(arity, body) {
+  c.reqInt(arity)
+  c.reqStr(body)
+
+  let out = `((`
+  let ind = -1
+  while (++ind < arity) out += (ind > 0 ? `, ` : ``) + `$` + ind
+  out += `) => `
+  out += body || `{}`
+  out += `)`
+  return out
+}
+
+class FnOrdHan {
+  arity = 0
+
+  has(tar, key) {return isOrdKey(key) || key in tar}
+
+  get(tar, key) {
+    if (!isOrdKey(key)) return tar[key]
+    this.arity = Math.max(this.arity, 1 + (key.slice(1) | 0))
+    return undefined
+  }
+}
+
+function isOrdKey(val) {return c.isStr(val) && ordKeyReg.test(val)}
+
+const ordKeyReg = /^[$]\d+$/
 
 export {$class as class}
 
