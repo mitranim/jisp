@@ -25,7 +25,7 @@ export function compiledString(...src) {
   return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
 
-export function compiled(...src) {
+export function compiled() {
   const val = compiledString.apply(this, arguments)
   if (val) {
     console.log(`[debug] compiled:`)

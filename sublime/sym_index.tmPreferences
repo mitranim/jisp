@@ -2,16 +2,7 @@
 <plist version="1.0">
 <dict>
   <key>scope</key>
-
-  <!--
-  This has false positives which are negated by `sym_none.tmPreferences`.
-  This accidentally enables indexing of variable declarations not in module
-  root. We want to index variable declarations only in module root, where
-  they're automatically exported. `sym_none.tmPreferences` overrides and
-  negates this setting for declarations not in module root.
-  -->
   <string>entity.name.jisp</string>
-
   <key>settings</key>
   <dict>
     <key>showInSymbolList</key>

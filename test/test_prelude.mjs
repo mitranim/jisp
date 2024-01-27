@@ -51,13 +51,24 @@ t.test(function test_const() {
   ti.fail(() => p.const.call(ctx, sym(`await`), 10), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
   ti.fail(() => p.const.call(ctx, sym(`eval`), 10), `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 
+  // The RHS should be macroed first, without access to the to-be-declared names.
+  ti.fail(
+    () => p.const.call(ctx, sym(`one`), sym(`one`)),
+    `missing declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
   t.is(p.const.call(ctx, sym(`one`), 10).compile(), `const one = 10`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
   ti.fail(() => p.const.call(ctx, sym(`one`), 20), `redundant declaration of "one"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
   t.is(p.const.call(ctx, sym(`two`), ti.macReqExpression).compile(), `const two = "expression_value"`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+
   ti.fail(() => p.const.call(ctx, sym(`two`), 30), `redundant declaration of "two"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
   ti.fail(
     () => p.const.call(ctx, sym(`three`), ti.macReqStatement),
@@ -85,13 +96,24 @@ t.test(function test_let() {
   ti.fail(() => p.let.call(ctx, sym(`one.two`), 10), `"one.two" does not represent a valid JS identifier`)
   ti.fail(() => p.let.call(ctx, sym(`!@#`), 10), `"!@#" does not represent a valid JS identifier`)
 
+  // The RHS should be macroed first, without access to the to-be-declared names.
+  ti.fail(
+    () => p.let.call(ctx, sym(`one`), sym(`one`)),
+    `missing declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
   t.is(p.let.call(ctx, sym(`one`), 10).compile(), `let one = 10`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
   ti.fail(() => p.let.call(ctx, sym(`one`), 20), `redundant declaration of "one"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
   t.is(p.let.call(ctx, sym(`two`), ti.macReqExpression).compile(), `let two = "expression_value"`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+
   ti.fail(() => p.let.call(ctx, sym(`two`), 30), `redundant declaration of "two"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
   ti.fail(
     () => p.let.call(ctx, sym(`three`), ti.macReqStatement),
@@ -575,21 +597,22 @@ t.test(function test_func_expression() {
   testFuncCommon(ctx)
 
   /*
-  Some of the behaviors below are also common between expression and statement
-  modes, but testing them in both modes would be inconvenient because in
-  statement mode, the function is declared before macroing params and body.
-  We simply assume that everything after the function declaration is consistent
-  between both modes.
+  Most of the behaviors below are also common between expression and statement
+  modes, but testing them in both modes would be inconvenient because between
+  expression and statement mode, there is a difference in which context layer
+  we declare the function, which messes with some parts of the test. All other
+  behaviors should be identical between the two modes.
   */
 
-  ti.fail(() => p.func.call(ctx, sym(`one`)),     `expected variant of isArr, got undefined`)
-  ti.fail(() => p.func.call(ctx, sym(`one`), 10), `expected variant of isArr, got 10`)
+  ti.fail(
+    () => p.func.call(null, sym(`one`), 10),
+    `function parameters must be either nil, a symbol, or a list deconstruction, got 10`,
+  )
 
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), [10]),
-    `expected variant of isSym, got 10`,
+    () => p.func.call(null, sym(`one`), [10]),
+    `in a list deconstruction, every element must be a symbol or a list, got 10`,
   )
-  t.own(ctx, {})
 
   ti.fail(
     () => p.func.call(ctx, sym(`one`), [], sym(`two`)),
@@ -600,6 +623,12 @@ t.test(function test_func_expression() {
   ti.fail(
     () => p.func.call(ctx, sym(`one`), [sym(`one`)], sym(`two`)),
     `missing declaration of "two"`,
+  )
+  t.own(ctx, {})
+
+  t.is(
+    p.func.call(ctx, sym(`one`)).compile(),
+    `function one () {}`,
   )
   t.own(ctx, {})
 
@@ -1185,23 +1214,31 @@ t.test(function test_meth() {
   )
 
   ti.fail(
-    () => m.meth.call(null, sym(`one`)),
-    `expected variant of isArr, got undefined`,
+    () => m.meth.call(null, sym(`one`), 10),
+    `function parameters must be either nil, a symbol, or a list deconstruction, got 10`,
   )
 
   ti.fail(
     () => m.meth.call(null, sym(`one`), [10]),
-    `expected variant of isSym, got 10`,
+    `in a list deconstruction, every element must be a symbol or a list, got 10`,
   )
 
   {
     const ctx = Object.create(null)
+
+    t.is(m.meth.call(ctx, sym(`one`)).compile(), `one () {}`)
+    t.own(ctx, {})
+
     t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
     t.own(ctx, {})
   }
 
   {
     const ctx = c.ctxWithStatement(null)
+
+    t.is(m.meth.call(ctx, sym(`one`)).compile(), `one () {}`)
+    t.own(ctx, {[c.symStatement]: undefined})
+
     t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
     t.own(ctx, {[c.symStatement]: undefined})
   }
@@ -1567,7 +1604,11 @@ t.test(function test_oftype() {
 })
 
 t.test(function test_await() {testUnary(p.await, `await`)})
-t.test(function test_instof() {testBinary(p.instof, `instanceof`)})
+
+t.test(function test_instof() {
+  testBinary(p.instof, `instanceof`)
+  testCompilable(p.instof, `((a, b) => a instanceof b)`)
+})
 
 function testBinary(fun, inf) {
   function test(ctx) {
@@ -1603,7 +1644,10 @@ function testBinary(fun, inf) {
   test(c.ctxWithStatement(null))
 }
 
-t.test(function test_in() {testBinary(p.in, `in`)})
+t.test(function test_in() {
+  testBinary(p.in, `in`)
+  testCompilable(p.in, `((a, b) => a in b)`)
+})
 
 /*
 Most of these checks are redundant with more fundamental tests for symbol

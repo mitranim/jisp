@@ -294,12 +294,11 @@ export function $const(name, val) {
   c.reqArity(arguments.length, 2)
 
   val = c.macroNode(Object.create(this), val)
-  c.ctxDeclare(this, name)
 
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `const`,
-    name.description,
+    compileParam.call(this, name),
     `=`,
     (c.compileNode(val) || `undefined`),
   ))
@@ -311,10 +310,13 @@ export function $let(name, val) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
-  const pre = c.joinSpaced(c.ctxCompileExport(this), `let`, name.description)
-
   val = arguments.length > 1 ? c.compileNode(c.macroNode(Object.create(this), val)) : ``
-  c.ctxDeclare(this, name)
+
+  const pre = c.joinSpaced(
+    c.ctxCompileExport(this),
+    `let`,
+    compileParam.call(this, name),
+  )
 
   if (val) return c.raw(c.joinSpaced(pre, `=`, val))
   return c.raw(pre)
@@ -450,13 +452,12 @@ export function func(name, params, ...body) {
   c.reqArityMin(arguments.length, 1)
 
   const ctx = ctxWithFuncDecl(this, name, funcMixin)
-  declareSyms(ctx, params)
   ctx[c.symStatement] = undefined
 
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `function`,
-    funcCompile(name, params, retStatementsOpt(ctx, body)),
+    funcCompile(name, compileFuncParams(ctx, params), retStatementsOpt(ctx, body)),
   ))
 }
 
@@ -466,16 +467,21 @@ funcMixin.guard = guard
 funcMixin.arguments = undefined
 funcMixin.this = undefined
 
-function declareSyms(ctx, src) {
-  for (const val of c.reqArr(src)) c.ctxDeclare(ctx, val)
+function compileFuncParams(ctx, src) {
+  if (c.isNil(src)) return `()`
+  if (c.isSym(src)) return c.ctxDeclare(ctx, src), c.wrapParens(`...` + src.description)
+  if (c.isArr(src)) return c.wrapParens(src.map(compileParam, ctx).join(c.expressionSep))
+  throw SyntaxError(`function parameters must be either nil, a symbol, or a list deconstruction, got ${c.show(src)}`)
 }
 
-function funcCompile(name, params, body) {
-  return c.joinSpaced(
-    c.compileNode(name),
-    c.compileExpressionsInParens(params),
-    c.wrapBracesMultiLine(body),
-  )
+function compileParam(src) {
+  if (c.isSym(src)) return c.ctxDeclare(this, src), c.reqStr(src.description)
+  if (c.isArr(src)) return c.wrapBrackets(src.map(compileParam, this).join(c.expressionSep))
+  throw SyntaxError(`in a list deconstruction, every element must be a symbol or a list, got ${c.show(src)}`)
+}
+
+function funcCompile(name, param, body) {
+  return c.joinSpaced(c.compileNode(name), param, c.wrapBracesMultiLine(body))
 }
 
 /*
@@ -523,7 +529,7 @@ function compileFn(arity, body) {
 
   let out = `((`
   let ind = -1
-  while (++ind < arity) out += (ind > 0 ? `, ` : ``) + `$` + ind
+  while (++ind < arity) out += (ind > 0 ? c.expressionSep : ``) + `$` + ind
   out += `) => `
   out += body || `{}`
   out += `)`
@@ -603,9 +609,8 @@ export function meth(name, params, ...body) {
   c.reqArityMin(arguments.length, 1)
   reqFieldName(name)
   const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
-  declareSyms(ctx, params)
   ctx[c.symStatement] = undefined
-  return c.raw(funcCompile(name, params, retStatementsOpt(ctx, body)))
+  return c.raw(funcCompile(name, compileFuncParams(ctx, params), retStatementsOpt(ctx, body)))
 }
 
 export const methMixin = Object.create(funcMixin)
@@ -740,8 +745,11 @@ export function instof(val, cls) {
   return binaryInfix(this, val, `instanceof`, cls)
 }
 
+instof.compile = () => `((a, b) => a instanceof b)`
+
 export {$in as in}
 
+// TODO consider inverting argument order for consistency with `get` and `set`.
 export function $in(key, val) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, key, `in`, val)
@@ -846,6 +854,10 @@ export function set(src, key, val) {
   return c.raw(sta ? out : c.wrapParens(out))
 }
 
+/*
+TODO consider supporting deconstructions. In JS, the LHS of assignment
+expressions supports both list and dict deconstructions.
+*/
 export function assign(one, two) {
   c.reqArity(arguments.length, 2)
 
@@ -953,23 +965,7 @@ export function lte(one, two) {
 
 lte.compile = () => `((a, b) => a <= b)`
 
-/*
-In JS, the operator `+` is overloaded on both arity and types. The Jisp version
-supports unary and variadic forms.
-
-The JS unary mode of the `+` operator converts the operand to a floating point
-number, using a variety of special cases like invoking `.valueOf` methods,
-parsing numeric strings, and more.
-
-The binary form of the `+` operator supports at least the following:
-
-  * Concatenating strings.
-  * Adding floating point numbers.
-  * Adding big integers.
-  * (Secretly) Adding 32-bit integers.
-
-Due to type ambiguity, our nullary form uses `undefined` as the fallback value.
-*/
+// Fallback value is nil due to type ambiguity.
 export function add(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {

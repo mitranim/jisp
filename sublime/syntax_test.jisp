@@ -330,6 +330,28 @@ two
 three
 """
 
+;; Invalid ;;
+``.
+``..
+``...
+```
+```.
+```
+```..
+```
+```...
+
+;; Invalid ;;
+"".
+""..
+""...
+"""
+""".
+"""
+"""..
+"""
+"""...
+
 ~ ! @ # % ^ & * : < > ? / \ | = + -
 ~~ !! @@ ## %% ^^ && ** :: << >> ?? // \\ || == ++ --
 ~~~ !!! @@@ ### %%% ^^^ &&& *** ::: <<< >>> ??? /// \\\ ||| === +++ ---
@@ -616,6 +638,12 @@ pre.const
 [const.variant     name val]
 [pre.const.variant name val]
 
+;; Name declaration should support list deconstruction. ;;
+[const [one] val]
+[const [one two] val]
+[const [one [two]] val]
+[const [one [two & [three]]] val]
+
 func
 pre.func
 [ident func ident]
@@ -650,22 +678,37 @@ pre.func
 [pre.func         name [param param & param]]
 [func.variant     name [param param & param]]
 [pre.func.variant name [param param & param]]
-[func             name [param param] ident]
-[pre.func         name [param param] ident]
-[func.variant     name [param param] ident]
-[pre.func.variant name [param param] ident]
-[func             name [param param &] ident]
-[pre.func         name [param param &] ident]
-[func.variant     name [param param &] ident]
-[pre.func.variant name [param param &] ident]
-[func             name [param param & param] ident]
-[pre.func         name [param param & param] ident]
-[func.variant     name [param param & param] ident]
-[pre.func.variant name [param param & param] ident]
-[func             name [param] [ident] [ident] [ident] ident]
-[func.variant     name [param] [ident] [ident] [ident] ident]
-[pre.func         name [param] [ident] [ident] [ident] ident]
-[pre.func.variant name [param] [ident] [ident] [ident] ident]
+[func             name [param param] body]
+[pre.func         name [param param] body]
+[func.variant     name [param param] body]
+[pre.func.variant name [param param] body]
+[func             name [param param &] body]
+[pre.func         name [param param &] body]
+[func.variant     name [param param &] body]
+[pre.func.variant name [param param &] body]
+[func             name [param param & param] body]
+[pre.func         name [param param & param] body]
+[func.variant     name [param param & param] body]
+[pre.func.variant name [param param & param] body]
+[func             name [param] [body] [body] [body] body]
+[func.variant     name [param] [body] [body] [body] body]
+[pre.func         name [param] [body] [body] [body] body]
+[pre.func.variant name [param] [body] [body] [body] body]
+
+;; Parameter lists should support list deconstruction. ;;
+[func name [one two] body]
+[func name [one [two]] body]
+[func name [[one] two] body]
+[func name [[one two]] body]
+[func name [one [two] three] body]
+[func name [one [two] three [four]] body]
+[func name [one & [two] three [four & five]] body]
+
+;;
+Only unqualified identifiers in the parameter list should be scoped as
+parameters. Everything else should be scoped as in root scope.
+;;
+[func name [one two.three `str` !@#.four `str` five.!@# six] body]
 
 class
 pre.class
@@ -719,3 +762,31 @@ pre.class
   [.meth.variant        name [param param]]
   [.static.meth.variant name [param param]]
 ]
+
+[fn]
+[pre.fn]
+[fn.async]
+[pre.fn.async]
+[fn $0]
+[pre.fn $0]
+[fn.async $0]
+[pre.fn.async $0]
+[fn $0 $1]
+[pre.fn $0 $1]
+[fn.async $0 $1]
+[pre.fn.async $0 $1]
+
+;;
+Unqualified identifiers in the form `^[$]\d+$` should be scoped as parameters.
+When such identifiers are qualified, no special treatment should be given.
+;;
+$0 $1 $2 ... $128
+pre.$0 pre.$1 pre.$2 ... pre.$128
+
+;; Property access should be scoped normally. ;;
+$0.field
+$0.field.field
+$0.!@#
+$0.!@#.%^&
+$0.field.%^&
+$0.!@#.field
