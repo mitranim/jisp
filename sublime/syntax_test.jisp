@@ -585,14 +585,6 @@ one
 [one two] three
 [one two three]
 
-[.one].two
-[.one].two.three
-[.one.two].three
-[.one.two.three]
-
-[.one two].three
-[.one.two three]
-
     void     undefined     null     false     true     NaN     Infinity
 pre.void pre.undefined pre.null pre.false pre.true pre.NaN pre.Infinity
 
@@ -729,40 +721,20 @@ pre.class
   [meth.variant        name]
   [static.meth.variant name]
 
-  [.meth                name]
-  [.static.meth         name]
-  [.meth.variant        name]
-  [.static.meth.variant name]
-
   [meth                name []]
   [static.meth         name []]
   [meth.variant        name []]
   [static.meth.variant name []]
-
-  [.meth                name []]
-  [.static.meth         name []]
-  [.meth.variant        name []]
-  [.static.meth.variant name []]
 
   [meth                name [param]]
   [static.meth         name [param]]
   [meth.variant        name [param]]
   [static.meth.variant name [param]]
 
-  [.meth                name [param]]
-  [.static.meth         name [param]]
-  [.meth.variant        name [param]]
-  [.static.meth.variant name [param]]
-
   [meth                name [param param]]
   [static.meth         name [param param]]
   [meth.variant        name [param param]]
   [static.meth.variant name [param param]]
-
-  [.meth                name [param param]]
-  [.static.meth         name [param param]]
-  [.meth.variant        name [param param]]
-  [.static.meth.variant name [param param]]
 ]
 
 [fn]
