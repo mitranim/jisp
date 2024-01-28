@@ -242,12 +242,12 @@ class ImportRef extends c.Raw {
 export function declare(src) {
   c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 1)
-  if (c.isSym(src)) return declareSym(this, src.description)
-  if (c.isStr(src)) return declareStr(this, src)
+  if (c.isSym(src)) return declareFromSym(this, src.description)
+  if (c.isStr(src)) return declareFromStr(this, src)
   throw TypeError(`expected either symbol or string, got ${c.show(src)}`)
 }
 
-function declareSym(ctx, src) {
+function declareFromSym(ctx, src) {
   const val = c.ctxReqGet(ctx, src)
   if (c.isDict(val)) {
     c.patchDecl(c.ctxReqParentMixin(ctx), val)
@@ -256,7 +256,7 @@ function declareSym(ctx, src) {
   throw TypeError(`expected to resolve ${c.show(src)} to plain object, got ${c.show(val)}`)
 }
 
-async function declareStr(ctx, src) {
+async function declareFromStr(ctx, src) {
   c.patchDecl(
     c.ctxReqParentMixin(ctx),
     await import(await ctxSrcDepPath(ctx, src)),
@@ -289,36 +289,36 @@ function identOrStr(val) {
 
 export {$const as const}
 
-export function $const(name, val) {
+export function $const(tar, src) {
   c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 2)
 
-  val = c.macroNode(Object.create(this), val)
+  src = c.macroNode(Object.create(this), src)
 
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `const`,
-    compileParam.call(this, name),
+    param.call(this, tar),
     `=`,
-    (c.compileNode(val) || `undefined`),
+    (c.compileNode(src) || `undefined`),
   ))
 }
 
 export {$let as let}
 
-export function $let(name, val) {
+export function $let(tar, src) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
-  val = arguments.length > 1 ? c.compileNode(c.macroNode(Object.create(this), val)) : ``
+  src = arguments.length > 1 ? c.compileNode(c.macroNode(Object.create(this), src)) : ``
 
   const pre = c.joinSpaced(
     c.ctxCompileExport(this),
     `let`,
-    compileParam.call(this, name),
+    param.call(this, tar),
   )
 
-  if (val) return c.raw(c.joinSpaced(pre, `=`, val))
+  if (src) return c.raw(c.joinSpaced(pre, `=`, src))
   return c.raw(pre)
 }
 
@@ -448,16 +448,21 @@ export function guard(cond, ...body) {
   return [$if, cond, ret]
 }
 
-export function func(name, params, ...body) {
-  c.reqArityMin(arguments.length, 1)
-
-  const ctx = ctxWithFuncDecl(this, name, funcMixin)
-  ctx[c.symStatement] = undefined
-
+export function func() {
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `function`,
-    funcCompile(name, compileFuncParams(ctx, params), retStatementsOpt(ctx, body)),
+    funcBase.apply(this, arguments),
+  ))
+}
+
+func.async = funcAsync
+
+export function funcAsync() {
+  return c.raw(c.joinSpaced(
+    c.ctxCompileExport(this),
+    `async function`,
+    funcBase.apply(this, arguments),
   ))
 }
 
@@ -467,17 +472,51 @@ funcMixin.guard = guard
 funcMixin.arguments = undefined
 funcMixin.this = undefined
 
-function compileFuncParams(ctx, src) {
+export const symRest = Symbol.for(`&`)
+
+// For internal use.
+export function funcBase(name, param, ...body) {
+  c.reqArityMin(arguments.length, 1)
+  const ctx = ctxWithFuncDecl(this, name, funcMixin)
+  ctx[c.symStatement] = undefined
+  return funcCompile(name, funcParam.call(ctx, param), retStatementsOpt(ctx, body))
+}
+
+export function funcParam(src) {
   if (c.isNil(src)) return `()`
-  if (c.isSym(src)) return c.ctxDeclare(ctx, src), c.wrapParens(`...` + src.description)
-  if (c.isArr(src)) return c.wrapParens(src.map(compileParam, ctx).join(c.expressionSep))
+  if (c.isSym(src)) return c.ctxDeclare(this, src), c.wrapParens(`...` + src.description)
+  if (c.isArr(src)) return c.wrapParens(paramDeconstruction.call(this, src))
   throw SyntaxError(`function parameters must be either nil, a symbol, or a list deconstruction, got ${c.show(src)}`)
 }
 
-function compileParam(src) {
+export function param(src) {
   if (c.isSym(src)) return c.ctxDeclare(this, src), c.reqStr(src.description)
-  if (c.isArr(src)) return c.wrapBrackets(src.map(compileParam, this).join(c.expressionSep))
+  if (c.isArr(src)) return c.wrapBrackets(paramDeconstruction.call(this, src))
   throw SyntaxError(`in a list deconstruction, every element must be a symbol or a list, got ${c.show(src)}`)
+}
+
+export function paramDeconstruction(src) {
+  c.reqArr(src)
+  let out = ``
+  let ind = -1
+
+  while (++ind < src.length) {
+    const val = src[ind]
+    if (out) out += c.expressionSep
+    if (val === symRest) return out + restParam(this, src, ind + 1)
+    out += param.call(this, val)
+  }
+  return out
+}
+
+function restParam(ctx, src, ind) {
+  const more = c.reqArr(src).length - c.reqNat(ind)
+  if (more !== 1) {
+    throw SyntaxError(`rest symbol ${c.show(symRest)} must be followed by exactly one node, found ${more} nodes`)
+  }
+  src = src[ind]
+  c.ctxDeclare(ctx, src)
+  return `...` + src.description
 }
 
 function funcCompile(name, param, body) {
@@ -498,10 +537,25 @@ function ctxWithFuncDecl(ctx, name, src) {
   return Object.create(ctx)
 }
 
-export function fn(src) {
+export function fn() {
+  return c.raw(c.wrapParens(fnBase.apply(this, arguments)))
+}
+
+fn.async = fnAsync
+
+export function fnAsync() {
+  return c.raw(c.wrapParens(`async ` + fnBase.apply(this, arguments)))
+}
+
+const fnMixin = Object.create(null)
+fnMixin.ret = ret
+fnMixin.guard = guard
+
+// For internal use.
+export function fnBase() {
   switch (arguments.length) {
-    case 0: return c.raw(`(() => {})`)
-    case 1: return fnExpr.call(this, src)
+    case 0: return `() => {}`
+    case 1: return fnExpr.apply(this, arguments)
     default: return fnBlock.apply(this, arguments)
   }
 }
@@ -509,30 +563,25 @@ export function fn(src) {
 export function fnExpr(src) {
   const han = new FnOrdHan()
   src = c.macroNode(new Proxy(Object.create(this), han), src)
-  return c.raw(compileFn(han.arity, c.compileNode(src)))
+  return compileFn(han.arity, c.compileNode(src))
 }
 
 export function fnBlock(...src) {
   const han = new FnOrdHan()
   const ctx = new Proxy(c.ctxWithStatement(c.patch(c.ctxWithMixin(this), fnMixin)), han)
   src = c.wrapBracesMultiLine(retStatementsOpt(ctx, src))
-  return c.raw(compileFn(han.arity, src))
+  return compileFn(han.arity, src)
 }
-
-const fnMixin = Object.create(null)
-fnMixin.ret = ret
-fnMixin.guard = guard
 
 function compileFn(arity, body) {
   c.reqInt(arity)
   c.reqStr(body)
 
-  let out = `((`
+  let out = `(`
   let ind = -1
   while (++ind < arity) out += (ind > 0 ? c.expressionSep : ``) + `$` + ind
   out += `) => `
   out += body || `{}`
-  out += `)`
   return out
 }
 
@@ -605,12 +654,12 @@ export function extend(...src) {
 Known limitation: this doesn't support arbitrary expressions in the name
 position. JS has some valid use cases such as `[Symbol.iterator]`.
 */
-export function meth(name, params, ...body) {
+export function meth(name, param, ...body) {
   c.reqArityMin(arguments.length, 1)
   reqFieldName(name)
   const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
   ctx[c.symStatement] = undefined
-  return c.raw(funcCompile(name, compileFuncParams(ctx, params), retStatementsOpt(ctx, body)))
+  return c.raw(funcCompile(name, funcParam.call(ctx, param), retStatementsOpt(ctx, body)))
 }
 
 export const methMixin = Object.create(funcMixin)
@@ -620,12 +669,12 @@ methMixin.super = undefined
 Known limitation: this doesn't support arbitrary expressions in the name
 position. JS has some valid use cases such as `[Symbol.toStringTag]`.
 */
-export function field(name, val) {
+export function field(tar, src) {
   c.reqArityBetween(arguments.length, 1, 2)
-  reqFieldName(name)
-  val = c.macroNode(c.ctxToExpression(this), val)
-  if (arguments.length <= 1) return c.raw(c.compileNode(name))
-  return c.raw(c.joinSpaced(c.compileNode(name), `=`, c.compileNode(val)))
+  reqFieldName(tar)
+  src = c.macroNode(c.ctxToExpression(this), src)
+  if (arguments.length <= 1) return c.raw(c.compileNode(tar))
+  return c.raw(c.joinSpaced(c.compileNode(tar), `=`, c.compileNode(src)))
 }
 
 /*

@@ -50,6 +50,8 @@ variables:
   operator_break_begin: (?<![{{operator_chars}}])
   operator_break_end: (?![{{operator_chars}}])
 
+  ident_ord_param: '{{sym_break_begin}}([$])\d+{{ident_break_end}}'
+
 contexts:
   prototype:
     - include: comment-match
@@ -277,7 +279,7 @@ contexts:
     - include: operator-match
 
   ident-match:
-    - include: ident-fn-param-match
+    - include: ident-ord-param-match
     - include: ident-unqual-match
 
   operator-match:
@@ -286,8 +288,16 @@ contexts:
       push: sym-rest-pop
 
   sym-namespace-match:
+    - include: ident-ord-param-namespace-match
     - include: ident-namespace-match
     - include: operator-namespace-match
+
+  ident-ord-param-namespace-match:
+    - match: '({{ident_ord_param}})({{accessor}})'
+      captures:
+        1: variable.parameter.jisp
+        2: storage.modifier.jisp
+        3: punctuation.accessor.jisp
 
   ident-namespace-match:
     - match: '({{ident_component}})({{accessor}})'
@@ -317,10 +327,8 @@ contexts:
       scope: constant.language.jisp
       push: req-delim-pop
 
-  # Maybe it would be preferable to scope these contextually, only within `fn`.
-  # Seems impractical and maybe also undesirable.
-  ident-fn-param-match:
-    - match: '{{sym_break_begin}}([$])\d+{{ident_break_end}}'
+  ident-ord-param-match:
+    - match: '{{ident_ord_param}}'
       scope: variable.parameter.jisp
       captures:
         1: storage.modifier.jisp

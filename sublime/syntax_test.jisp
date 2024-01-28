@@ -1,7 +1,9 @@
 ;; SYNTAX TEST "jisp.sublime-syntax" ;;
 
+;;
 This file is a sketch. A proper syntax test would include assertions for
 expected scopes, which can be checked automatically by ST.
+;;
 
 ;; ;;
 ;; ;;;
@@ -790,3 +792,21 @@ $0.!@#
 $0.!@#.%^&
 $0.field.%^&
 $0.!@#.field
+
+;;
+Implicit ord parameters should also be scoped as parameters when used as
+namespaces in a call position. It's a little murky how they should be scoped
+when mentioned without a preceding or succeding accessor in a call position.
+;;
+[$0]
+[$0 10]
+[$0 10 20]
+[$0.field]
+[$0.field 10]
+[$0.field 10 20]
+[pre.$0]
+[pre.$0 10]
+[pre.$0 10 20]
+[pre.$0.field]
+[pre.$0.field 10]
+[pre.$0.field 10 20]

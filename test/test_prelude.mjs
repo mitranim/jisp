@@ -88,6 +88,48 @@ t.test(function test_const() {
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
 })
 
+// Also see `test_func_param_deconstruction` which covers more cases.
+t.test(function test_const_deconstruction() {
+  function mac(ctx, src) {return p.const.call(ctx, src, ti.macReqExpression)}
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), [sym(`one`), sym(`one`)]),
+    `redundant declaration of "one"`,
+  )
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), [sym(`one`), [sym(`one`)]]),
+    `redundant declaration of "one"`,
+  )
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), undefined),
+    `in a list deconstruction, every element must be a symbol or a list, got undefined`,
+  )
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), 10),
+    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+  )
+
+  const ctx = c.ctxWithStatement(null)
+
+  t.is(mac(ctx, []).compile(), `const [] = "expression_value"`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(mac(ctx, [[[]]]).compile(), `const [[[]]] = "expression_value"`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(mac(ctx, [sym(`one`)]).compile(), `const [one] = "expression_value"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
+  t.is(mac(ctx, [m.symRest, sym(`two`)]).compile(), `const [...two] = "expression_value"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+
+  t.is(mac(ctx, [sym(`three`), [sym(`four`), m.symRest, sym(`five`)]]).compile(), `const [three, [four, ...five]] = "expression_value"`)
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined, five: undefined})
+})
+
 t.test(function test_let() {
   ti.fail(() => p.let.call(null), `expected statement context, got expression context`)
 
@@ -583,7 +625,7 @@ return 30
   t.own(ctx, {[c.symStatement]: undefined})
 })
 
-function testFuncCommon(ctx) {
+function testFuncInvalid(ctx) {
   ti.fail(() => p.func.call(ctx),                 `expected at least 1 inputs, got 0 inputs`)
   ti.fail(() => p.func.call(ctx, 10),             `expected variant of isSym, got 10`)
   ti.fail(() => p.func.call(ctx, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
@@ -594,7 +636,7 @@ function testFuncCommon(ctx) {
 
 t.test(function test_func_expression() {
   const ctx = Object.create(null)
-  testFuncCommon(ctx)
+  testFuncInvalid(ctx)
 
   /*
   Most of the behaviors below are also common between expression and statement
@@ -753,7 +795,7 @@ return
 
 t.test(function test_func_statement() {
   const ctx = c.ctxWithStatement(null)
-  testFuncCommon(ctx)
+  testFuncInvalid(ctx)
   t.own(ctx, {[c.symStatement]: undefined})
 
   t.is(
@@ -908,6 +950,141 @@ return
       {[c.symMixin]: undefined, guard: m.guard, arguments: undefined, this: undefined, ret: undefined},
     ])
   }
+})
+
+t.test(function test_func_param_deconstruction() {
+  function mac(src) {return p.func.call(null, sym(`one`), src)}
+  function test(src, exp) {t.is(mac(src).compile(), exp)}
+
+  test(undefined, `function one () {}`)
+
+  test(sym(`one`), `function one (...one) {}`)
+  test(sym(`two`), `function one (...two) {}`)
+
+  test([], `function one () {}`)
+  test([[]], `function one ([]) {}`)
+  test([[[]]], `function one ([[]]) {}`)
+
+  test([sym(`two`)], `function one (two) {}`)
+  test([[sym(`two`)]], `function one ([two]) {}`)
+  test([[[sym(`two`)]]], `function one ([[two]]) {}`)
+
+  test([[], sym(`two`)], `function one ([], two) {}`)
+  test([[], [sym(`two`)]], `function one ([], [two]) {}`)
+  test([[], [[sym(`two`)]]], `function one ([], [[two]]) {}`)
+
+  test([[], sym(`two`), [[]]], `function one ([], two, [[]]) {}`)
+  test([[], [sym(`two`)], [[]]], `function one ([], [two], [[]]) {}`)
+  test([[], [[sym(`two`)]], [[]]], `function one ([], [[two]], [[]]) {}`)
+
+  test([sym(`two`), sym(`three`)], `function one (two, three) {}`)
+  test([[sym(`two`), sym(`three`)]], `function one ([two, three]) {}`)
+  test([[[sym(`two`), sym(`three`)]]], `function one ([[two, three]]) {}`)
+
+  test([sym(`two`), sym(`three`)], `function one (two, three) {}`)
+  test([[sym(`two`), [sym(`three`)]]], `function one ([two, [three]]) {}`)
+  test([[[sym(`two`), [[sym(`three`)]]]]], `function one ([[two, [[three]]]]) {}`)
+  test([[[sym(`two`), [sym(`three`), sym(`four`)]]]], `function one ([[two, [three, four]]]) {}`)
+
+  ti.fail(
+    () => mac([m.symRest]),
+    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+  )
+
+  ti.fail(
+    () => mac([[m.symRest]]),
+    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), [m.symRest]]),
+    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, [], []]),
+    `rest symbol & must be followed by exactly one node, found 2 nodes`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, sym(`one`), sym(`two`)]),
+    `rest symbol & must be followed by exactly one node, found 2 nodes`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, []]),
+    `expected variant of isSym, got []`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, 10]),
+    `expected variant of isSym, got 10`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, [sym(`two`)]]),
+    `expected variant of isSym, got [two]`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, m.symRest]),
+    `"&" does not represent a valid JS identifier`,
+  )
+
+  ti.fail(
+    () => mac([m.symRest, sym(`one.two`)]),
+    `"one.two" does not represent a valid JS identifier`,
+  )
+
+  test([m.symRest, sym(`two`)], `function one (...two) {}`)
+
+  test(
+    [sym(`two`), m.symRest, sym(`three`)],
+    `function one (two, ...three) {}`,
+  )
+
+  test(
+    [sym(`two`), [m.symRest, sym(`three`)]],
+    `function one (two, [...three]) {}`,
+  )
+
+  test(
+    [sym(`two`), [sym(`three`), m.symRest, sym(`four`)]],
+    `function one (two, [three, ...four]) {}`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), m.symRest, sym(`one`)]),
+    `redundant declaration of "one"`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), [sym(`one`)]]),
+    `redundant declaration of "one"`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), [m.symRest, sym(`one`)]]),
+    `redundant declaration of "one"`,
+  )
+
+  let ctx
+  t.is(
+    p.func.call(null,
+      sym(`one`),
+      [sym(`two`), [sym(`three`), m.symRest, sym(`four`)]],
+      {macro(val) {ctx = val; return sym(`one`)}},
+      [],
+    ).compile(),
+    `function one (two, [three, ...four]) {
+one;
+return
+}`)
+
+  t.eq(ti.objFlat(ctx), [
+    {[c.symStatement]: undefined, two: undefined, three: undefined, four: undefined},
+    {[c.symMixin]: undefined, ...m.funcMixin, one: undefined},
+  ])
 })
 
 t.test(function test_class_invalid() {
