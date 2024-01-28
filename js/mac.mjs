@@ -310,6 +310,10 @@ export function $let(tar, src) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
+  if (c.isSym(tar) && c.hasOwn(this, tar.description)) {
+    return assign.apply(this, arguments)
+  }
+
   src = arguments.length > 1 ? c.compileNode(c.macroNode(Object.create(this), src)) : ``
 
   const pre = c.joinSpaced(

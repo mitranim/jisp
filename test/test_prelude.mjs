@@ -148,13 +148,15 @@ t.test(function test_let() {
   t.is(p.let.call(ctx, sym(`one`), 10).compile(), `let one = 10`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
-  ti.fail(() => p.let.call(ctx, sym(`one`), 20), `redundant declaration of "one"`)
+  // Redundant declarations are automatically converted to assignments.
+  t.is(p.let.call(ctx, sym(`one`), 20).compile(), `one = 20`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
   t.is(p.let.call(ctx, sym(`two`), ti.macReqExpression).compile(), `let two = "expression_value"`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
-  ti.fail(() => p.let.call(ctx, sym(`two`), 30), `redundant declaration of "two"`)
+  // Redundant declarations are automatically converted to assignments.
+  t.is(p.let.call(ctx, sym(`two`), 30).compile(), `two = 30`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
   ti.fail(
@@ -163,6 +165,9 @@ t.test(function test_let() {
   )
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
+  // This verifies that when a variable is already declared in a super context,
+  // re-declaring it in a sub-context creates a new declaration rather than an
+  // assignment.
   ctx = c.ctxWithStatement(ctx)
   t.is(p.let.call(ctx, sym(`one`)).compile(), `let one`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
