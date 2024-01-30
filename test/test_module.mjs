@@ -2,8 +2,9 @@ import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
-const fs = c.ctxReqFs(c.ctxGlobal)
-const mods = c.ctxReqModules(c.ctxGlobal)
+const ctx = c.ctxGlobal
+const fs = c.ctxReqFs(ctx)
+const mods = c.ctxReqModules(ctx)
 
 t.test(function test_modules_invalid() {
   function fail(src, msg) {return ti.fail(() => mods.getOrMake(src), msg)}
@@ -38,6 +39,8 @@ t.test(function test_module_implicit_relative() {
   t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
+  t.is(mod.tarPath, undefined)
+  mod.init(ctx)
   t.is(mod.tarPath, path)
   t.no(mod.isJispModule())
 })
@@ -49,12 +52,14 @@ await t.test(async function test_module_non_jisp_unreachable() {
   t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
+  t.is(mod.tarPath, undefined)
+  mod.init(ctx)
   t.is(mod.tarPath, path)
   t.no(mod.isJispModule())
 
-  t.is((await mod.timeMax()), 0)
-  await mod.ready()
-  t.is((await mod.timeMax()), 0)
+  t.is((await mod.timeMax(ctx)), 0)
+  await mod.ready(ctx)
+  t.is((await mod.timeMax(ctx)), 0)
 })
 
 await t.test(async function test_module_non_jisp_reachable_missing() {
@@ -64,12 +69,14 @@ await t.test(async function test_module_non_jisp_reachable_missing() {
   t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
+  t.is(mod.tarPath, undefined)
+  mod.init(ctx)
   t.is(mod.tarPath, path)
   t.no(mod.isJispModule())
 
-  t.is((await mod.timeMax()), undefined)
-  await mod.ready()
-  t.is((await mod.timeMax()), undefined)
+  t.is((await mod.timeMax(ctx)), 0)
+  await mod.ready(ctx)
+  t.is((await mod.timeMax(ctx)), 0)
 })
 
 await t.test(async function test_module_non_jisp_reachable_existing() {
@@ -79,10 +86,12 @@ await t.test(async function test_module_non_jisp_reachable_existing() {
   t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
+  t.is(mod.tarPath, undefined)
+  mod.init(ctx)
   t.is(mod.tarPath, path)
   t.no(mod.isJispModule())
 
-  const time = await mod.timeMax()
+  const time = await mod.timeMax(ctx)
   t.is(time, await fs.timestamp(new URL(path)))
   ti.reqFinPos(time)
 })
@@ -96,7 +105,7 @@ await t.test(async function test_module_jisp_reachable_missing() {
   t.is(mod.srcPath, path)
   t.ok(mod.isJispModule())
 
-  await ti.fail(async () => mod.ready(), `No such file or directory (os error 2), stat '${url.pathname}'`)
+  await ti.fail(async () => mod.ready(ctx), `No such file or directory (os error 2), stat '${url.pathname}'`)
 })
 
 await t.test(async function test_module_jisp_without_dependencies() {
@@ -109,21 +118,23 @@ await t.test(async function test_module_jisp_without_dependencies() {
   t.is(mod,         mods.getOrMake(path))
   t.is(mod.pk(),    path)
   t.is(mod.srcPath, path)
+  t.is(mod.tarPath, undefined)
+  mod.init(ctx)
   t.is(mod.tarPath, tar)
   t.ok(mod.isJispModule())
 
-  t.no((await mod.isUpToDate()))
-  ti.reqFinPos(await mod.optSrcTime())
-  t.is((await mod.optTarTime()), undefined)
-  t.is((await mod.timeMax()), undefined)
+  t.no((await mod.isUpToDate(ctx)))
+  ti.reqFinPos(await mod.optSrcTime(ctx))
+  t.is((await mod.optTarTime(ctx)), undefined)
+  t.is((await mod.timeMax(ctx)), undefined)
 
-  await mod.ready()
+  await mod.ready(ctx)
 
-  t.ok((await mod.isUpToDate()))
-  ti.reqFinPos(await mod.optSrcTime())
-  ti.reqFinPos(await mod.optTarTime())
-  ti.reqFinPos(await mod.timeMax())
-  t.is((await mod.timeMax()), (await mod.optTarTime()))
+  t.ok((await mod.isUpToDate(ctx)))
+  ti.reqFinPos(await mod.optSrcTime(ctx))
+  ti.reqFinPos(await mod.optTarTime(ctx))
+  ti.reqFinPos(await mod.timeMax(ctx))
+  t.is((await mod.timeMax(ctx)), (await mod.optTarTime(ctx)))
 
   t.is(
     (await fs.read(new URL(tar))),
@@ -162,7 +173,7 @@ await t.test(async function test_module_init_from_meta() {
   mod.tarPath = tarPath
 
   t.ok(mod.isJispModule())
-  await mod.init()
+  await mod.initAsync(ctx)
 
   t.is(mod.srcPath, srcPath)
   t.is(mod.tarPath, tarPath)

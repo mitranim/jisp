@@ -24,7 +24,7 @@ make test
 make test.w
 ```
 
-Running Jisp code requires an entry script written in JS. An example is provided with the repository. See `run_deno.mjs` and `run_node.mjs`. Use any of the following Make tasks.
+Running Jisp code requires an entry script written in JS. An example is provided with the repository. See `cli_deno.mjs` and `cli_node.mjs`. Use any of the following Make tasks.
 
 ```sh
 touch main.jisp

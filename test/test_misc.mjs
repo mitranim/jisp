@@ -114,35 +114,30 @@ t.test(function test_isCanonicalModulePath() {
   t.no(c.isCanonicalModulePath(`one://two/three.jisp?four`))
 })
 
-t.test(function test_srcToTarUncached() {
-  const ctx = Object.create(c.ctxGlobal)
-  const tar = c.reqValidStr(ctx[c.symTar])
-  t.is(tar, ti.TEST_TAR_URL.href)
-
+t.test(function test_srcToTar() {
+  const tar = ti.TEST_TAR_URL.href
   const src0 = new URL(`src_0/file_0.jisp`, import.meta.url).href
   const src1 = new URL(`src_1/file_1.jisp`, import.meta.url).href
 
-  t.is(ctx[c.symMain], undefined)
-
   t.is(
-    c.srcToTarUncached(ctx, src0),
+    c.srcToTar(src0, tar),
     new URL(`1/test/src_0/file_0.mjs`, ti.TEST_TAR_URL).href,
   )
 
   t.is(
-    c.srcToTarUncached(ctx, src1),
+    c.srcToTar(src1, tar),
     new URL(`1/test/src_1/file_1.mjs`, ti.TEST_TAR_URL).href,
   )
 
-  ctx[c.symMain] = new URL(`src_0`, import.meta.url).href
+  const main = new URL(`src_0`, import.meta.url).href
 
   t.is(
-    c.srcToTarUncached(ctx, src0),
+    c.srcToTar(src0, tar, main),
     new URL(`file_0.mjs`, ti.TEST_TAR_URL).href,
   )
 
   t.is(
-    c.srcToTarUncached(ctx, src1),
+    c.srcToTar(src1, tar, main),
     new URL(`1/src_1/file_1.mjs`, ti.TEST_TAR_URL).href,
   )
 })

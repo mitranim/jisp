@@ -6,10 +6,8 @@
 
 !/makefile
 !/readme.md
-!/todo.md
-!/misc.md
-!/run_deno.mjs
-!/run_node.mjs
+!/cli_deno.mjs
+!/cli_node.mjs
 
 !/js
 !/sublime

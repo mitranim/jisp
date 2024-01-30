@@ -14,6 +14,9 @@ class TestModule extends c.Module {
 function nop() {}
 
 t.bench(function bench_module_read() {nop([...new c.Reader(src)])})
+
 t.bench(function bench_module_roundtrip() {new TestModule().testRun()})
+
+t.bench(function bench_srcToTar() {c.srcToTar(import.meta.url, ti.TEST_TAR_URL.href)})
 
 if (import.meta.main) ti.flush()

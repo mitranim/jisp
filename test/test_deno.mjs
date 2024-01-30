@@ -2,17 +2,17 @@ import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
-export function testCanReach(fs) {
-  t.no(fs.canReach())
-  t.no(fs.canReach(null))
-  t.no(fs.canReach(10))
-  t.no(fs.canReach(new URL(`one:two`)))
-  t.no(fs.canReach(new URL(`one://two`)))
-  t.no(fs.canReach(new URL(`https://path`)))
+export function testIsPathValid(fs) {
+  t.no(fs.isPathValid())
+  t.no(fs.isPathValid(null))
+  t.no(fs.isPathValid(10))
+  t.no(fs.isPathValid(new URL(`one:two`)))
+  t.no(fs.isPathValid(new URL(`one://two`)))
+  t.no(fs.isPathValid(new URL(`https://path`)))
 
-  t.ok(fs.canReach(``))
-  t.ok(fs.canReach(`/path`))
-  t.ok(fs.canReach(new URL(`file:///path`)))
+  t.ok(fs.isPathValid(``))
+  t.ok(fs.isPathValid(`/path`))
+  t.ok(fs.isPathValid(new URL(`file:///path`)))
 }
 
 export async function testReadOpt(fs) {
@@ -29,7 +29,7 @@ await t.test(async function test_DenoFs() {
   if (!ti.DENO) return
   const fs = new (await import(`../js/deno.mjs`)).DenoFs()
 
-  testCanReach(fs)
+  testIsPathValid(fs)
 
   await t.test(async function test_read() {
     await ti.fail(

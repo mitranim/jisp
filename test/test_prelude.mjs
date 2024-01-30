@@ -148,16 +148,18 @@ t.test(function test_let() {
   t.is(p.let.call(ctx, sym(`one`), 10).compile(), `let one = 10`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
-  // Redundant declarations are automatically converted to assignments.
-  t.is(p.let.call(ctx, sym(`one`), 20).compile(), `one = 20`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  ti.fail(
+    () => p.let.call(ctx, sym(`one`), 20),
+    `redundant declaration of "one"`,
+  )
 
   t.is(p.let.call(ctx, sym(`two`), ti.macReqExpression).compile(), `let two = "expression_value"`)
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
 
-  // Redundant declarations are automatically converted to assignments.
-  t.is(p.let.call(ctx, sym(`two`), 30).compile(), `two = 30`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  ti.fail(
+    () => p.let.call(ctx, sym(`two`), 30),
+    `redundant declaration of "two"`,
+  )
 
   ti.fail(
     () => p.let.call(ctx, sym(`three`), ti.macReqStatement),
@@ -1228,8 +1230,8 @@ return $2()()()
 
     t.is(
       p.fn.call(ctx,
-        [p.assign, sym(`$1`), sym(`$0`)],
-        [p.assign, sym(`$0`), sym(`$1`)],
+        [p.set, sym(`$1`), sym(`$0`)],
+        [p.set, sym(`$0`), sym(`$1`)],
         [],
       ).compile(), `(($0, $1) => {
 $1 = $0;
@@ -2064,16 +2066,41 @@ t.test(function test_get() {
     t.is(p.get.call(ctx, [], [[]]), undefined)
 
     t.is(p.get.call(ctx, 10).compile(), `10`)
-    t.is(p.get.call(ctx, 10, 20).compile(), `10?.[20]`)
-    t.is(p.get.call(ctx, 10, 20, 30).compile(), `10?.[20]?.[30]`)
+    t.is(p.get.call(ctx, 10, 20).compile(), `10[20]`)
+    t.is(p.get.call(ctx, 10, 20, 30).compile(), `10[20][30]`)
 
     t.is(
       p.get.call(ctx, [], 10, [[]], 20, [[[]]], 30).compile(),
-      `10?.[20]?.[30]`,
+      `10[20][30]`,
     )
 
     t.is(
       p.get.call(ctx, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
+      `"one"["two"]["three"]`,
+    )
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+})
+
+t.test(function test_getOpt() {
+  function test(ctx) {
+    t.is(p.getOpt.call(ctx), undefined)
+    t.is(p.getOpt.call(ctx, []), undefined)
+    t.is(p.getOpt.call(ctx, [], [[]]), undefined)
+
+    t.is(p.getOpt.call(ctx, 10).compile(), `10`)
+    t.is(p.getOpt.call(ctx, 10, 20).compile(), `10?.[20]`)
+    t.is(p.getOpt.call(ctx, 10, 20, 30).compile(), `10?.[20]?.[30]`)
+
+    t.is(
+      p.getOpt.call(ctx, [], 10, [[]], 20, [[[]]], 30).compile(),
+      `10?.[20]?.[30]`,
+    )
+
+    t.is(
+      p.getOpt.call(ctx, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
       `"one"?.["two"]?.["three"]`,
     )
   }
@@ -2084,127 +2111,9 @@ t.test(function test_get() {
 
 t.test(function test_set() {
   function fail(ctx) {
-    ti.fail(() => p.set.call(ctx), `expected 3 inputs, got 0 inputs`)
-    ti.fail(() => p.set.call(ctx, 10, [], 20), `unexpected empty key`)
-
-    ti.fail(
-      () => p.set.call(ctx, sym(`one`), 10, 20),
-      `missing declaration of "one"`,
-    )
-
-    ti.fail(
-      () => p.set.call(ctx, sym(`one.two`), 10, 20),
-      `missing declaration of "one"`,
-    )
-
-    ti.fail(
-      () => p.set.call(ctx, 10, sym(`one`), 20),
-      `missing declaration of "one"`,
-    )
-
-    ti.fail(
-      () => p.set.call(ctx, 10, sym(`one.two`), 20),
-      `missing declaration of "one"`,
-    )
-
-    ti.fail(
-      () => p.set.call(ctx, 10, 20, sym(`one`)),
-      `missing declaration of "one"`,
-    )
-
-    ti.fail(
-      () => p.set.call(ctx, 10, 20, sym(`one.two`)),
-      `missing declaration of "one"`,
-    )
-  }
-
-  fail(null)
-  fail(c.ctxWithStatement(null))
-
-  let expr = null
-  let stat = c.ctxWithStatement(null)
-
-  t.is(
-    p.set.call(expr, [], undefined, []).compile(),
-    `([undefined] = undefined)`,
-  )
-
-  t.is(
-    p.set.call(stat, [], undefined, []).compile(),
-    `[undefined] = undefined`,
-  )
-
-  t.is(
-    p.set.call(expr, undefined, undefined, undefined).compile(),
-    `(undefined[undefined] = undefined)`,
-  )
-
-  t.is(
-    p.set.call(stat, undefined, undefined, undefined).compile(),
-    `undefined[undefined] = undefined`,
-  )
-
-  t.is(
-    p.set.call(expr, null, null, null).compile(),
-    `(null[null] = null)`,
-  )
-
-  t.is(
-    p.set.call(stat, null, null, null).compile(),
-    `null[null] = null`,
-  )
-
-  t.is(
-    p.set.call(expr, [], 10, []).compile(),
-    `([10] = undefined)`,
-  )
-
-  t.is(
-    p.set.call(stat, [], 10, []).compile(),
-    `[10] = undefined`,
-  )
-
-  t.is(
-    p.set.call(expr, 10, 20, 30).compile(),
-    `(10[20] = 30)`,
-  )
-
-  t.is(
-    p.set.call(stat, 10, 20, 30).compile(),
-    `10[20] = 30`,
-  )
-
-  t.is(
-    p.set.call(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
-    `("one"["two"] = "three")`,
-  )
-
-  t.is(
-    p.set.call(stat, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
-    `"one"["two"] = "three"`,
-  )
-
-  expr = Object.create(null)
-  expr.one = undefined
-  stat = c.ctxWithStatement(expr)
-
-  t.is(
-    p.set.call(expr, sym(`one.two`), sym(`one.three`), sym(`one.four`)).compile(),
-    `(one.two[one.three] = one.four)`,
-  )
-
-  t.is(
-    p.set.call(stat, sym(`one.two`), sym(`one.three`), sym(`one.four`)).compile(),
-    `one.two[one.three] = one.four`,
-  )
-})
-
-t.test(function test_assign() {
-  function fail(ctx) {
-    ti.fail(() => p.assign.call(ctx),                     `expected 2 inputs, got 0 inputs`)
-    ti.fail(() => p.assign.call(ctx, 10, 20),             `expected variant of isSym, got 10`)
-    ti.fail(() => p.assign.call(ctx, sym(`one`), 10),     `missing declaration of "one"`)
-    ti.fail(() => p.assign.call(ctx, sym(`one.two`), 10), `missing declaration of "one"`)
+    ti.fail(() => p.set.call(ctx),                     `expected 2 inputs, got 0 inputs`)
+    ti.fail(() => p.set.call(ctx, sym(`one`), 10),     `missing declaration of "one"`)
+    ti.fail(() => p.set.call(ctx, sym(`one.two`), 10), `missing declaration of "one"`)
   }
 
   const ctx = Object.create(null)
@@ -2214,59 +2123,66 @@ t.test(function test_assign() {
   ctx.one = undefined
 
   t.is(
-    p.assign.call(ctx, sym(`one`), []).compile(),
+    p.set.call(ctx, sym(`one`), []).compile(),
     `(one = undefined)`,
   )
 
   t.is(
-    p.assign.call(c.ctxWithStatement(ctx), sym(`one`), []).compile(),
+    p.set.call(c.ctxWithStatement(ctx), sym(`one`), []).compile(),
     `one = undefined`,
   )
 
   t.is(
-    p.assign.call(ctx, sym(`one`), 10).compile(),
+    p.set.call(ctx, sym(`one`), 10).compile(),
     `(one = 10)`,
   )
 
   t.is(
-    p.assign.call(c.ctxWithStatement(ctx), sym(`one`), 10).compile(),
+    p.set.call(c.ctxWithStatement(ctx), sym(`one`), 10).compile(),
     `one = 10`,
   )
 
   t.is(
-    p.assign.call(ctx, sym(`one`), ti.macReqExpression).compile(),
+    p.set.call(ctx, sym(`one`), ti.macReqExpression).compile(),
     `(one = "expression_value")`,
   )
 
   t.is(
-    p.assign.call(c.ctxWithStatement(ctx), sym(`one`), ti.macReqExpression).compile(),
+    p.set.call(c.ctxWithStatement(ctx), sym(`one`), ti.macReqExpression).compile(),
     `one = "expression_value"`,
   )
 
   t.is(
-    p.assign.call(ctx, sym(`one.two`), 10).compile(),
+    p.set.call(ctx, sym(`one.two`), 10).compile(),
     `(one.two = 10)`,
   )
 
   t.is(
-    p.assign.call(c.ctxWithStatement(ctx), sym(`one.two`), 10).compile(),
+    p.set.call(c.ctxWithStatement(ctx), sym(`one.two`), 10).compile(),
     `one.two = 10`,
   )
 
-  ti.fail(() => p.assign.call(ctx, sym(`await`), 10), `missing declaration of "await"`)
+  ti.fail(() => p.set.call(ctx, sym(`await`), 10), `missing declaration of "await"`)
   ctx.await = undefined
   // Invalid syntax in most JS contexts. Maybe we should detect and throw.
-  t.is(p.assign.call(ctx, sym(`await`), 10).compile(), `(await = 10)`)
+  t.is(p.set.call(ctx, sym(`await`), 10).compile(), `(await = 10)`)
 
-  ti.fail(() => p.assign.call(ctx, sym(`eval`), 10), `missing declaration of "eval"`)
+  ti.fail(() => p.set.call(ctx, sym(`eval`), 10), `missing declaration of "eval"`)
   ctx.eval = undefined
   // Invalid syntax in most JS contexts. Maybe we should detect and throw.
-  t.is(p.assign.call(ctx, sym(`eval`), 10).compile(), `(eval = 10)`)
+  t.is(p.set.call(ctx, sym(`eval`), 10).compile(), `(eval = 10)`)
 
-  ti.fail(() => p.assign.call(ctx, sym(`!@#`), 10), `missing declaration of "!@#"`)
+  ti.fail(() => p.set.call(ctx, sym(`!@#`), 10), `missing declaration of "!@#"`)
   ctx[`!@#`] = undefined
   // Invalid syntax in ALL JS contexts. Maybe we should detect and throw.
-  t.is(p.assign.call(ctx, sym(`!@#`), 10).compile(), `(!@# = 10)`)
+  t.is(p.set.call(ctx, sym(`!@#`), 10).compile(), `(!@# = 10)`)
+
+  // Generates valid JS syntax. This is why we don't restrict the expression in
+  // the LHS position to being a symbol.
+  t.is(
+    p.set.call(ctx, [p.get, sym(`one`), `two`], 10).compile(),
+    `(one["two"] = 10)`,
+  )
 })
 
 t.test(function test_and() {

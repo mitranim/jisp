@@ -3,9 +3,8 @@
   "env": {"es2020": true},
   "globals": {
     "Deno": "readonly",
+    "Blob": "readonly",
     "console": "readonly",
-    "URL": "readonly",
-    "URLSearchParams": "readonly",
     "fetch": "readonly",
     "Request": "readonly",
     "Response": "readonly",
@@ -19,7 +18,8 @@
     "TextEncoder": "readonly",
     "ReadableStream": "readonly",
     "performance": "readonly",
-    "crypto": "readonly",
+    "URL": "readonly",
+    "URLSearchParams": "readonly",
   },
   "rules": {
     "no-restricted-globals": ["error",

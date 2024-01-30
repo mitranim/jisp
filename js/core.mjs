@@ -269,16 +269,10 @@ export function errWithContext(err, src) {
 }
 
 /*
-Takes a UTF-16 position and returns row and col in Unicode characters, with
-newlines normalized. The returned row and col are 0-indexed. Callers may want
-to increment them when formatting to a string, to match the near-universal
-1-indexing convention.
-
-Regular JS strings are encoded as UTF-16. The indexing syntax `str[ind]` and
-various string methods such as `.slice` use UTF-16 code points, not Unicode
-characters. However, the `for..of` loop iterates Unicode characters, not UTF-16
-points, and the chunk length at each iteration can be above 1, when surrogate
-pairs are found.
+Takes a UTF-16 character position and returns row and col counted in Unicode
+characters, with newlines normalized. The returned row and col are 0-indexed.
+Callers may want to increment them when formatting to a string, to match the
+near-universal 1-indexing convention.
 */
 export function rowCol(src, pos) {
   reqStr(src)
@@ -288,6 +282,7 @@ export function rowCol(src, pos) {
   let row = 0
   let col = 0
 
+  // This iterates Unicode characters, not UTF-16 code points.
   for (const char of src) {
     if (off >= pos) break
     off += char.length
@@ -514,43 +509,57 @@ export class Module {
   */
   tarDeps = undefined /* : Set<reqCanonicalModulePath> */
 
+  /*
+  Short for "target". Stores compiled code when it can't be written to the
+  filesystem.
+  */
+  tar = undefined /* : string */
+
   // Short for "primary key".
   pk() {return this.srcPath}
 
-  init() {
-    return this.#init ??= this.isJispModule() ? this.initJispModule() : this
+  reqTarPath() {return this.tarPath ?? panic(Error(`missing target path in module ${show(this.srcPath || this)}`))}
+
+  init(ctx) {
+    this.tarPath ||= ctxSrcToTar(ctx, this.srcPath)
+    return this
+  }
+
+  initAsync(ctx) {
+    return this.#init ??= this.isJispModule() ? this.initJispModule(ctx) : this.init(ctx)
   }
   #init = undefined
 
-  async initJispModule() {
-    const fs = ctxGlobal[symFs]
-    const src = await fs?.readOpt(toMetaUrl(this.tarPath))
+  async initJispModule(ctx) {
+    this.init(ctx)
+    const src = await ctx[symFs]?.readOpt?.(toMetaUrl(optToUrl(this.tarPath)))
     if (src) this.fromJSON(JSON.parse(src))
     return this
   }
 
-  ready() {
-    return this.#ready ??= this.isJispModule() ? this.readyJispModule() : this
+  ready(ctx) {
+    return this.#ready ??= this.isJispModule() ? this.readyJispModule(ctx) : this
   }
   #ready = undefined
 
-  async readyJispModule() {
-    await this.init()
-    if (!await this.isUpToDate()) await this.make(ctxGlobal)
-    await this.readyDeps()
+  async readyJispModule(ctx) {
+    await this.initAsync(ctx)
+    if (!await this.isUpToDate(ctx)) await this.make(ctx)
+    await this.readyDeps(ctx)
     return this
   }
 
-  readyDeps() {
+  readyDeps(ctx) {
     const deps = optToArr(this.tarDeps)
     if (!deps?.length) return undefined
-    return Promise.all(deps.map(moduleReady))
+    return Promise.all(deps.map(moduleReady, ctx))
   }
 
   async make(ctx) {
     try {
-      const fs = ctxReqFs(ctx)
-      await this.write(fs, await this.compile(ctx, await fs.read(reqToUrl(this.srcPath))))
+      const src = await ctxReqFs(ctx).read(reqToUrl(this.srcPath))
+      const out = await this.compile(ctx, src)
+      await this.commit(ctx, out)
     }
     catch (err) {
       reqErr(err).message = joinParagraphs(err.message, this.context())
@@ -563,22 +572,28 @@ export class Module {
   async compile(ctx, src) {
     this.srcDeps = undefined
     this.tarDeps = undefined
-    const read = new this.Reader(src, undefined, undefined, this.srcPath)
-    src = await macroNodes(ctxWithModule(ctxWithMixin(ctx), this), [...read])
+    src = [...new this.Reader(src, undefined, undefined, this.srcPath)]
+    src = await macroNodes(ctxWithModule(ctxWithMixin(ctx), this), src)
     return joinStatements(compileNodes(src))
   }
 
-  async write(fs, body) {
-    const tarUrl = reqToUrl(this.tarPath)
+  commit(ctx, body) {
+    if (ctx?.[symTar]) return this.write(ctx, body)
+    this.tar = body
+    this.tarPath ||= blobUrl(body)
+    return undefined
+  }
+
+  async write(ctx, body) {
+    const fs = ctxReqFs(ctx)
+    const tarUrl = reqToUrl(this.reqTarPath())
     const metaUrl = toMetaUrl(tarUrl)
 
     await Promise.all([
       fs.write(tarUrl, body),
       fs.write(metaUrl, JSON.stringify(this, null, 2)),
     ])
-
     this.tarTime = reqFin(await fs.timestamp(tarUrl))
-    return this
   }
 
   // Semi-placeholder, lacks cycle detection.
@@ -619,17 +634,16 @@ export class Module {
   Known issue: we currently don't bother finding runtime dependencies of JS
   files used as dependencies of Jisp files. It would require parsing JS.
   */
-  async isUpToDate() {
+  async isUpToDate(ctx) {
     if (!this.isJispModule()) return true
 
-    const srcTime = optFin(await this.optSrcTime())
-    if (isNil(srcTime)) return true
+    const srcTime = optFin(await this.optSrcTime(ctx))
+    if (isNil(srcTime)) return false
 
-    const tarTime = optFin(await this.optTarTime())
-    if (isNil(tarTime)) return false
-    if (!(tarTime > srcTime)) return false
+    const tarTime = optFin(await this.optTarTime(ctx))
+    if (isNil(tarTime) || !(tarTime > srcTime)) return false
 
-    await this.init()
+    await this.initAsync(ctx)
     const deps = optToArr(this.srcDeps)
     if (!deps?.length) return true
 
@@ -645,7 +659,7 @@ export class Module {
     dependencies. We also need the largest timestamp from among all transitive
     dependencies.
     */
-    const times = await Promise.all(deps.map(moduleTimeMax))
+    const times = await Promise.all(deps.map(moduleTimeMax, ctx))
 
     /*
     If the target timestamps of any direct or indirect dependencies are missing,
@@ -659,23 +673,22 @@ export class Module {
   }
 
   srcTime = undefined /* : isFin | Promise<isFin> */
-  optSrcTime() {
+  optSrcTime(ctx) {
     if (!this.isJispModule()) return undefined
-    return this.srcTime ??= this.srcTimeAsync()
+    return this.srcTime ??= this.srcTimeAsync(ctx)
   }
 
-  async srcTimeAsync() {
-    return this.srcTime = reqFin(await ctxReqFs(ctxGlobal).timestamp(reqToUrl(this.srcPath)))
+  async srcTimeAsync(ctx) {
+    return this.srcTime = ctx?.[symFs]?.timestamp?.(optToUrl(this.srcPath))
   }
 
   tarTime = undefined /* : isFin | Promise<isFin> */
-  optTarTime() {return this.tarTime ??= this.tarTimeAsync()}
+  optTarTime(ctx) {return this.tarTime ??= this.tarTimeAsync(ctx)}
 
-  async tarTimeAsync() {
-    const tar = reqToUrl(this.tarPath)
-    const fs = ctxReqFs(ctxGlobal)
-    if (!fs.canReach(tar)) return this.tarTime = 0
-    return this.tarTime = optFin(await fs.timestampOpt(tar))
+  async tarTimeAsync(ctx) {
+    const out = await ctx?.[symFs]?.timestampOpt?.(optToUrl(this.tarPath))
+    if (this.isJispModule()) return optFin(out)
+    return laxFin(out)
   }
 
   /*
@@ -683,15 +696,15 @@ export class Module {
   modules, which may be mutated between calls to this function. However, it may
   actually be cachable. TODO reconsider.
   */
-  async timeMax() {
+  async timeMax(ctx) {
     // May obtain dependency information from metadata file.
-    await this.init()
+    await this.initAsync(ctx)
 
     return onlyFin(Math.max(...await Promise.all([
-      Promise.resolve(this.optSrcTime()).then(laxFin),
-      this.optTarTime(),
-      ...laxToArr(this.srcDeps).map(moduleTimeMax),
-      ...laxToArr(this.tarDeps).map(moduleTimeMax),
+      Promise.resolve(this.optSrcTime(ctx)).then(laxFin),
+      this.optTarTime(ctx),
+      ...laxToArr(this.srcDeps).map(moduleTimeMax, ctx),
+      ...laxToArr(this.tarDeps).map(moduleTimeMax, ctx),
     ])))
   }
 
@@ -720,11 +733,8 @@ export class Module {
   }
 }
 
-function moduleReady(key) {return ctxReqModules(ctxGlobal).getReady(key)}
-
-async function moduleTimeMax(key) {
-  return (await ctxReqModules(ctxGlobal).getOrMake(key)).timeMax()
-}
+function moduleReady(key) {return ctxReqModules(this).getOrMake(key).ready(this)}
+function moduleTimeMax(key) {return ctxReqModules(this).getOrMake(key).timeMax(this)}
 
 export class Modules extends Map {
   get Module() {return Module}
@@ -738,14 +748,15 @@ export class Modules extends Map {
     return out
   }
 
-  getReady(key) {return this.getOrMake(key).ready()}
-
   make(key) {
-    const out = new this.Module()
-    out.srcPath = reqCanonicalModulePath(key)
-    out.tarPath = reqValidStr(srcToTar(ctxGlobal, key))
-    return out
+    const tar = new this.Module()
+    tar.srcPath = reqCanonicalModulePath(key)
+    return tar
   }
+}
+
+export function blobUrl(...src) {
+  return URL.createObjectURL(new Blob(src, {type: `application/javascript`}))
 }
 
 /*
@@ -779,7 +790,7 @@ export const symMixin = Symbol.for(`jisp.mixin`)
 /*
 Global context. Used as the prototype of module contexts. User code is free to
 add global declarations by mutating this context. In particular, user code
-should add the `use` macro from the prelude module. See `run_deno.mjs`.
+should add the `use` macro from the prelude module. See `cli_deno.mjs`.
 */
 export const ctxGlobal = Object.create(null)
 ctxGlobal[symModules] = new Modules()
@@ -884,7 +895,7 @@ export function ctxWithMixin(ctx) {
   return ctx
 }
 
-export function ctxImportSrcUrl(ctx, src) {
+export function importSrcUrl(ctx, src) {
   reqStr(src)
 
   if (src.startsWith(schemeJisp)) {
@@ -1091,6 +1102,7 @@ export const schemeJisp = `jisp:`
 export const fileExtJs = `.mjs`
 
 export function toMetaUrl(val) {
+  if (isNil(val)) return undefined
   val = reqToUrl(val)
   val.pathname += `.meta.json`
   return val
@@ -1118,22 +1130,23 @@ export function isJispModulePath(val) {
   return isJispPath(val) && isStrWithScheme(val)
 }
 
-export const srcsToTars = Object.create(null)
+export function ctxSrcToTar(ctx, src) {
+  reqStr(src)
+  if (!isJispModulePath(src)) return src
 
-export function srcToTar(ctx, src) {
-  if (isJispModulePath(src)) {
-    return srcsToTars[src] ??= srcToTarUncached(ctxGlobal, src)
-  }
-  return reqCanonicalModulePath(src)
+  const tar = ctx[symTar]
+  if (!tar) return undefined
+
+  return srcToTar(src, tar, ctx[symMain])
 }
 
-export function srcToTarUncached(ctx, src) {
-  src = reqValidStr(src)
+export function srcToTar(src, tar, main) {
+  reqCanonicalModulePath(src)
+  reqValidStr(tar)
+  optStr(main)
 
   const srcPath = pathSplit(src)
   const tarName = init(last(srcPath).split(pathExtSep)).join(pathExtSep) + fileExtJs
-  const main = ctx[symMain]
-  const tar = reqValidStr(ctxReqTar(ctx))
   const rel = pathSplit(main ? reqValidStr(main) : tar)
   const pre = commonPrefixLen(init(srcPath), rel)
   const ups = rel.length - pre
@@ -1500,9 +1513,9 @@ export function pathJoinArr(src) {
   return out
 }
 
-export function pathSplit(src) {
-  return reqStr(src).split(pathPosixSep).filter(Boolean)
-}
+export function pathSplit(src) {return reqStr(src).split(pathPosixSep).filter(Boolean)}
+export function pathDir(src) {return init(pathSplit(src)).join(pathPosixSep)}
+export function pathDirLike(src) {return pathJoin(pathClean(src), pathPosixSep)}
 
 function commonPrefixLen(one, two) {
   reqArr(one)

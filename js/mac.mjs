@@ -3,21 +3,6 @@ import * as c from './core.mjs'
 /*
 Non-exhaustive list of missing keywords and operators:
 
-  Assignments:
-
-    +=   (assign add)
-    -=   (assign subtract)
-    *=   (assign multiply)
-    %=   (assign remainder)
-    <<=  (assign left shift)
-    >>=  (assign right shift)
-    >>>= (assign right shift unsigned)
-    &&=  (assign and)
-    ||=  (assign or)
-    ??=  (assign coalesce)
-
-  Misc:
-
     function* (and method analog)
     async*
     yield
@@ -58,6 +43,7 @@ globals.setTimeout = undefined
 globals.clearTimeout = undefined
 globals.setInterval = undefined
 globals.clearInterval = undefined
+globals.fetch = undefined
 
 // Built-in classes and namespaces.
 globals.Array = undefined
@@ -67,6 +53,7 @@ globals.AsyncGenerator = undefined
 globals.AsyncGeneratorFunction = undefined
 globals.AsyncIterator = undefined
 globals.Atomics = undefined
+globals.Blob = undefined
 globals.BigInt = undefined
 globals.BigInt64Array = undefined
 globals.BigUint64Array = undefined
@@ -94,6 +81,8 @@ globals.Promise = undefined
 globals.Proxy = undefined
 globals.Reflect = undefined
 globals.RegExp = undefined
+globals.Request = undefined
+globals.Response = undefined
 globals.Set = undefined
 globals.SharedArrayBuffer = undefined
 globals.String = undefined
@@ -103,6 +92,7 @@ globals.Uint16Array = undefined
 globals.Uint32Array = undefined
 globals.Uint8Array = undefined
 globals.Uint8ClampedArray = undefined
+globals.URL = undefined
 globals.WeakMap = undefined
 globals.WeakRef = undefined
 globals.WeakSet = undefined
@@ -114,116 +104,156 @@ export const symStar = Symbol.for(`*`)
 export function use(src, name) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
-  if (name === symStar) return useAsMixin.call(this, src)
-  if (c.isSome(name)) return useAsNamed.apply(this, arguments)
-  return useAsAnon.apply(this, arguments)
+  if (name === symStar) return useMixin.call(this, src)
+  if (c.isSome(name)) return useNamed.apply(this, arguments)
+  return useAnon.apply(this, arguments)
 }
 
-async function useAsAnon(src) {
+async function useAnon(src) {
   c.reqArity(arguments.length, 1)
-  await import(await ctxSrcDepPath(this, src))
+  await import(await importSrcDepPath(this, src))
   return []
 }
 
-async function useAsNamed(src, name) {
+async function useNamed(src, name) {
   c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, name, await import(await ctxSrcDepPath(this, src)))
+  c.ctxDeclare(this, name, await import(await importSrcDepPath(this, src)))
   return []
 }
 
-async function useAsMixin(src) {
+async function useMixin(src) {
   c.reqArity(arguments.length, 1)
-  c.patch(c.ctxReqParentMixin(this), await import(await ctxSrcDepPath(this, src)))
+  c.patch(c.ctxReqParentMixin(this), await import(await importSrcDepPath(this, src)))
   return []
 }
 
-function ctxSrcDepPath(ctx, src) {
+function importSrcDepPath(ctx, src) {
   if (c.isStrRelImplicit(src)) return src
-  return ctxSrcDepPathFromUrl(ctx, c.ctxImportSrcUrl(ctx, src).href)
+  return importSrcDepPathFromUrl(ctx, c.importSrcUrl(ctx, src).href)
 }
 
-function ctxTarDepPath(ctx, src) {
+function importTarDepPath(ctx, src) {
   if (c.isStrRelImplicit(src)) return src
-  return ctxTarDepPathFromUrl(ctx, c.ctxImportSrcUrl(ctx, src).href)
+  return importTarDepPathFromUrl(ctx, c.importSrcUrl(ctx, src).href)
 }
 
-async function ctxSrcDepPathFromUrl(ctx, src) {
+async function importSrcDepPathFromUrl(ctx, src) {
   ctx[c.symModule]?.addSrcDep(src)
   if (!c.isJispPath(src)) return src
-  return c.reqValidStr((await c.ctxReqModules(ctx).getReady(src)).tarPath)
+  const mod = c.ctxReqModules(ctx).getOrMake(src)
+  await mod.ready(ctx)
+  return mod.reqTarPath()
 }
 
-function ctxTarDepPathFromUrl(ctx, src) {
-  const own = ctx[c.symModule]
+function importTarDepPathFromUrl(ctx, src) {
+  let own = ctx[c.symModule]
   own?.addTarDep(src)
+  own = own?.tarPath
 
-  const tar = (
-    c.isJispPath(src)
-    ? c.reqValidStr(c.ctxReqModules(ctx).getOrMake(src).tarPath)
-    : src
-  )
-  return c.optUrlRel(own?.tarPath, tar) ?? tar
+  if (!c.isJispPath(src)) return tarPath(own, src)
+
+  let imp = c.ctxReqModules(ctx).getOrMake(src).init(ctx)
+  const tar = imp.tarPath
+  if (tar) return tarPath(own, tar)
+
+  imp = imp.ready(ctx)
+  if (c.isPromise(imp)) return tarPathAsync(own, imp)
+  return tarPath(own, imp.reqTarPath())
 }
+
+async function tarPathAsync(own, imp) {
+  return tarPath(own, (await imp).reqTarPath())
+}
+
+function tarPath(own, imp) {return c.optUrlRel(own, imp) ?? imp}
 
 export {$import as import}
 
 export function $import() {
   c.reqArityBetween(arguments.length, 1, 2)
-  if (c.ctxIsStatement(this)) return importAsStatement.apply(this, arguments)
-  return importAsExpression.apply(this, arguments)
+  if (c.ctxIsStatement(this)) return importStatement.apply(this, arguments)
+  return importExpression.apply(this, arguments)
 }
 
 $import.meta = Symbol.for(`import.meta`)
+$import.func = importFunc
 
-function importAsExpression(src) {
+function importExpression(src) {
   c.reqArity(arguments.length, 1)
-  if (c.isStr(src)) {
-    return c.raw(`import(`, c.compileNode(ctxTarDepPath(this, src)), `)`)
-  }
-  return c.raw(`import(`, c.compileNode(c.macroNode(this, src)), `)`)
+  src = c.isStr(src) ? importTarDepPath(this, src) : c.macroNode(this, src)
+  if (c.isPromise(src)) return importExpressionCompileAsync(src)
+  return importExpressionCompile(src)
 }
 
-function importAsStatement(src, name) {
+async function importExpressionCompileAsync(src) {
+  return importExpressionCompile(await src)
+}
+
+function importExpressionCompile(src) {
+  return c.raw(`import(`, c.compileNode(src), `)`)
+}
+
+function importStatement(src, name) {
   c.ctxReqIsModule(this)
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
-  if (name === symStar) return importAsStatementAsMixin.call(this, src)
-  if (c.isSome(name)) return importAsStatementAsNamed.apply(this, arguments)
-  return importAsStatementAsAnon.call(this, src)
+  if (name === symStar) return importStatementMixin.call(this, src)
+  if (c.isSome(name)) return importStatementNamed.apply(this, arguments)
+  return importStatementAnon.call(this, src)
 }
 
-function importAsStatementAsAnon(src) {
+function importStatementAnon(src) {
   c.reqArity(arguments.length, 1)
-  return c.raw(`import `, c.compileNode(ctxTarDepPath(this, src)))
+  src = importTarDepPath(this, src)
+  if (c.isPromise(src)) return importStatementAnonCompileAsync(src)
+  return importStatementAnonCompile(src)
 }
 
-function importAsStatementAsNamed(src, name) {
+async function importStatementAnonCompileAsync(src) {
+  return importStatementAnonCompile(await src)
+}
+
+function importStatementAnonCompile(src) {
+  return c.raw(`import `, c.compileNode(src))
+}
+
+function importStatementNamed(src, name) {
   c.reqArity(arguments.length, 2)
   c.ctxDeclare(this, name)
-  return c.raw(`import * as `, name.description, ` from `, c.compileNode(ctxTarDepPath(this, src)))
+  src = importTarDepPath(this, src)
+  if (c.isPromise(src)) return importStatementNamedCompileAsync(src, name)
+  return importStatementNamedCompile(src, name)
 }
 
-async function importAsStatementAsMixin(src) {
+async function importStatementNamedCompileAsync(src, name) {
+  return importStatementNamedCompile((await src), name)
+}
+
+function importStatementNamedCompile(src, name) {
+  return c.raw(`import * as `, name.description, ` from `, c.compileNode(src))
+}
+
+async function importStatementMixin(src) {
   c.reqArity(arguments.length, 1)
 
   let tar = src
   let rel = src
   if (!c.isStrRelImplicit(src)) {
-    src = c.ctxImportSrcUrl(this, src).href
-    tar = await ctxSrcDepPathFromUrl(this, src)
-    rel = ctxTarDepPathFromUrl(this, src)
+    src = c.importSrcUrl(this, src).href
+    tar = await importSrcDepPathFromUrl(this, src)
+    rel = await importTarDepPathFromUrl(this, src)
   }
 
   const mix = c.ctxReqParentMixin(this)
-  const out = new ImportAsMixin(rel)
+  const out = new ImportMixin(rel)
   for (const key of Object.keys(await import(tar))) {
     if (c.canPatch(mix, key)) mix[key] = new ImportRef(key, out)
   }
   return out
 }
 
-class ImportAsMixin extends Set {
+class ImportMixin extends Set {
   constructor(src) {super().src = src}
 
   compile() {
@@ -237,6 +267,26 @@ class ImportAsMixin extends Set {
 class ImportRef extends c.Raw {
   constructor(key, tar) {super(key).tar = tar}
   macro() {return this.tar.add(this.valueOf()), this}
+}
+
+export function importFunc(src, name) {
+  c.reqArity(arguments.length, 2)
+  c.ctxDeclare(this, name)
+  src = importTarDepPath(this, src)
+  if (c.isPromise(src)) return importFuncCompileAsync(src, name)
+  return importFuncCompile(src, name)
+}
+
+async function importFuncCompileAsync(src, name) {
+  importFuncCompile((await src), name)
+}
+
+function importFuncCompile(src, name) {
+  return c.raw(
+    `function `,
+    name.description,
+    `() {return import(`, c.compileNode(src), `)}`
+  )
 }
 
 export function declare(src) {
@@ -259,7 +309,7 @@ function declareFromSym(ctx, src) {
 async function declareFromStr(ctx, src) {
   c.patchDecl(
     c.ctxReqParentMixin(ctx),
-    await import(await ctxSrcDepPath(ctx, src)),
+    await import(await importSrcDepPath(ctx, src)),
   )
   return []
 }
@@ -310,10 +360,6 @@ export function $let(tar, src) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
-  if (c.isSym(tar) && c.hasOwn(this, tar.description)) {
-    return assign.apply(this, arguments)
-  }
-
   src = arguments.length > 1 ? c.compileNode(c.macroNode(Object.create(this), src)) : ``
 
   const pre = c.joinSpaced(
@@ -329,11 +375,11 @@ export function $let(tar, src) {
 export {$if as if}
 
 export function $if() {
-  if (c.ctxIsStatement(this)) return ifAsStatement.apply(this, arguments)
-  return ifAsExpression.apply(this, arguments)
+  if (c.ctxIsStatement(this)) return ifStatement.apply(this, arguments)
+  return ifExpression.apply(this, arguments)
 }
 
-export function ifAsStatement(predicate, branchThen, branchElse) {
+export function ifStatement(predicate, branchThen, branchElse) {
   c.ctxReqIsStatement(this)
   c.reqArityMax(arguments.length, 3)
   if (!arguments.length) return []
@@ -360,7 +406,7 @@ export function ifAsStatement(predicate, branchThen, branchElse) {
   ))
 }
 
-export function ifAsExpression(predicate, branchThen, branchElse) {
+export function ifExpression(predicate, branchThen, branchElse) {
   c.reqArityMax(arguments.length, 3)
   if (!arguments.length) return undefined
 
@@ -390,17 +436,17 @@ export function when(cond, ...body) {
 export {$do as do}
 
 export function $do() {
-  if (c.ctxIsStatement(this)) return doAsStatement.apply(this, arguments)
-  return doAsExpression.apply(this, arguments)
+  if (c.ctxIsStatement(this)) return doStatement.apply(this, arguments)
+  return doExpression.apply(this, arguments)
 }
 
-export function doAsStatement(...src) {
+export function doStatement(...src) {
   src = c.macroNodes(c.ctxWithStatement(c.ctxReqIsStatement(this)), src)
   src = c.compileNodes(src).join(c.statementSep)
   return src ? c.raw(c.wrapBracesMultiLine(src)) : []
 }
 
-export function doAsExpression(...src) {
+export function doExpression(...src) {
   src = c.compileNodes(c.macroNodes(c.ctxToExpression(this), src))
   switch (src.length) {
     case 0: return undefined
@@ -412,15 +458,18 @@ export function doAsExpression(...src) {
 export {$void as void}
 
 export function $void() {
-  let out = doAsExpression.apply(this, arguments)
+  let out = doExpression.apply(this, arguments)
   if (!out) return ctxVoid(this)
-  out = `void ` + out
-  return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
+  return c.raw(wrapParensOpt(this, `void ` + out))
 }
 
 $void.macro = ctxVoid
 
 export function ctxVoid(ctx) {return c.ctxIsStatement(ctx) ? [] : undefined}
+
+function wrapParensOpt(ctx, src) {
+  return c.ctxIsStatement(ctx) ? src : c.wrapParens(src)
+}
 
 export function ret(...src) {
   c.ctxReqIsStatement(this)
@@ -666,6 +715,12 @@ export function meth(name, param, ...body) {
   return c.raw(funcCompile(name, funcParam.call(ctx, param), retStatementsOpt(ctx, body)))
 }
 
+meth.async = methAsync
+
+export function methAsync() {
+  return c.raw(c.joinSpaced(`async ` + meth.apply(this, arguments).compile()))
+}
+
 export const methMixin = Object.create(funcMixin)
 methMixin.super = undefined
 
@@ -846,6 +901,13 @@ export function isSome(val) {
 
 isSome.compile = () => `(a => a != null)`
 
+export function spread(src) {
+  c.reqArity(arguments.length, 1)
+  src = c.compileNode(c.macroNode(c.ctxToExpression(this), src))
+  if (src) return c.raw(`...(`, src, ` ?? [])`)
+  return c.raw(`...[]`)
+}
+
 export function list(...src) {
   return c.raw(c.wrapBrackets(macroCompileExprs(this, src).join(c.expressionSep)))
 }
@@ -883,43 +945,46 @@ function dictKey(val) {
 }
 
 export function get(...src) {
+  src = macroCompileExprs(this, src).map(bracketedOpt).join(``)
+  return src ? c.raw(src) : undefined
+}
+
+export function getOpt(...src) {
   src = macroCompileExprs(this, src).map(bracketedOpt).join(`?.`)
   return src ? c.raw(src) : undefined
 }
 
 function bracketedOpt(val, ind) {return ind ? c.wrapBrackets(val) : val}
 
-export function set(src, key, val) {
-  c.reqArity(arguments.length, 3)
-
-  const sta = c.ctxIsStatement(this)
-  const ctx = sta ? Object.create(this) : this
-  src = c.macroNode(ctx, src)
-  key = c.macroNode(ctx, key)
-  val = c.macroNode(ctx, val)
-
-  src = c.compileNode(src)
-  key = c.compileNode(key)
-  val = c.compileNode(val) || `undefined`
-  if (!key) throw SyntaxError(`unexpected empty key`)
-
-  const out = src + c.wrapBrackets(key) + ` = ` + val
-  return c.raw(sta ? out : c.wrapParens(out))
+export function set(tar, src) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, tar, `=`, src)
 }
 
-/*
-TODO consider supporting deconstructions. In JS, the LHS of assignment
-expressions supports both list and dict deconstructions.
-*/
-export function assign(one, two) {
-  c.reqArity(arguments.length, 2)
+export function assign(tar, inf, src) {
+  const ctx = c.ctxToExpression(this)
+  tar = c.macroNode(ctx, tar)
+  src = c.macroNode(ctx, src)
 
-  const sta = c.ctxIsStatement(this)
-  one = c.reqSym(c.macroNode(this, one))
-  two = c.macroNode((sta ? Object.create(this) : this), two)
+  return c.raw(wrapParensOpt(
+    this,
+    c.joinSpaced(
+      (c.compileNode(tar) || `undefined`),
+      inf,
+      (c.compileNode(src) || `undefined`),
+    ),
+  ))
+}
 
-  const out = c.joinSpaced(c.compileNode(one), `=`, (c.compileNode(two) || `undefined`))
-  return c.raw(sta ? out : c.wrapParens(out))
+export {$delete as delete}
+
+export function $delete() {
+  c.reqArityMin(arguments.length, 1)
+
+  return c.raw(wrapParensOpt(this, c.joinSpaced(
+    `delete`,
+    c.compileNode(get.apply(this, arguments)) || `undefined`,
+  )))
 }
 
 export function and(...src) {
@@ -933,6 +998,11 @@ export function and(...src) {
 
 and.compile = () => `((a, b) => a && b)`
 
+export function assignAnd(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `&&=`, two)
+}
+
 export function or(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -944,6 +1014,11 @@ export function or(...src) {
 
 or.compile = () => `((a, b) => a || b)`
 
+export function assignOr(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `||=`, two)
+}
+
 export function coalesce(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -954,6 +1029,11 @@ export function coalesce(...src) {
 }
 
 coalesce.compile = () => `((a, b) => a ?? b)`
+
+export function assignCoalesce(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `??=`, two)
+}
 
 export function not(val) {
   c.reqArity(arguments.length, 1)
@@ -1030,6 +1110,11 @@ export function add(...src) {
 
 add.compile = () => `((a, b) => a + b)`
 
+export function assignAdd(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `+= `, two)
+}
+
 export function subtract(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1040,6 +1125,11 @@ export function subtract(...src) {
 }
 
 subtract.compile = () => `((a, b) => a - b)`
+
+export function assignSubtract(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `-= `, two)
+}
 
 export function divide(...src) {
   src = macroCompileExprs(this, src)
@@ -1052,6 +1142,11 @@ export function divide(...src) {
 
 divide.compile = () => `((a, b) => a / b)`
 
+export function assignDivide(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `/=`, two)
+}
+
 export function multiply(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1062,6 +1157,11 @@ export function multiply(...src) {
 }
 
 multiply.compile = () => `((a, b) => a * b)`
+
+export function assignMultiply(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `*= `, two)
+}
 
 export function exponentiate(...src) {
   src = macroCompileExprs(this, src)
@@ -1074,6 +1174,11 @@ export function exponentiate(...src) {
 
 exponentiate.compile = () => `((a, b) => a ** b)`
 
+export function assignExponentiate(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `**= `, two)
+}
+
 export function remainder(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1084,6 +1189,11 @@ export function remainder(...src) {
 }
 
 remainder.compile = () => `((a, b) => a % b)`
+
+export function assignRemainder(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `%= `, two)
+}
 
 export function bitAnd(...src) {
   src = macroCompileExprs(this, src)
@@ -1096,6 +1206,11 @@ export function bitAnd(...src) {
 
 bitAnd.compile = () => `((a, b) => a & b)`
 
+export function assignBitAnd(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `&=`, two)
+}
+
 export function bitOr(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1106,6 +1221,11 @@ export function bitOr(...src) {
 }
 
 bitOr.compile = () => `((a, b) => a | b)`
+
+export function assignBitOr(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `|=`, two)
+}
 
 export function bitXor(...src) {
   src = macroCompileExprs(this, src)
@@ -1118,6 +1238,11 @@ export function bitXor(...src) {
 
 bitXor.compile = () => `((a, b) => a ^ b)`
 
+export function assignBitXor(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `^=`, two)
+}
+
 export function bitShiftLeft(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1128,6 +1253,11 @@ export function bitShiftLeft(...src) {
 }
 
 bitShiftLeft.compile = () => `((a, b) => a << b)`
+
+export function assignBitShiftLeft(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `<<=`, two)
+}
 
 export function bitShiftRight(...src) {
   src = macroCompileExprs(this, src)
@@ -1140,6 +1270,11 @@ export function bitShiftRight(...src) {
 
 bitShiftRight.compile = () => `((a, b) => a >> b)`
 
+export function assignBitShiftRight(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `>>=`, two)
+}
+
 export function bitShiftRightUnsigned(...src) {
   src = macroCompileExprs(this, src)
   switch (src.length) {
@@ -1150,6 +1285,11 @@ export function bitShiftRightUnsigned(...src) {
 }
 
 bitShiftRightUnsigned.compile = () => `((a, b) => a >>> b)`
+
+export function assignBitShiftRightUnsigned(one, two) {
+  c.reqArity(arguments.length, 2)
+  return assign.call(this, one, `>>>=`, two)
+}
 
 export function assignIncrement(val) {
   c.reqArity(arguments.length, 1)
@@ -1210,7 +1350,7 @@ $continue.compile = () => `continue`
 export function pipe(name, ...exprs) {
   c.reqSymUnqual(name)
   if (!exprs.length) return name
-  return [$do, ...exprs.map(assignWith, name), name]
+  return [$do, ...exprs.map(setWith, name), name]
 }
 
-function assignWith(val) {return [assign, this, val]}
+function setWith(val) {return [set, this, val]}

@@ -21,6 +21,11 @@ export function compiling() {
   return []
 }
 
+export function running() {
+  c.reqArityNullary(arguments.length)
+  return [c.raw(`console.log`), `[debug] running module:`, c.ctxReqModule(this).pk()]
+}
+
 export function compiledString(...src) {
   return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
@@ -71,3 +76,5 @@ export function ctx() {
   console.log(`[debug] context:`, this)
   return []
 }
+
+export function moduleSrcPath() {return c.ctxReqModule(this).srcPath}

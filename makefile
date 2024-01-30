@@ -1,5 +1,6 @@
 MAKEFLAGS := --silent --always-make
-MAKE_PAR := $(MAKE) -j 128
+MAKE_SEQ = $(MAKE) --makefile=$(firstword $(MAKEFILE_LIST))
+MAKE_PAR = $(MAKE_SEQ) -j 128
 # `--unstable` enables `Deno.consoleSize` which is used for benchmark printing.
 DENO := deno run -A --no-check --allow-hrtime --unstable
 NODE := node
@@ -11,6 +12,7 @@ ONCE_LONG := $(if $(filter $(once),true),--once,)
 CLEAR_SHORT := $(if $(filter $(clear),true),-c,)
 CLEAR_LONG := $(if $(filter $(clear),true),--clear,)
 SRC_DIR := ./js
+TAR_DIR := .jisp_target
 TEST_DIR := ./test
 TEST_FILE := $(or $(file),test.mjs)
 TEST := $(TEST_DIR)/$(TEST_FILE) --test=true $(VERB_LONG) $(RUN)
@@ -39,7 +41,7 @@ bench:
 	$(DENO) $(BENCH)
 
 lint.w:
-	$(WATCH) -w=$(SRC_DIR) -e=mjs -- $(MAKE) lint verb=true
+	$(WATCH) -w=$(SRC_DIR) -e=mjs -- $(MAKE_SEQ) lint verb=true
 
 lint:
 ifeq ($(shell which eslint),)
@@ -49,16 +51,18 @@ else
 endif
 	$(OK)
 
+mock.deno: export JISP_TARGET := $(TAR_DIR)
 mock.deno:
-	$(DENO) ./run_deno.mjs
+	$(DENO) cli_deno.mjs main.jisp
 	$(OK)
 
 mock.deno.w:
-	$(WATCH) -e=jisp -- $(MAKE) mock.deno verb=$(or $(verb),true)
+	$(WATCH) -e=jisp -- $(MAKE_SEQ) mock.deno verb=$(or $(verb),true)
 
+mock.node: export JISP_TARGET := $(TAR_DIR)
 mock.node:
-	$(NODE) ./run_node.mjs
+	$(NODE) cli_node.mjs main.jisp
 	$(OK)
 
 mock.node.w:
-	$(WATCH) -e=jisp -- $(MAKE) mock.node verb=$(or $(verb),true)
+	$(WATCH) -e=jisp -- $(MAKE_SEQ) mock.node verb=$(or $(verb),true)

@@ -7,7 +7,7 @@ await t.test(async function test_NodeFs() {
   if (!ti.NODE) return
   const fs = new (await import(`../js/node.mjs`)).NodeFs()
 
-  td.testCanReach(fs)
+  td.testIsPathValid(fs)
 
   await t.test(async function test_read() {
     await ti.fail(

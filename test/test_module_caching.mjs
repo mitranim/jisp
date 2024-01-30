@@ -22,13 +22,15 @@ will use the cached version of that file, even when we recompile that file.
 For this test that's fine because we modify only timestamps, not contents.
 */
 
-const fs = c.ctxReqFs(c.ctxGlobal)
+const ctx = c.ctxGlobal
+const fs = c.ctxReqFs(ctx)
 
 // Restored at the end of this test.
-const modsPrev = c.ctxGlobal[c.symModules]
+const modsPrev = ctx[c.symModules]
 
 class TestModule extends c.Module {
   async testInit() {
+    this.init(ctx)
     this.testTarTimestamp = ti.optFinPos(await fs.timestampOpt(new URL(this.tarPath)))
     return this
   }
@@ -59,12 +61,12 @@ class TestModule extends c.Module {
   }
 
   async testOutdated() {
-    if (!(await this.isUpToDate())) return
+    if (!(await this.isUpToDate(ctx))) return
     throw Error(`module unexpectedly up to date: ${ti.inspect(this)}`)
   }
 
   async testUpToDate() {
-    if (await this.isUpToDate()) return
+    if (await this.isUpToDate(ctx)) return
     throw Error(`module unexpectedly outdated: ${ti.inspect(this)}`)
   }
 
@@ -114,7 +116,7 @@ class TestModule extends c.Module {
     if (!this.isJispModule()) return
     const src = c.reqStr(await this.testReadSrc(this))
     const tar = c.reqStr(await this.testReadTar(this))
-    t.is(tar, (await this.compile(c.ctxGlobal, src)), ti.inspect(this))
+    t.is(tar, (await this.compile(ctx, src)), ti.inspect(this))
   }
 }
 
@@ -136,7 +138,7 @@ class TestModules extends c.Modules {
   }
 }
 
-function reinitModules() {return c.ctxGlobal[c.symModules] = new TestModules()}
+function reinitModules() {return ctx[c.symModules] = new TestModules()}
 
 function testModuleDeps(mod, src, tar) {
   t.eq(c.optToArr(mod.srcDeps), src?.map(toPk), `source dependencies`)
@@ -188,7 +190,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testOutdated()
     await modImportedImported.testOutdated()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -218,7 +220,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testNotRemade()
@@ -250,7 +252,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -282,7 +284,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -314,7 +316,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -346,7 +348,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -378,7 +380,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testRemade()
@@ -410,7 +412,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testNotRemade()
@@ -442,7 +444,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testNotRemade()
@@ -474,7 +476,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testOutdated()
     await modImportedImported.testUpToDate()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testNotRemade()
@@ -506,7 +508,7 @@ await t.test(async function test_compilation_caching_and_reuse() {
     await modImportedUsed.testUpToDate()
     await modImportedImported.testOutdated()
 
-    await modMain.ready()
+    await modMain.ready(ctx)
     testAllModuleDeps(mods)
 
     await modMain.testNotRemade()
@@ -522,6 +524,6 @@ await t.test(async function test_compilation_caching_and_reuse() {
   })
 })
 
-c.ctxGlobal[c.symModules] = modsPrev
+ctx[c.symModules] = modsPrev
 
 if (import.meta.main) ti.flush()
