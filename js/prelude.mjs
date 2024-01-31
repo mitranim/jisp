@@ -75,4 +75,5 @@ export {
   regexp,
   while,
   pipe,
+  private,
 } from './mac.mjs'

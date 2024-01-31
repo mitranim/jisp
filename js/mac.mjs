@@ -7,6 +7,11 @@ Non-exhaustive list of missing keywords and operators:
     async*
     yield
     yield*
+    for .. in
+    for .. of
+    for .. await .. of
+    do .. while
+    switch
 */
 
 /*
@@ -1354,3 +1359,18 @@ export function pipe(name, ...exprs) {
 }
 
 function setWith(val) {return [set, this, val]}
+
+export {$private as private}
+
+export function $private(src) {
+  c.reqArity(arguments.length, 1)
+  if (!c.hasOwn(this, c.symExport)) return src
+  return c.macroNode(new Proxy(this, exportHidingProxyHandler), src)
+}
+
+const exportHidingProxyHandler = Object.create(null)
+
+exportHidingProxyHandler.getOwnPropertyDescriptor = function getOwnPropertyDescriptor(tar, key) {
+  if (key === c.symExport) return undefined
+  return Object.getOwnPropertyDescriptor(tar, key)
+}

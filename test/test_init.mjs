@@ -55,7 +55,11 @@ export function flush() {
   }
 }
 
-export const fs = DENO
+export const fsReadOnly = DENO
+  ? new (await import(`../js/deno.mjs`)).DenoFsReadOnly()
+  : new (await import(`../js/node.mjs`)).NodeFsReadOnly()
+
+export const fsReadWrite = DENO
   ? new (await import(`../js/deno.mjs`)).DenoFs()
   : new (await import(`../js/node.mjs`)).NodeFs()
 
@@ -64,18 +68,21 @@ export const TEST_TAR_URL = new URL(`../.tmp_test/`, import.meta.url)
 export const TEST_SRC_URL = new URL(`../test_files/`, import.meta.url)
 
 /*
-When `ctxGlobal[symMain]` is unset, the relative paths of files written to the
-target directory are resolved relatively to the target directory itself, and as
-a result, for source files located in `TEST_SRC_URL`, their target files should
+When `ctx[symMain]` is unset, the relative paths of files written to the target
+directory are resolved relatively to the target directory itself, and as a
+result, for source files located in `TEST_SRC_URL`, their target files should
 be written to this directory.
 */
 export const TEST_TAR_SUB_URL = new URL(`1/test_files/`, TEST_TAR_URL)
 
-c.ctxGlobal[c.symFs] = fs
-c.ctxGlobal[c.symTar] = TEST_TAR_URL.href
-c.ctxGlobal.use = p.use
+export function testRootCtx() {
+  const ctx = c.rootCtx()
+  ctx[c.symFs] = fsReadWrite
+  ctx[c.symTar] = TEST_TAR_URL.href
+  return ctx
+}
 
-export function clearTar() {return fs.removeOpt(TEST_TAR_URL)}
+export function clearTar() {return fsReadWrite.removeOpt(TEST_TAR_URL)}
 
 export function reqFinPos(val) {
   if (c.isFin(val) && val > 0) return val
@@ -152,6 +159,15 @@ export function ownVals(src) {
 
 export function inspect(val) {
   return globalThis.Deno?.inspect(val) ?? c.show(val)
+}
+
+export class PseudoFs extends Map {
+  read(src) {
+    return (
+      this.get(c.reqInst(src, URL).href) ??
+      c.panic(Error(`missing file: ${c.show(src.href)}`))
+    )
+  }
 }
 
 // Indicates benchmark accuracy. Should be ±0 nanoseconds.

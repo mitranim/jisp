@@ -36,7 +36,8 @@
     ],
     "semi": ["error", "never"],
     "eqeqeq": ["error", "always", {"null": "never"}],
-    "no-unused-vars": ["error", {"argsIgnorePattern": "^_", "varsIgnorePattern": "^_"}],
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^_.", "varsIgnorePattern": "^_."}],
+    "object-curly-spacing": ["error", "never"],
 
     /* Copy of "eslint:recommended". */
     "consistent-return": "error",

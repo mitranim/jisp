@@ -1,6 +1,7 @@
 import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
+import * as p from '../js/prelude.mjs'
 
 /*
 Incomplete. Non-exhaustive list of missing tests:
@@ -22,8 +23,9 @@ will use the cached version of that file, even when we recompile that file.
 For this test that's fine because we modify only timestamps, not contents.
 */
 
-const ctx = c.ctxGlobal
+const ctx = ti.testRootCtx()
 const fs = c.ctxReqFs(ctx)
+ctx.use = p.use
 
 // Restored at the end of this test.
 const modsPrev = ctx[c.symModules]
@@ -116,7 +118,7 @@ class TestModule extends c.Module {
     if (!this.isJispModule()) return
     const src = c.reqStr(await this.testReadSrc(this))
     const tar = c.reqStr(await this.testReadTar(this))
-    t.is(tar, (await this.compile(ctx, src)), ti.inspect(this))
+    t.is(tar, (await this.readMacroCompile(ctx, src)), ti.inspect(this))
   }
 }
 

@@ -30,16 +30,18 @@ export function compiledString(...src) {
   return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
 
-export function compiled() {
-  const val = compiledString.apply(this, arguments)
-  if (val) {
+export function compiled(...src) {
+  src = c.compileStatements(c.macroNodes(this, src))
+  if (src) {
     console.log(`[debug] compiled:`)
-    console.log(val)
+    console.log(src)
   }
-  return c.raw(compiledString.apply(this, arguments))
+  return c.raw(src)
 }
 
-export function compile() {return compiled.apply(this, arguments), []}
+export function compile() {
+  return compiled.apply(ctxBranch(this), arguments), []
+}
 
 function ctxBranch(ctx) {return Object.assign(Object.create(ctx), ctx)}
 

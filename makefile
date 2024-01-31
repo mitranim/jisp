@@ -17,6 +17,7 @@ TEST_DIR := ./test
 TEST_FILE := $(or $(file),test.mjs)
 TEST := $(TEST_DIR)/$(TEST_FILE) --test=true $(VERB_LONG) $(RUN)
 BENCH := $(TEST_DIR)/$(TEST_FILE) --bench=true $(VERB_LONG) $(PREC_LONG) $(ONCE_LONG) $(RUN)
+ESLINT := eslint --config=.eslintrc --ext=mjs $(SRC_DIR) $(TEST_DIR)
 WATCH := watchexec $(CLEAR_SHORT) -r -d=0 -n
 
 # # Disables coloring in Deno.
@@ -47,9 +48,12 @@ lint:
 ifeq ($(shell which eslint),)
 	deno lint --rules-exclude=no-empty,require-yield,require-await,constructor-super,no-self-assign
 else
-	eslint --config=./.eslintrc --ext=mjs $(SRC_DIR) $(TEST_DIR)
+	$(ESLINT)
 endif
 	$(OK)
+
+lint.fix:
+	$(ESLINT) --fix
 
 mock.deno: export JISP_TARGET := $(TAR_DIR)
 mock.deno:

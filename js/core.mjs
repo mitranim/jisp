@@ -488,8 +488,8 @@ export class Module {
   /*
   Short for "target path". Must be absolute; see `reqCanonicalModulePath`.
   In Jisp modules, must end with `.mjs` and be located in the target directory
-  configured via `ctxGlobal[symTar]`. In other modules, must be equal to the
-  source path.
+  configured via `ctx[symTar]`. In other modules, must be equal to the source
+  path.
   */
   tarPath = undefined /* : reqCanonicalModulePath */
 
@@ -509,10 +509,7 @@ export class Module {
   */
   tarDeps = undefined /* : Set<reqCanonicalModulePath> */
 
-  /*
-  Short for "target". Stores compiled code when it can't be written to the
-  filesystem.
-  */
+  // Short for "target". Stores compiled code.
   tar = undefined /* : string */
 
   // Short for "primary key".
@@ -558,7 +555,7 @@ export class Module {
   async make(ctx) {
     try {
       const src = await ctxReqFs(ctx).read(reqToUrl(this.srcPath))
-      const out = await this.compile(ctx, src)
+      const out = await this.readMacroCompile(ctx, src)
       await this.commit(ctx, out)
     }
     catch (err) {
@@ -569,17 +566,17 @@ export class Module {
 
   get Reader() {return Reader}
 
-  async compile(ctx, src) {
+  async readMacroCompile(ctx, src) {
     this.srcDeps = undefined
     this.tarDeps = undefined
     src = [...new this.Reader(src, undefined, undefined, this.srcPath)]
-    src = await macroNodes(ctxWithModule(ctxWithMixin(ctx), this), src)
+    src = await macroNodes(ctxWithModule(ctxWithMixin(ctxReqRoot(ctx)), this), src)
     return joinStatements(compileNodes(src))
   }
 
   commit(ctx, body) {
-    if (ctx?.[symTar]) return this.write(ctx, body)
     this.tar = body
+    if (ctx?.[symTar]) return this.write(ctx, body)
     this.tarPath ||= blobUrl(body)
     return undefined
   }
@@ -775,10 +772,19 @@ When the value of a declared name is non-nil, it may be used during macroing,
 for example by calling it as a function.
 */
 
+// For usage examples, see CLI modules such as `cli_deno.mjs`.
+export function rootCtx() {
+  const ctx = Object.create(null)
+  ctx[symRoot] = undefined
+  ctx[symModules] = new Modules()
+  return ctx
+}
+
 /*
 These symbolic keys are used for internal data stored in contexts. User-defined
 macro code is free to invent its own symbolic keys for its own internal data.
 */
+export const symRoot = Symbol.for(`jisp.root`)
 export const symModule = Symbol.for(`jisp.module`)
 export const symModules = Symbol.for(`jisp.modules`)
 export const symFs = Symbol.for(`jisp.fs`)
@@ -786,14 +792,21 @@ export const symTar = Symbol.for(`jisp.tar`)
 export const symMain = Symbol.for(`jisp.main`)
 export const symStatement = Symbol.for(`jisp.statement`)
 export const symMixin = Symbol.for(`jisp.mixin`)
+export const symExport = Symbol.for(`jisp.export`)
 
-/*
-Global context. Used as the prototype of module contexts. User code is free to
-add global declarations by mutating this context. In particular, user code
-should add the `use` macro from the prelude module. See `cli_deno.mjs`.
-*/
-export const ctxGlobal = Object.create(null)
-ctxGlobal[symModules] = new Modules()
+export function ctxRoot(ctx) {
+  while (isComp(ctx)) {
+    if (hasOwn(ctx, symRoot)) return ctx
+    ctx = Object.getPrototypeOf(ctx)
+  }
+  return undefined
+}
+
+export function ctxReqRoot(src) {
+  const out = ctxRoot(src)
+  if (out) return out
+  throw Error(`missing root in context ${show(src)}`)
+}
 
 export function ctxIsModule(ctx) {return hasOwn(ctx, symModule)}
 
@@ -810,6 +823,7 @@ export function ctxWithModule(ctx, mod) {
   ctx = Object.create(ctx)
   ctx[symModule] = mod
   ctx[symStatement] = undefined
+  ctx[symExport] = undefined
   return ctx
 }
 
@@ -911,7 +925,7 @@ export function importSrcUrl(ctx, src) {
   throw Error(`unable to resolve ${show(src)} into import URL`)
 }
 
-export function ctxIsExportable(ctx) {return ctxIsModule(ctx) && ctxIsStatement(ctx)}
+export function ctxIsExportable(ctx) {return hasOwn(ctx, symExport)}
 
 export function ctxCompileExport(ctx) {
   return ctxIsExportable(ctx) ? `export` : ``

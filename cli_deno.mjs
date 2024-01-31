@@ -4,7 +4,7 @@ import * as d from './js/deno.mjs'
 
 Error.stackTraceLimit = 1024
 
-const ctx = c.ctxGlobal
+const ctx = c.rootCtx()
 ctx.use = p.use
 
 const cwd = new URL(c.pathDirLike(Deno.cwd()), `file:`)

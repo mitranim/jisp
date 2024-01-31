@@ -798,7 +798,7 @@ t.test(function test_macro_error_context_without_spans() {
   const node = [20, [30, [sym(`one`), 40]]]
 
   ti.fail(
-    () => c.macroNode(c.ctxGlobal, node),
+    () => c.macroNode(null, node),
     `missing declaration of "one"
 
 source node:
@@ -842,7 +842,7 @@ f388a68c22544962b27a2e117934dce1
   t.is(c.nodeSpan(node[1][1]).view(), `[one 40]`)
 
   ti.fail(
-    () => c.macroNode(c.ctxGlobal, node),
+    () => c.macroNode(null, node),
     `missing declaration of "one"
 
 source node:

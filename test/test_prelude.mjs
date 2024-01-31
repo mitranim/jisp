@@ -85,7 +85,7 @@ t.test(function test_const() {
 
   ctx = c.ctxWithModule(ctx)
   t.is(p.const.call(ctx, sym(`one`), 50).compile(), `export const one = 50`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
 })
 
 // Also see `test_func_param_deconstruction` which covers more cases.
@@ -185,10 +185,10 @@ t.test(function test_let() {
 
   ctx = c.ctxWithModule(ctx)
   t.is(p.let.call(ctx, sym(`one`)).compile(), `export let one`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
 
   t.is(p.let.call(ctx, sym(`two`), 50).compile(), `export let two = 50`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
 })
 
 t.test(function test_if_expression() {
@@ -287,7 +287,7 @@ else "three"`,
 else const three = 20`,
   )
 
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 })
 
 t.test(function test_when() {
@@ -867,7 +867,7 @@ t.test(function test_func_export() {
     p.func.call(ctx, sym(`one`), []).compile(),
     `export function one () {}`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
 
   ctx = c.ctxWithStatement(ctx)
 
@@ -1329,7 +1329,7 @@ t.test(function test_class_declaration_and_export() {
 
     t.is(out.compile(), `export class one {}`)
 
-    t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
 
     t.eq(ti.objFlat(sub), [
       {[m.symClass]: undefined},

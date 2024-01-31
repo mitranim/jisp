@@ -6,6 +6,13 @@ import * as p from '../js/prelude.mjs'
 function sym(val) {return Symbol.for(c.reqStr(val))}
 function testNone(val) {t.eq(val, [])}
 
+function makeCtx() {
+  const ctx = c.rootCtx()
+  ctx[c.symFs] = ti.fsReadWrite
+  ctx[c.symTar] = ti.TEST_TAR_URL.href
+  return ctx
+}
+
 const preludeUrl = new URL(`../js/prelude.mjs`, import.meta.url).href
 const missingJsFileUrl = new URL(`missing.mjs`, import.meta.url).href
 const missingJispFileSrcUrl = new URL(`missing.jisp`, ti.TEST_SRC_URL).href
@@ -18,7 +25,7 @@ const missingJsUrl = `one://two.three/four.mjs`
 await t.test(async function test_use() {
   if (ti.WATCH) return
 
-  let ctx = Object.create(c.ctxGlobal)
+  let ctx = Object.create(null)
   await ti.fail(async () => p.use.call(ctx), `expected statement context, got expression context`)
 
   ctx = c.ctxWithStatement(ctx)
@@ -31,6 +38,25 @@ await t.test(async function test_use() {
     async () => p.use.call(ctx, missingJsFileUrl),
     `Module not found ${c.show(missingJsFileUrl)}`,
   )
+
+  await ti.fail(
+    async () => p.use.call(ctx, missingJispFileSrcUrl),
+    `missing modules in context {[Symbol(jisp.statement)]: undefined}`,
+  )
+
+  ctx = c.ctxWithStatement(c.rootCtx())
+
+  await ti.fail(
+    async () => p.use.call(ctx, missingJispFileSrcUrl),
+    `missing filesystem in context {[Symbol(jisp.statement)]: undefined}`,
+  )
+
+  ctx = makeCtx()
+
+  // Expected by the code in some files we're about to import.
+  ctx.use = p.use
+
+  ctx = c.ctxWithStatement(ctx)
 
   await ti.fail(
     async () => p.use.call(ctx, missingJispFileSrcUrl),
@@ -72,47 +98,47 @@ async function testUseMixin(ctx, src, tar) {
 
   const exp = {[c.symMixin]: undefined, ...await import(tar)}
 
-  // This property is assigned to the global context in `test_init.mjs`.
-  // The mixin form of `use` is expected to skip inherited properties
-  // when assigning to the mixin context.
+  // We assign this property to the context earlier in this test.
+  // More precisely, to the context that became the prototype of
+  // the current context here. The mixin form of `use` is expected
+  // to skip inherited properties when assigning to the mixin context.
   delete exp.use
 
   t.own(c.ctxReqParentMixin(ctx), exp)
 }
 
 t.test(function test_import_expression() {
-  const ctx = Object.create(c.ctxGlobal)
-
-  ti.fail(() => p.import.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
+  ti.fail(() => p.import.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
 
   ti.fail(
-    () => p.import.call(ctx, ti.macReqStatement),
-    `expected statement context, got expression context {}
+    () => p.import.call(null, ti.macReqStatement),
+    `expected statement context, got expression context null
 
 source node:
 
 {macro: [function reqStatement]}`,
   )
 
+  const ctx = makeCtx()
   t.is(p.import.call(ctx, undefined).compile(),           `import(undefined)`)
   t.is(p.import.call(ctx, null).compile(),                `import(null)`)
   t.is(p.import.call(ctx, 10).compile(),                  `import(10)`)
   t.is(p.import.call(ctx, ti.macReqExpression).compile(), `import("expression_value")`)
   t.is(p.import.call(ctx, []).compile(),                  `import()`)
 
-  ti.fail(() => p.import.call(ctx, sym(`one`)), `missing declaration of "one"`)
+  ti.fail(async () => p.import.call(ctx, sym(`one`)), `missing declaration of "one"`)
   testImport(ctx, compileImportExpression)
 })
 
 t.test(function test_import_statement_anon() {
-  let ctx = c.ctxWithStatement(c.ctxGlobal)
+  let ctx = c.ctxWithStatement(makeCtx())
   t.own(ctx, {[c.symStatement]: undefined})
 
   ti.fail(() => p.import.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
   ti.fail(() => p.import.call(ctx, undefined), `expected module context`)
 
   ctx = c.ctxWithModule(ctx)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
   ti.fail(() => p.import.call(ctx, undefined), `expected variant of isStr, got undefined`)
   ti.fail(() => p.import.call(ctx, 10), `expected variant of isStr, got 10`)
@@ -121,13 +147,13 @@ t.test(function test_import_statement_anon() {
 })
 
 t.test(function test_import_statement_named() {
-  const ctx = c.ctxWithModule(c.ctxGlobal)
+  const ctx = c.ctxWithModule(makeCtx())
 
   t.is(
     p.import.call(ctx, `some_path`, sym(`one`)).compile(),
     `import * as one from "some_path"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
 
   ti.fail(
     () => p.import.call(ctx, `some_path`, sym(`one`)),
@@ -138,7 +164,7 @@ t.test(function test_import_statement_named() {
     p.import.call(ctx, `jisp:prelude.mjs`, sym(`two`)).compile(),
     `import * as two from ${JSON.stringify(preludeUrl)}`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
 
   const mod = makeTestModule()
   ctx[c.symModule] = mod
@@ -147,17 +173,17 @@ t.test(function test_import_statement_named() {
     p.import.call(ctx, `jisp:prelude.mjs`, sym(`three`)).compile(),
     `import * as three from "../../../js/prelude.mjs"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, one: undefined, two: undefined, three: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined})
 
   t.is(
     p.import.call(ctx, `./missing.jisp`, sym(`four`)).compile(),
     `import * as four from "./missing.mjs"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
 })
 
 await t.test(async function test_import_statement_mixin() {
-  const ctx = c.ctxWithModule(c.ctxWithMixin(c.ctxGlobal))
+  const ctx = c.ctxWithModule(c.ctxWithMixin(makeCtx()))
 
   /*
   The "mixin" form of the `import` macro performs both a compile-time import
@@ -172,11 +198,11 @@ await t.test(async function test_import_statement_mixin() {
 
   const mix = c.ctxReqParentMixin(ctx)
   t.own(mix, {[c.symMixin]: undefined})
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
   const out = await p.import.call(ctx, existingJsFileUrl, sym(`*`))
   t.own(mix, {[c.symMixin]: undefined, one: mix.one, two: mix.two})
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
   t.is(out.compile(), `import ${JSON.stringify(existingJsFileUrl)}`)
 
@@ -475,7 +501,7 @@ t.test(function test_declare_sym() {
 })
 
 await t.test(async function test_declare_str() {
-  let ctx = Object.create(c.ctxGlobal)
+  let ctx = Object.create(makeCtx())
   await ti.fail(async () => p.declare.call(ctx), `expected statement context, got expression context`)
 
   ctx = c.ctxWithStatement(ctx)
@@ -495,7 +521,7 @@ await t.test(async function test_declare_str() {
   t.own(mix, {[c.symMixin]: undefined, one: undefined, two: undefined})
   t.own(ctx, {[c.symStatement]: undefined})
 
-  ctx = c.ctxWithStatement(c.ctxWithMixin(c.ctxGlobal))
+  ctx = c.ctxWithStatement(c.ctxWithMixin(makeCtx()))
   mix = c.ctxReqParentMixin(ctx)
   mix.one = 123
   testNone(await p.declare.call(ctx, existingJsFileUrl))
