@@ -448,6 +448,7 @@ export function compileNodes(src) {
 }
 
 export function compileBlock(src) {return wrapBracesMultiLine(compileStatements(src))}
+export function compileBlockOpt(src) {return wrapBracesMultiLineOpt(compileStatements(src))}
 export function compileStatements(src) {return compileNodes(src).join(statementSep)}
 export function compileExpressions(src) {return compileNodes(src).join(expressionSep)}
 export function compileExpressionsInParens(src) {return wrapParens(compileExpressions(src))}
@@ -456,6 +457,7 @@ export function joinExpressions(src) {return join(src, expressionSep)}
 export function joinStatements(src) {return join(src, statementSep)}
 export function wrapBraces(src) {return `{` + reqStr(src) + `}`}
 export function wrapBracesMultiLine(src) {return reqStr(src) ? `{\n` + reqStr(src) + `\n}` : `{}`}
+export function wrapBracesMultiLineOpt(src) {return reqStr(src) && wrapBracesMultiLine(src)}
 export function wrapBrackets(src) {return `[` + reqStr(src) + `]`}
 export function wrapParens(src) {return `(` + reqStr(src) + `)`}
 
@@ -1192,7 +1194,10 @@ export function hasOwn(val, key) {
 }
 
 export function isNil(val) {return val == null}
+export function reqNil(val) {return isNil(val) ? val : panic(errFun(val, isNil))}
+
 export function isSome(val) {return val != null}
+export function reqSome(val) {return isSome(val) ? val : panic(errFun(val, isSome))}
 
 export function isComp(val) {return isObj(val) || isFun(val)}
 export function reqComp(val) {return isComp(val) ? val : panic(errFun(val, isComp))}

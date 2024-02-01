@@ -39,7 +39,6 @@ globals.this = undefined
 // Built-in singletons and functions.
 globals.globalThis = undefined
 globals.console = undefined
-globals.document = undefined // Only in some JS environments.
 globals.decodeURI = undefined
 globals.decodeURIComponent = undefined
 globals.encodeURI = undefined
@@ -51,6 +50,8 @@ globals.clearInterval = undefined
 globals.fetch = undefined
 
 // Built-in classes and namespaces.
+globals.AbortController = undefined
+globals.AbortSignal = undefined
 globals.Array = undefined
 globals.ArrayBuffer = undefined
 globals.AsyncFunction = undefined
@@ -92,6 +93,8 @@ globals.Set = undefined
 globals.SharedArrayBuffer = undefined
 globals.String = undefined
 globals.Symbol = undefined
+globals.TextDecoder = undefined
+globals.TextEncoder = undefined
 globals.TypeError = undefined
 globals.Uint16Array = undefined
 globals.Uint32Array = undefined
@@ -101,6 +104,84 @@ globals.URL = undefined
 globals.WeakMap = undefined
 globals.WeakRef = undefined
 globals.WeakSet = undefined
+
+// Semi-placeholder. Missing a lot of globals.
+export const domGlobals = Object.create(null)
+domGlobals.document = undefined
+domGlobals.customElements = undefined
+domGlobals.Node = undefined
+domGlobals.Text = undefined
+domGlobals.Comment = undefined
+domGlobals.Element = undefined
+domGlobals.HTMLElement = undefined
+domGlobals.HTMLAnchorElement = undefined
+domGlobals.HTMLAreaElement = undefined
+domGlobals.HTMLAudioElement = undefined
+domGlobals.HTMLBaseElement = undefined
+domGlobals.HTMLBodyElement = undefined
+domGlobals.HTMLBRElement = undefined
+domGlobals.HTMLButtonElement = undefined
+domGlobals.HTMLCanvasElement = undefined
+domGlobals.HTMLDataElement = undefined
+domGlobals.HTMLDataListElement = undefined
+domGlobals.HTMLDetailsElement = undefined
+domGlobals.HTMLDialogElement = undefined
+domGlobals.HTMLDivElement = undefined
+domGlobals.HTMLDListElement = undefined
+domGlobals.HTMLEmbedElement = undefined
+domGlobals.HTMLFieldSetElement = undefined
+domGlobals.HTMLFontElement = undefined
+domGlobals.HTMLFormElement = undefined
+domGlobals.HTMLFrameElement = undefined
+domGlobals.HTMLFrameSetElement = undefined
+domGlobals.HTMLHeadElement = undefined
+domGlobals.HTMLHeadingElement = undefined
+domGlobals.HTMLHRElement = undefined
+domGlobals.HTMLHtmlElement = undefined
+domGlobals.HTMLIFrameElement = undefined
+domGlobals.HTMLImageElement = undefined
+domGlobals.HTMLInputElement = undefined
+domGlobals.HTMLLabelElement = undefined
+domGlobals.HTMLLegendElement = undefined
+domGlobals.HTMLLIElement = undefined
+domGlobals.HTMLLinkElement = undefined
+domGlobals.HTMLMapElement = undefined
+domGlobals.HTMLMarqueeElement = undefined
+domGlobals.HTMLMenuElement = undefined
+domGlobals.HTMLMetaElement = undefined
+domGlobals.HTMLMeterElement = undefined
+domGlobals.HTMLModElement = undefined
+domGlobals.HTMLObjectElement = undefined
+domGlobals.HTMLOListElement = undefined
+domGlobals.HTMLOptGroupElement = undefined
+domGlobals.HTMLOptionElement = undefined
+domGlobals.HTMLOutputElement = undefined
+domGlobals.HTMLParagraphElement = undefined
+domGlobals.HTMLParamElement = undefined
+domGlobals.HTMLPictureElement = undefined
+domGlobals.HTMLPreElement = undefined
+domGlobals.HTMLProgressElement = undefined
+domGlobals.HTMLQuoteElement = undefined
+domGlobals.HTMLScriptElement = undefined
+domGlobals.HTMLSelectElement = undefined
+domGlobals.HTMLSlotElement = undefined
+domGlobals.HTMLSourceElement = undefined
+domGlobals.HTMLSpanElement = undefined
+domGlobals.HTMLStyleElement = undefined
+domGlobals.HTMLTableCaptionElement = undefined
+domGlobals.HTMLTableCellElement = undefined
+domGlobals.HTMLTableColElement = undefined
+domGlobals.HTMLTableElement = undefined
+domGlobals.HTMLTableRowElement = undefined
+domGlobals.HTMLTableSectionElement = undefined
+domGlobals.HTMLTemplateElement = undefined
+domGlobals.HTMLTextAreaElement = undefined
+domGlobals.HTMLTimeElement = undefined
+domGlobals.HTMLTitleElement = undefined
+domGlobals.HTMLTrackElement = undefined
+domGlobals.HTMLUListElement = undefined
+domGlobals.HTMLVideoElement = undefined
+domGlobals.SVGSvgElement = undefined
 
 export function comment() {return []}
 
@@ -447,7 +528,7 @@ export function $do() {
 
 export function doStatement(...src) {
   src = c.macroNodes(c.ctxWithStatement(c.ctxReqIsStatement(this)), src)
-  src = c.compileNodes(src).join(c.statementSep)
+  src = c.compileStatements(src)
   return src ? c.raw(c.wrapBracesMultiLine(src)) : []
 }
 
@@ -458,6 +539,71 @@ export function doExpression(...src) {
     case 1: return c.raw(src[0])
     default: return c.raw(c.wrapParens(src.join(c.expressionSep)))
   }
+}
+
+export {$try as try}
+
+export function $try(...src) {
+  const ctx = c.ctxWithStatement(c.patch(c.ctxWithMixin(c.ctxReqIsStatement(this)), tryMixin))
+  ctx[symTry] = undefined
+
+  const main = c.compileBlockOpt(c.macroNodes(ctx, src))
+  const cat = c.hasOwn(ctx, symCatch) ? c.optStr(ctx[symCatch]) : undefined
+  const fin = c.hasOwn(ctx, symFinally) ? c.optStr(ctx[symFinally]) : undefined
+
+  if (cat || fin) return c.raw(c.joinLines((`try ` + (main || `{}`)), cat, fin))
+  if (main) return c.raw(main)
+  return []
+}
+
+const tryMixin = Object.create(null)
+tryMixin.catch = $catch
+tryMixin.finally = $finally
+
+export const symTry = Symbol.for(`jisp.try`)
+export const symCatch = Symbol.for(`jisp.catch`)
+export const symFinally = Symbol.for(`jisp.finally`)
+
+export function ctxIsTry(ctx) {return c.hasOwn(ctx, symTry)}
+
+export function ctxReqTry(ctx) {
+  if (ctxIsTry(ctx)) return ctx
+  throw Error(`unexpected non-try context ${c.show(ctx)}`)
+}
+
+export {$catch as catch}
+
+export function $catch(name, ...src) {
+  const ctx = ctxReqTry(this)
+  if (c.hasOwn(ctx, symCatch)) throw SyntaxError(`unexpected redundant "catch"`)
+
+  switch (arguments.length) {
+    case 0:
+      ctx[symCatch] = `catch {}`
+      return []
+
+    case 1:
+      ctx[symCatch] = `catch (` + c.symIdent(name) + `) {}`
+      return []
+
+    default: {
+      const sub = c.ctxWithStatement(ctx)
+      c.ctxDeclare(sub, name)
+      ctx[symCatch] = `catch (` + name.description + `) ` + c.compileBlock(c.macroNodes(sub, src))
+      return []
+    }
+  }
+}
+
+export {$finally as finally}
+
+export function $finally(...src) {
+  const ctx = ctxReqTry(this)
+  if (c.hasOwn(ctx, symFinally)) throw SyntaxError(`unexpected redundant "finally"`)
+
+  src = c.compileBlockOpt(c.macroNodes(c.ctxWithStatement(ctx), src))
+  ctx[symFinally] = src ? (`finally ` + src) : ``
+  return []
 }
 
 export {$void as void}
@@ -667,12 +813,13 @@ export function $class(name, ...rest) {
   const ctx = ctxWithFuncDecl(this, name, classMixin)
   ctx[symClass] = undefined
   rest = c.reqArr(c.macroNodes(ctx, rest))
+  const ext = c.hasOwn(ctx, symExtend) ? ctx[symExtend] : undefined
 
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `class`,
     c.compileNode(name),
-    compileClassExtend.apply(ctx, ctx[symClassExtend]),
+    compileClassExtend.apply(ctx, ext),
     c.compileBlock(rest),
   ))
 }
@@ -685,7 +832,7 @@ classMixin.meth = meth
 classMixin.super = undefined
 
 export const symClass = Symbol.for(`jisp.class`)
-export const symClassExtend = Symbol.for(`jisp.class.extend`)
+export const symExtend = Symbol.for(`jisp.extend`)
 
 export function ctxIsClass(ctx) {return c.hasOwn(ctx, symClass)}
 
@@ -704,7 +851,7 @@ function appendCompileClassExtend(prev, next) {
 }
 
 export function extend(...src) {
-  ctxReqClass(this)[symClassExtend] = c.reqArr(c.macroNodes(this, src))
+  ctxReqClass(this)[symExtend] = c.reqArr(c.macroNodes(this, src))
   return []
 }
 
@@ -753,6 +900,8 @@ export function reqFieldName(val) {
   if (c.isStr(val)) return val
   throw Error(`field name must be a symbol representing an identifier, or a string; got ${c.show(val)}`)
 }
+
+export {$static as static}
 
 export function $static(...src) {
   src = c.compileStatements(c.macroNodes(c.ctxWithStatement(ctxReqClass(this)), src))
@@ -862,13 +1011,12 @@ instof.compile = () => `((a, b) => a instanceof b)`
 
 export {$in as in}
 
-// TODO consider inverting argument order for consistency with `get` and `set`.
-export function $in(key, val) {
+export function $in(val, key) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, key, `in`, val)
 }
 
-$in.compile = () => `((a, b) => a in b)`
+$in.compile = () => `((a, b) => b in a)`
 
 /*
 Only valid if the declaration of `Object` in the current scope refers to the

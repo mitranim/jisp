@@ -177,7 +177,6 @@ await t.test(async function test_module_jisp_without_dependencies() {
 
 await t.test(async function test_module_init_from_meta() {
   const ctx = makeCtx()
-  const mods = c.ctxReqModules(ctx)
   const srcPath = new URL(`missing_file.jisp`, import.meta.url).href
   const tarPath = new URL(`missing_file.mjs`, ti.TEST_TAR_URL).href
   const metaUrl = c.toMetaUrl(tarPath)

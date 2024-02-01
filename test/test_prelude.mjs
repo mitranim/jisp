@@ -446,6 +446,280 @@ const two = 20
   t.own(ctx, {...prev})
 }
 
+t.test(function test_try() {
+  ti.fail(
+    () => p.try.call(null),
+    `expected statement context, got expression context`,
+  )
+
+  const ctx = c.ctxWithStatement(null)
+  t.eq(p.try.call(ctx), [])
+  t.eq(p.try.call(ctx, []), [])
+  t.eq(p.try.call(ctx, [], [[]]), [])
+
+  t.is(
+    p.try.call(ctx, 10).compile(),
+    `{
+10
+}`)
+
+  t.is(
+    p.try.call(ctx, 10, 20).compile(),
+    `{
+10;
+20
+}`)
+
+  t.is(
+    p.try.call(ctx, [], 10, [[]], 20, [[[]]]).compile(),
+    `{
+10;
+20
+}`)
+
+  t.is(
+    p.try.call(ctx, ti.macReqStatementOne).compile(),
+    `{
+"one"
+}`)
+
+  t.is(
+    p.try.call(ctx, ti.macReqStatementOne, ti.macReqStatementTwo).compile(),
+    `{
+"one";
+"two"
+}`)
+
+  ti.fail(
+    () => p.try.call(ctx, m.catch),
+    `unexpected function node [function $catch] in non-call position`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, sym(`catch`)),
+    `unexpected function node [function $catch] in non-call position`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [[m.catch]]),
+    `unexpected non-try context {}`,
+  )
+
+  t.is(
+    p.try.call(ctx, [m.catch]).compile(),
+    `try {}
+catch {}`)
+
+  t.is(
+    p.try.call(ctx, [sym(`catch`)]).compile(),
+    `try {}
+catch {}`)
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, undefined]),
+    `expected variant of isSym, got undefined`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, 10]),
+    `expected variant of isSym, got 10`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, undefined, 10]),
+    `expected variant of isSym, got undefined`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, 10, 20]),
+    `expected variant of isSym, got 10`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, sym(`!@#`)]),
+    `"!@#" does not represent a valid JS identifier`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, sym(`one.two`)]),
+    `"one.two" does not represent a valid JS identifier`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch, sym(`await`)]),
+    `"await" is a keyword in JS`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(ctx, [m.catch, sym(`one`)]).compile(),
+    `try {}
+catch (one) {}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(ctx, [m.catch, sym(`one`), 10]).compile(),
+    `try {}
+catch (one) {
+10
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(ctx, [m.catch, sym(`one`), 10, 20]).compile(),
+    `try {}
+catch (one) {
+10;
+20
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.try.call(ctx, m.finally),
+    `unexpected function node [function $finally] in non-call position`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, sym(`finally`)),
+    `unexpected function node [function $finally] in non-call position`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [[m.finally]]),
+    `unexpected non-try context {}`,
+  )
+
+  t.eq(p.try.call(ctx, [m.finally]), [])
+  t.eq(p.try.call(ctx, [sym(`finally`)]), [])
+
+  t.is(
+    p.try.call(ctx, [m.finally, 10]).compile(),
+    `try {}
+finally {
+10
+}`)
+
+  t.is(
+    p.try.call(ctx, [sym(`finally`), 10]).compile(),
+    `try {}
+finally {
+10
+}`)
+
+  t.is(
+    p.try.call(ctx, [m.finally, ti.macReqStatementOne]).compile(),
+    `try {}
+finally {
+"one"
+}`)
+
+  t.is(
+    p.try.call(ctx, [m.finally, ti.macReqStatementOne, ti.macReqStatementTwo]).compile(),
+    `try {}
+finally {
+"one";
+"two"
+}`)
+
+  t.is(
+    p.try.call(ctx, [m.catch], [m.finally]).compile(),
+    `try {}
+catch {}`,
+  )
+
+  t.is(
+    p.try.call(
+      ctx,
+      [m.catch, sym(`two`)],
+      [m.finally, ti.macReqStatementOne],
+    ).compile(),
+    `try {}
+catch (two) {}
+finally {
+"one"
+}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(
+      ctx,
+      ti.macReqStatementOne,
+      [m.catch, sym(`two`)],
+      [m.finally, ti.macReqStatementThree],
+    ).compile(),
+    `try {
+"one"
+}
+catch (two) {}
+finally {
+"three"
+}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(
+      ctx,
+      [m.finally, ti.macReqStatementOne],
+      ti.macReqStatementTwo,
+      [m.catch, sym(`three`), ti.macReqStatement],
+    ).compile(),
+    `try {
+"two"
+}
+catch (three) {
+"statement_value"
+}
+finally {
+"one"
+}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.try.call(
+      ctx,
+      [m.catch, sym(`one`),
+        [p.const, sym(`two`), 10],
+      ],
+      [m.finally,
+        [p.const, sym(`two`), 20],
+      ],
+      [p.const, sym(`two`), 30],
+    ).compile(),
+    `try {
+const two = 30
+}
+catch (one) {
+const two = 10
+}
+finally {
+const two = 20
+}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.try.call(
+      ctx,
+      [m.catch, sym(`one`), [p.const, sym(`one`), 10]],
+    ),
+    `redundant declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.try.call(ctx, [m.catch], [m.catch]),
+    `unexpected redundant "catch"`,
+  )
+
+  ti.fail(
+    () => p.try.call(ctx, [m.finally], [m.finally]),
+    `unexpected redundant "finally"`,
+  )
+})
+
 t.test(function test_void_bare() {
   let ctx = null
   t.is(p.void.macro(ctx),                    undefined)
@@ -1563,7 +1837,7 @@ two = "expression_value"
 t.test(function test_static() {
   const ctx = Object.create(null)
   ctx[m.symClass] = undefined
-  testBlockStatement(ctx, m.$static, compileStatic)
+  testBlockStatement(ctx, m.static, compileStatic)
 })
 
 function compileStatic(val) {return `static ` + val}
@@ -1571,7 +1845,7 @@ function compileStatic(val) {return `static ` + val}
 // The implementation reuses `meth` which is tested earlier.
 t.test(function test_static_meth() {
   t.is(
-    m.$static.meth.call(null, sym(`one`), []).compile(),
+    m.static.meth.call(null, sym(`one`), []).compile(),
     `static one () {}`,
   )
 })
@@ -1579,7 +1853,7 @@ t.test(function test_static_meth() {
 // The implementation reuses `field` which is tested earlier.
 t.test(function test_static_field() {
   t.is(
-    m.$static.field.call(null, sym(`one`), 10).compile(),
+    m.static.field.call(null, sym(`one`), 10).compile(),
     `static one = 10`,
   )
 })
@@ -1619,6 +1893,19 @@ static seven = 90
 }`)
 
   t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
+  t.is(
+    c.macroNode(
+      null,
+      [p.class, sym(`one`), [m.extend, 10],
+        [m.static, [p.class, sym(`two`)]]
+      ],
+    ).compile(),
+    `class one extends 10 {
+static {
+class two {}
+}
+}`)
 })
 
 t.test(function test_throw_expression() {
@@ -1829,8 +2116,40 @@ function testBinary(fun, inf) {
 }
 
 t.test(function test_in() {
-  testBinary(p.in, `in`)
-  testCompilable(p.in, `((a, b) => a in b)`)
+  // Inverse copy of `testBinary`.
+  function test(ctx) {
+    ti.fail(() => p.in.call(ctx), `expected 2 inputs, got 0 inputs`)
+
+    t.is(
+      p.in.call(ctx, [], []).compile(),
+      `(undefined in undefined)`,
+    )
+
+    t.is(
+      p.in.call(ctx, 10, []).compile(),
+      `(undefined in 10)`,
+    )
+
+    t.is(
+      p.in.call(ctx, [], 10).compile(),
+      `(10 in undefined)`,
+    )
+
+    t.is(
+      p.in.call(ctx, 10, 20).compile(),
+      `(20 in 10)`,
+    )
+
+    t.is(
+      p.in.call(ctx, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(),
+      `("two" in "one")`,
+    )
+  }
+
+  test(null)
+  test(c.ctxWithStatement(null))
+
+  testCompilable(p.in, `((a, b) => b in a)`)
 })
 
 /*

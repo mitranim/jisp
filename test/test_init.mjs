@@ -1,11 +1,10 @@
-import '/Users/m/code/m/js/cli_emptty.mjs'
-import * as t from '/Users/m/code/m/js/test.mjs'
-import * as cl from '/Users/m/code/m/js/cli.mjs'
+import 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli_emptty.mjs'
+import * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/test.mjs'
+import * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli.mjs'
 import * as c from '../js/core.mjs'
-import * as p from '../js/prelude.mjs'
 
-export * as t from '/Users/m/code/m/js/test.mjs'
-export * as cl from '/Users/m/code/m/js/cli.mjs'
+export * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/test.mjs'
+export * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli.mjs'
 
 /*
 Should be sufficiently large to show any non-overflow stack traces, but also

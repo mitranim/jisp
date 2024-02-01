@@ -1,5 +1,6 @@
 export {
   globals,
+  domGlobals,
   comment,
   use,
   import,
@@ -10,6 +11,7 @@ export {
   if,
   when,
   do,
+  try,
   void,
   func,
   fn,

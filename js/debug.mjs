@@ -40,7 +40,8 @@ export function compiled(...src) {
 }
 
 export function compile() {
-  return compiled.apply(ctxBranch(this), arguments), []
+  compiled.apply(ctxBranch(this), arguments)
+  return []
 }
 
 function ctxBranch(ctx) {return Object.assign(Object.create(ctx), ctx)}
