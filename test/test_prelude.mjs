@@ -720,6 +720,380 @@ const two = 20
   )
 })
 
+t.test(function test_loop() {
+  ti.fail(() => p.loop.call(null), `expected statement context, got expression context`)
+
+  const ctx = c.ctxWithStatement(null)
+
+  t.is(p.loop.call(ctx).compile(), `for (;;) {}`)
+
+  t.is(p.loop.call(ctx, ti.macReqStatementOne).compile(), `for (;;) {
+"one"
+}`)
+
+  t.is(p.loop.call(ctx, ti.macReqStatementOne, ti.macReqStatementTwo).compile(), `for (;;) {
+"one";
+"two"
+}`)
+
+  t.is(
+    p.loop.call(ctx, [p.const, sym(`one`), 10]).compile(), `for (;;) {
+const one = 10
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.loop.call(ctx, sym(`break`), sym(`continue`)).compile(),
+    `for (;;) {
+break;
+continue
+}`)
+})
+
+t.test(function test_loop_while() {
+  ti.fail(() => p.loop.while.call(null), `expected statement context, got expression context`)
+
+  const ctx = c.ctxWithStatement(null)
+  ti.fail(() => p.loop.while.call(ctx), `expected at least 1 inputs, got 0 inputs`)
+
+  t.is(p.loop.while.call(ctx, []).compile(), `while (undefined) {}`)
+  t.is(p.loop.while.call(ctx, false).compile(), `while (false) {}`)
+  t.is(p.loop.while.call(ctx, ti.macReqExpressionOne).compile(), `while ("one") {}`)
+
+  t.is(
+    p.loop.while.call(ctx, [], 10).compile(),
+    `while (undefined) {
+10
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, 10, 20).compile(),
+    `while (10) {
+20
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, 10, 20, 30).compile(),
+    `while (10) {
+20;
+30
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, ti.macReqExpressionOne, ti.macReqStatementTwo, ti.macReqStatementThree).compile(),
+    `while ("one") {
+"two";
+"three"
+}`)
+
+  t.is(
+    p.loop.while.call(
+      ctx,
+      ti.macReqExpressionOne,
+      [p.const, sym(`two`), ti.macReqExpressionThree],
+    ).compile(),
+    `while ("one") {
+const two = "three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.loop.while.call(ctx, sym(`break`)),
+    `missing declaration of "break"`,
+  )
+
+  ti.fail(
+    () => p.loop.while.call(ctx, sym(`continue`)),
+    `missing declaration of "continue"`,
+  )
+
+  ti.fail(
+    () => p.loop.while.call(ctx, [], [sym(`break`)]),
+    `"break" must be mentioned, not called; loop labels are not currently supported`,
+  )
+
+  ti.fail(
+    () => p.loop.while.call(ctx, [], [sym(`continue`)]),
+    `"continue" must be mentioned, not called; loop labels are not currently supported`,
+  )
+
+  t.is(
+    p.loop.while.call(ctx, [], sym(`break`)).compile(),
+    `while (undefined) {
+break
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, [], sym(`continue`)).compile(),
+    `while (undefined) {
+continue
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, 10, 20, sym(`break`), 30).compile(),
+    `while (10) {
+20;
+break;
+30
+}`)
+
+  t.is(
+    p.loop.while.call(ctx, 10, 20, sym(`continue`), 30).compile(),
+    `while (10) {
+20;
+continue;
+30
+}`)
+
+  {
+    let tar
+    t.is(
+      p.loop.while.call(ctx, 10, {macro(val) {tar = val; return []}}).compile(),
+      `while (10) {}`,
+    )
+    t.eq(ti.objFlat(tar), [
+      {[c.symStatement]: undefined},
+      {[c.symMixin]: undefined, ...m.loopMixin},
+      ...ti.objFlat(ctx),
+    ])
+  }
+
+  {
+    const sub = c.ctxWithStatement(ctx)
+    sub.break = 123
+
+    let tar
+    t.is(
+      p.loop.while.call(
+        sub,
+        10,
+        sym(`break`),
+        sym(`continue`),
+        {macro(val) {tar = val; return []}},
+      ).compile(),
+      `while (10) {
+123;
+continue
+}`)
+
+    t.eq(ti.objFlat(tar), [
+      {[c.symStatement]: undefined},
+      {[c.symMixin]: undefined, continue: m.continue},
+      ...ti.objFlat(sub),
+    ])
+  }
+})
+
+t.test(function test_loop_iter() {
+  ti.fail(
+    () => p.loop.iter.call(null),
+    `expected statement context, got expression context`,
+  )
+
+  const ctx = c.ctxWithStatement(null)
+
+  ti.fail(
+    () => p.loop.iter.call(ctx),
+    `expected at least 1 inputs, got 0 inputs`,
+  )
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, 10),
+    `expected list that begins with one of: const, let, set; got 10`,
+  )
+
+  ti.fail(() => p.loop.iter.call(ctx, [sym(`const`)]), `expected 2 inputs, got 0 inputs`)
+  ti.fail(() => p.loop.iter.call(ctx, [sym(`let`)]), `expected 2 inputs, got 0 inputs`)
+  ti.fail(() => p.loop.iter.call(ctx, [sym(`set`)]), `expected 2 inputs, got 0 inputs`)
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`const`), 10, []]),
+    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+  )
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`let`), 10, []]),
+    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+  )
+
+  // Side effect of allowing arbitrary expressions such as property paths.
+  t.is(
+    p.loop.iter.call(ctx, [sym(`set`), 10, []]).compile(),
+    `for (10 of []) {}`,
+  )
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`set`), [p.get, 10, 20, 30], []]).compile(),
+    `for (10[20][30] of []) {}`,
+  )
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`const`), [], []]).compile(),
+    `for (const [] of []) {}`,
+  )
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`let`), [], []]).compile(),
+    `for (let [] of []) {}`,
+  )
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`set`), [], []]).compile(),
+    `for ([] of []) {}`,
+  )
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`const`), sym(`one`), []]).compile(),
+    `for (const one of []) {}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.loop.iter.call(
+      ctx,
+      [sym(`const`), sym(`one`), []],
+      [p.const, sym(`one`), []],
+    ),
+    `redundant declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.loop.iter.call(ctx, [sym(`let`), sym(`one`), []]).compile(),
+    `for (let one of []) {}`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.loop.iter.call(
+      ctx,
+      [sym(`let`), sym(`one`), []],
+      [p.let, sym(`one`), []],
+    ),
+    `redundant declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`set`), sym(`one`), []]),
+    `missing declaration of "one"`,
+  )
+
+  {
+    const ctx = c.ctxWithStatement(null)
+    ctx.one = undefined
+
+    t.is(
+      p.loop.iter.call(ctx, [sym(`set`), sym(`one`), []]).compile(),
+      `for (one of []) {}`,
+    )
+    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
+    /*
+    In this example, `one` in outer scope is distinct from `one` in inner
+    scope. Each iteration of the loop updates the outer `one`. The inner
+    declaration of `one` actually makes the outer `one` inaccessible within
+    the body of the loop.
+    */
+    t.is(
+      p.loop.iter.call(
+        ctx,
+        [sym(`set`), sym(`one`), []],
+        [p.const, sym(`one`), 10],
+        [p.const, sym(`two`), 20],
+      ).compile(),
+      `for (one of []) {
+const one = 10;
+const two = 20
+}`)
+    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  }
+
+  t.is(
+    p.loop.iter.call(
+      ctx,
+      [sym(`const`), sym(`one`), ti.macReqExpressionOne],
+      ti.macReqStatementTwo,
+      ti.macReqStatementThree,
+    ).compile(),
+    `for (const one of "one" ?? []) {
+"two";
+"three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.loop.iter.call(
+      ctx,
+      [sym(`let`), sym(`one`), ti.macReqExpressionOne],
+      ti.macReqStatementTwo,
+      ti.macReqStatementThree,
+    ).compile(),
+    `for (let one of "one" ?? []) {
+"two";
+"three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  {
+    const ctx = c.ctxWithStatement(null)
+    ctx.one = undefined
+
+    t.is(
+      p.loop.iter.call(
+        ctx,
+        [sym(`set`), sym(`one`), ti.macReqExpressionOne],
+        ti.macReqStatementTwo,
+        ti.macReqStatementThree,
+      ).compile(),
+      `for (one of "one" ?? []) {
+"two";
+"three"
+}`)
+    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  }
+
+  t.is(
+    p.loop.iter.call(
+      ctx,
+      [sym(`const`), [sym(`one`), [sym(`two`)]], ti.macReqExpressionOne],
+      ti.macReqStatementTwo,
+      ti.macReqStatementThree,
+    ).compile(),
+    `for (const [one, [two]] of "one" ?? []) {
+"two";
+"three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.is(
+    p.loop.iter.call(
+      ctx,
+      [sym(`let`), [sym(`one`), [sym(`two`)]], ti.macReqExpressionOne],
+      ti.macReqStatementTwo,
+      ti.macReqStatementThree,
+    ).compile(),
+    `for (let [one, [two]] of "one" ?? []) {
+"two";
+"three"
+}`)
+  t.own(ctx, {[c.symStatement]: undefined})
+})
+
+// The implementation is shared with the sync version.
+// This needs only a basic sanity check.
+t.test(function test_loop_iter_await() {
+  t.is(
+    p.loop.iter.await.call(
+      c.ctxWithStatement(null),
+      [sym(`const`), [], ti.macReqExpressionOne],
+      ti.macReqStatementTwo,
+    ).compile(),
+    `for await (const [] of "one" ?? []) {
+"two"
+}`)
+})
+
 t.test(function test_void_bare() {
   let ctx = null
   t.is(p.void.macro(ctx),                    undefined)
@@ -2666,140 +3040,6 @@ t.test(function test_regexp() {
   t.is(p.regexp.call(null, ``,    `g`).toString(), /(?:)/g .toString())
   t.is(p.regexp.call(null, `one`     ).toString(), /one/   .toString())
   t.is(p.regexp.call(null, `one`, `g`).toString(), /one/g  .toString())
-})
-
-t.test(function test_while() {
-  ti.fail(() => p.while.call(null), `expected statement context, got expression context`)
-
-  const ctx = c.ctxWithStatement(null)
-  ti.fail(() => p.while.call(ctx), `expected at least 1 inputs, got 0 inputs`)
-
-  t.is(p.while.call(ctx, []).compile(), `while (undefined) {}`)
-  t.is(p.while.call(ctx, false).compile(), `while (false) {}`)
-  t.is(p.while.call(ctx, ti.macReqExpressionOne).compile(), `while ("one") {}`)
-
-  t.is(
-    p.while.call(ctx, [], 10).compile(),
-    `while (undefined) {
-10
-}`)
-
-  t.is(
-    p.while.call(ctx, 10, 20).compile(),
-    `while (10) {
-20
-}`)
-
-  t.is(
-    p.while.call(ctx, 10, 20, 30).compile(),
-    `while (10) {
-20;
-30
-}`)
-
-  t.is(
-    p.while.call(ctx, ti.macReqExpressionOne, ti.macReqStatementTwo, ti.macReqStatementThree).compile(),
-    `while ("one") {
-"two";
-"three"
-}`)
-
-  t.is(
-    p.while.call(
-      ctx,
-      ti.macReqExpressionOne,
-      [p.const, sym(`two`), ti.macReqExpressionThree],
-    ).compile(),
-    `while ("one") {
-const two = "three"
-}`)
-  t.own(ctx, {[c.symStatement]: undefined})
-
-  ti.fail(
-    () => p.while.call(ctx, sym(`break`)),
-    `missing declaration of "break"`,
-  )
-
-  ti.fail(
-    () => p.while.call(ctx, sym(`continue`)),
-    `missing declaration of "continue"`,
-  )
-
-  ti.fail(
-    () => p.while.call(ctx, [], [sym(`break`)]),
-    `"break" must be mentioned, not called; loop labels are not currently supported`,
-  )
-
-  ti.fail(
-    () => p.while.call(ctx, [], [sym(`continue`)]),
-    `"continue" must be mentioned, not called; loop labels are not currently supported`,
-  )
-
-  t.is(
-    p.while.call(ctx, [], sym(`break`)).compile(),
-    `while (undefined) {
-break
-}`)
-
-  t.is(
-    p.while.call(ctx, [], sym(`continue`)).compile(),
-    `while (undefined) {
-continue
-}`)
-
-  t.is(
-    p.while.call(ctx, 10, 20, sym(`break`), 30).compile(),
-    `while (10) {
-20;
-break;
-30
-}`)
-
-  t.is(
-    p.while.call(ctx, 10, 20, sym(`continue`), 30).compile(),
-    `while (10) {
-20;
-continue;
-30
-}`)
-
-  {
-    let tar
-    t.is(
-      p.while.call(ctx, 10, {macro(val) {tar = val; return []}}).compile(),
-      `while (10) {}`,
-    )
-    t.eq(ti.objFlat(tar), [
-      {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, ...m.loopMixin},
-      ...ti.objFlat(ctx),
-    ])
-  }
-
-  {
-    const sub = c.ctxWithStatement(ctx)
-    sub.break = 123
-
-    let tar
-    t.is(
-      p.while.call(
-        sub,
-        10,
-        sym(`break`),
-        sym(`continue`),
-        {macro(val) {tar = val; return []}},
-      ).compile(),
-      `while (10) {
-123;
-continue
-}`)
-
-    t.eq(ti.objFlat(tar), [
-      {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, continue: m.continue},
-      ...ti.objFlat(sub),
-    ])
-  }
 })
 
 t.test(function test_pipe() {

@@ -80,4 +80,9 @@ export function ctx() {
   return []
 }
 
+export function mixin() {
+  console.log(`[debug] mixin context:`, c.ctxReqParentMixin(this))
+  return []
+}
+
 export function moduleSrcPath() {return c.ctxReqModule(this).srcPath}

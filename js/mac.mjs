@@ -589,7 +589,7 @@ export function $catch(name, ...src) {
     default: {
       const sub = c.ctxWithStatement(ctx)
       c.ctxDeclare(sub, name)
-      ctx[symCatch] = `catch (` + name.description + `) ` + c.compileBlock(c.macroNodes(sub, src))
+      ctx[symCatch] = `catch (` + name.description + `) ` + block(sub, src)
       return []
     }
   }
@@ -604,6 +604,142 @@ export function $finally(...src) {
   src = c.compileBlockOpt(c.macroNodes(c.ctxWithStatement(ctx), src))
   ctx[symFinally] = src ? (`finally ` + src) : ``
   return []
+}
+
+function block(ctx, src) {return c.compileBlock(c.macroNodes(ctx, src))}
+
+export function loop(...src) {
+  c.ctxReqIsStatement(this)
+  return c.raw(`for (;;) `, block(loopCtx(this), src))
+}
+
+loop.while = loopWhile
+loop.iter = loopIter
+
+function loopCtx(ctx) {
+  return c.ctxWithStatement(c.patch(c.ctxWithMixin(ctx), loopMixin))
+}
+
+export const loopMixin = Object.create(null)
+loopMixin.break = $break
+loopMixin.continue = $continue
+
+export {$break as break}
+
+export function $break() {
+  throw SyntaxError(`"break" must be mentioned, not called; loop labels are not currently supported`)
+}
+
+$break.macro = selfStatement
+$break.compile = () => `break`
+
+export {$continue as continue}
+
+export function $continue() {
+  throw SyntaxError(`"continue" must be mentioned, not called; loop labels are not currently supported`)
+}
+
+$continue.macro = selfStatement
+$continue.compile = () => `continue`
+
+export function loopWhile(cond, ...body) {
+  c.ctxReqIsStatement(this)
+  c.reqArityMin(arguments.length, 1)
+
+  return c.raw(c.joinSpaced(
+    `while`,
+    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
+    block(loopCtx(this), body),
+  ))
+}
+
+export function loopIter() {
+  return c.raw(`for `, loopIterBase.apply(this, arguments))
+}
+
+loopIter.await = loopIterAwait
+
+export function loopIterAwait() {
+  return c.raw(`for await `, loopIterBase.apply(this, arguments))
+}
+
+export function loopIterBase(tar, ...body) {
+  c.ctxReqIsStatement(this)
+  c.reqArityMin(arguments.length, 1)
+
+  const ctx = loopCtx(this)
+
+  return c.joinSpaced(
+    c.wrapParens(c.compileNode(macroListWith.call(ctx, loopIterHeadCtx, tar))),
+    block(ctx, body),
+  )
+}
+
+export const loopIterHeadCtx = Object.create(null)
+loopIterHeadCtx.const = loopIterConst
+loopIterHeadCtx.let = loopIterLet
+loopIterHeadCtx.set = loopIterSet
+
+export function loopIterConst() {
+  return c.raw(`const `, loopIterDecl.apply(this, arguments))
+}
+
+export function loopIterLet() {
+  return c.raw(`let `, loopIterDecl.apply(this, arguments))
+}
+
+export function loopIterSet(tar, src) {
+  c.reqArity(arguments.length, 2)
+  tar = c.compileNode(c.macroNode(this, tar)) || `[]`
+  src = loopIterSrc(this, src)
+  return c.raw(tar + ` of ` + src)
+}
+
+export function loopIterDecl(tar, src) {
+  c.reqArity(arguments.length, 2)
+  src = loopIterSrc(this, src)
+  tar = param.call(this, tar)
+  return tar + ` of ` + src
+}
+
+function loopIterSrc(ctx, src) {
+  src = c.macroNode(Object.create(ctx), src)
+  if (c.isNil(src)) return `[]`
+
+  src = c.compileNode(src)
+  if (!src) return `[]`
+
+  return src + ` ?? []`
+}
+
+/*
+Specialized version of `macroList` that requires the first element to be a
+symbol declared in the provided context. The context is expected to contain
+only macro functions. Intended for closed-set special cases like loop variable
+declarations. TODO better name and better approach.
+*/
+export function macroListWith(ctx, src) {
+  if (c.isArr(src)) {
+    const head = src[0]
+    if (c.isSymUnqual(head)) {
+      const key = head.description
+      if (key in ctx) {
+        try {return c.macroNode(ctx, ctx[key].apply(this, src.slice(1)), src)}
+        catch (err) {throw c.errWithContext(err, src)}
+      }
+    }
+  }
+
+  throw SyntaxError(c.joinParagraphs(
+    `expected list that begins with one of: ${keysIn(ctx).join(c.expressionSep)}; got ${c.show(src)}`,
+    c.nodeContext(src),
+  ))
+}
+
+function keysIn(src) {
+  const out = []
+  for (const key in src) if (c.isStr(key)) out.push(key)
+  return out
 }
 
 export {$void as void}
@@ -807,12 +943,12 @@ const ordKeyReg = /^[$]\d+$/
 
 export {$class as class}
 
-export function $class(name, ...rest) {
+export function $class(name, ...body) {
   c.reqArityMin(arguments.length, 1)
 
   const ctx = ctxWithFuncDecl(this, name, classMixin)
   ctx[symClass] = undefined
-  rest = c.reqArr(c.macroNodes(ctx, rest))
+  body = c.reqArr(c.macroNodes(ctx, body))
   const ext = c.hasOwn(ctx, symExtend) ? ctx[symExtend] : undefined
 
   return c.raw(c.joinSpaced(
@@ -820,7 +956,7 @@ export function $class(name, ...rest) {
     `class`,
     c.compileNode(name),
     compileClassExtend.apply(ctx, ext),
-    c.compileBlock(rest),
+    c.compileBlock(body),
   ))
 }
 
@@ -1020,7 +1156,7 @@ $in.compile = () => `((a, b) => b in a)`
 
 /*
 Only valid if the declaration of `Object` in the current scope refers to the
-global `Object`. TODO reconsider.
+global `Object`. TODO reconsider. TODO consider variadic form.
 */
 export const is = Symbol.for(`Object.is`)
 
@@ -1209,6 +1345,7 @@ export function bitNot(val) {
 
 bitNot.compile = () => `(a => ~a)`
 
+// TODO consider variadic form.
 export function eq(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `===`, two)
@@ -1216,6 +1353,7 @@ export function eq(one, two) {
 
 eq.compile = () => `((a, b) => a === b)`
 
+// TODO consider variadic form.
 export function neq(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `!==`, two)
@@ -1223,6 +1361,7 @@ export function neq(one, two) {
 
 neq.compile = () => `((a, b) => a !== b)`
 
+// TODO consider variadic form.
 export function gt(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `>`, two)
@@ -1230,6 +1369,7 @@ export function gt(one, two) {
 
 gt.compile = () => `((a, b) => a > b)`
 
+// TODO consider variadic form.
 export function lt(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `<`, two)
@@ -1237,6 +1377,7 @@ export function lt(one, two) {
 
 lt.compile = () => `((a, b) => a < b)`
 
+// TODO consider variadic form.
 export function gte(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `>=`, two)
@@ -1244,6 +1385,7 @@ export function gte(one, two) {
 
 gte.compile = () => `((a, b) => a >= b)`
 
+// TODO consider variadic form.
 export function lte(one, two) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, one, `<=`, two)
@@ -1462,43 +1604,6 @@ export function regexp(src, flags) {
   c.reqArityBetween(arguments.length, 1, 2)
   return new RegExp(c.reqStr(src), c.optStr(flags))
 }
-
-export {$while as while}
-
-export function $while(cond, ...body) {
-  c.ctxReqIsStatement(this)
-  c.reqArityMin(arguments.length, 1)
-
-  return c.raw(c.joinSpaced(
-    `while`,
-    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
-    body.length
-    ? c.compileBlock(c.macroNodes(c.ctxWithStatement(c.patch(c.ctxWithMixin(this), loopMixin)), body))
-    : `{}`
-  ))
-}
-
-export const loopMixin = Object.create(null)
-loopMixin.break = $break
-loopMixin.continue = $continue
-
-export {$break as break}
-
-export function $break() {
-  throw SyntaxError(`"break" must be mentioned, not called; loop labels are not currently supported`)
-}
-
-$break.macro = selfStatement
-$break.compile = () => `break`
-
-export {$continue as continue}
-
-export function $continue() {
-  throw SyntaxError(`"continue" must be mentioned, not called; loop labels are not currently supported`)
-}
-
-$continue.macro = selfStatement
-$continue.compile = () => `continue`
 
 export function pipe(name, ...exprs) {
   c.reqSymUnqual(name)

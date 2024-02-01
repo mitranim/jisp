@@ -12,6 +12,7 @@ export {
   when,
   do,
   try,
+  loop,
   void,
   func,
   fn,
@@ -75,7 +76,6 @@ export {
   assignIncrement,             assignIncrement             as '++',
   assignDecrement,             assignDecrement             as '--',
   regexp,
-  while,
   pipe,
   private,
 } from './mac.mjs'

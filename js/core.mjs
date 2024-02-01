@@ -95,7 +95,12 @@ export class Reader extends Span {
 
   more() {return this.skippedCosmetic(), this.hasMore()}
 
-  // SYNC[delim].
+  /*
+  SYNC[delim].
+
+  TODO consider an additional restriction: an opening delimiter must be
+  preceded by either a general delimiter or another opening delimiter.
+  */
   reqDelim() {
     const head = this.src[this.pos]
     if (
@@ -245,10 +250,11 @@ export class Reader extends Span {
 export const nodeSpans = new WeakMap()
 export function nodeSpan(node) {return nodeSpans.get(node)}
 export function nodeSpanHas(node) {return nodeSpans.has(node)}
+export function nodeSpanSet(node, span) {nodeSpans.set(reqComp(node), reqInst(span, Span))}
 
-export function nodeSpanSet(node, span) {
-  if (isNil(span)) return
-  nodeSpans.set(reqComp(node), reqInst(span, Span))
+export function nodeWithSpan(node, span) {
+  if (isComp(node) && isSome(span)) nodeSpanSet(node, span)
+  return node
 }
 
 export function nodeContext(src) {
