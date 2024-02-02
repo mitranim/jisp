@@ -181,17 +181,19 @@ export class Reader extends Span {
     const mat = this.view().match(regStrDouble)
     if (!mat) return undefined
 
-    const out = this.decodeStr(laxStr(mat[2]))
+    let out
+    try {out = this.strDecode(laxStr(mat[2]))}
+    catch (err) {
+      reqErr(err).message = joinParagraphs(err.message, this.context())
+      throw err
+    }
+
     this.skip(mat[0].length)
     this.reqDelim()
     return out
   }
 
-  decodeStr(src) {
-    reqStr(src)
-    if (src.includes(`\\`)) return JSON.parse(`"` + src + `"`)
-    return src
-  }
+  strDecode(src) {return strDecode(src)}
 
   readSym() {
     const start = this.pos
@@ -1372,6 +1374,25 @@ function showDictEntry(key, val) {
 function showDictKey(val) {
   if (isSym(val)) return wrapBrackets(val.toString())
   return regIdentFull.test(reqStr(val)) ? val : show(val)
+}
+
+/*
+About 1.5 times slower than a custom parsing loop written in JS,
+but significantly shorter and simpler.
+*/
+export function strDecode(src) {
+  return JSON.parse(`"` + reqStr(src).replace(/\\\\|\\"|"|\n|\r/g, strEscape) + `"`)
+}
+
+function strEscape(src) {
+  switch (src) {
+    case `\\\\`: return `\\\\`
+    case `\\"`: return `\\"`
+    case `"`: return `\\"`
+    case `\n`: return `\\n`
+    case `\r`: return `\\r`
+    default: return src
+  }
 }
 
 export function trunc(src, len, suf) {

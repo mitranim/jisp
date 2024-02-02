@@ -91,6 +91,7 @@ globals.Set = undefined
 globals.SharedArrayBuffer = undefined
 globals.String = undefined
 globals.Symbol = undefined
+globals.SyntaxError = undefined
 globals.TextDecoder = undefined
 globals.TextEncoder = undefined
 globals.TypeError = undefined
