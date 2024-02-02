@@ -1,0 +1,58 @@
+[use `jisp:prelude.mjs` *]
+[import `../js/core.mjs` c]
+[declare globals]
+
+[const PORT 5613]
+[const BASE `/jisp/`]
+[const Deno globalThis.Deno]
+
+[func contentType [src]
+  [c.reqStr src]
+  [guard [src.endsWith `.css`] `text/css`]
+  [guard [src.endsWith `.html`] `text/html`]
+  [guard [src.endsWith `.json`] `application/json`]
+  [guard [src.endsWith `.mjs`] `application/javascript`]
+  [guard [src.endsWith `.svg`] `image/svg+xml`]
+  void
+]
+
+[func methodNotAllowed [meth path]
+  [new Response [+ `method not allowed: ` meth ` ` path] [:: status 405]]
+]
+
+[func notFound [meth path]
+  [new Response [+ `not found: ` meth ` ` path] [:: status 404]]
+]
+
+[func.async response [req]
+  [const url [new URL req.url]]
+  [guard [neq req.method `GET`] [methodNotAllowed req.method url.pathname]]
+
+  [let path url.pathname]
+  [guard [not [path.startsWith BASE]] [notFound req.method url.pathname]]
+
+  [set path [or [path.slice BASE.length] `index.html`]]
+  [const type [contentType path]]
+
+  [new Response
+    [await [Deno.readTextFile path]]
+    [and type [:: headers [:: `content-type` type]]]
+  ]
+]
+
+[func.async serveConn [conn]
+  [loop.iter.await [const eve [Deno.serveHttp conn]]
+    [const res [response eve.request]]
+    [eve.respondWith [res.catch console.error]]
+  ]
+  void
+]
+
+[const lis [Deno.listen [:: port PORT]]]
+
+[console.log [+ `listening on http://localhost:` PORT BASE]]
+
+[loop.iter.await [const conn lis]
+  [const res [serveConn conn]]
+  [res.catch console.error]
+]

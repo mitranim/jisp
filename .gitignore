@@ -6,16 +6,13 @@
 
 !/makefile
 !/readme.md
+!/index.html
 !/cli_deno.mjs
 !/cli_node.mjs
 
 !/js
+!/doc
 !/sublime
 !/test
 !/test_files
 !/misc
-
-mock_*
-stash_*
-*_mock.*
-*_stash.*

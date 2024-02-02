@@ -1,0 +1,4 @@
+[use `jisp:prelude.mjs` *]
+
+;; Causes the module to be built, but not executed. ;;
+[fn [import `./doc_client.jisp`]]

@@ -55,6 +55,21 @@ endif
 lint.fix:
 	$(ESLINT) --fix
 
+doc.w:
+	$(MAKE_PAR) doc.srv doc.build.w
+
+doc.srv:
+	$(DENO) cli_deno.mjs doc/doc_srv.jisp
+
+doc.build: export JISP_TARGET := .doc_target
+doc.build: export JISP_ERRORS :=
+doc.build:
+	$(DENO) cli_deno.mjs doc/doc_build.jisp
+	$(OK)
+
+doc.build.w:
+	$(WATCH) -e=jisp -- $(MAKE_SEQ) doc.build verb=$(or $(verb),true)
+
 mock.deno: export JISP_TARGET := $(TAR_DIR)
 mock.deno:
 	$(DENO) cli_deno.mjs main.jisp

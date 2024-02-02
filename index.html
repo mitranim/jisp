@@ -1,0 +1,131 @@
+<!doctype html>
+
+<link rel="icon" href="data:;base64,=">
+<base href="/jisp/">
+<title>about:jisp</title>
+
+<style>
+  :root {
+    --bg: hsl(200deg 5% 10%);
+    --fg: white;
+    --fg-err: hsl(0deg 100% 60%);
+
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Segoe UI', Verdana, sans-serif;
+    font-size: 16px;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: white;
+      --fg: black;
+      --fg-err: hsl(0deg 100% 40%);
+    }
+  }
+
+  textarea {
+    background-color: inherit;
+    color: inherit;
+    font-size: inherit;
+    flex: 1;
+    resize: none;
+  }
+
+  code, pre, textarea {
+    font-family: SF Mono, Menlo, Monaco, DejaVu Sans Mono, Consolas, monospace;
+    white-space: pre-wrap;
+  }
+
+  file-pairs {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  file-pair {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  file-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .error {color: var(--fg-err)}
+</style>
+
+<script type="module" src=".doc_target/doc/doc_client.mjs"></script>
+
+<file-pairs>
+  <file-pair>
+    <file-area>
+      <code>mac.jisp</code>
+      <textarea rows="12" placeholder="[use `jisp:prelude.mjs` *]">[use `jisp:prelude.mjs` *]
+[use `jisp:debug.mjs` debug]
+[import `jisp:core.mjs` c]
+
+[debug.compiling]
+
+[func prn [src]
+  [list
+    [c.raw `console.log`]
+    [+ [c.reprNode src] `:`]
+    src
+  ]
+]
+</textarea>
+    </file-area>
+    <file-area>
+      <code>mac.mjs</code>
+      <textarea disabled placeholder="Compiled code should appear here."></textarea>
+    </file-area>
+  </file-pair>
+
+  <file-pair>
+    <file-area>
+      <code>util.jisp</code>
+      <textarea class="code" rows="12" placeholder="[use `jisp:prelude.mjs` *]">[use `jisp:prelude.mjs` *]
+[use `jisp:debug.mjs` debug]
+[import `jisp:core.mjs` c]
+
+[debug.compiling]
+
+[func someFunc [] `some_value`]
+</textarea>
+    </file-area>
+    <file-area>
+      <code>util.mjs</code>
+      <textarea disabled placeholder="Compiled code should appear here."></textarea>
+    </file-area>
+  </file-pair>
+
+  <file-pair>
+    <file-area>
+      <code>main.jisp</code>
+      <textarea class="code" rows="12" placeholder="[use `jisp:prelude.mjs` *]">[use `jisp:prelude.mjs` *]
+[use `jisp:debug.mjs` debug]
+[use `./mac.jisp` m]
+[import `./util.jisp` u]
+[declare globals]
+
+[debug.compiling]
+
+[console.log `hello world!`]
+[console.log `imported utility module:` u]
+[m.prn [list 10 20 30]]
+</textarea>
+    </file-area>
+    <file-area>
+      <code>main.mjs</code>
+      <textarea disabled placeholder="Compiled code should appear here."></textarea>
+    </file-area>
+  </file-pair>
+
+  <button type="button" onclick="this.parentNode.run()">run [ctrl+enter]</button>
+  <span class="hint" data-role="hint" hidden>Success! See the browser console.</span>
+</file-pairs>
