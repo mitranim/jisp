@@ -130,6 +130,67 @@ t.test(function test_const_deconstruction() {
   t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined, five: undefined})
 })
 
+t.test(function test_const_mac() {
+  ti.fail(
+    () => p.const.mac.call(null),
+    `expected statement context, got expression context`,
+  )
+
+  const ctx = c.ctxWithStatement(null)
+
+  ti.fail(
+    () => p.const.mac.call(ctx),
+    `expected 2 inputs, got 0 inputs`,
+  )
+
+  ti.fail(
+    () => p.const.mac.call(ctx, 10, 20),
+    `expected variant of isSym, got 10`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.const.mac.call(ctx, sym(`one`), undefined),
+    `expected variant of isSome, got undefined`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(
+    () => p.const.mac.call(ctx, sym(`one`), null),
+    `expected variant of isSome, got null`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  t.eq(p.const.mac.call(ctx, sym(`one`), 10), [])
+  t.own(ctx, {[c.symStatement]: undefined, one: 10})
+
+  ti.fail(
+    () => p.const.mac.call(ctx, sym(`one`), 20),
+    `redundant declaration of "one"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined, one: 10})
+
+  t.eq(p.const.mac.call(ctx, sym(`two`), sym(`one`)), [])
+  t.own(ctx, {[c.symStatement]: undefined, one: 10, two: 10})
+
+  t.eq(p.const.mac.call(ctx, sym(`three`), ti.macSomeValue), [])
+  t.own(ctx, {[c.symStatement]: undefined, one: 10, two: 10, three: `some_value`})
+
+  ctx.four = Object.create(null)
+  ctx.four.five = function five(...src) {return src}
+
+  t.eq(p.const.mac.call(ctx, sym(`six`), [sym(`four.five`), 30, 40]), [])
+
+  t.own(ctx, {
+    [c.symStatement]: undefined,
+    one: 10,
+    two: 10,
+    three: `some_value`,
+    four: ctx.four,
+    six: [30, 40],
+  })
+})
+
 t.test(function test_let() {
   ti.fail(() => p.let.call(null), `expected statement context, got expression context`)
 
@@ -2397,7 +2458,7 @@ t.test(function test_new_target() {
   Unfortunate current limitation. We'd like to fix this eventually. For now, use
   code can assign `new.target` to a variable to read its properties.
   */
-  ti.fail(() => run(sym(`new.target.name`)), `missing property "name" in new.target`)
+  ti.fail(() => run(sym(`new.target.name`)), `missing property "name" in [object Raw]`)
 })
 
 t.test(function test_typeof() {testUnary(p.typeof, `typeof`)})

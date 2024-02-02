@@ -86,3 +86,9 @@ export function mixin() {
 }
 
 export function moduleSrcPath() {return c.ctxReqModule(this).srcPath}
+
+export function module(src) {
+  c.reqArityMax(arguments.length, 1)
+  if (!arguments.length) return c.ctxReqModule(this)
+  return c.ctxReqModules(this).getOrMake(c.importSrcUrl(this, src).href).init(this)
+}

@@ -1,4 +1,4 @@
-[use `jisp:prelude.mjs` *]
+[use.mac `jisp:prelude.mjs` *]
 
 [const one 10]
 [func two []]

@@ -23,11 +23,11 @@ Jisp doesn't have special forms, or rather, _all_ macros in Jisp can be special 
 
 ## Imports
 
-There are two ways of importing: `use` and `import`.
+There are two ways of importing: `use` and `use.mac`.
 
-* `use` is for macro imports. It immediately imports the requested module, making it available for macro-time execution. It compiles to nothing at all; the compiled code does not include this import.
+* `use` is for runtime imports. It generates a native import statement or expression.
 
-* `import` is for runtime imports. It generates a native import statement or expression.
+* `use.mac` is for macro imports. It immediately imports the requested module, making it available for macro-time execution. It compiles to nothing at all; the compiled code does not include this import.
 
 ## Names
 

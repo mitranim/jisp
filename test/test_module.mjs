@@ -209,9 +209,9 @@ await t.test(async function test_module_context_inheritance() {
   const fs = new ti.PseudoFs()
 
   fs.set(`blob:/one.jisp`, c.joinLines(
-    `[use "jisp:prelude.mjs" *]`,
+    `[use.mac "jisp:prelude.mjs" *]`,
     `[const someName 10]`,
-    `[use "./two.jisp"]`,
+    `[use.mac "./two.jisp"]`,
   ))
 
   fs.set(`blob:/two.jisp`, `someName`)
@@ -230,9 +230,9 @@ await t.test(async function test_module_context_inheritance() {
   directly inherit from the context of module "one" and use that for macroing
   the module "two", then the name `someName` would incorrectly appear to be in
   scope and the module would compile, but it would fail at JS runtime,
-  producing an exception with a different error message. There would be a
-  failure either way, but we want to avoid this during compilation, because
-  this way the user receives better error messages.
+  producing an exception with a different error message. This would fail either
+  way, but we want to avoid this during compilation, because this way the user
+  receives better error messages.
   */
   await ti.fail(
     async () => one.ready(ctx),
@@ -251,7 +251,7 @@ source node context:
 blob:/one.jisp:3:1
 
 …
-[use "./two.jisp"]
+[use.mac "./two.jisp"]
 `)
 })
 

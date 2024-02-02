@@ -1,0 +1,3 @@
+;;
+Main file → "use" another file → "use.mac" this file → no dependencies.
+;;

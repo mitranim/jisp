@@ -505,7 +505,7 @@ export class Module {
   Short for "source dependencies". Must be used for dependencies which are
   imported by the current module's source file (at macro time), but not
   necessarily by its target file (at runtime). The most typical examples
-  are imports via the macros `use` and `declare`.
+  are imports via the macros `use.mac` and `declare`.
   */
   srcDeps = undefined /* : Set<reqCanonicalModulePath> */
 
@@ -513,7 +513,7 @@ export class Module {
   Short for "target dependencies". Must be used for dependencies which
   are imported by the current module's target file (at runtime), but not
   necessarily by its source file (at macro time). The most typical example
-  is imports via the macro `import`.
+  is imports via the macro `use`.
   */
   tarDeps = undefined /* : Set<reqCanonicalModulePath> */
 
@@ -610,7 +610,7 @@ export class Module {
       && symErrors in ctx
       && symFs in ctx
       && this.tarPath
-    )) return
+    )) return undefined
 
     return ctx[symFs]?.write?.(
       reqToUrl(this.reqTarPath()),
@@ -1060,7 +1060,7 @@ some of these names act as regular identifiers or nullary keywords. The
 simplest way to make them available in Jisp code is by declaring them as
 globals:
 
-  [use `jisp:prelude.mjs` jp]
+  [use.mac `jisp:prelude.mjs` jp]
   [jp.declare jp.globals]
 
 Some of these names can be used only in specific contexts. Examples include

@@ -359,7 +359,6 @@ contexts:
 
   call-known-maybe-pop:
     - include: call-use-pop
-    - include: call-import-pop
     - include: call-const-pop
     - include: call-let-pop
     - include: call-func-pop
@@ -375,33 +374,28 @@ contexts:
   call-use-pop:
     - match: '{{ident_break_begin}}use{{ident_break_end}}'
       scope: keyword.declaration.jisp
-      set: [import-addr-pop, sym-rest-pop]
-
-  call-import-pop:
-    - match: '{{ident_break_begin}}import{{ident_break_end}}'
-      scope: keyword.declaration.jisp
-      set: [import-addr-pop, sym-rest-pop]
+      set: [use-addr-pop, sym-rest-pop]
 
   # Semi-placeholder. Instead of special-case string support, we should pop an
   # arbitrary expression here.
-  import-addr-pop:
+  use-addr-pop:
     - match: '({{string_backtick_delim}})[^{{string_backtick_delim}}]*({{string_backtick_delim}})(?!{{string_backtick_delim}})'
       scope: string.quoted.other.jisp
       captures:
         1: punctuation.definition.string.begin.jisp
         2: punctuation.definition.string.end.jisp
-      set: [import-decl-pop, req-delim-pop]
+      set: [use-decl-pop, req-delim-pop]
 
     - match: '({{string_double_delim}})[^{{string_double_delim}}]*({{string_double_delim}})(?!{{string_double_delim}})'
       scope: string.quoted.double.jisp
       captures:
         1: punctuation.definition.string.begin.jisp
         2: punctuation.definition.string.end.jisp
-      set: [import-decl-pop, req-delim-pop]
+      set: [use-decl-pop, req-delim-pop]
 
     - include: nonblank-pop
 
-  import-decl-pop:
+  use-decl-pop:
     - match: '{{ident}}'
       scope: meta.binding.name.jisp variable.other.jisp
       set: req-delim-pop

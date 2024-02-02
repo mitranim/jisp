@@ -1,0 +1,6 @@
+;;
+Main file → "use.mac" this file.
+;;
+
+[use.mac `./test_caching_usemac_usemac.jisp`]
+[use `./test_caching_usemac_use.jisp`]

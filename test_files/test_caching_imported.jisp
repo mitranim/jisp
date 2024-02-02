@@ -1,5 +1,0 @@
-;; This file should be "imported" by the main file. ;;
-
-[use `jisp:prelude.mjs` *]
-[use `./test_caching_imported_used.jisp`]
-[import `./test_caching_imported_imported.jisp`]

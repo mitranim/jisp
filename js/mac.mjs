@@ -16,7 +16,7 @@ Non-exhaustive list of missing keywords and operators:
 Intended for use with the `declare` macro. User code is free to add new globals
 to this dictionary. Usage example:
 
-  [use `jisp:prelude.mjs` *]
+  [use.mac `jisp:prelude.mjs` *]
   [declare globals]
 
 Partial reference:
@@ -181,31 +181,127 @@ domGlobals.HTMLUListElement = undefined
 domGlobals.HTMLVideoElement = undefined
 domGlobals.SVGSvgElement = undefined
 
-export function comment() {return []}
-
 export const symStar = Symbol.for(`*`)
 
+export function comment() {return []}
+
 export function use(src, name) {
+  c.ctxReqIsModule(this)
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
+
   if (name === symStar) return useMixin.call(this, src)
   if (c.isSome(name)) return useNamed.apply(this, arguments)
-  return useAnon.apply(this, arguments)
+  return useAnon.call(this, src)
 }
 
-async function useAnon(src) {
+use.meta = c.raw(`import.meta`)
+use.async = useAsync
+use.mac = useMac
+use.func = useFunc
+
+function useAnon(src) {
+  c.reqArity(arguments.length, 1)
+  src = importTarDepPath(this, src)
+  if (c.isPromise(src)) return useAnonCompileAsync(src)
+  return useAnonCompile(src)
+}
+
+async function useAnonCompileAsync(src) {
+  return useAnonCompile(await src)
+}
+
+function useAnonCompile(src) {
+  return c.raw(`import `, c.compileNode(src))
+}
+
+function useNamed(src, name) {
+  c.reqArity(arguments.length, 2)
+  c.ctxDeclare(this, name)
+  src = importTarDepPath(this, src)
+  if (c.isPromise(src)) return useNamedCompileAsync(src, name)
+  return useNamedCompile(src, name)
+}
+
+async function useNamedCompileAsync(src, name) {
+  return useNamedCompile((await src), name)
+}
+
+function useNamedCompile(src, name) {
+  return c.raw(`import * as `, name.description, ` from `, c.compileNode(src))
+}
+
+async function useMixin(src) {
+  c.reqArity(arguments.length, 1)
+
+  let tar = src
+  let rel = src
+  if (!c.isStrRelImplicit(src)) {
+    src = c.importSrcUrl(this, src).href
+    tar = await importSrcDepPathFromUrl(this, src)
+    rel = await importTarDepPathFromUrl(this, src)
+  }
+
+  const mix = c.ctxReqParentMixin(this)
+  const out = new UseMixin(rel)
+  for (const key of Object.keys(await import(tar))) {
+    if (c.canPatch(mix, key)) mix[key] = new UseRef(key, out)
+  }
+  return out
+}
+
+class UseMixin extends Set {
+  constructor(src) {super().src = src}
+
+  compile() {
+    const names = this.size ? c.joinExpressions([...this]) : ``
+    const src = c.compileNode(this.src)
+    if (names) return `import ${c.wrapBraces(names)} from ${src}`
+    return `import ${src}`
+  }
+}
+
+class UseRef extends c.Raw {
+  constructor(key, tar) {super(key).tar = tar}
+  macro() {return this.tar.add(this.valueOf()), this}
+}
+
+function useAsync(src) {
+  c.reqArity(arguments.length, 1)
+  src = c.isStr(src) ? importTarDepPath(this, src) : c.macroNode(this, src)
+  if (c.isPromise(src)) return useAsyncCompileAsync(src)
+  return useAsyncCompile(src)
+}
+
+async function useAsyncCompileAsync(src) {
+  return useAsyncCompile(await src)
+}
+
+function useAsyncCompile(src) {
+  return c.raw(`import(`, c.compileNode(src), `)`)
+}
+
+export function useMac(src, name) {
+  c.ctxReqIsStatement(this)
+  c.reqArityBetween(arguments.length, 1, 2)
+  if (name === symStar) return useMacMixin.call(this, src)
+  if (c.isSome(name)) return useMacNamed.apply(this, arguments)
+  return useMacAnon.apply(this, arguments)
+}
+
+async function useMacAnon(src) {
   c.reqArity(arguments.length, 1)
   await import(await importSrcDepPath(this, src))
   return []
 }
 
-async function useNamed(src, name) {
+async function useMacNamed(src, name) {
   c.reqArity(arguments.length, 2)
   c.ctxDeclare(this, name, await import(await importSrcDepPath(this, src)))
   return []
 }
 
-async function useMixin(src) {
+async function useMacMixin(src) {
   c.reqArity(arguments.length, 1)
   c.patch(c.ctxReqParentMixin(this), await import(await importSrcDepPath(this, src)))
   return []
@@ -251,121 +347,19 @@ async function tarPathAsync(own, imp) {
 
 function tarPath(own, imp) {return c.optUrlRel(own, imp) ?? imp}
 
-export {$import as import}
-
-export function $import() {
-  c.reqArityBetween(arguments.length, 1, 2)
-  if (c.ctxIsStatement(this)) return importStatement.apply(this, arguments)
-  return importExpression.apply(this, arguments)
-}
-
-$import.meta = Symbol.for(`import.meta`)
-$import.func = importFunc
-
-function importExpression(src) {
-  c.reqArity(arguments.length, 1)
-  src = c.isStr(src) ? importTarDepPath(this, src) : c.macroNode(this, src)
-  if (c.isPromise(src)) return importExpressionCompileAsync(src)
-  return importExpressionCompile(src)
-}
-
-async function importExpressionCompileAsync(src) {
-  return importExpressionCompile(await src)
-}
-
-function importExpressionCompile(src) {
-  return c.raw(`import(`, c.compileNode(src), `)`)
-}
-
-function importStatement(src, name) {
-  c.ctxReqIsModule(this)
-  c.ctxReqIsStatement(this)
-  c.reqArityBetween(arguments.length, 1, 2)
-
-  if (name === symStar) return importStatementMixin.call(this, src)
-  if (c.isSome(name)) return importStatementNamed.apply(this, arguments)
-  return importStatementAnon.call(this, src)
-}
-
-function importStatementAnon(src) {
-  c.reqArity(arguments.length, 1)
-  src = importTarDepPath(this, src)
-  if (c.isPromise(src)) return importStatementAnonCompileAsync(src)
-  return importStatementAnonCompile(src)
-}
-
-async function importStatementAnonCompileAsync(src) {
-  return importStatementAnonCompile(await src)
-}
-
-function importStatementAnonCompile(src) {
-  return c.raw(`import `, c.compileNode(src))
-}
-
-function importStatementNamed(src, name) {
+export function useFunc(src, name) {
   c.reqArity(arguments.length, 2)
   c.ctxDeclare(this, name)
   src = importTarDepPath(this, src)
-  if (c.isPromise(src)) return importStatementNamedCompileAsync(src, name)
-  return importStatementNamedCompile(src, name)
+  if (c.isPromise(src)) return useFuncCompileAsync(src, name)
+  return useFuncCompile(src, name)
 }
 
-async function importStatementNamedCompileAsync(src, name) {
-  return importStatementNamedCompile((await src), name)
+async function useFuncCompileAsync(src, name) {
+  useFuncCompile((await src), name)
 }
 
-function importStatementNamedCompile(src, name) {
-  return c.raw(`import * as `, name.description, ` from `, c.compileNode(src))
-}
-
-async function importStatementMixin(src) {
-  c.reqArity(arguments.length, 1)
-
-  let tar = src
-  let rel = src
-  if (!c.isStrRelImplicit(src)) {
-    src = c.importSrcUrl(this, src).href
-    tar = await importSrcDepPathFromUrl(this, src)
-    rel = await importTarDepPathFromUrl(this, src)
-  }
-
-  const mix = c.ctxReqParentMixin(this)
-  const out = new ImportMixin(rel)
-  for (const key of Object.keys(await import(tar))) {
-    if (c.canPatch(mix, key)) mix[key] = new ImportRef(key, out)
-  }
-  return out
-}
-
-class ImportMixin extends Set {
-  constructor(src) {super().src = src}
-
-  compile() {
-    const names = this.size ? c.joinExpressions([...this]) : ``
-    const src = c.compileNode(this.src)
-    if (names) return `import ${c.wrapBraces(names)} from ${src}`
-    return `import ${src}`
-  }
-}
-
-class ImportRef extends c.Raw {
-  constructor(key, tar) {super(key).tar = tar}
-  macro() {return this.tar.add(this.valueOf()), this}
-}
-
-export function importFunc(src, name) {
-  c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, name)
-  src = importTarDepPath(this, src)
-  if (c.isPromise(src)) return importFuncCompileAsync(src, name)
-  return importFuncCompile(src, name)
-}
-
-async function importFuncCompileAsync(src, name) {
-  importFuncCompile((await src), name)
-}
-
-function importFuncCompile(src, name) {
+function useFuncCompile(src, name) {
   return c.raw(
     `function `,
     name.description,
@@ -436,6 +430,15 @@ export function $const(tar, src) {
     `=`,
     (c.compileNode(src) || `undefined`),
   ))
+}
+
+$const.mac = constMac
+
+export function constMac(name, src) {
+  c.ctxReqIsStatement(this)
+  c.reqArity(arguments.length, 2)
+  c.ctxDeclare(this, name, c.reqSome(c.macroNode(this, src)))
+  return []
 }
 
 export {$let as let}
@@ -1086,7 +1089,7 @@ export function $new(...src) {
   throw errEmpty()
 }
 
-$new.target = Symbol.for(`new.target`)
+$new.target = c.raw(`new.target`)
 
 export {$typeof as typeof}
 

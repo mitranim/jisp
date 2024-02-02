@@ -3,7 +3,6 @@ export {
   domGlobals,
   comment,
   use,
-  import,
   declare,
   export,
   const,

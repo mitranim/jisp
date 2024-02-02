@@ -1,6 +1,6 @@
-[use `jisp:prelude.mjs` *]
-[import `jisp:core.mjs` c]
-[import `jisp:prelude.mjs` p]
+[use.mac `jisp:prelude.mjs` *]
+[use `jisp:core.mjs` c]
+[use `jisp:prelude.mjs` p]
 [declare globals]
 [declare domGlobals]
 
@@ -159,7 +159,7 @@ of multiline strings, mispace comments, etc.
         [await [mod.ready ctx]]
         [tar.setContent mod.tar]
 
-        [when run [await [import [mod.reqTarPath]]]]
+        [when run [await [use.async [mod.reqTarPath]]]]
       ]
     ]
 
@@ -172,7 +172,12 @@ of multiline strings, mispace comments, etc.
   ]
 
   [meth onKeyDown [eve]
-    [when [and [eq eve.key `Enter`] eve.ctrlKey [not eve.shiftKey]]
+    [when
+      [and
+        [eq eve.key `Enter`]
+        [or eve.ctrlKey eve.metaKey]
+        [not eve.shiftKey]
+      ]
       [eve.preventDefault]
       [this.run]
     ]

@@ -1,5 +1,5 @@
-[use `jisp:prelude.mjs` *]
-[import `../js/core.mjs` c]
+[use.mac `jisp:prelude.mjs` *]
+[use `../js/core.mjs` c]
 [declare globals]
 
 [const PORT 5613]

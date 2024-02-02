@@ -22,177 +22,17 @@ const existingJispFileSrcUrl = new URL(`test_simple_export.jisp`, ti.TEST_SRC_UR
 const existingJispFileTarUrl = new URL(`test_simple_export.mjs`, ti.TEST_TAR_SUB_URL).href
 const missingJsUrl = `one://two.three/four.mjs`
 
-await t.test(async function test_use() {
-  if (ti.WATCH) return
-
-  let ctx = Object.create(null)
-  await ti.fail(async () => p.use.call(ctx), `expected statement context, got expression context`)
-
-  ctx = c.ctxWithStatement(ctx)
-  await ti.fail(async () => p.use.call(ctx),        `expected between 1 and 2 inputs, got 0 inputs`)
-  await ti.fail(async () => p.use.call(ctx, 10),    `expected variant of isStr, got 10`)
-  await ti.fail(async () => p.use.call(ctx, ``),    `Relative import path "" not prefixed with / or ./ or ../`)
-  await ti.fail(async () => p.use.call(ctx, `one`), `Relative import path "one" not prefixed with / or ./ or ../`)
-
-  await ti.fail(
-    async () => p.use.call(ctx, missingJsFileUrl),
-    `Module not found ${c.show(missingJsFileUrl)}`,
-  )
-
-  await ti.fail(
-    async () => p.use.call(ctx, missingJispFileSrcUrl),
-    `missing modules in context {[Symbol(jisp.statement)]: undefined}`,
-  )
-
-  ctx = c.ctxWithStatement(c.rootCtx())
-
-  await ti.fail(
-    async () => p.use.call(ctx, missingJispFileSrcUrl),
-    `missing filesystem in context {[Symbol(jisp.statement)]: undefined}`,
-  )
-
-  ctx = makeCtx()
-
-  // Expected by the code in some files we're about to import.
-  ctx.use = p.use
-
-  ctx = c.ctxWithStatement(ctx)
-
-  await ti.fail(
-    async () => p.use.call(ctx, missingJispFileSrcUrl),
-    `No such file or directory (os error 2), stat '${new URL(missingJispFileSrcUrl).pathname}'`,
-  )
-
-  await testUse(ctx, existingJsFileUrl, existingJsFileUrl)
-  await testUse(ctx, `jisp:prelude.mjs`, preludeUrl)
-  await testUse(ctx, existingJispFileSrcUrl, existingJispFileTarUrl)
-})
-
-async function testUse(ctx, src, tar) {
-  await testUseNamed(ctx, src, tar)
-  await testUseMixin(ctx, src, tar)
-}
-
-async function testUseNamed(ctx, src, tar) {
-  ctx = c.ctxWithStatement(ctx)
-
-  await ti.fail(async () => p.use.call(ctx, src, sym(`await`)), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
-  await ti.fail(async () => p.use.call(ctx, src, sym(`eval`)), `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
-
-  testNone(await p.use.call(ctx, src, sym(`imported`)))
-  t.own(ctx, {[c.symStatement]: undefined, imported: await import(tar)})
-}
-
-async function testUseMixin(ctx, src, tar) {
-  ctx = c.ctxWithStatement(ctx)
-
-  await ti.fail(
-    async () => p.use.call(ctx, src, sym(`*`)),
-    `missing mixin namespace in context`,
-  )
-
-  ctx = c.ctxWithStatement(c.ctxWithMixin(ctx))
-  testNone(await p.use.call(ctx, src, sym(`*`)))
-
-  t.own(ctx, {[c.symStatement]: undefined})
-
-  const exp = {[c.symMixin]: undefined, ...await import(tar)}
-
-  // We assign this property to the context earlier in this test.
-  // More precisely, to the context that became the prototype of
-  // the current context here. The mixin form of `use` is expected
-  // to skip inherited properties when assigning to the mixin context.
-  delete exp.use
-
-  t.own(c.ctxReqParentMixin(ctx), exp)
-}
-
-t.test(function test_import_expression() {
-  ti.fail(() => p.import.call(null), `expected between 1 and 2 inputs, got 0 inputs`)
-
-  ti.fail(
-    () => p.import.call(null, ti.macReqStatement),
-    `expected statement context, got expression context null
-
-source node:
-
-{macro: [function reqStatement]}`,
-  )
-
-  const ctx = makeCtx()
-  t.is(p.import.call(ctx, undefined).compile(),           `import(undefined)`)
-  t.is(p.import.call(ctx, null).compile(),                `import(null)`)
-  t.is(p.import.call(ctx, 10).compile(),                  `import(10)`)
-  t.is(p.import.call(ctx, ti.macReqExpression).compile(), `import("expression_value")`)
-  t.is(p.import.call(ctx, []).compile(),                  `import()`)
-
-  ti.fail(async () => p.import.call(ctx, sym(`one`)), `missing declaration of "one"`)
-  testImport(ctx, compileImportExpression)
-})
-
-t.test(function test_import_statement_anon() {
-  let ctx = c.ctxWithStatement(makeCtx())
-  t.own(ctx, {[c.symStatement]: undefined})
-
-  ti.fail(() => p.import.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
-  ti.fail(() => p.import.call(ctx, undefined), `expected module context`)
-
-  ctx = c.ctxWithModule(ctx)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
-
-  ti.fail(() => p.import.call(ctx, undefined), `expected variant of isStr, got undefined`)
-  ti.fail(() => p.import.call(ctx, 10), `expected variant of isStr, got 10`)
-
-  testImport(ctx, compileImportStatementAnon)
-})
-
-t.test(function test_import_statement_named() {
-  const ctx = c.ctxWithModule(makeCtx())
-
-  t.is(
-    p.import.call(ctx, `some_path`, sym(`one`)).compile(),
-    `import * as one from "some_path"`,
-  )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
-
-  ti.fail(
-    () => p.import.call(ctx, `some_path`, sym(`one`)),
-    `redundant declaration of "one"`,
-  )
-
-  t.is(
-    p.import.call(ctx, `jisp:prelude.mjs`, sym(`two`)).compile(),
-    `import * as two from ${JSON.stringify(preludeUrl)}`,
-  )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
-
-  const mod = makeTestModule()
-  ctx[c.symModule] = mod
-
-  t.is(
-    p.import.call(ctx, `jisp:prelude.mjs`, sym(`three`)).compile(),
-    `import * as three from "../../../js/prelude.mjs"`,
-  )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined})
-
-  t.is(
-    p.import.call(ctx, `./missing.jisp`, sym(`four`)).compile(),
-    `import * as four from "./missing.mjs"`,
-  )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
-})
-
-await t.test(async function test_import_statement_mixin() {
+await t.test(async function test_use_mixin() {
   const ctx = c.ctxWithModule(c.ctxWithMixin(makeCtx()))
 
   /*
-  The "mixin" form of the `import` macro performs both a compile-time import
+  The "mixin" form of the `use` macro performs both a compile-time import
   and a runtime import. This particular failure is expected because an
   implicitly relative path requires an importmap entry, which is not present
   here.
   */
   await ti.fail(
-    async () => p.import.call(ctx, `some_path`, sym(`*`)),
+    async () => p.use.call(ctx, `some_path`, sym(`*`)),
     `Relative import path "some_path" not prefixed with / or ./ or ../`,
   )
 
@@ -200,7 +40,7 @@ await t.test(async function test_import_statement_mixin() {
   t.own(mix, {[c.symMixin]: undefined})
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
-  const out = await p.import.call(ctx, existingJsFileUrl, sym(`*`))
+  const out = await p.use.call(ctx, existingJsFileUrl, sym(`*`))
   t.own(mix, {[c.symMixin]: undefined, one: mix.one, two: mix.two})
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
@@ -221,10 +61,10 @@ await t.test(async function test_import_statement_mixin() {
   t.is(out.compile(), `import {one, two} from ${JSON.stringify(existingJsFileUrl)}`)
 })
 
-function compileImportExpression(src) {return `import(${JSON.stringify(src)})`}
-function compileImportStatementAnon(src) {return `import ` + JSON.stringify(src)}
+function compileUseAsync(src) {return `import(${JSON.stringify(src)})`}
+function compileUseAnon(src) {return `import ` + JSON.stringify(src)}
 
-function testImport(ctx, compile) {
+function testUse(ctx, fun, compile) {
   /*
   We preserve these paths as-is because in the JS module system, paths which
   are implicitly relative (no scheme, no leading `.`, no leading `/`) are
@@ -232,9 +72,9 @@ function testImport(ctx, compile) {
   not support interacting with importmaps, so we treat such paths as absolute
   and reachable only at the runtime of the program.
   */
-  t.is(p.import.call(ctx, `some_name`).compile(),      compile(`some_name`))
-  t.is(p.import.call(ctx, `some_name.mjs`).compile(),  compile(`some_name.mjs`))
-  t.is(p.import.call(ctx, `some_name.jisp`).compile(), compile(`some_name.jisp`))
+  t.is(fun.call(ctx, `some_name`).compile(),      compile(`some_name`))
+  t.is(fun.call(ctx, `some_name.mjs`).compile(),  compile(`some_name.mjs`))
+  t.is(fun.call(ctx, `some_name.jisp`).compile(), compile(`some_name.jisp`))
 
   t.is(ctx[c.symModule], undefined)
 
@@ -249,7 +89,7 @@ function testImport(ctx, compile) {
   */
 
   function failMod(src) {
-    return ti.fail(() => p.import.call(ctx, src), `missing module in context`)
+    return ti.fail(() => fun.call(ctx, src), `missing module in context`)
   }
 
   failMod(`/missing`)
@@ -273,36 +113,36 @@ function testImport(ctx, compile) {
   */
 
   t.is(
-    p.import.call(ctx, `jisp:prelude.mjs`).compile(),
+    fun.call(ctx, `jisp:prelude.mjs`).compile(),
     compile(preludeUrl),
   )
 
   t.is(
-    p.import.call(ctx, `jisp:missing.mjs`).compile(),
+    fun.call(ctx, `jisp:missing.mjs`).compile(),
     compile(new URL(`../js/missing.mjs`, import.meta.url).href),
   )
 
   t.is(
-    p.import.call(ctx, missingJsFileUrl).compile(),
+    fun.call(ctx, missingJsFileUrl).compile(),
     compile(missingJsFileUrl),
   )
 
   t.is(
-    p.import.call(ctx, existingJsFileUrl).compile(),
+    fun.call(ctx, existingJsFileUrl).compile(),
     compile(existingJsFileUrl),
   )
 
   t.is(
-    p.import.call(ctx, missingJispFileSrcUrl).compile(),
+    fun.call(ctx, missingJispFileSrcUrl).compile(),
     compile(missingJispFileTarUrl),
   )
 
   t.is(
-    p.import.call(ctx, existingJispFileSrcUrl).compile(),
+    fun.call(ctx, existingJispFileSrcUrl).compile(),
     compile(existingJispFileTarUrl),
   )
 
-  t.is(p.import.call(ctx, missingJsUrl).compile(), compile(missingJsUrl))
+  t.is(fun.call(ctx, missingJsUrl).compile(), compile(missingJsUrl))
 
   /*
   When we don't have a current module, we can still compile imports where the
@@ -321,82 +161,242 @@ function testImport(ctx, compile) {
   ctx[c.symModule] = makeTestModule()
 
   t.is(
-    p.import.call(ctx, `./missing`).compile(),
+    fun.call(ctx, `./missing`).compile(),
     compile(`../../../test_files/missing`),
   )
 
   t.is(
-    p.import.call(ctx, `../missing`).compile(),
+    fun.call(ctx, `../missing`).compile(),
     compile(`../../../missing`),
   )
 
   t.is(
-    p.import.call(ctx, `./missing.mjs`).compile(),
+    fun.call(ctx, `./missing.mjs`).compile(),
     compile(`../../../test_files/missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, `../missing.mjs`).compile(),
+    fun.call(ctx, `../missing.mjs`).compile(),
     compile(`../../../missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, `./missing.jisp`).compile(),
+    fun.call(ctx, `./missing.jisp`).compile(),
     compile(`./missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, `../missing.jisp`).compile(),
+    fun.call(ctx, `../missing.jisp`).compile(),
     compile(`../missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, `jisp:prelude.mjs`).compile(),
+    fun.call(ctx, `jisp:prelude.mjs`).compile(),
     compile(`../../../js/prelude.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, `jisp:missing.mjs`).compile(),
+    fun.call(ctx, `jisp:missing.mjs`).compile(),
     compile(`../../../js/missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, missingJsFileUrl).compile(),
+    fun.call(ctx, missingJsFileUrl).compile(),
     compile(`../../../test/missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, existingJsFileUrl).compile(),
+    fun.call(ctx, existingJsFileUrl).compile(),
     compile(`../../../test_files/test_simple_export.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, missingJispFileSrcUrl).compile(),
+    fun.call(ctx, missingJispFileSrcUrl).compile(),
     compile(`./missing.mjs`),
   )
 
   t.is(
-    p.import.call(ctx, existingJispFileSrcUrl).compile(),
+    fun.call(ctx, existingJispFileSrcUrl).compile(),
     compile(`./test_simple_export.mjs`),
   )
 
-  t.is(p.import.call(ctx, missingJsUrl).compile(), compile(missingJsUrl))
+  t.is(fun.call(ctx, missingJsUrl).compile(), compile(missingJsUrl))
 }
 
-t.test(function test_import_meta() {
+t.test(function test_use_anon() {
+  let ctx = c.ctxWithStatement(makeCtx())
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  ti.fail(() => p.use.call(ctx, undefined), `expected module context`)
+
+  ctx = c.ctxWithModule(ctx)
+  ti.fail(() => p.use.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
+
+  ti.fail(() => p.use.call(ctx, undefined), `expected variant of isStr, got undefined`)
+  ti.fail(() => p.use.call(ctx, 10), `expected variant of isStr, got 10`)
+
+  testUse(ctx, p.use, compileUseAnon)
+})
+
+t.test(function test_use_named() {
+  const ctx = c.ctxWithModule(makeCtx())
+
+  t.is(
+    p.use.call(ctx, `some_path`, sym(`one`)).compile(),
+    `import * as one from "some_path"`,
+  )
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+
+  ti.fail(
+    () => p.use.call(ctx, `some_path`, sym(`one`)),
+    `redundant declaration of "one"`,
+  )
+
+  t.is(
+    p.use.call(ctx, `jisp:prelude.mjs`, sym(`two`)).compile(),
+    `import * as two from ${JSON.stringify(preludeUrl)}`,
+  )
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
+
+  const mod = makeTestModule()
+  ctx[c.symModule] = mod
+
+  t.is(
+    p.use.call(ctx, `jisp:prelude.mjs`, sym(`three`)).compile(),
+    `import * as three from "../../../js/prelude.mjs"`,
+  )
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined})
+
+  t.is(
+    p.use.call(ctx, `./missing.jisp`, sym(`four`)).compile(),
+    `import * as four from "./missing.mjs"`,
+  )
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
+})
+
+t.test(function test_use_async() {
+  ti.fail(() => p.use.async.call(null), `expected 1 inputs, got 0 inputs`)
+
+  ti.fail(
+    () => p.use.async.call(null, ti.macReqStatement),
+    `expected statement context, got expression context null
+
+source node:
+
+{macro: [function reqStatement]}`,
+  )
+
+  const ctx = makeCtx()
+  t.is(p.use.async.call(ctx, undefined).compile(),           `import(undefined)`)
+  t.is(p.use.async.call(ctx, null).compile(),                `import(null)`)
+  t.is(p.use.async.call(ctx, 10).compile(),                  `import(10)`)
+  t.is(p.use.async.call(ctx, ti.macReqExpression).compile(), `import("expression_value")`)
+  t.is(p.use.async.call(ctx, []).compile(),                  `import()`)
+
+  ti.fail(async () => p.use.async.call(ctx, sym(`one`)), `missing declaration of "one"`)
+  testUse(ctx, p.use.async, compileUseAsync)
+})
+
+await t.test(async function test_use_mac() {
+  if (ti.WATCH) return
+
+  let ctx = Object.create(null)
+  await ti.fail(async () => p.use.mac.call(ctx), `expected statement context, got expression context`)
+
+  ctx = c.ctxWithStatement(ctx)
+  await ti.fail(async () => p.use.mac.call(ctx),        `expected between 1 and 2 inputs, got 0 inputs`)
+  await ti.fail(async () => p.use.mac.call(ctx, 10),    `expected variant of isStr, got 10`)
+  await ti.fail(async () => p.use.mac.call(ctx, ``),    `Relative import path "" not prefixed with / or ./ or ../`)
+  await ti.fail(async () => p.use.mac.call(ctx, `one`), `Relative import path "one" not prefixed with / or ./ or ../`)
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, missingJsFileUrl),
+    `Module not found ${c.show(missingJsFileUrl)}`,
+  )
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, missingJispFileSrcUrl),
+    `missing modules in context {[Symbol(jisp.statement)]: undefined}`,
+  )
+
+  ctx = c.ctxWithStatement(c.rootCtx())
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, missingJispFileSrcUrl),
+    `missing filesystem in context {[Symbol(jisp.statement)]: undefined}`,
+  )
+
+  ctx = makeCtx()
+
+  // Expected by the code in some files we're about to import.
+  ctx.use = p.use
+
+  ctx = c.ctxWithStatement(ctx)
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, missingJispFileSrcUrl),
+    `No such file or directory (os error 2), stat '${new URL(missingJispFileSrcUrl).pathname}'`,
+  )
+
+  await testUseMac(ctx, existingJsFileUrl, existingJsFileUrl)
+  await testUseMac(ctx, `jisp:prelude.mjs`, preludeUrl)
+  await testUseMac(ctx, existingJispFileSrcUrl, existingJispFileTarUrl)
+})
+
+async function testUseMac(ctx, src, tar) {
+  await testUseMacNamed(ctx, src, tar)
+  await testUseMacMixin(ctx, src, tar)
+}
+
+async function testUseMacNamed(ctx, src, tar) {
+  ctx = c.ctxWithStatement(ctx)
+
+  await ti.fail(async () => p.use.mac.call(ctx, src, sym(`await`)), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
+  await ti.fail(async () => p.use.mac.call(ctx, src, sym(`eval`)), `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
+
+  testNone(await p.use.mac.call(ctx, src, sym(`imported`)))
+  t.own(ctx, {[c.symStatement]: undefined, imported: await import(tar)})
+}
+
+async function testUseMacMixin(ctx, src, tar) {
+  ctx = c.ctxWithStatement(ctx)
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, src, sym(`*`)),
+    `missing mixin namespace in context`,
+  )
+
+  ctx = c.ctxWithStatement(c.ctxWithMixin(ctx))
+  testNone(await p.use.mac.call(ctx, src, sym(`*`)))
+
+  t.own(ctx, {[c.symStatement]: undefined})
+
+  const exp = {[c.symMixin]: undefined, ...await import(tar)}
+
+  // We assign this property to the context earlier in this test.
+  // More precisely, to the context that became the prototype of
+  // the current context here. The mixin form of `use.mac` is expected
+  // to skip inherited properties when assigning to the mixin context.
+  delete exp.use
+
+  t.own(c.ctxReqParentMixin(ctx), exp)
+}
+
+t.test(function test_use_meta() {
   const ctx = Object.create(null)
 
   function run(src) {return c.compileNode(c.macroNode(ctx, src))}
-  ti.fail(() => run(sym(`import.meta`)), `missing declaration of "import"`)
+  ti.fail(() => run(sym(`use.meta`)), `missing declaration of "use"`)
 
-  ctx.import = p.import
-  t.is(run(sym(`import.meta`)), `import.meta`)
+  ctx.use = p.use
+  t.is(run(sym(`use.meta`)), `import.meta`)
 
   /*
   Unfortunate current limitation. We'd like to fix this eventually. For now, use
-  code can assign `import.meta` to a variable to read its properties.
+  code can assign `use.meta` to a variable to read its properties.
   */
-  ti.fail(() => run(sym(`import.meta.url`)), `missing property "url" in import.meta`)
+  ti.fail(() => run(sym(`use.meta.url`)), `missing property "url" in [object Raw]`)
 })
 
 function makeTestModule() {
