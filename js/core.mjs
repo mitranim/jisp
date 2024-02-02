@@ -568,6 +568,7 @@ export class Module {
     }
     catch (err) {
       reqErr(err).message = joinParagraphs(err.message, this.context())
+      await this.commitErr(ctx, err)
       throw err
     }
   }
@@ -599,6 +600,22 @@ export class Module {
       fs.write(metaUrl, JSON.stringify(this, null, 2)),
     ])
     this.tarTime = reqFin(await fs.timestamp(tarUrl))
+  }
+
+  commitErr(ctx, err) {
+    if (!(
+      true
+      && isSome(err)
+      && isComp(ctx)
+      && symErrors in ctx
+      && symFs in ctx
+      && this.tarPath
+    )) return
+
+    return ctx[symFs]?.write?.(
+      reqToUrl(this.reqTarPath()),
+      (`throw ` + JSON.stringify((isErr(err) && err.stack) || err)),
+    )?.catch?.(console.error)
   }
 
   // Semi-placeholder, lacks cycle detection.
@@ -801,6 +818,7 @@ export const symMain = Symbol.for(`jisp.main`)
 export const symStatement = Symbol.for(`jisp.statement`)
 export const symMixin = Symbol.for(`jisp.mixin`)
 export const symExport = Symbol.for(`jisp.export`)
+export const symErrors = Symbol.for(`jisp.errors`)
 
 export function ctxRoot(ctx) {
   while (isComp(ctx)) {

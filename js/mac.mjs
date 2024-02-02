@@ -8,8 +8,6 @@ Non-exhaustive list of missing keywords and operators:
     yield
     yield*
     for .. in
-    for .. of
-    for .. await .. of
     do .. while
     switch
 */

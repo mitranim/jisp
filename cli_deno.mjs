@@ -19,6 +19,8 @@ else {
   ctx[c.symFs] = new d.DenoFsReadOnly()
 }
 
+if (c.isSome(Deno.env.get(`JISP_ERRORS`))) ctx[c.symErrors] = undefined
+
 for (const arg of Deno.args) {
   const mod = c.ctxReqModules(ctx).getOrMake(new URL(arg, cwd).href)
   await mod.ready(ctx)
