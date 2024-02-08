@@ -31,7 +31,7 @@ There are two ways of importing: `use` and `use.mac`.
 
 ## Names
 
-JS uses reserved keywords, special reserved names, and a large amount of special syntax. Many traditional Lisps, including Common Lisp, also use reserved names and special syntax. In contrast, Jisp has no keywords, no reserved names, and no special-case syntax. In this sense, Jisp is more general.
+JS uses reserved keywords, special reserved names, and a large amount of special syntax. Many traditional Lisps, including Common Lisp, also use reserved names and special syntax. In contrast, Jisp has no keywords, no reserved names, and less syntax than most Lisps. In this sense, Jisp is more general.
 
 JS has a large amount of globally predeclared names. Many traditional Lisps, including Common Lisp, do the same. In contrast, Jisp does not have any predeclared names. Jisp code imports other names on an opt-in basis.
 

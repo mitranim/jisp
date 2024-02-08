@@ -60,6 +60,7 @@ export function inspect(...src) {
 function inspectNode(ctx, val) {
   const show = c.show(val)
   console.log(`[debug] node:`, show)
+  console.log(`[debug] type:`, typeof val)
 
   const view = c.nodeSpan(val)?.view()
   if (view && view !== show) console.log(`[debug] source:`, view)
@@ -91,4 +92,9 @@ export function module(src) {
   c.reqArityMax(arguments.length, 1)
   if (!arguments.length) return c.ctxReqModule(this)
   return c.ctxReqModules(this).getOrMake(c.importSrcUrl(this, src).href).init(this)
+}
+
+export function prn(src) {
+  c.reqArity(arguments.length, 1)
+  return [c.raw(`console.log`), c.reprNode(src) + `:`, src]
 }

@@ -2,17 +2,26 @@ import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
-t.test(function test_compile() {
-  function test(src, exp) {t.is(c.compileNode(src), exp)}
-  function fail(src, msg) {return ti.fail(() => c.compileNode(src), msg)}
+function test(src, exp) {t.is(c.compileNode(src), exp)}
+function fail(src, msg) {return ti.fail(() => c.compileNode(src), msg)}
 
+t.test(function test_compile_nil() {
   test(undefined, `undefined`)
   test(null, `null`)
+})
+
+t.test(function test_compile_bool() {
   test(false, `false`)
   test(true, `true`)
+})
+
+t.test(function test_compile_bigint() {
   test(0n, `0n`)
   test(123n, `123n`)
   test(-123n, `-123n`)
+})
+
+t.test(function test_compile_num() {
   test(0, `0`)
 
   /*
@@ -43,24 +52,53 @@ t.test(function test_compile() {
   test(NaN, `NaN`)
   test(Infinity, `Infinity`)
   test(-Infinity, `-Infinity`)
+})
 
-  /*
-  This behavior naturally follows from encoding symbols as-is. Our internals
-  don't rely on this particular case, but this may be useful in the future.
-  */
+t.test(function test_compile_sym() {
+  fail(Symbol(`some code`), `"some code" does not represent a valid JS identifier`)
+  fail(Symbol.for(`some code`), `"some code" does not represent a valid JS identifier`)
+
+  fail(Symbol.for(`.`), `unexpected leading accessor in "."`)
+  fail(Symbol.for(`..`), `unexpected leading accessor in ".."`)
+  fail(Symbol.for(`...`), `unexpected leading accessor in "..."`)
+  fail(Symbol.for(`.one`), `unexpected leading accessor in ".one"`)
+  fail(Symbol.for(`.one.two`), `unexpected leading accessor in ".one.two"`)
+  fail(Symbol.for(`one.`), `unable to compile "one." to valid JS: unexpected empty key`)
+  fail(Symbol.for(`one.two.`), `unable to compile "one.two." to valid JS: unexpected empty key`)
+  fail(Symbol.for(`one..two`), `unable to compile "one..two" to valid JS: unexpected empty key`)
+
   test(Symbol(``), ``)
   test(Symbol.for(``), ``)
 
-  test(Symbol(`sym`), `sym`)
-  test(Symbol.for(`sym`), `sym`)
+  test(Symbol(`one`), `one`)
+  test(Symbol.for(`one`), `one`)
+  test(Symbol.for(`await`), `await`)
+  test(Symbol.for(`eval`), `eval`)
+  test(Symbol.for(`one.two`), `one.two`)
+  test(Symbol.for(`one.two.three`), `one.two.three`)
+  test(Symbol.for(`#one`), `#one`)
+  test(Symbol.for(`#one.two`), `#one.two`)
+  test(Symbol.for(`one.#two`), `one.#two`)
+  test(Symbol.for(`#one.#two`), `#one.#two`)
 
-  test(Symbol(`some code`), `some code`)
-  test(Symbol.for(`some code`), `some code`)
+  fail(Symbol.for(`10`), `"10" does not represent a valid JS identifier`)
+  fail(Symbol.for(`10.20`), `"10" does not represent a valid JS identifier`)
+  fail(Symbol.for(`10.20.30`), `"10" does not represent a valid JS identifier`)
 
+  test(Symbol.for(`one.0`), `one[0]`)
+  test(Symbol.for(`one.1`), `one[1]`)
+  test(Symbol.for(`one.10`), `one[10]`)
+  test(Symbol.for(`one.10.20`), `one[10][20]`)
+  test(Symbol.for(`one.10.20.two`), `one[10][20].two`)
+})
+
+t.test(function test_compile_str() {
   test(``,         `""`)
   test(`one`,      `"one"`)
   test(`one\ntwo`, `"one\\ntwo"`)
+})
 
+t.test(function test_compile_list() {
   test([],                               ``)
   test([[]],                             ``)
   test([[[]]],                           ``)
@@ -86,17 +124,9 @@ t.test(function test_compile() {
   test([10, undefined, 20, null],        `10(undefined, 20, null)`)
   test([10, 20, 30],                     `10(20, 30)`)
   test([10, undefined, 20, null, 30],    `10(undefined, 20, null, 30)`)
+})
 
-  fail(Object(false),             `unable to usefully compile object [object Boolean]`)
-  fail(Object(true),              `unable to usefully compile object [object Boolean]`)
-  fail(Object(0n),                `unable to usefully compile object [object BigInt]`)
-  fail(Object(123n),              `unable to usefully compile object [object BigInt]`)
-  fail(Object(0),                 `unable to usefully compile object [object Number]`)
-  fail(Object(123.456),           `unable to usefully compile object [object Number]`)
-  fail(Object(Symbol(`sym`)),     `unable to usefully compile object [object Symbol]`)
-  fail(Object(Symbol.for(`sym`)), `unable to usefully compile object [object Symbol]`)
-  fail(Object(`str`),             `unable to usefully compile object [object String]`)
-
+t.test(function test_compile_fun() {
   function fun() {throw Error(`some_error`)}
   fail(fun, `unable to usefully compile function [function fun]`)
 
@@ -109,12 +139,49 @@ source function:
   fun.compile = function compile() {return `some_code`}
   test(fun, `some_code`)
   test({fun}, `({"fun": some_code})`)
+})
+
+t.test(function test_compile_compilable() {
+  test(new c.Raw(`some_code`), `some_code`)
+  test(new c.Raw(`"some_code"`), `"some_code"`)
+
+  test({compile: undefined}, `({"compile": undefined})`)
+  test({compile: 123}, `({"compile": 123})`)
+  fail({compile() {}}, `expected variant of isStr, got undefined`)
+  fail({compile() {return 123}}, `expected variant of isStr, got 123`)
+  test({compile() {return `some_code`}}, `some_code`)
+  test(Object.create(null, {compile: {value() {return `some_code`}}}), `some_code`)
+  test(new class SomeNode {compile() {return `some_code`}}(), `some_code`)
+})
+
+t.test(function test_compile_regexp() {
+  test(/(?:)/, `/(?:)/`)
+  test(/(?:)/g, `/(?:)/g`)
+  test(/(?:)/gi, `/(?:)/gi`)
+  test(/one/, `/one/`)
+  test(/one/g, `/one/g`)
+  test(/one/gi, `/one/gi`)
+})
+
+t.test(function test_compile_unknown_object() {
+  fail(Object(false),             `unable to usefully compile object [Boolean: false]`)
+  fail(Object(true),              `unable to usefully compile object [Boolean: true]`)
+  fail(Object(0n),                `unable to usefully compile object [BigInt: 0n]`)
+  fail(Object(123n),              `unable to usefully compile object [BigInt: 123n]`)
+  fail(Object(0),                 `unable to usefully compile object [Number: 0]`)
+  fail(Object(123.456),           `unable to usefully compile object [Number: 123.456]`)
+  fail(Object(Symbol(`sym`)),     `unable to usefully compile object [Symbol: sym]`)
+  fail(Object(Symbol.for(`sym`)), `unable to usefully compile object [Symbol: sym]`)
+  fail(Object(`str`),             `unable to usefully compile object [String: "str"]`)
 
   test(Object.create(null), `({})`)
   fail(Object.create(Object.create(null)), `unable to usefully compile object {}`)
   fail(Object.create(Object.create(Object.create(null))), `unable to usefully compile object {}`)
   fail(Object.create({}), `unable to usefully compile object {}`)
+  fail(Promise.resolve(), `unable to usefully compile object [object Promise]`)
+})
 
+t.test(function test_compile_dict() {
   test({}, `({})`)
   test({one: 10}, `({"one": 10})`)
   test({one: 10, two: 20}, `({"one": 10, "two": 20})`)
@@ -127,26 +194,6 @@ source function:
   test({10: 20, 30: []}, `({"10": 20, "30": undefined})`)
   test({10: 20, 30: [], 40: 50}, `({"10": 20, "30": undefined, "40": 50})`)
   test([10, {one: 20}, [30, {two: 40}]], `10(({"one": 20}), 30(({"two": 40})))`)
-
-  fail(Promise.resolve(), `unable to usefully compile object [object Promise]`)
-
-  test({compile: undefined}, `({"compile": undefined})`)
-  test({compile: 123}, `({"compile": 123})`)
-  fail({compile() {}}, `expected variant of isStr, got undefined`)
-  fail({compile() {return 123}}, `expected variant of isStr, got 123`)
-  test({compile() {return `some_code`}}, `some_code`)
-  test(Object.create(null, {compile: {value() {return `some_code`}}}), `some_code`)
-  test(new class SomeNode {compile() {return `some_code`}}(), `some_code`)
-
-  test(new c.Raw(`some_code`), `some_code`)
-  test(new c.Raw(`"some_code"`), `"some_code"`)
-
-  test(/(?:)/, `/(?:)/`)
-  test(/(?:)/g, `/(?:)/g`)
-  test(/(?:)/gi, `/(?:)/gi`)
-  test(/one/, `/one/`)
-  test(/one/g, `/one/g`)
-  test(/one/gi, `/one/gi`)
 })
 
 t.test(function test_compile_error_context_without_spans() {

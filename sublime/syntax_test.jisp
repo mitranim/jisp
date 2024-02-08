@@ -114,25 +114,25 @@ Some text followed by # not Markdown heading.
 
 ;;
 
-;; Invalid: ;;
+;; Symbol: ;;
 .0
 .1
 .12
 .123
 
-;; Invalid: ;;
+;; Symbol: ;;
 -.0
 -.1
 -.12
 -.123
 
-;; Invalid: ;;
+;; Symbol: ;;
 .0ident
 .1ident
 .12ident
 .123ident
 
-;; Invalid: ;;
+;; Symbol: ;;
 -.0ident
 -.1ident
 -.12ident
@@ -359,7 +359,6 @@ three
 ~~~ !!! @@@ ### %%% ^^^ &&& *** ::: <<< >>> ??? /// \\\ ||| === +++ ---
 ~-+ !~- @!~ #@! %#@ ^%# &^% *&^ :*& <:* ><: ?>< /?> \/? |\/ =|\ +=| -+=
 
-;; Invalid: ;;
 ~123
 !123
 @123
@@ -378,7 +377,6 @@ three
 =123
 +123
 
-;; Invalid: ;;
 --123
 +-123
 -+123
@@ -485,7 +483,6 @@ three
 `str` +
 `str` -
 
-;; Invalid: ;;
 ~ident
 !ident
 @ident
@@ -504,7 +501,6 @@ three
 =ident
 +ident
 
-;; Valid: ;;
 ~ ident
 ! ident
 @ ident
@@ -523,7 +519,6 @@ three
 = ident
 + ident
 
-;; Invalid: ;;
 ident-
 ident~
 ident!
@@ -544,7 +539,6 @@ ident=
 ident+
 ident-
 
-;; Valid: ;;
 ident -
 ident ~
 ident !

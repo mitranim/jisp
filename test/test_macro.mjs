@@ -3,16 +3,9 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 
 function sym(val) {return Symbol.for(c.reqStr(val))}
-function mockSpan() {return new c.Span(`some_source_code`)}
-
-const mockContext = `source node context:
-
-:1:1
-
-some_source_code`
 
 t.test(function test_macro_primitive() {
-  function test(src) {t.is(c.macroNode(undefined, src), src)}
+  function test(src) {t.is(c.macroNode(null, src), src)}
 
   test(undefined)
   test(null)
@@ -36,56 +29,6 @@ t.test(function test_macro_primitive() {
   test(`str`)
 })
 
-t.test(function test_macro_fun_sync_exception_context() {
-  const msg = `unexpected function node [function fun] in non-call position; hint: macro functions may be used in arbitrary positions by implementing the method ".macro" and/or the method ".compile"`
-  function fun() {throw Error(`unreachable`)}
-
-  ti.fail(
-    () => c.macroNode(null, fun),
-    c.joinParagraphs(msg, `source function:`, `[function fun]`),
-  )
-
-  c.nodeSpanSet(fun, mockSpan())
-  t.is(c.nodeContext(fun), mockContext)
-
-  ti.fail(
-    () => c.macroNode(null, fun),
-    c.joinParagraphs(msg, mockContext),
-  )
-
-  fun.macro = function mac() {throw Error(`some_error`)}
-
-  ti.fail(
-    () => c.macroNode(null, fun),
-    c.joinParagraphs(`some_error`, mockContext),
-  )
-})
-
-await t.test(async function test_macro_fun_async_exception_context() {
-  const msg = `unexpected function node [function fun] in non-call position; hint: macro functions may be used in arbitrary positions by implementing the method ".macro" and/or the method ".compile"`
-  async function fun() {throw Error(`unreachable`)}
-
-  await ti.fail(
-    async () => c.macroNode(null, fun),
-    c.joinParagraphs(msg, `source function:`, `[function fun]`),
-  )
-
-  c.nodeSpanSet(fun, mockSpan())
-  t.is(c.nodeContext(fun), mockContext)
-
-  await ti.fail(
-    async () => c.macroNode(null, fun),
-    c.joinParagraphs(msg, mockContext),
-  )
-
-  fun.macro = function mac() {throw Error(`some_error`)}
-
-  await ti.fail(
-    async () => c.macroNode(null, fun),
-    c.joinParagraphs(`some_error`, mockContext),
-  )
-})
-
 t.test(function test_macro_fun_sync() {
   const calls = []
   function macro(...args) {
@@ -105,10 +48,7 @@ t.test(function test_macro_fun_sync() {
   macroableCompilable.macro = macro
   macroableCompilable.compile = uncallable
 
-  ti.fail(
-    () => c.macroNode(null, uncallable),
-    `unexpected function node [function uncallable] in non-call position`,
-  )
+  t.is(c.macroNode(null, uncallable), uncallable)
   t.eq(calls.splice(0), [])
 
   t.is(c.macroNode(`ctx_0`, macroable), `some_value`)
@@ -141,10 +81,7 @@ await t.test(async function test_macro_fun_async() {
   macroableCompilable.macro = macro
   macroableCompilable.compile = uncallableSync
 
-  await ti.fail(
-    async () => c.macroNode(null, uncallable),
-    `unexpected function node [function uncallable] in non-call position`,
-  )
+  t.is(c.macroNode(null, uncallable), uncallable)
   t.eq(calls.splice(0), [])
 
   t.is(await c.macroNode(`ctx_0`, macroable), `some_value`)
@@ -245,7 +182,7 @@ t.test(function test_macro_fun_sync_recursive_exception_context() {
   function three() {throw Error(`unreachable`)}
   three.macro = function threeMac() {throw Error(`some_error`)}
 
-  ti.fail(() => c.macroNode(undefined, one), funRecContext)
+  ti.fail(() => c.macroNode(null, one), funRecContext)
 })
 
 await t.test(async function test_macro_fun_async_recursive_exception_context() {
@@ -258,7 +195,7 @@ await t.test(async function test_macro_fun_async_recursive_exception_context() {
   async function three() {throw Error(`unreachable`)}
   three.macro = async function threeMac() {throw Error(`some_error`)}
 
-  await ti.fail(async () => c.macroNode(undefined, one), funRecContext)
+  await ti.fail(async () => c.macroNode(null, one), funRecContext)
 })
 
 t.test(function test_macro_fun_sync_terminate_on_identical_result() {
@@ -299,7 +236,7 @@ await t.test(async function test_macro_fun_async_terminate_on_identical_result()
 await t.test(async function test_macro_promise() {
   async function test(src, exp) {
     t.is(
-      await c.macroNode(undefined, Promise.resolve(src)),
+      await c.macroNode(null, Promise.resolve(src)),
       exp,
     )
   }
@@ -325,7 +262,7 @@ await t.test(async function test_macro_promise() {
 })
 
 t.test(function test_macro_unknown_object() {
-  function mac(src) {return c.macroNode(undefined, c.reqObj(src))}
+  function mac(src) {return c.macroNode(null, c.reqObj(src))}
   function same(src) {t.is(mac(src), src)}
 
   same(Object(false))
@@ -402,7 +339,9 @@ function testMacroSymSync(fun) {
   function mac(src) {return fun(ctx, sym(src))}
   function same(src) {t.is(mac(src), sym(src))}
   function test(src, exp) {t.is(mac(src), exp)}
+  function testCompile(src, exp) {t.is(c.compileNode(mac(src)), exp)}
 
+  ctx = Object.create(null)
   ti.fail(() => mac(`one`),           `missing declaration of "one"`)
   ti.fail(() => mac(`one.two`),       `missing declaration of "one"`)
   ti.fail(() => mac(`one.two.three`), `missing declaration of "one"`)
@@ -412,78 +351,141 @@ function testMacroSymSync(fun) {
   ti.fail(() => mac(`!@#.two.three`), `missing declaration of "!@#"`)
 
   ctx = Object.create(null)
+  ti.fail(() => mac(`one`), `missing declaration of "one"`)
   ctx.one = undefined
-  same(`one`)
-  same(`one.two`)
-  same(`one.two.three`)
-
-  ctx = Object.create(ctx)
-  same(`one`)
-  same(`one.two`)
-  same(`one.two.three`)
+  test(`one`, undefined)
+  testCompile(`one.two`, `undefined.two`)
+  testCompile(`one.two.three`, `undefined.two.three`)
 
   ctx = Object.create(null)
+  ti.fail(() => mac(`!@#`), `missing declaration of "!@#"`)
   ctx[`!@#`] = undefined
-  same(`!@#`)
-  same(`!@#.two`)
-  same(`!@#.two.three`)
-
-  ctx = Object.create(ctx)
-  same(`!@#`)
-  same(`!@#.two`)
-  same(`!@#.two.three`)
+  test(`!@#`, undefined)
+  testCompile(`!@#.two`, `undefined.two`)
+  testCompile(`!@#.two.three`, `undefined.two.three`)
 
   ctx = Object.create(null)
-  ctx.one = 10
-  test(`one`, 10)
-  ti.fail(() => mac(`one.two`), `missing property "two" in 10`)
-  ti.fail(() => mac(`one.two.three`), `missing property "two" in 10`)
+  ti.fail(() => mac(`one`), `missing declaration of "one"`)
+  ctx.one = 123
+  test(`one`, 123)
+  testCompile(`one.two`, `123.two`)
+  testCompile(`one.two.three`, `123.two.three`)
 
+  ctx = Object.create(null)
+  // We use this self-referencing for all runtime-only declarations such as
+  // those made by `const` and `func`.
+  ctx.one = sym(`one`)
+  same(`one`)
+  same(`one.two`)
+  same(`one.two.three`)
+
+  ctx = Object.create(null)
   ctx.one = sym(`two`)
   ti.fail(() => mac(`one`), `missing declaration of "two"`)
-  ti.fail(() => mac(`one.two`), `missing property "two" in two`)
-  ti.fail(() => mac(`one.three`), `missing property "three" in two`)
-  ti.fail(() => mac(`one.two.three`), `missing property "two" in two`)
+  ti.fail(() => mac(`one.two`), `missing declaration of "two"`)
+  ti.fail(() => mac(`one.three`), `missing declaration of "two"`)
+  ti.fail(() => mac(`one.two.three`), `missing declaration of "two"`)
 
+  // Same self-referencing as in an earlier test.
+  ctx.two = sym(`two`)
+  test(`one`,            sym(`two`))
+  test(`one.two`,        sym(`two.two`))
+  test(`one.two.three`,  sym(`two.two.three`))
+  test(`one.three`,      sym(`two.three`))
+  test(`one.three.four`, sym(`two.three.four`))
+
+  ctx = Object.create(null)
   ctx.one = {val: 10}
   test(`one`, ctx.one)
   ti.fail(() => mac(`one.two`), `missing property "two" in {val: 10}`)
   ti.fail(() => mac(`one.two.three`), `missing property "two" in {val: 10}`)
 
+  ctx = Object.create(null)
   ctx.one = {two: undefined}
   test(`one`, ctx.one)
   test(`one.two`, undefined)
-  ti.fail(() => mac(`one.two.three`), `missing property "three" in undefined`)
+  testCompile(`one.two.three`, `undefined.three`)
 
+  ctx = Object.create(null)
   ctx.one = {two: 123}
   test(`one`, ctx.one)
   test(`one.two`, 123)
-  ti.fail(() => mac(`one.two.three`), `missing property "three" in 123`)
+  testCompile(`one.two.three`, `123.three`)
 
+  ctx = Object.create(null)
   ctx.one = {macro: undefined}
   test(`one`, ctx.one)
 
+  ctx = Object.create(null)
   ctx.one = {macro: 123}
   test(`one`, ctx.one)
 
+  ctx = Object.create(null)
   ctx.one = {macro() {return `some_node`}}
   test(`one`, `some_node`)
-  ti.fail(() => mac(`one.two`), `missing property "two" in {macro: [function macro]}`)
-  ti.fail(() => mac(`one.two.three`), `missing property "two" in {macro: [function macro]}`)
+  testCompile(`one.two`, `"some_node".two`)
+  testCompile(`one.two.three`, `"some_node".two.three`)
 
+  ctx = Object.create(null)
   ctx.one = {macro() {return `some_node`}, two: 123}
   test(`one`, `some_node`)
-  test(`one.two`, 123)
-  ti.fail(() => mac(`one.two.three`), `missing property "three" in 123`)
+  testCompile(`one.two`, `"some_node".two`)
+  testCompile(`one.three`, `"some_node".three`)
+  testCompile(`one.two.three`, `"some_node".two.three`)
 
+  ctx.one = {macro() {return this}, two: 123}
+  test(`one`, ctx.one)
+  {
+    const out = mac(`one.two`)
+    t.inst(out, c.KeyRef)
+    t.is(out.src, ctx.one)
+    t.is(out.key, `two`)
+  }
+
+  ctx = Object.create(null)
   ctx.one = function one() {throw Error(`unreachable`)}
-  ti.fail(() => mac(`one`), `unexpected function node [function one] in non-call position`)
+  test(`one`, ctx.one)
 
   ctx.one.macro = function two() {return `some_node`}
   test(`one`, `some_node`)
-  ti.fail(() => mac(`one.two`), `missing property "two" in [function one]`)
-  ti.fail(() => mac(`one.two.three`), `missing property "two" in [function one]`)
-  ti.fail(() => mac(`one.macro`), `unexpected function node [function two] in non-call position`)
+  testCompile(`one.two`, `"some_node".two`)
+  testCompile(`one.two.three`, `"some_node".two.three`)
+  testCompile(`one.macro`, `"some_node".macro`)
+  testCompile(`one.toString`, `"some_node".toString`)
+
+  ctx.one = Object.create(null)
+  ctx.one.compile = function two() {return `some_code`}
+  test(`one`, ctx.one)
+  testCompile(`one.two`, `some_code.two`)
+  testCompile(`one.two.three`, `some_code.two.three`)
+  testCompile(`one.compile`, `some_code.compile`)
+  testCompile(`one.two.compile`, `some_code.two.compile`)
+
+  ctx.one.macro = ti.macUnreachable
+  test(`one`, ctx.one)
+  testCompile(`one.two`, `some_code.two`)
+  testCompile(`one.two.three`, `some_code.two.three`)
+  testCompile(`one.macro`, `some_code.macro`)
+  testCompile(`one.two.macro`, `some_code.two.macro`)
+
+  ctx = Object.create(null)
+  ctx.one = Object.create(null)
+  ctx.one.two = Object.create(null)
+  ctx.one.compile = function two() {return `some_code`}
+  test(`one`, ctx.one)
+  testCompile(`one.two`, `some_code.two`)
+  testCompile(`one.two.three`, `some_code.two.three`)
+  testCompile(`one.compile`, `some_code.compile`)
+  testCompile(`one.two.compile`, `some_code.two.compile`)
+
+  ctx.one.macro = ti.macUnreachable
+  test(`one`, ctx.one)
+  testCompile(`one.two`, `some_code.two`)
+  testCompile(`one.two.three`, `some_code.two.three`)
+  testCompile(`one.macro`, `some_code.macro`)
+  testCompile(`one.two.macro`, `some_code.two.macro`)
+  testCompile(`one.10`, `some_code[10]`)
+  testCompile(`one.10.20`, `some_code[10][20]`)
 }
 
 t.test(function test_macro_symbol_sync_recursive() {
@@ -600,6 +602,9 @@ source node:
 [10, one]`)
 
   ctx.one = undefined
+  test([sym(`one`)], [undefined])
+
+  ctx.one = sym(`one`)
   test([sym(`one`)], [sym(`one`)])
 
   ti.fail(() => mac([sym(`one`), sym(`two`)]), `missing declaration of "two"
@@ -613,12 +618,18 @@ source node:
 [one, two]`)
 
   ctx.two = undefined
+  test([sym(`one`), sym(`two`)], [sym(`one`), undefined])
+
+  ctx.two = sym(`one`)
+  test([sym(`one`), sym(`two`)], [sym(`one`), sym(`one`)])
+
+  ctx.two = sym(`two`)
   test([sym(`one`), sym(`two`)], [sym(`one`), sym(`two`)])
 })
 
 await t.test(async function test_macro_list_async() {
   async function test(src, exp) {
-    t.eq((await c.macroNode(undefined, src)), exp)
+    t.eq((await c.macroNode(null, src)), exp)
   }
 
   test([Promise.resolve(10), 20],                  [10, 20])
@@ -649,20 +660,7 @@ t.test(function test_macro_list_with_macro_symbols() {
   }
 
   ctx.one = one
-
-  ti.fail(() => mac([10, sym(`one`)]), `unexpected function node [function one] in non-call position; hint: macro functions may be used in arbitrary positions by implementing the method ".macro" and/or the method ".compile"
-
-source function:
-
-[function one]
-
-source node:
-
-one
-
-source node:
-
-[10, one]`)
+  t.eq(mac([10, sym(`one`)]), [10, one])
 
   ti.fail(() => mac([sym(`one`), 10, 20]), `missing declaration of "two"`)
   t.eq(calls, [{this: ctx, args: [10, 20], fun: one}])
@@ -671,7 +669,7 @@ source node:
   ctx.two = two
   calls.length = 0
 
-  ti.fail(() => mac([sym(`one`), 10, 20]), `unexpected function node [function two] in non-call position`)
+  t.eq(mac([sym(`one`), 10, 20]), two)
   t.eq(calls, [{this: ctx, args: [10, 20], fun: one}])
 
   two.macro = function twoMac(...args) {

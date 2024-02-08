@@ -20,18 +20,35 @@ t.test(function test_export() {
 
   ti.fail(() => p.export.call(ctx, sym(`!@#`)), `missing declaration of "!@#"`)
   ctx[`!@#`] = undefined
+  ti.fail(() => p.export.call(ctx, sym(`!@#`)), `export source must be unqualified identifier, got undefined`)
+  ctx[`!@#`] = 123
+  ti.fail(() => p.export.call(ctx, sym(`!@#`)), `export source must be unqualified identifier, got 123`)
+  ctx[`!@#`] = sym(`!@#`)
   ti.fail(() => p.export.call(ctx, sym(`!@#`)), `"!@#" does not represent a valid JS identifier`)
 
   ti.fail(() => p.export.call(ctx, sym(`await`)), `missing declaration of "await"`)
-  ctx.await = undefined
+  ctx.await = sym(`await`)
   ti.fail(() => p.export.call(ctx, sym(`await`)), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
 
   ti.fail(() => p.export.call(ctx, sym(`eval`)), `missing declaration of "eval"`)
-  ctx.eval = undefined
+  ctx.eval = sym(`eval`)
   ti.fail(() => p.export.call(ctx, sym(`eval`)), `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 
   ctx.one = undefined
-  ti.fail(() => p.export.call(ctx, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
+  ti.fail(() => p.export.call(ctx, sym(`one.two`)), `export source must be unqualified identifier, got [object KeyRef: {src: undefined, key: "two"}]`)
+  ti.fail(() => p.export.call(ctx, sym(`one`)), `export source must be unqualified identifier, got undefined`)
+
+  ctx.one = 123
+  ti.fail(() => p.export.call(ctx, sym(`one`)), `export source must be unqualified identifier, got 123`)
+
+  ctx.one = sym(`one`)
+  t.is(p.export.call(ctx, sym(`one`)).compile(), `export {one}`)
+
+  ti.fail(() => p.export.call(ctx, sym(`one`), 10), `export alias must be unqualified identifier or string, got 10`)
+  ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.three`)), `export alias must be unqualified identifier or string, got two.three`)
+  ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.!@#`)), `export alias must be unqualified identifier or string, got two.!@#`)
+
+  ti.fail(() => p.export.call(ctx, sym(`one.two`)), `export source must be unqualified identifier, got one.two`)
   ti.fail(() => p.export.call(ctx, sym(`one`), 10), `export alias must be unqualified identifier or string, got 10`)
   ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.three`)), `export alias must be unqualified identifier or string, got two.three`)
   ti.fail(() => p.export.call(ctx, sym(`one`), sym(`two.!@#`)), `export alias must be unqualified identifier or string, got two.!@#`)
@@ -59,33 +76,33 @@ t.test(function test_const() {
   t.own(ctx, {[c.symStatement]: undefined})
 
   t.is(p.const.call(ctx, sym(`one`), 10).compile(), `const one = 10`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   ti.fail(() => p.const.call(ctx, sym(`one`), 20), `redundant declaration of "one"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   t.is(p.const.call(ctx, sym(`two`), ti.macReqExpression).compile(), `const two = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ti.fail(() => p.const.call(ctx, sym(`two`), 30), `redundant declaration of "two"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ti.fail(
     () => p.const.call(ctx, sym(`three`), ti.macReqStatement),
     `expected statement context, got expression context`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ctx = c.ctxWithStatement(ctx)
   t.is(p.const.call(ctx, sym(`one`), 40).compile(), `const one = 40`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   t.is(p.const.call(ctx, sym(`two`), []).compile(), `const two = undefined`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ctx = c.ctxWithModule(ctx)
   t.is(p.const.call(ctx, sym(`one`), 50).compile(), `export const one = 50`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
 })
 
 // Also see `test_func_param_deconstruction` which covers more cases.
@@ -121,13 +138,13 @@ t.test(function test_const_deconstruction() {
   t.own(ctx, {[c.symStatement]: undefined})
 
   t.is(mac(ctx, [sym(`one`)]).compile(), `const [one] = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   t.is(mac(ctx, [m.symRest, sym(`two`)]).compile(), `const [...two] = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   t.is(mac(ctx, [sym(`three`), [sym(`four`), m.symRest, sym(`five`)]]).compile(), `const [three, [four, ...five]] = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined, five: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`)})
 })
 
 t.test(function test_const_mac() {
@@ -207,7 +224,7 @@ t.test(function test_let() {
   t.own(ctx, {[c.symStatement]: undefined})
 
   t.is(p.let.call(ctx, sym(`one`), 10).compile(), `let one = 10`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   ti.fail(
     () => p.let.call(ctx, sym(`one`), 20),
@@ -215,7 +232,7 @@ t.test(function test_let() {
   )
 
   t.is(p.let.call(ctx, sym(`two`), ti.macReqExpression).compile(), `let two = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ti.fail(
     () => p.let.call(ctx, sym(`two`), 30),
@@ -226,30 +243,30 @@ t.test(function test_let() {
     () => p.let.call(ctx, sym(`three`), ti.macReqStatement),
     `expected statement context, got expression context`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   // This verifies that when a variable is already declared in a super context,
   // re-declaring it in a sub-context creates a new declaration rather than an
   // assignment.
   ctx = c.ctxWithStatement(ctx)
   t.is(p.let.call(ctx, sym(`one`)).compile(), `let one`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   t.is(p.let.call(ctx, sym(`two`), undefined).compile(), `let two = undefined`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   t.is(p.let.call(ctx, sym(`three`), null).compile(), `let three = null`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`)})
 
   t.is(p.let.call(ctx, sym(`four`), []).compile(), `let four`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`)})
 
   ctx = c.ctxWithModule(ctx)
   t.is(p.let.call(ctx, sym(`one`)).compile(), `export let one`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
 
   t.is(p.let.call(ctx, sym(`two`), 50).compile(), `export let two = 50`)
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`), two: sym(`two`)})
 })
 
 t.test(function test_if_expression() {
@@ -553,12 +570,12 @@ t.test(function test_try() {
 
   ti.fail(
     () => p.try.call(ctx, m.catch),
-    `unexpected function node [function $catch] in non-call position`,
+    `unable to usefully compile function [function $catch]`,
   )
 
   ti.fail(
     () => p.try.call(ctx, sym(`catch`)),
-    `unexpected function node [function $catch] in non-call position`,
+    `unable to usefully compile function [function $catch]`,
   )
 
   ti.fail(
@@ -637,12 +654,12 @@ catch (one) {
 
   ti.fail(
     () => p.try.call(ctx, m.finally),
-    `unexpected function node [function $finally] in non-call position`,
+    `unable to usefully compile function [function $finally]`,
   )
 
   ti.fail(
     () => p.try.call(ctx, sym(`finally`)),
-    `unexpected function node [function $finally] in non-call position`,
+    `unable to usefully compile function [function $finally]`,
   )
 
   ti.fail(
@@ -1042,13 +1059,13 @@ t.test(function test_loop_iter() {
 
   {
     const ctx = c.ctxWithStatement(null)
-    ctx.one = undefined
+    ctx.one = sym(`one`)
 
     t.is(
       p.loop.iter.call(ctx, [sym(`set`), sym(`one`), []]).compile(),
       `for (one of []) {}`,
     )
-    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
     /*
     In this example, `one` in outer scope is distinct from `one` in inner
@@ -1067,7 +1084,7 @@ t.test(function test_loop_iter() {
 const one = 10;
 const two = 20
 }`)
-    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
   }
 
   t.is(
@@ -1098,7 +1115,7 @@ const two = 20
 
   {
     const ctx = c.ctxWithStatement(null)
-    ctx.one = undefined
+    ctx.one = sym(`one`)
 
     t.is(
       p.loop.iter.call(
@@ -1111,7 +1128,7 @@ const two = 20
 "two";
 "three"
 }`)
-    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
   }
 
   t.is(
@@ -1161,8 +1178,8 @@ t.test(function test_void_bare() {
   t.is(p.void.macro(ctx, ti.macUnreachable), undefined)
 
   ctx = c.ctxWithStatement(null)
-  t.eq(p.void.macro(ctx),                    [])
-  t.eq(p.void.macro(ctx, ti.macUnreachable), [])
+  t.eq(p.void.macro(ctx),                    undefined)
+  t.eq(p.void.macro(ctx, ti.macUnreachable), undefined)
 })
 
 t.test(function test_void_expression() {
@@ -1518,13 +1535,13 @@ t.test(function test_func_statement() {
     p.func.call(ctx, sym(`one`), []).compile(),
     `function one () {}`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   ti.fail(
     () => p.func.call(ctx, sym(`one`), []),
     `redundant declaration of "one"`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   // Function name should be in scope in function body.
   t.is(
@@ -1532,7 +1549,7 @@ t.test(function test_func_statement() {
     `function two () {
 return two
 }`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   // Should be able to redeclare function name in parameters.
   t.is(
@@ -1540,7 +1557,7 @@ return two
     `function three (three) {
 return three
 }`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`)})
 
   // Should be able to redeclare function name in function body.
 t.is(
@@ -1549,14 +1566,14 @@ t.is(
 const four = 10;
 return
 }`)
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`)})
 
   // Function parameters and body should have the same scope.
   ti.fail(
     () => p.func.call(ctx, sym(`five`), [sym(`five`)], [p.const, sym(`five`), 10], []),
     `redundant declaration of "five"`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined, five: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`)})
 
   t.is(
     p.func.call(ctx, sym(`six`), [], ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
@@ -1566,7 +1583,7 @@ return
 return "three"
 }`
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined, two: undefined, three: undefined, four: undefined, five: undefined, six: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`), six: sym(`six`)})
 })
 
 t.test(function test_func_export() {
@@ -1576,7 +1593,7 @@ t.test(function test_func_export() {
     p.func.call(ctx, sym(`one`), []).compile(),
     `export function one () {}`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
 
   ctx = c.ctxWithStatement(ctx)
 
@@ -1584,7 +1601,7 @@ t.test(function test_func_export() {
     p.func.call(ctx, sym(`one`), []).compile(),
     `function one () {}`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 })
 
 t.test(function test_func_mixin() {
@@ -1601,14 +1618,14 @@ return
   // In expression mode, the declaration is made in the mixin scope.
   t.eq(ti.objFlat(test(null)), [
     {[c.symStatement]: undefined},
-    {[c.symMixin]: undefined, ...m.funcMixin, one: undefined},
+    {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
   ])
 
   // In statement mode, the declaration is made in the outer scope.
   t.eq(ti.objFlat(test(c.ctxWithStatement(null))), [
     {[c.symStatement]: undefined},
     {[c.symMixin]: undefined, ...m.funcMixin},
-    {[c.symStatement]: undefined, one: undefined},
+    {[c.symStatement]: undefined, one: sym(`one`)},
   ])
 
   {
@@ -1617,7 +1634,7 @@ return
 
     t.eq(ti.objFlat(test(ctx)), [
       {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, guard: m.guard, arguments: undefined, this: undefined, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), this: sym(`this`), one: sym(`one`)},
       {ret: 10},
     ])
   }
@@ -1630,7 +1647,7 @@ return
 
     t.eq(ti.objFlat(test(ctx)), [
       {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, guard: m.guard, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, one: sym(`one`)},
       {ret: 10, arguments: 20, this: 30},
     ])
   }
@@ -1646,7 +1663,7 @@ return
       {[c.symStatement]: undefined},
       // Unlike the other "mixin" properties, the function's name is added to
       // its mixin scope unconditionally.
-      {[c.symMixin]: undefined, guard: m.guard, one: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, one: sym(`one`)},
       {ret: 10, arguments: 20, this: 30, one: 40},
     ])
   }
@@ -1663,7 +1680,7 @@ return
     t.eq(ti.objFlat(ctx), [
       {[c.symStatement]: undefined},
       // Function name takes priority over mixin properties.
-      {[c.symMixin]: undefined, guard: m.guard, arguments: undefined, this: undefined, ret: undefined},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), this: sym(`this`), ret: sym(`ret`)},
     ])
   }
 })
@@ -1704,27 +1721,27 @@ t.test(function test_func_param_deconstruction() {
 
   ti.fail(
     () => mac([m.symRest]),
-    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
   )
 
   ti.fail(
     () => mac([[m.symRest]]),
-    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
   )
 
   ti.fail(
     () => mac([sym(`one`), [m.symRest]]),
-    `rest symbol & must be followed by exactly one node, found 0 nodes`,
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
   )
 
   ti.fail(
     () => mac([m.symRest, [], []]),
-    `rest symbol & must be followed by exactly one node, found 2 nodes`,
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
   )
 
   ti.fail(
     () => mac([m.symRest, sym(`one`), sym(`two`)]),
-    `rest symbol & must be followed by exactly one node, found 2 nodes`,
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
   )
 
   ti.fail(
@@ -1744,7 +1761,7 @@ t.test(function test_func_param_deconstruction() {
 
   ti.fail(
     () => mac([m.symRest, m.symRest]),
-    `"&" does not represent a valid JS identifier`,
+    c.show(m.symRest.description) + ` does not represent a valid JS identifier`,
   )
 
   ti.fail(
@@ -1798,8 +1815,8 @@ return
 }`)
 
   t.eq(ti.objFlat(ctx), [
-    {[c.symStatement]: undefined, two: undefined, three: undefined, four: undefined},
-    {[c.symMixin]: undefined, ...m.funcMixin, one: undefined},
+    {[c.symStatement]: undefined, two: sym(`two`), three: sym(`three`), four: sym(`four`)},
+    {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
   ])
 })
 
@@ -2011,7 +2028,7 @@ t.test(function test_class_declaration_and_export() {
     t.eq(ti.objFlat(sub), [
       {[m.symClass]: undefined},
       // In expression mode, the declaration is made in the mixin scope.
-      {[c.symMixin]: undefined, ...m.classMixin, one: undefined},
+      {[c.symMixin]: undefined, ...m.classMixin, one: sym(`one`)},
       ctx,
     ])
   }
@@ -2023,7 +2040,7 @@ t.test(function test_class_declaration_and_export() {
     t.is(out.compile(), `class one {}`)
 
     // In statement mode, the declaration is made in the outer scope.
-    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
     t.eq(ti.objFlat(sub), [
       {[m.symClass]: undefined},
@@ -2038,7 +2055,7 @@ t.test(function test_class_declaration_and_export() {
 
     t.is(out.compile(), `export class one {}`)
 
-    t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+    t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
 
     t.eq(ti.objFlat(sub), [
       {[m.symClass]: undefined},
@@ -2194,7 +2211,7 @@ return 10
 
     t.eq(ti.objFlat(ctx), [
       {},
-      {[c.symStatement]: undefined, two: undefined, three: undefined},
+      {[c.symStatement]: undefined, two: sym(`two`), three: sym(`three`)},
       {[c.symMixin]: undefined, ...m.funcMixin, ...m.methMixin},
     ])
   }
@@ -2265,7 +2282,7 @@ t.test(function test_field() {
 two = "expression_value"
 }`)
 
-    t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+    t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
   }
 })
 
@@ -2327,7 +2344,7 @@ return 80
 static seven = 90
 }`)
 
-  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   t.is(
     c.macroNode(
@@ -2388,12 +2405,12 @@ function testNew(ctx) {
 
   ti.fail(
     () => p.new.call(ctx, [], SomeNode),
-    `unexpected function node [function SomeNode] in non-call position`,
+    `unable to usefully compile function [function SomeNode]`,
   )
 
   ti.fail(
     () => p.new.call(ctx, [], sym(`one`)),
-    `unexpected function node [function SomeNode] in non-call position`,
+    `unable to usefully compile function [function SomeNode]`,
   )
 
   t.is(
@@ -2436,8 +2453,11 @@ function testNew(ctx) {
     `missing property "two" in [function SomeNode]`,
   )
 
-  ctx.one = undefined
+  ctx.one = 123
+  t.is(p.new.call(ctx, sym(`one`)).compile(), `new 123()`)
+  t.is(p.new.call(ctx, sym(`one.two`)).compile(), `new 123.two()`)
 
+  ctx.one = sym(`one`)
   t.is(p.new.call(ctx, sym(`one`)).compile(), `new one()`)
   t.is(p.new.call(ctx, sym(`one.two`)).compile(), `new one.two()`)
 
@@ -2453,12 +2473,7 @@ t.test(function test_new_target() {
 
   ctx.new = p.new
   t.is(run(sym(`new.target`)), `new.target`)
-
-  /*
-  Unfortunate current limitation. We'd like to fix this eventually. For now, use
-  code can assign `new.target` to a variable to read its properties.
-  */
-  ti.fail(() => run(sym(`new.target.name`)), `missing property "name" in [object Raw]`)
+  t.is(run(sym(`new.target.name`)), `new.target.name`)
 })
 
 t.test(function test_typeof() {testUnary(p.typeof, `typeof`)})
@@ -2604,7 +2619,7 @@ t.test(function test_is() {
   ti.fail(() => c.macroNode(ctx, sym(`is`)), `missing declaration of "Object"`)
   ti.fail(() => c.macroNode(ctx, p.is), `missing declaration of "Object"`)
 
-  ctx.Object = undefined
+  ctx.Object = sym(`Object`)
   t.is(c.macroNode(ctx, sym(`is`)), sym(`Object.is`))
   t.is(c.macroNode(ctx, p.is), sym(`Object.is`))
   t.is(c.compileNode(sym(`Object.is`)), `Object.is`)
@@ -2709,27 +2724,42 @@ t.test(function test_dict() {
 
     ti.fail(
       () => p.dict.call(ctx, undefined, 10),
-      `dict keys must be identifiers, strings, or numbers; got undefined`,
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got undefined`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, [], 10),
-      `dict keys must be identifiers, strings, or numbers; got []`,
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got []`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, NaN, 10),
-      `dict keys must be identifiers, strings, or numbers; got NaN`,
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got NaN`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, Infinity, 10),
-      `dict keys must be identifiers, strings, or numbers; got Infinity`,
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got Infinity`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, -Infinity, 10),
-      `dict keys must be identifiers, strings, or numbers; got -Infinity`,
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got -Infinity`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`one`), 10),
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got one`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`one.two`), 10),
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got one.two`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`.one.two`), 10),
+      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got .one.two`,
     )
   }
 
@@ -2739,29 +2769,32 @@ t.test(function test_dict() {
   t.is(p.dict.call(expr).compile(), `{}`)
   t.is(p.dict.call(stat).compile(), `({})`)
 
-  t.is(p.dict.call(expr, -0, -0).compile(), `{"0": -0}`)
-  t.is(p.dict.call(stat, -0, -0).compile(), `({"0": -0})`)
+  t.is(p.dict.call(expr, -0, -0).compile(), `{0: -0}`)
+  t.is(p.dict.call(stat, -0, -0).compile(), `({0: -0})`)
 
-  t.is(p.dict.call(expr, 10, 20).compile(), `{"10": 20}`)
-  t.is(p.dict.call(stat, 10, 20).compile(), `({"10": 20})`)
+  t.is(p.dict.call(expr, 10, 20).compile(), `{10: 20}`)
+  t.is(p.dict.call(stat, 10, 20).compile(), `({10: 20})`)
 
-  t.is(p.dict.call(expr, 10, 20, 30, 40).compile(), `{"10": 20, "30": 40}`)
-  t.is(p.dict.call(stat, 10, 20, 30, 40).compile(), `({"10": 20, "30": 40})`)
+  t.is(p.dict.call(expr, 10, 20, 30, 40).compile(), `{10: 20, 30: 40}`)
+  t.is(p.dict.call(stat, 10, 20, 30, 40).compile(), `({10: 20, 30: 40})`)
 
-  t.is(p.dict.call(expr, 10, []).compile(), `{"10": undefined}`)
-  t.is(p.dict.call(stat, 10, []).compile(), `({"10": undefined})`)
+  t.is(p.dict.call(expr, 10.20, 30, 40.50, 60).compile(), `{"10.2": 30, "40.5": 60}`)
+  t.is(p.dict.call(stat, 10.20, 30, 40.50, 60).compile(), `({"10.2": 30, "40.5": 60})`)
 
-  t.is(p.dict.call(expr, 10, [], 20, 30).compile(), `{"10": undefined, "20": 30}`)
-  t.is(p.dict.call(stat, 10, [], 20, 30).compile(), `({"10": undefined, "20": 30})`)
+  t.is(p.dict.call(expr, 10, []).compile(), `{10: undefined}`)
+  t.is(p.dict.call(stat, 10, []).compile(), `({10: undefined})`)
 
-  t.is(p.dict.call(expr, 10, [], 20, 30, 40, [[]]).compile(), `{"10": undefined, "20": 30, "40": undefined}`)
-  t.is(p.dict.call(stat, 10, [], 20, 30, 40, [[]]).compile(), `({"10": undefined, "20": 30, "40": undefined})`)
+  t.is(p.dict.call(expr, 10, [], 20, 30).compile(), `{10: undefined, 20: 30}`)
+  t.is(p.dict.call(stat, 10, [], 20, 30).compile(), `({10: undefined, 20: 30})`)
 
-  t.is(p.dict.call(expr, 10n, 20n).compile(), `{"10": 20n}`)
-  t.is(p.dict.call(stat, 10n, 20n).compile(), `({"10": 20n})`)
+  t.is(p.dict.call(expr, 10, [], 20, 30, 40, [[]]).compile(), `{10: undefined, 20: 30, 40: undefined}`)
+  t.is(p.dict.call(stat, 10, [], 20, 30, 40, [[]]).compile(), `({10: undefined, 20: 30, 40: undefined})`)
 
-  t.is(p.dict.call(expr, 10n, 20n, 30n, 40n).compile(), `{"10": 20n, "30": 40n}`)
-  t.is(p.dict.call(stat, 10n, 20n, 30n, 40n).compile(), `({"10": 20n, "30": 40n})`)
+  t.is(p.dict.call(expr, 10n, 20n).compile(), `{10: 20n}`)
+  t.is(p.dict.call(stat, 10n, 20n).compile(), `({10: 20n})`)
+
+  t.is(p.dict.call(expr, 10n, 20n, 30n, 40n).compile(), `{10: 20n, 30: 40n}`)
+  t.is(p.dict.call(stat, 10n, 20n, 30n, 40n).compile(), `({10: 20n, 30: 40n})`)
 
   t.is(p.dict.call(expr, `one`, `two`).compile(), `{"one": "two"}`)
   t.is(p.dict.call(stat, `one`, `two`).compile(), `({"one": "two"})`)
@@ -2772,36 +2805,33 @@ t.test(function test_dict() {
   t.is(p.dict.call(expr, `one`, 10, `two`, 20).compile(), `{"one": 10, "two": 20}`)
   t.is(p.dict.call(stat, `one`, 10, `two`, 20).compile(), `({"one": 10, "two": 20})`)
 
-  t.is(p.dict.call(expr, sym(`one`), `two`, sym(`three`), `four`).compile(), `{one: "two", three: "four"}`)
-  t.is(p.dict.call(stat, sym(`one`), `two`, sym(`three`), `four`).compile(), `({one: "two", three: "four"})`)
+  t.is(p.dict.call(expr, sym(`.one`), `two`, sym(`.three`), `four`).compile(), `{one: "two", three: "four"}`)
+  t.is(p.dict.call(stat, sym(`.one`), `two`, sym(`.three`), `four`).compile(), `({one: "two", three: "four"})`)
 
-  t.is(p.dict.call(expr, sym(`one`), 10, sym(`two`), 20).compile(), `{one: 10, two: 20}`)
-  t.is(p.dict.call(stat, sym(`one`), 10, sym(`two`), 20).compile(), `({one: 10, two: 20})`)
+  t.is(p.dict.call(expr, sym(`.one`), 10, sym(`.two`), 20).compile(), `{one: 10, two: 20}`)
+  t.is(p.dict.call(stat, sym(`.one`), 10, sym(`.two`), 20).compile(), `({one: 10, two: 20})`)
 
-  t.is(p.dict.call(expr, sym(`one.two`), 10).compile(), `{"one.two": 10}`)
-  t.is(p.dict.call(stat, sym(`one.two`), 10).compile(), `({"one.two": 10})`)
-
-  t.is(p.dict.call(expr, sym(`!@#`), 10).compile(), `{"!@#": 10}`)
-  t.is(p.dict.call(stat, sym(`!@#`), 10).compile(), `({"!@#": 10})`)
+  t.is(p.dict.call(expr, sym(`.!@#`), 10).compile(), `{"!@#": 10}`)
+  t.is(p.dict.call(stat, sym(`.!@#`), 10).compile(), `({"!@#": 10})`)
 
   t.is(
     p.dict.call(expr, 10, ti.macReqExpressionOne).compile(),
-    `{"10": "one"}`,
+    `{10: "one"}`,
   )
 
   t.is(
     p.dict.call(stat, 10, ti.macReqExpressionOne).compile(),
-    `({"10": "one"})`,
+    `({10: "one"})`,
   )
 
   t.is(
     p.dict.call(expr, 10, ti.macReqExpressionOne, 20, ti.macReqExpressionTwo).compile(),
-    `{"10": "one", "20": "two"}`,
+    `{10: "one", 20: "two"}`,
   )
 
   t.is(
     p.dict.call(stat, 10, ti.macReqExpressionOne, 20, ti.macReqExpressionTwo).compile(),
-    `({"10": "one", "20": "two"})`,
+    `({10: "one", 20: "two"})`,
   )
 })
 
@@ -2815,7 +2845,11 @@ t.bench(function bench_dict_compile_macro() {
 
 t.test(function test_get() {
   function test(ctx) {
-    t.is(p.get.call(ctx), undefined)
+    ti.fail(
+      () => p.get.call(ctx),
+      `expected at least 1 inputs, got 0 inputs`,
+    )
+
     t.is(p.get.call(ctx, []), undefined)
     t.is(p.get.call(ctx, [], [[]]), undefined)
 
@@ -2825,7 +2859,7 @@ t.test(function test_get() {
 
     t.is(
       p.get.call(ctx, [], 10, [[]], 20, [[[]]], 30).compile(),
-      `10[20][30]`,
+      `[10][20][30]`,
     )
 
     t.is(
@@ -2840,7 +2874,11 @@ t.test(function test_get() {
 
 t.test(function test_getOpt() {
   function test(ctx) {
-    t.is(p.getOpt.call(ctx), undefined)
+    ti.fail(
+      () => p.getOpt.call(ctx),
+      `expected at least 1 inputs, got 0 inputs`,
+    )
+
     t.is(p.getOpt.call(ctx, []), undefined)
     t.is(p.getOpt.call(ctx, [], [[]]), undefined)
 
@@ -2850,7 +2888,7 @@ t.test(function test_getOpt() {
 
     t.is(
       p.getOpt.call(ctx, [], 10, [[]], 20, [[[]]], 30).compile(),
-      `10?.[20]?.[30]`,
+      `?.[10]?.[20]?.[30]`,
     )
 
     t.is(
@@ -2874,12 +2912,11 @@ t.test(function test_set() {
   fail(null)
   fail(ctx)
 
-  ctx.one = undefined
+  ctx.one = 123
+  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(123 = undefined)`)
 
-  t.is(
-    p.set.call(ctx, sym(`one`), []).compile(),
-    `(one = undefined)`,
-  )
+  ctx.one = sym(`one`)
+  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(one = undefined)`)
 
   t.is(
     p.set.call(c.ctxWithStatement(ctx), sym(`one`), []).compile(),
@@ -2917,19 +2954,21 @@ t.test(function test_set() {
   )
 
   ti.fail(() => p.set.call(ctx, sym(`await`), 10), `missing declaration of "await"`)
-  ctx.await = undefined
+  ctx.await = sym(`await`)
   // Invalid syntax in most JS contexts. Maybe we should detect and throw.
   t.is(p.set.call(ctx, sym(`await`), 10).compile(), `(await = 10)`)
 
   ti.fail(() => p.set.call(ctx, sym(`eval`), 10), `missing declaration of "eval"`)
-  ctx.eval = undefined
+  ctx.eval = sym(`eval`)
   // Invalid syntax in most JS contexts. Maybe we should detect and throw.
   t.is(p.set.call(ctx, sym(`eval`), 10).compile(), `(eval = 10)`)
 
   ti.fail(() => p.set.call(ctx, sym(`!@#`), 10), `missing declaration of "!@#"`)
-  ctx[`!@#`] = undefined
-  // Invalid syntax in ALL JS contexts. Maybe we should detect and throw.
-  t.is(p.set.call(ctx, sym(`!@#`), 10).compile(), `(!@# = 10)`)
+  ctx[`!@#`] = sym(`!@#`)
+  ti.fail(
+    () => p.set.call(ctx, sym(`!@#`), 10),
+    `"!@#" does not represent a valid JS identifier`,
+  )
 
   // Generates valid JS syntax. This is why we don't restrict the expression in
   // the LHS position to being a symbol.
@@ -3119,7 +3158,7 @@ t.test(function test_pipe() {
   fail(expr)
   fail(stat)
 
-  expr.one = undefined
+  expr.one = sym(`one`)
 
   t.is(mac(expr, sym(`one`)), sym(`one`))
   t.is(mac(stat, sym(`one`)), sym(`one`))

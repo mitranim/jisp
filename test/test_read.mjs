@@ -154,17 +154,11 @@ t.test(function test_Reader() {
   fail(`123;;`, `unrecognized syntax`)
   fail(`123;; ;;`, `unrecognized syntax`)
 
-  fail(`...`, `unrecognized syntax
+  fail(`123... 456`, `unrecognized syntax; expected whitespace, delimiter, or EOF
 
-:1:1
+:1:4
 
-...`)
-
-  fail(`10 20 30 ... 40 50 60`, `unrecognized syntax
-
-:1:10
-
-…... 40 50 60`)
+…... 456`)
 
   fail(`}`, `unexpected "}"`)
   fail(`{`, `expected closing "}", found EOF`)
@@ -217,14 +211,6 @@ t.test(function test_Reader() {
   only(`12n`, 12n)
   only(`-12n`, -12n)
 
-  fail(`.0`, `unrecognized syntax`)
-  fail(`-.0`, `unrecognized syntax`)
-  fail(`.1`, `unrecognized syntax`)
-  fail(`-.1`, `unrecognized syntax`)
-  fail(`.2`, `unrecognized syntax`)
-  fail(`-.2`, `unrecognized syntax`)
-  fail(`.12`, `unrecognized syntax`)
-  fail(`-.12`, `unrecognized syntax`)
   fail(`0.`, `unrecognized syntax`)
   fail(`-0.`, `unrecognized syntax`)
   fail(`1.`, `unrecognized syntax`)
@@ -246,8 +232,18 @@ t.test(function test_Reader() {
 
 …ident`)
 
-  fail(`.456ident`, `unrecognized syntax`)
-  fail(`-.456ident`, `unrecognized syntax`)
+  fail(`123-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`123--`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`123+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`123++`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`123+-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`123-+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123--`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123++`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123+-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
+  fail(`-123-+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
 
   only(`0`, 0)
   only(`-0`, -0)
@@ -326,66 +322,17 @@ t.test(function test_Reader() {
   fail(`"\\u_1234"`,   `Bad Unicode escape in JSON at position 3`)
   fail(`" \\u_1234 "`, `Bad Unicode escape in JSON at position 4`)
 
-  fail(`!@#ident`, `unrecognized syntax; expected whitespace, delimiter, or EOF
-
-:1:4
-
-…ident`)
-
-  fail(`!@#123`, `unrecognized syntax; expected whitespace, delimiter, or EOF
-
-:1:4
-
-…123`)
-
-  /*
-  Technical note. We overload `-`, allowing it at the beginning of numeric
-  literals, and otherwise treating it as one of the operator characters.
-  Our parsing is left-associative and greedy, with minimal lookahead. When
-  we find multiple operator characters, we combine them into one operator
-  symbol, without bothering to check if one of them could be "given up"
-  to a subsequent numeric literal, and without giving `-` special treatment
-  in cases like this.
-  */
-  fail(`--123`, `unrecognized syntax; expected whitespace, delimiter, or EOF
-
-:1:3
-
-…123`)
-
-  fail(`+-123`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-+123`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`++123`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-
-  fail(`ident!@#`, `unrecognized syntax; expected whitespace, delimiter, or EOF
-
-:1:6
-
-…!@#`)
-
-  fail(`123-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`123--`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`123+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`123++`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`123+-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`123-+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123--`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123++`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123+-`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-  fail(`-123-+`, `unrecognized syntax; expected whitespace, delimiter, or EOF`)
-
-  fail(`.one`, `unrecognized syntax`)
-  fail(`..one`, `unrecognized syntax`)
-  fail(`one.`, `unrecognized syntax`)
-  fail(`one..`, `unrecognized syntax`)
-  fail(`one.two.`, `unrecognized syntax`)
-  fail(`one. two`, `unrecognized syntax`)
-  fail(`one .two`, `unrecognized syntax`)
-  fail(`one . two`, `unrecognized syntax`)
-  fail(`.one.two`, `unrecognized syntax`)
-  fail(`.one.two.`, `unrecognized syntax`)
+  only(`.`, sym(`.`))
+  only(`..`, sym(`..`))
+  only(`...`, sym(`...`))
+  only(`....`, sym(`....`))
+  only(`.one`, sym(`.one`))
+  only(`..one`, sym(`..one`))
+  only(`one.`, sym(`one.`))
+  only(`one..`, sym(`one..`))
+  only(`one.two.`, sym(`one.two.`))
+  only(`.one.two`, sym(`.one.two`))
+  only(`.one.two.`, sym(`.one.two.`))
 
   only(`one`, sym(`one`))
   only(`one.two`, sym(`one.two`))
@@ -399,12 +346,31 @@ t.test(function test_Reader() {
   only(`!@#.%^&`, sym(`!@#.%^&`))
   only(`!@#.%^&.*-+`, sym(`!@#.%^&.*-+`))
 
+  only(`!@#ident`, sym(`!@#ident`))
+  only(`!@#123`, sym(`!@#123`))
+  only(`--123`, sym(`--123`))
+  only(`+-123`, sym(`+-123`))
+  only(`-+123`, sym(`-+123`))
+  only(`++123`, sym(`++123`))
+  only(`ident!@#`, sym(`ident!@#`))
+
   only(`one.!@#`, sym(`one.!@#`))
   only(`one.!@#.%^&`, sym(`one.!@#.%^&`))
   only(`!@#.one`, sym(`!@#.one`))
   only(`!@#.one.two`, sym(`!@#.one.two`))
   only(`!@#.one.%^&`, sym(`!@#.one.%^&`))
   only(`one.!@#.two`, sym(`one.!@#.two`))
+
+  only(`.0`, sym(`.0`))
+  only(`-.0`, sym(`-.0`))
+  only(`.1`, sym(`.1`))
+  only(`-.1`, sym(`-.1`))
+  only(`.2`, sym(`.2`))
+  only(`-.2`, sym(`-.2`))
+  only(`.12`, sym(`.12`))
+  only(`-.12`, sym(`-.12`))
+  only(`.456ident`, sym(`.456ident`))
+  only(`-.456ident`, sym(`-.456ident`))
 
   fail(`;; ;;123`, `unrecognized syntax`)
   fail(`;;comment;;123`, `unrecognized syntax`)

@@ -15,7 +15,6 @@ variables:
   string_double_fence: '({{string_double_delim}}+)(?!{{string_double_delim}})'
 
   char_escape: \\(?:.|\n)
-  # SYNC[accessor].
   accessor: \.
   space: \s*
   eol: (?:\n|$)
@@ -28,29 +27,28 @@ variables:
   int_dec: '(?:[0-9][0-9_]*)'
   # int_hex: '(?:[0-9a-f][0-9a-f_]*)'
 
+  # SYNC[sym].
   # Our reader should recognize any sequence of these characters as a symbol.
-  # However, some should be recognized as invalid, like `...` or `one!@#`.
-  sym: '{{sym_break_begin}}[{{sym_chars}}]+{{sym_break_end}}'
-  sym_chars: '{{accessor}}{{ident_chars}}{{operator_chars}}'
+  sym_chars: '{{accessor}}{{sym_segment_chars}}'
+
+  # SYNC[ident].
+  ident_chars: '\w\$'
+
+  # SYNC[oper].
+  oper_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
+
+  sym_segment_chars: '{{ident_chars}}{{oper_chars}}'
+  sym_unqual: '{{sym_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
+  ident_unqual: '{{sym_break_begin}}[{{ident_chars}}]+{{sym_break_end}}'
+  oper_unqual: '{{sym_break_begin}}[{{oper_chars}}]+{{sym_break_end}}'
+
   sym_break_begin: (?<![{{sym_chars}}])
   sym_break_end: (?![{{sym_chars}}])
 
-  # SYNC[ident_unqual].
-  ident: '{{sym_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*{{sym_break_end}}'
-  ident_component: '{{ident_break_begin}}[{{ident_begin_chars}}][{{ident_chars}}]*{{ident_break_end}}'
-  ident_begin_chars: '[:alpha:]_$'
-  ident_chars: '[:alnum:]_$'
-  ident_break_begin: (?<![{{ident_chars}}])
-  ident_break_end: (?![{{ident_chars}}])
+  sym_segment_break_begin: (?<![{{sym_segment_chars}}])
+  sym_segment_break_end: (?![{{sym_segment_chars}}])
 
-  # SYNC[ident_oper].
-  operator: '{{sym_break_begin}}[{{operator_chars}}]+{{sym_break_end}}'
-  operator_component: '{{operator_break_begin}}[{{operator_chars}}]+{{operator_break_end}}'
-  operator_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
-  operator_break_begin: (?<![{{operator_chars}}])
-  operator_break_end: (?![{{operator_chars}}])
-
-  ident_ord_param: '{{sym_break_begin}}([$])\d+{{ident_break_end}}'
+  ident_ord_param: '{{sym_break_begin}}([$])\d+{{sym_segment_break_end}}'
 
 contexts:
   prototype:
@@ -62,7 +60,6 @@ contexts:
     - include: number-match
     - include: string-match
     - include: sym-match
-    - include: punct-match
 
   comment-match:
     - include: comment-fenced-match
@@ -102,21 +99,21 @@ contexts:
   braces-match:
     - match: \{
       scope: punctuation.section.braces.begin.jisp
-      push: [braces-meta, braces-pop, list-head-pop]
+      push: [braces-meta, braces-pop, list-head-pop, nonblank-pop]
     - match: \}
       scope: punctuation.section.braces.end.jisp invalid.illegal.jisp
 
   brackets-match:
     - match: \[
       scope: punctuation.section.brackets.begin.jisp
-      push: [brackets-meta, brackets-pop, list-head-pop]
+      push: [brackets-meta, brackets-pop, list-head-pop, nonblank-pop]
     - match: \]
       scope: punctuation.section.brackets.end.jisp invalid.illegal.jisp
 
   parens-match:
     - match: \(
       scope: punctuation.section.parens.begin.jisp
-      push: [parens-meta, parens-pop, list-head-pop]
+      push: [parens-meta, parens-pop, list-head-pop, nonblank-pop]
     - match: \)
       scope: punctuation.section.parens.end.jisp invalid.illegal.jisp
 
@@ -159,14 +156,9 @@ contexts:
     - meta_content_scope: meta.block.jisp meta.parens.jisp
     - include: now-pop
 
-  punct-match:
-    - include: accessor-match
-
-  # At the time of writing, our reader doesn't allow symbols to begin with an
-  # accessor, but we want the syntax definition to be slightly more flexible.
   accessor-match:
-    - match: (?={{accessor}})
-      push: sym-rest-pop
+    - match: '{{accessor}}'
+      scope: punctuation.accessor.jisp
 
   accessor-pop-now:
     - match: '{{accessor}}'
@@ -274,58 +266,25 @@ contexts:
       scope: constant.character.escape.jisp
 
   sym-match:
-    - include: sym-constant-match
-    - include: ident-match
-    - include: operator-match
-
-  ident-match:
+    - include: ident-constant-match
     - include: ident-ord-param-match
-    - include: ident-unqual-match
-
-  operator-match:
-    - match: '{{operator_component}}'
-      scope: keyword.operator.jisp
+    - match: (?=[{{sym_chars}}])
       push: sym-rest-pop
 
-  sym-namespace-match:
-    - include: ident-ord-param-namespace-match
-    - include: ident-namespace-match
-    - include: operator-namespace-match
-
-  ident-ord-param-namespace-match:
-    - match: '({{ident_ord_param}})({{accessor}})'
-      captures:
-        1: variable.parameter.jisp
-        2: storage.modifier.jisp
-        3: punctuation.accessor.jisp
-
-  ident-namespace-match:
-    - match: '({{ident_component}})({{accessor}})'
-      captures:
-        1: variable.other.jisp
-        2: punctuation.accessor.jisp
-
-  operator-namespace-match:
-    - match: '({{operator_component}})({{accessor}})'
-      captures:
-        1: keyword.operator.jisp
-        2: punctuation.accessor.jisp
-
-  # This special case is a little shaky. Unlike most languages, Jisp does not
-  # have any keywords or reserved words, and it's perfectly possible for these
-  # names to refer to something other than the built-in constants. However, the
-  # vast majority of code is expected to simply `[declare globals]` and never
-  # redeclare them.
+  # Unlike most languages, Jisp does not have any keywords or reserved words,
+  # and it's possible for these names to refer to something other than the
+  # built-in constants. However, the vast majority of code is expected to
+  # simply `[declare globals]` and never redeclare these names.
   #
   # This includes `void` because the `void` macro exported by our prelude module
   # supports the "bare" mode which compiles to `undefined`, and we assume that
   # if anyone redeclares `void`, the redeclaration will have similar behaviors.
   # Note that `void` is a keyword in JS, which means the user is prevented from
   # accidentally masking it with a regular declaration.
-  sym-constant-match:
-    - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_break_end}}'
+  ident-constant-match:
+    - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_segment_break_end}}'
       scope: constant.language.jisp
-      push: req-delim-pop
+      push: sym-rest-pop
 
   ident-ord-param-match:
     - match: '{{ident_ord_param}}'
@@ -334,20 +293,21 @@ contexts:
         1: storage.modifier.jisp
       push: sym-rest-pop
 
-  ident-unqual-match:
-    - match: '{{ident_component}}'
+  sym-namespace-match:
+    - include: accessor-match
+    - match: '{{ident_ord_param}}(?={{accessor}})'
+      scope: variable.parameter.jisp
+      captures:
+        1: storage.modifier.jisp
+    - match: '[{{sym_segment_chars}}]+(?={{accessor}})'
       scope: variable.other.jisp
-      push: sym-rest-pop
 
   sym-rest-pop:
-    - match: '({{accessor}})({{ident_component}})'
-      captures:
-        1: punctuation.accessor.jisp
-        2: variable.other.jisp
-    - match: '({{accessor}})({{operator_component}})'
-      captures:
-        1: punctuation.accessor.jisp
-        2: keyword.operator.jisp
+    - include: accessor-match
+    - match: '[{{oper_chars}}]+{{sym_segment_break_end}}'
+      scope: keyword.operator.jisp
+    - match: '[{{sym_segment_chars}}]+'
+      scope: variable.other.jisp
     - match: ''
       set: req-delim-pop
 
@@ -355,7 +315,7 @@ contexts:
     - include: call-known-maybe-pop
     - include: call-unknown-maybe-pop
     - include: sym-namespace-match
-    - include: nonblank-pop
+    - include: now-pop
 
   call-known-maybe-pop:
     - include: call-use-pop
@@ -367,12 +327,12 @@ contexts:
     - include: call-class-pop
 
   call-unknown-maybe-pop:
-    - match: '{{ident_break_begin}}{{ident_component}}{{sym_break_end}}'
+    - match: '{{sym_segment_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
       scope: variable.function.jisp
       set: req-delim-pop
 
   call-use-pop:
-    - match: '{{ident_break_begin}}use{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}use{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
       set: [use-addr-pop, sym-rest-pop]
 
@@ -396,39 +356,43 @@ contexts:
     - include: nonblank-pop
 
   use-decl-pop:
-    - match: '{{ident}}'
+    - match: '{{sym_break_begin}}\*{{sym_break_end}}'
+      scope: keyword.operator.jisp
+      set: req-delim-pop
+    - match: '{{ident_unqual}}'
       scope: meta.binding.name.jisp variable.other.jisp
       set: req-delim-pop
     - include: nonblank-pop
 
   call-const-pop:
-    - match: '{{ident_break_begin}}const{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}const{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
       set: [param-pop, sym-rest-pop]
 
   call-let-pop:
-    - match: '{{ident_break_begin}}let{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}let{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
       set: [param-pop, sym-rest-pop]
 
   call-func-pop:
-    - match: '{{ident_break_begin}}func{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}func{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      set: [func-name-pop, sym-rest-pop]
+      set: [func-name-pop, nonblank-pop, sym-rest-pop]
 
   func-name-pop:
-    - match: '{{ident}}'
+    - include: sym-namespace-match
+    - match: '[{{sym_segment_chars}}]+'
       scope: entity.name.function.jisp
       set: [param-pop, req-delim-pop]
-    - include: nonblank-pop
+    - include: now-pop
 
   call-meth-pop:
-    - match: '{{ident_break_begin}}meth{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}meth{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      set: [func-name-pop, sym-rest-pop]
+      set: [func-name-pop, nonblank-pop, sym-rest-pop]
 
   param-match:
-    - match: '{{ident}}'
+    - match: '{{ident_unqual}}'
       scope: variable.parameter.jisp
       push: req-delim-pop
     - match: \{
@@ -443,7 +407,7 @@ contexts:
     - include: main
 
   param-pop:
-    - match: '{{ident}}'
+    - match: '{{ident_unqual}}'
       scope: variable.parameter.jisp
       set: req-delim-pop
     - match: \{
@@ -470,20 +434,21 @@ contexts:
     - include: param-match
 
   call-fn-pop:
-    - match: '{{ident_break_begin}}fn{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}fn{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
       set: sym-rest-pop
 
   call-class-pop:
-    - match: '{{ident_break_begin}}class{{ident_break_end}}'
+    - match: '{{sym_segment_break_begin}}class{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      set: [class-name-pop, sym-rest-pop]
+      set: [class-name-pop, nonblank-pop, sym-rest-pop]
 
   class-name-pop:
-    - match: '{{ident}}'
+    - include: sym-namespace-match
+    - match: '[{{sym_segment_chars}}]+'
       scope: entity.name.class.jisp
       set: req-delim-pop
-    - include: nonblank-pop
+    - include: now-pop
 
   req-delim-pop:
     - match: '[^{{delim_chars}}]+'

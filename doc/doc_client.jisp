@@ -20,9 +20,9 @@
 ]
 
 [func last [src] [get src [- src.length 1]]]
-[func arr [src] [if [isNil src] [:] [Array.from src]]]
-[func map [src & rest] [if [isNil src] [:] [Array.prototype.map.apply src rest]]]
-[func lines [src] [if src [src.split [regexp `(?:\r\n|\r|\n)` `g`]] [:]]]
+[func arr [src] [if [isNil src] [|] [Array.from src]]]
+[func map [src ... rest] [if [isNil src] [|] [Array.prototype.map.apply src rest]]]
+[func lines [src] [if src [src.split [regexp `\r\n|\r|\n` `g`]] [|]]]
 [func isLineOpen [src] [or [src.endsWith `{`] [src.endsWith `[`] [src.endsWith `(`]]]
 [func isLineClose [src] [or [src.startsWith `}`] [src.startsWith `]`] [src.startsWith `)`]]]
 
@@ -38,7 +38,7 @@ of multiline strings, mispace comments, etc.
   [const INDENT `  `]
   [let lvl 0]
   [let prev ``]
-  [const buf [:]]
+  [const buf [|]]
 
   [loop.iter [set src [lines src]]
     [set src [src.trim]]
@@ -73,7 +73,7 @@ of multiline strings, mispace comments, etc.
 ]
 
 [func textareaResize []
-  [set this.rows [??= this.dataset.min [or [| this.rows] 2]]]
+  [set this.rows [??= this.dataset.min [or [bitOr this.rows] 2]]]
   [loop.while [and [> this.scrollHeight this.clientHeight] [<= this.rows 64]]
     [++ this.rows]
   ]

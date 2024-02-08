@@ -246,7 +246,7 @@ t.test(function test_use_named() {
     p.use.call(ctx, `some_path`, sym(`one`)).compile(),
     `import * as one from "some_path"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
 
   ti.fail(
     () => p.use.call(ctx, `some_path`, sym(`one`)),
@@ -257,7 +257,7 @@ t.test(function test_use_named() {
     p.use.call(ctx, `jisp:prelude.mjs`, sym(`two`)).compile(),
     `import * as two from ${JSON.stringify(preludeUrl)}`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`), two: sym(`two`)})
 
   const mod = makeTestModule()
   ctx[c.symModule] = mod
@@ -266,13 +266,13 @@ t.test(function test_use_named() {
     p.use.call(ctx, `jisp:prelude.mjs`, sym(`three`)).compile(),
     `import * as three from "../../../js/prelude.mjs"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`)})
 
   t.is(
     p.use.call(ctx, `./missing.jisp`, sym(`four`)).compile(),
     `import * as four from "./missing.mjs"`,
   )
-  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: undefined, two: undefined, three: undefined, four: undefined})
+  t.own(ctx, {[c.symModule]: undefined, [c.symModule]: mod, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`)})
 })
 
 t.test(function test_use_async() {
@@ -391,12 +391,8 @@ t.test(function test_use_meta() {
 
   ctx.use = p.use
   t.is(run(sym(`use.meta`)), `import.meta`)
-
-  /*
-  Unfortunate current limitation. We'd like to fix this eventually. For now, use
-  code can assign `use.meta` to a variable to read its properties.
-  */
-  ti.fail(() => run(sym(`use.meta.url`)), `missing property "url" in [object Raw]`)
+  t.is(run(sym(`use.meta.url`)), `import.meta.url`)
+  t.is(run(sym(`use.meta.main`)), `import.meta.main`)
 })
 
 function makeTestModule() {
@@ -482,7 +478,7 @@ t.test(function test_declare_sym() {
 
   t.eq(ti.objFlat(ctx), [
     {[c.symStatement]: undefined, one: {one: 10, two: 20, three: 30, four: 40}},
-    {[c.symMixin]: undefined, one: undefined, two: undefined, four: undefined},
+    {[c.symMixin]: undefined, one: 10, two: 20, four: 40},
     {three: undefined},
   ])
 
@@ -495,7 +491,7 @@ t.test(function test_declare_sym() {
 
   t.eq(ti.objFlat(ctx), [
     {[c.symStatement]: undefined, one: {two: {one: 10, two: 20, three: 30, four: 40}}},
-    {[c.symMixin]: undefined, one: undefined, two: undefined, four: undefined},
+    {[c.symMixin]: undefined, one: 10, two: 20, four: 40},
     {three: undefined},
   ])
 })
@@ -517,15 +513,17 @@ await t.test(async function test_declare_str() {
   t.own(mix, {[c.symMixin]: undefined})
   t.own(ctx, {[c.symStatement]: undefined})
 
+  const mod = await import(existingJsFileUrl)
+
   testNone(await p.declare.call(ctx, existingJsFileUrl))
-  t.own(mix, {[c.symMixin]: undefined, one: undefined, two: undefined})
+  t.own(mix, {[c.symMixin]: undefined, one: 10, two: c.reqFun(mod.two)})
   t.own(ctx, {[c.symStatement]: undefined})
 
   ctx = c.ctxWithStatement(c.ctxWithMixin(makeCtx()))
   mix = c.ctxReqParentMixin(ctx)
   mix.one = 123
   testNone(await p.declare.call(ctx, existingJsFileUrl))
-  t.own(c.ctxReqParentMixin(ctx), {[c.symMixin]: undefined, one: 123, two: undefined})
+  t.own(c.ctxReqParentMixin(ctx), {[c.symMixin]: undefined, one: 123, two: c.reqFun(mod.two)})
 })
 
 if (import.meta.main) ti.flush()

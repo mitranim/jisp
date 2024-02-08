@@ -27,7 +27,7 @@ export class Span {
   init(src, pos, end, path) {
     src = laxStr(src)
     this.src = src
-    this.pos = optNat(pos) ?? 0
+    this.pos = laxNat(pos)
     this.end = optNat(end) ?? src.length
     this.path = laxStr(path)
     return this
@@ -55,11 +55,23 @@ export class Span {
   }
 }
 
-// SYNC[ident_unqual].
-export const regIdentBegin = /^[A-Za-z_$][\w$]*/
-export const regIdentFull  = /^[A-Za-z_$][\w$]*$/
+/*
+Every sequence of these characters must be parsed as a symbol, with the
+exception of numeric literals, which take priority. Some sequences may
+be considered invalid.
 
-// SYNC[oper_unqual].
+SYNC[sym].
+SYNC[ident].
+SYNC[oper].
+*/
+export const regSymCharsBegin = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
+export const regSymCharsFull  = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
+
+// SYNC[ident].
+export const regIdentBegin = /^#?[A-Za-z_$][\w$]*/
+export const regIdentFull  = /^#?[A-Za-z_$][\w$]*$/
+
+// SYNC[oper].
 export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
 export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
 
@@ -69,6 +81,7 @@ export const regBigInt      = /^(-?\d+(?:_\d+)*)n/
 export const regFloat       = /^-?\d+(?:_\d+)*(?:[.]\d+(?:_\d+)*)?/
 export const regStrBacktick = /^(?:``(?!`)|(`+)(?!`)([^]*?)\1)/
 export const regStrDouble   = /^(?:""(?!")|("+)(?!")((?:\\[^]|[^])*?)\1)/
+export const regFieldKey    = /^(\d+|[A-Za-z_$][\w$]*)$/
 
 export class Reader extends Span {
   *[Symbol.iterator]() {
@@ -196,22 +209,13 @@ export class Reader extends Span {
   strDecode(src) {return strDecode(src)}
 
   readSym() {
-    const start = this.pos
+    const mat = laxStr(this.view().match(regSymCharsBegin)?.[0])
+    if (!mat) return undefined
 
-    if (!this.skippedSymUnqual()) return undefined
-    while (this.skippedPrefix(accessor)) {
-      if (!this.skippedSymUnqual()) {
-        throw this.errUnrec(`expected symbol after accessor`)
-      }
-    }
-
+    this.skip(mat.length)
     this.reqDelim()
-    return Symbol.for(this.src.slice(start, this.pos))
+    return Symbol.for(mat)
   }
-
-  skippedSymUnqual() {return this.skippedSymIdent() || this.skippedSymOper()}
-  skippedSymIdent() {return this.skippedReg(regIdentBegin)}
-  skippedSymOper() {return this.skippedReg(regOperBegin)}
 
   spanSince(ind) {
     reqNat(ind)
@@ -227,14 +231,10 @@ export class Reader extends Span {
   skippedComment() {return this.skippedReg(regComment) && (this.reqDelim(), true)}
   skippedSpace() {return this.skippedReg(regSpace)}
 
-  skippedPrefix(pre) {
-    reqValidStr(pre)
-    return this.hasPrefix(pre) && (this.skip(pre.length), true)
-  }
-
   // Assumes that the regex starts with `^`.
   skippedReg(reg) {return this.skipped(this.view().match(reqReg(reg))?.[0].length)}
   skipped(len) {return laxNat(len) > 0 && (this.skip(len), true)}
+  skippedPrefix(pre) {return this.hasPrefix(pre) && this.skipped(pre.length)}
   hasPrefix(pre) {return this.view().startsWith(reqStr(pre))}
 
   reqNoPrefix(pre) {
@@ -318,12 +318,13 @@ export function rowCol(src, pos) {
 export function macroNode(ctx, tar, src) {
   if (Object.is(tar, src)) return tar
   if (isPromise(tar)) return macroNodeAsync(ctx, tar, src)
-  switch (typeof tar) {
-    case `function`: return macroFun(ctx, tar)
-    case `symbol`: return macroSym(ctx, tar)
-    case `object`: return macroObj(ctx, tar)
-    default: return tar
+  if (isSym(tar)) return macroSym(ctx, tar)
+  if (isArr(tar)) return macroList(ctx, tar)
+  if (canMacro(tar)) {
+    try {return macroNode(ctx, tar.macro(ctx), tar)}
+    catch (err) {throw errWithContext(err, tar)}
   }
+  return tar
 }
 
 async function macroNodeAsync(ctx, tar, src) {
@@ -331,35 +332,37 @@ async function macroNodeAsync(ctx, tar, src) {
   catch (err) {throw errWithContext(err, src)}
 }
 
-export function macroFun(ctx, src) {
-  try {
-    if (canMacro(src)) return macroNode(ctx, src.macro(ctx), src)
-    if (canCompile(src)) return src
-  }
-  catch (err) {throw errWithContext(err, src)}
-
-  throw TypeError(joinParagraphs(
-    `unexpected function node ${show(src)} in non-call position; hint: macro functions may be used in arbitrary positions by implementing the method ".macro" and/or the method ".compile"`,
-    nodeContext(src),
-  ))
-}
-
 export function macroSym(ctx, src) {
-  try {
-    const path = reqSym(src).description
-    const name = ctxReqDeclared(ctx, path)
-    const val = ctx[name]
-    if (isNil(val)) return src
-    return macroNode(ctx, reqGet(val, strWithoutNs(path, name)), src)
-  }
+  try {return macroNode(ctx, macroSymDeref(ctx, reqSym(src).description), src)}
   catch (err) {throw errWithContext(err, src)}
 }
 
-export function macroObj(ctx, src) {
-  if (isArr(src)) return macroList(ctx, src)
-  try {if (canMacro(src)) return macroNode(ctx, src.macro(ctx), src)}
-  catch (err) {throw errWithContext(err, src)}
-  return src
+function macroSymDeref(ctx, path) {
+  path = reqStr(path).split(accessor)
+
+  const key = path[0]
+  if (!(isComp(ctx) && key in ctx)) throw errDecl(key)
+
+  let val = ctx
+  for (const key of path) val = macroSymGet(ctx, val, key)
+  return val
+}
+
+function macroSymGet(ctx, src, key) {
+  if (isSym(src)) return Symbol.for(src.description + accessor + key)
+  if (!isComp(src)) return new KeyRef(src, key)
+  if (canMacro(src)) return new KeyRef(macroNode(ctx, src.macro(ctx), src), key)
+  if (canCompile(src)) return new KeyRef(src, key)
+  if (!(isComp(src) && key in src)) throw errProp(key, src)
+  return src[key]
+}
+
+export class KeyRef {
+  constructor(src, key) {
+    this.src = src
+    this.key = key
+  }
+  compile() {return compileNode(this.src) + compileAccess(this.key)}
 }
 
 export function macroList(ctx, src) {
@@ -388,7 +391,7 @@ export function compileNode(src) {
     case `boolean`: return String(src)
     case `number`: return Object.is(src, -0) ? `-0` : String(src)
     case `bigint`: return String(src) + `n`
-    case `symbol`: return reqStr(src.description)
+    case `symbol`: return compileSym(src)
     case `string`: return JSON.stringify(src)
     case `object`: return isNil(src) ? `null` : compileObj(src)
     default: return compileFallback(src)
@@ -406,6 +409,48 @@ function msgCompile(src) {
     `unable to usefully compile ${typeof src} ${show(src)}; hint: arbitrary nodes can compile by implementing the method ".compile"`,
     nodeContext(src),
   )
+}
+
+export function compileSym(src) {return compileSymWith(src, compileAccess)}
+
+export function compileSymWith(src, fun) {
+  src = reqSym(src).description
+  reqFun(fun)
+  if (!src) return ``
+
+  const path = src.split(accessor)
+  let out = reqStr(path[0])
+  if (!out) throw SyntaxError(`unexpected leading accessor in ${show(src)}`)
+  reqStrIdentLike(out)
+
+  try {
+    let ind = 0
+    while (++ind < path.length) out += reqStr(fun(path[ind]))
+    return out
+  }
+  catch (err) {
+    reqErr(err).message = `unable to compile ${show(src)} to valid JS: ` + err.message
+    throw err
+  }
+}
+
+export function compileAccess(src) {
+  reqNonEmptyKey(src)
+  if (/^\d+$/.test(src)) return wrapBrackets(src)
+  if (regIdentFull.test(src)) return accessor + src
+  return wrapBrackets(JSON.stringify(src))
+}
+
+export function compileAccessOpt(src) {
+  reqNonEmptyKey(src)
+  if (/^\d+$/.test(src)) return accessorOpt + wrapBrackets(src)
+  if (regIdentFull.test(src)) return accessorOpt + src
+  return accessorOpt + wrapBrackets(JSON.stringify(src))
+}
+
+export function reqNonEmptyKey(src) {
+  if (reqStr(src)) return src
+  throw SyntaxError(`unexpected empty key`)
 }
 
 export function compileObj(src) {
@@ -464,6 +509,7 @@ export function compileExpressionsInBraces(src) {return wrapBraces(compileExpres
 export function joinExpressions(src) {return join(src, expressionSep)}
 export function joinStatements(src) {return join(src, statementSep)}
 export function wrapBraces(src) {return `{` + reqStr(src) + `}`}
+export function wrapBracesOpt(src) {return reqStr(src) && wrapBraces(src)}
 export function wrapBracesMultiLine(src) {return reqStr(src) ? `{\n` + reqStr(src) + `\n}` : `{}`}
 export function wrapBracesMultiLineOpt(src) {return reqStr(src) && wrapBracesMultiLine(src)}
 export function wrapBrackets(src) {return `[` + reqStr(src) + `]`}
@@ -616,7 +662,7 @@ export class Module {
 
     return ctx[symFs]?.write?.(
       reqToUrl(this.reqTarPath()),
-      (`throw ` + JSON.stringify((isErr(err) && err.stack) || err)),
+      (`throw Error(` + JSON.stringify((isErr(err) && err.stack) || err) + `)`),
     )?.catch?.(console.error)
   }
 
@@ -874,14 +920,14 @@ export function ctxReqGet(ctx, path) {
 
 export function ctxReqDeclared(ctx, path) {
   const name = strNs(path)
-  if (!(isComp(ctx) && name in ctx)) throw Error(`missing declaration of ${show(name)}`)
+  if (!(isComp(ctx) && name in ctx)) throw errDecl(name)
   return name
 }
 
 export function reqGet(src, path) {
   while (reqStr(path)) {
     const name = strNs(path)
-    if (!(isComp(src) && name in src)) throw Error(`missing property ${show(name)} in ${show(src)}`)
+    if (!(isComp(src) && name in src)) throw errProp(name, src)
     src = src[name]
     path = strWithoutNs(path, name)
   }
@@ -982,14 +1028,23 @@ async function ctxMapAsync(ctx, src, fun, ind, out, val) {
 # Misc utils
 */
 
-// SYNC[accessor].
 export const accessor = `.`
+export const accessorOpt = `?.`
 export const ellipsis = `…`
 
+export function isStrUnqual(val) {return isStr(val) && !val.includes(accessor)}
+export function isStrQual(val) {return isStr(val) && val.includes(accessor)}
+
 export function isSymUnqual(val) {return isSym(val) && !val.description.includes(accessor)}
-export function isSymAccess(val) {return isSym(val) && val.description.includes(accessor)}
-export function symIsUnqual(val) {return !reqSym(val).description.includes(accessor)}
-export function symIsAccess(val) {return reqSym(val).description.includes(accessor)}
+export function isSymQual(val) {return isSym(val) && val.description.includes(accessor)}
+
+export function isStrKey(val) {return isStr(val) && val[0] === accessor}
+export function isStrKeyUnqual(val) {return isStr(val) && val.lastIndexOf(accessor) === 0}
+export function isStrKeyQual(val) {return isStrKey(val) && val.lastIndexOf(accessor) > 0}
+
+export function isSymKey(val) {return isSym(val) && isStrKey(val.description)}
+export function isSymKeyUnqual(val) {return isSym(val) && isStrKeyUnqual(val.description)}
+export function isSymKeyQual(val) {return isSym(val) && isStrKeyQual(val.description)}
 
 export function reqSymUnqual(val) {
   if (isSymUnqual(val)) return val
@@ -1013,7 +1068,7 @@ that's their problem. Our parser generates only symbols representing
 identifiers and operators.
 */
 export function reqStrIdentLike(val) {
-  reqValidStr(val)
+  reqStr(val)
   if (regIdentFull.test(val)) return val
   throw SyntaxError(`${show(val)} does not represent a valid JS identifier`)
 }
@@ -1203,6 +1258,8 @@ export function srcToTar(src, tar, main) {
 
 function canMacro(val) {return isComp(val) && `macro` in val && isFun(val.macro)}
 function canCompile(val) {return isComp(val) && `compile` in val && isFun(val.compile)}
+function errDecl(key) {return Error(`missing declaration of ${show(key)}`)}
+function errProp(key, val) {return Error(`missing property ${show(key)} in ${show(val)}`)}
 
 /*
 # Generic utils
@@ -1346,17 +1403,23 @@ function showObj(val) {
   if (isArr(val)) return showArr(val)
 
   const con = getCon(val)
-  if (!con || con === Object) return showDict(val)
+  if (!con || con === Object) return showDictOpt(val) || `{}`
 
   const name = getName(con)
-  if (!name) return String(val)
+  if (isInst(val, Boolean)) return `[${name || `Boolean`}: ${show(val.valueOf())}]`
+  if (isInst(val, Number)) return `[${name || `Number`}: ${show(val.valueOf())}]`
+  if (isInst(val, BigInt)) return `[${name || `BigInt`}: ${show(val.valueOf())}n]`
+  if (isInst(val, String)) return `[${name || `String`}: ${show(val.valueOf())}]`
+  if (isInst(val, Symbol)) return `[${name || `Symbol`}: ${show(val.valueOf())}]`
 
-  return `[object ${name}]`
+  const dict = showDictOpt(val)
+  if (!name) return dict || `{}`
+  return `[object ${name}${dict && `: `}${dict}]`
 }
 
 function showArr(src) {return wrapBrackets(src.map(show).join(expressionSep))}
 
-function showDict(src) {
+function showDictOpt(src) {
   const buf = []
   for (const key of Object.getOwnPropertySymbols(src)) {
     buf.push(showDictEntry(key, src[key]))
@@ -1364,7 +1427,7 @@ function showDict(src) {
   for (const key of Object.getOwnPropertyNames(src)) {
     buf.push(showDictEntry(key, src[key]))
   }
-  return wrapBraces(buf.join(expressionSep))
+  return wrapBracesOpt(buf.join(expressionSep))
 }
 
 function showDictEntry(key, val) {
@@ -1373,12 +1436,12 @@ function showDictEntry(key, val) {
 
 function showDictKey(val) {
   if (isSym(val)) return wrapBrackets(val.toString())
-  return regIdentFull.test(reqStr(val)) ? val : show(val)
+  return regFieldKey.test(reqStr(val)) ? val : show(val)
 }
 
 /*
-About 1.5 times slower than a custom parsing loop written in JS,
-but significantly shorter and simpler.
+A bit slower than a custom parsing loop written in JS, but significantly shorter
+and simpler.
 */
 export function strDecode(src) {
   return JSON.parse(`"` + reqStr(src).replace(/\\\\|\\"|"|\n|\r/g, strEscape) + `"`)
@@ -1461,15 +1524,13 @@ export function canPatch(tar, key) {
 }
 
 /*
-Similar to `patch` but assigns empty values and skips ALL pre-existing
-properties. Intended for cases such as the `declare` macro, where we have
-access to a dictionary of usable key-values, like an imported module, but want
-to only declare names without making those values accessible at compile time,
-and without replacing any already-existing declarations.
+Similar to `patch` but skips ALL pre-existing properties. Intended for cases
+such as the `declare` macro, where the goal is to bring the names into scope
+without replacing any existing declarations.
 */
 export function patchDecl(tar, src) {
   reqObj(tar)
-  for (const key in optObj(src)) if (!(key in tar)) tar[key] = undefined
+  for (const key in optObj(src)) if (!(key in tar)) tar[key] = src[key]
   return tar
 }
 

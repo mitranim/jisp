@@ -26,161 +26,161 @@ Partial reference:
 export const globals = Object.create(null)
 
 // Built-in constants. Mixture of keywords, reserved names, and predeclareds.
-globals.undefined = undefined
-globals.null = undefined
-globals.false = undefined
-globals.true = undefined
-globals.NaN = undefined
-globals.Infinity = undefined
-globals.this = undefined
+globals.undefined = Symbol.for(`undefined`)
+globals.null = Symbol.for(`null`)
+globals.false = Symbol.for(`false`)
+globals.true = Symbol.for(`true`)
+globals.NaN = Symbol.for(`NaN`)
+globals.Infinity = Symbol.for(`Infinity`)
+globals.this = Symbol.for(`this`)
 
 // Built-in singletons and functions.
-globals.globalThis = undefined
-globals.console = undefined
-globals.decodeURI = undefined
-globals.decodeURIComponent = undefined
-globals.encodeURI = undefined
-globals.encodeURIComponent = undefined
-globals.setTimeout = undefined
-globals.clearTimeout = undefined
-globals.setInterval = undefined
-globals.clearInterval = undefined
-globals.fetch = undefined
+globals.globalThis = Symbol.for(`globalThis`)
+globals.console = Symbol.for(`console`)
+globals.decodeURI = Symbol.for(`decodeURI`)
+globals.decodeURIComponent = Symbol.for(`decodeURIComponent`)
+globals.encodeURI = Symbol.for(`encodeURI`)
+globals.encodeURIComponent = Symbol.for(`encodeURIComponent`)
+globals.setTimeout = Symbol.for(`setTimeout`)
+globals.clearTimeout = Symbol.for(`clearTimeout`)
+globals.setInterval = Symbol.for(`setInterval`)
+globals.clearInterval = Symbol.for(`clearInterval`)
+globals.fetch = Symbol.for(`fetch`)
 
 // Built-in classes and namespaces.
-globals.AbortController = undefined
-globals.AbortSignal = undefined
-globals.Array = undefined
-globals.ArrayBuffer = undefined
-globals.AsyncFunction = undefined
-globals.AsyncGenerator = undefined
-globals.AsyncGeneratorFunction = undefined
-globals.AsyncIterator = undefined
-globals.Atomics = undefined
-globals.Blob = undefined
-globals.BigInt = undefined
-globals.BigInt64Array = undefined
-globals.BigUint64Array = undefined
-globals.Boolean = undefined
-globals.DataView = undefined
-globals.Date = undefined
-globals.Error = undefined
-globals.FinalizationRegistry = undefined
-globals.Float32Array = undefined
-globals.Float64Array = undefined
-globals.Function = undefined
-globals.Generator = undefined
-globals.GeneratorFunction = undefined
-globals.Int16Array = undefined
-globals.Int32Array = undefined
-globals.Int8Array = undefined
-globals.Intl = undefined
-globals.Iterator = undefined
-globals.JSON = undefined
-globals.Map = undefined
-globals.Math = undefined
-globals.Number = undefined
-globals.Object = undefined
-globals.Promise = undefined
-globals.Proxy = undefined
-globals.Reflect = undefined
-globals.RegExp = undefined
-globals.Request = undefined
-globals.Response = undefined
-globals.Set = undefined
-globals.SharedArrayBuffer = undefined
-globals.String = undefined
-globals.Symbol = undefined
-globals.SyntaxError = undefined
-globals.TextDecoder = undefined
-globals.TextEncoder = undefined
-globals.TypeError = undefined
-globals.Uint16Array = undefined
-globals.Uint32Array = undefined
-globals.Uint8Array = undefined
-globals.Uint8ClampedArray = undefined
-globals.URL = undefined
-globals.WeakMap = undefined
-globals.WeakRef = undefined
-globals.WeakSet = undefined
+globals.AbortController = Symbol.for(`AbortController`)
+globals.AbortSignal = Symbol.for(`AbortSignal`)
+globals.Array = Symbol.for(`Array`)
+globals.ArrayBuffer = Symbol.for(`ArrayBuffer`)
+globals.AsyncFunction = Symbol.for(`AsyncFunction`)
+globals.AsyncGenerator = Symbol.for(`AsyncGenerator`)
+globals.AsyncGeneratorFunction = Symbol.for(`AsyncGeneratorFunction`)
+globals.AsyncIterator = Symbol.for(`AsyncIterator`)
+globals.Atomics = Symbol.for(`Atomics`)
+globals.Blob = Symbol.for(`Blob`)
+globals.BigInt = Symbol.for(`BigInt`)
+globals.BigInt64Array = Symbol.for(`BigInt64Array`)
+globals.BigUint64Array = Symbol.for(`BigUint64Array`)
+globals.Boolean = Symbol.for(`Boolean`)
+globals.DataView = Symbol.for(`DataView`)
+globals.Date = Symbol.for(`Date`)
+globals.Error = Symbol.for(`Error`)
+globals.FinalizationRegistry = Symbol.for(`FinalizationRegistry`)
+globals.Float32Array = Symbol.for(`Float32Array`)
+globals.Float64Array = Symbol.for(`Float64Array`)
+globals.Function = Symbol.for(`Function`)
+globals.Generator = Symbol.for(`Generator`)
+globals.GeneratorFunction = Symbol.for(`GeneratorFunction`)
+globals.Int16Array = Symbol.for(`Int16Array`)
+globals.Int32Array = Symbol.for(`Int32Array`)
+globals.Int8Array = Symbol.for(`Int8Array`)
+globals.Intl = Symbol.for(`Intl`)
+globals.Iterator = Symbol.for(`Iterator`)
+globals.JSON = Symbol.for(`JSON`)
+globals.Map = Symbol.for(`Map`)
+globals.Math = Symbol.for(`Math`)
+globals.Number = Symbol.for(`Number`)
+globals.Object = Symbol.for(`Object`)
+globals.Promise = Symbol.for(`Promise`)
+globals.Proxy = Symbol.for(`Proxy`)
+globals.Reflect = Symbol.for(`Reflect`)
+globals.RegExp = Symbol.for(`RegExp`)
+globals.Request = Symbol.for(`Request`)
+globals.Response = Symbol.for(`Response`)
+globals.Set = Symbol.for(`Set`)
+globals.SharedArrayBuffer = Symbol.for(`SharedArrayBuffer`)
+globals.String = Symbol.for(`String`)
+globals.Symbol = Symbol.for(`Symbol`)
+globals.SyntaxError = Symbol.for(`SyntaxError`)
+globals.TextDecoder = Symbol.for(`TextDecoder`)
+globals.TextEncoder = Symbol.for(`TextEncoder`)
+globals.TypeError = Symbol.for(`TypeError`)
+globals.Uint16Array = Symbol.for(`Uint16Array`)
+globals.Uint32Array = Symbol.for(`Uint32Array`)
+globals.Uint8Array = Symbol.for(`Uint8Array`)
+globals.Uint8ClampedArray = Symbol.for(`Uint8ClampedArray`)
+globals.URL = Symbol.for(`URL`)
+globals.WeakMap = Symbol.for(`WeakMap`)
+globals.WeakRef = Symbol.for(`WeakRef`)
+globals.WeakSet = Symbol.for(`WeakSet`)
 
 // Semi-placeholder. Missing a lot of globals.
 export const domGlobals = Object.create(null)
-domGlobals.document = undefined
-domGlobals.customElements = undefined
-domGlobals.Node = undefined
-domGlobals.Text = undefined
-domGlobals.Comment = undefined
-domGlobals.Element = undefined
-domGlobals.HTMLElement = undefined
-domGlobals.HTMLAnchorElement = undefined
-domGlobals.HTMLAreaElement = undefined
-domGlobals.HTMLAudioElement = undefined
-domGlobals.HTMLBaseElement = undefined
-domGlobals.HTMLBodyElement = undefined
-domGlobals.HTMLBRElement = undefined
-domGlobals.HTMLButtonElement = undefined
-domGlobals.HTMLCanvasElement = undefined
-domGlobals.HTMLDataElement = undefined
-domGlobals.HTMLDataListElement = undefined
-domGlobals.HTMLDetailsElement = undefined
-domGlobals.HTMLDialogElement = undefined
-domGlobals.HTMLDivElement = undefined
-domGlobals.HTMLDListElement = undefined
-domGlobals.HTMLEmbedElement = undefined
-domGlobals.HTMLFieldSetElement = undefined
-domGlobals.HTMLFontElement = undefined
-domGlobals.HTMLFormElement = undefined
-domGlobals.HTMLFrameElement = undefined
-domGlobals.HTMLFrameSetElement = undefined
-domGlobals.HTMLHeadElement = undefined
-domGlobals.HTMLHeadingElement = undefined
-domGlobals.HTMLHRElement = undefined
-domGlobals.HTMLHtmlElement = undefined
-domGlobals.HTMLIFrameElement = undefined
-domGlobals.HTMLImageElement = undefined
-domGlobals.HTMLInputElement = undefined
-domGlobals.HTMLLabelElement = undefined
-domGlobals.HTMLLegendElement = undefined
-domGlobals.HTMLLIElement = undefined
-domGlobals.HTMLLinkElement = undefined
-domGlobals.HTMLMapElement = undefined
-domGlobals.HTMLMarqueeElement = undefined
-domGlobals.HTMLMenuElement = undefined
-domGlobals.HTMLMetaElement = undefined
-domGlobals.HTMLMeterElement = undefined
-domGlobals.HTMLModElement = undefined
-domGlobals.HTMLObjectElement = undefined
-domGlobals.HTMLOListElement = undefined
-domGlobals.HTMLOptGroupElement = undefined
-domGlobals.HTMLOptionElement = undefined
-domGlobals.HTMLOutputElement = undefined
-domGlobals.HTMLParagraphElement = undefined
-domGlobals.HTMLParamElement = undefined
-domGlobals.HTMLPictureElement = undefined
-domGlobals.HTMLPreElement = undefined
-domGlobals.HTMLProgressElement = undefined
-domGlobals.HTMLQuoteElement = undefined
-domGlobals.HTMLScriptElement = undefined
-domGlobals.HTMLSelectElement = undefined
-domGlobals.HTMLSlotElement = undefined
-domGlobals.HTMLSourceElement = undefined
-domGlobals.HTMLSpanElement = undefined
-domGlobals.HTMLStyleElement = undefined
-domGlobals.HTMLTableCaptionElement = undefined
-domGlobals.HTMLTableCellElement = undefined
-domGlobals.HTMLTableColElement = undefined
-domGlobals.HTMLTableElement = undefined
-domGlobals.HTMLTableRowElement = undefined
-domGlobals.HTMLTableSectionElement = undefined
-domGlobals.HTMLTemplateElement = undefined
-domGlobals.HTMLTextAreaElement = undefined
-domGlobals.HTMLTimeElement = undefined
-domGlobals.HTMLTitleElement = undefined
-domGlobals.HTMLTrackElement = undefined
-domGlobals.HTMLUListElement = undefined
-domGlobals.HTMLVideoElement = undefined
-domGlobals.SVGSvgElement = undefined
+domGlobals.document = Symbol.for(`document`)
+domGlobals.customElements = Symbol.for(`customElements`)
+domGlobals.Node = Symbol.for(`Node`)
+domGlobals.Text = Symbol.for(`Text`)
+domGlobals.Comment = Symbol.for(`Comment`)
+domGlobals.Element = Symbol.for(`Element`)
+domGlobals.HTMLElement = Symbol.for(`HTMLElement`)
+domGlobals.HTMLAnchorElement = Symbol.for(`HTMLAnchorElement`)
+domGlobals.HTMLAreaElement = Symbol.for(`HTMLAreaElement`)
+domGlobals.HTMLAudioElement = Symbol.for(`HTMLAudioElement`)
+domGlobals.HTMLBaseElement = Symbol.for(`HTMLBaseElement`)
+domGlobals.HTMLBodyElement = Symbol.for(`HTMLBodyElement`)
+domGlobals.HTMLBRElement = Symbol.for(`HTMLBRElement`)
+domGlobals.HTMLButtonElement = Symbol.for(`HTMLButtonElement`)
+domGlobals.HTMLCanvasElement = Symbol.for(`HTMLCanvasElement`)
+domGlobals.HTMLDataElement = Symbol.for(`HTMLDataElement`)
+domGlobals.HTMLDataListElement = Symbol.for(`HTMLDataListElement`)
+domGlobals.HTMLDetailsElement = Symbol.for(`HTMLDetailsElement`)
+domGlobals.HTMLDialogElement = Symbol.for(`HTMLDialogElement`)
+domGlobals.HTMLDivElement = Symbol.for(`HTMLDivElement`)
+domGlobals.HTMLDListElement = Symbol.for(`HTMLDListElement`)
+domGlobals.HTMLEmbedElement = Symbol.for(`HTMLEmbedElement`)
+domGlobals.HTMLFieldSetElement = Symbol.for(`HTMLFieldSetElement`)
+domGlobals.HTMLFontElement = Symbol.for(`HTMLFontElement`)
+domGlobals.HTMLFormElement = Symbol.for(`HTMLFormElement`)
+domGlobals.HTMLFrameElement = Symbol.for(`HTMLFrameElement`)
+domGlobals.HTMLFrameSetElement = Symbol.for(`HTMLFrameSetElement`)
+domGlobals.HTMLHeadElement = Symbol.for(`HTMLHeadElement`)
+domGlobals.HTMLHeadingElement = Symbol.for(`HTMLHeadingElement`)
+domGlobals.HTMLHRElement = Symbol.for(`HTMLHRElement`)
+domGlobals.HTMLHtmlElement = Symbol.for(`HTMLHtmlElement`)
+domGlobals.HTMLIFrameElement = Symbol.for(`HTMLIFrameElement`)
+domGlobals.HTMLImageElement = Symbol.for(`HTMLImageElement`)
+domGlobals.HTMLInputElement = Symbol.for(`HTMLInputElement`)
+domGlobals.HTMLLabelElement = Symbol.for(`HTMLLabelElement`)
+domGlobals.HTMLLegendElement = Symbol.for(`HTMLLegendElement`)
+domGlobals.HTMLLIElement = Symbol.for(`HTMLLIElement`)
+domGlobals.HTMLLinkElement = Symbol.for(`HTMLLinkElement`)
+domGlobals.HTMLMapElement = Symbol.for(`HTMLMapElement`)
+domGlobals.HTMLMarqueeElement = Symbol.for(`HTMLMarqueeElement`)
+domGlobals.HTMLMenuElement = Symbol.for(`HTMLMenuElement`)
+domGlobals.HTMLMetaElement = Symbol.for(`HTMLMetaElement`)
+domGlobals.HTMLMeterElement = Symbol.for(`HTMLMeterElement`)
+domGlobals.HTMLModElement = Symbol.for(`HTMLModElement`)
+domGlobals.HTMLObjectElement = Symbol.for(`HTMLObjectElement`)
+domGlobals.HTMLOListElement = Symbol.for(`HTMLOListElement`)
+domGlobals.HTMLOptGroupElement = Symbol.for(`HTMLOptGroupElement`)
+domGlobals.HTMLOptionElement = Symbol.for(`HTMLOptionElement`)
+domGlobals.HTMLOutputElement = Symbol.for(`HTMLOutputElement`)
+domGlobals.HTMLParagraphElement = Symbol.for(`HTMLParagraphElement`)
+domGlobals.HTMLParamElement = Symbol.for(`HTMLParamElement`)
+domGlobals.HTMLPictureElement = Symbol.for(`HTMLPictureElement`)
+domGlobals.HTMLPreElement = Symbol.for(`HTMLPreElement`)
+domGlobals.HTMLProgressElement = Symbol.for(`HTMLProgressElement`)
+domGlobals.HTMLQuoteElement = Symbol.for(`HTMLQuoteElement`)
+domGlobals.HTMLScriptElement = Symbol.for(`HTMLScriptElement`)
+domGlobals.HTMLSelectElement = Symbol.for(`HTMLSelectElement`)
+domGlobals.HTMLSlotElement = Symbol.for(`HTMLSlotElement`)
+domGlobals.HTMLSourceElement = Symbol.for(`HTMLSourceElement`)
+domGlobals.HTMLSpanElement = Symbol.for(`HTMLSpanElement`)
+domGlobals.HTMLStyleElement = Symbol.for(`HTMLStyleElement`)
+domGlobals.HTMLTableCaptionElement = Symbol.for(`HTMLTableCaptionElement`)
+domGlobals.HTMLTableCellElement = Symbol.for(`HTMLTableCellElement`)
+domGlobals.HTMLTableColElement = Symbol.for(`HTMLTableColElement`)
+domGlobals.HTMLTableElement = Symbol.for(`HTMLTableElement`)
+domGlobals.HTMLTableRowElement = Symbol.for(`HTMLTableRowElement`)
+domGlobals.HTMLTableSectionElement = Symbol.for(`HTMLTableSectionElement`)
+domGlobals.HTMLTemplateElement = Symbol.for(`HTMLTemplateElement`)
+domGlobals.HTMLTextAreaElement = Symbol.for(`HTMLTextAreaElement`)
+domGlobals.HTMLTimeElement = Symbol.for(`HTMLTimeElement`)
+domGlobals.HTMLTitleElement = Symbol.for(`HTMLTitleElement`)
+domGlobals.HTMLTrackElement = Symbol.for(`HTMLTrackElement`)
+domGlobals.HTMLUListElement = Symbol.for(`HTMLUListElement`)
+domGlobals.HTMLVideoElement = Symbol.for(`HTMLVideoElement`)
+domGlobals.SVGSvgElement = Symbol.for(`SVGSvgElement`)
 
 export const symStar = Symbol.for(`*`)
 
@@ -218,7 +218,7 @@ function useAnonCompile(src) {
 
 function useNamed(src, name) {
   c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, name)
+  c.ctxDeclare(this, name, name)
   src = importTarDepPath(this, src)
   if (c.isPromise(src)) return useNamedCompileAsync(src, name)
   return useNamedCompile(src, name)
@@ -350,7 +350,7 @@ function tarPath(own, imp) {return c.optUrlRel(own, imp) ?? imp}
 
 export function useFunc(src, name) {
   c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, name)
+  c.ctxDeclare(this, name, name)
   src = importTarDepPath(this, src)
   if (c.isPromise(src)) return useFuncCompileAsync(src, name)
   return useFuncCompile(src, name)
@@ -400,9 +400,14 @@ export function $export(name, alias) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
-  name = c.symIdent(c.macroNode(this, name))
+  name = exportSource(c.macroNode(this, name))
   if (arguments.length <= 1) return c.raw(`export {`, name, `}`)
   return c.raw(`export {`, name, ` as `, exportAlias(alias), `}`)
+}
+
+function exportSource(src) {
+  if (c.isSymUnqual(src)) return c.symIdent(src)
+  throw SyntaxError(`export source must be unqualified identifier, got ${c.show(src)}`)
 }
 
 function exportAlias(src) {
@@ -590,7 +595,7 @@ export function $catch(name, ...src) {
 
     default: {
       const sub = c.ctxWithStatement(ctx)
-      c.ctxDeclare(sub, name)
+      c.ctxDeclare(sub, name, name)
       ctx[symCatch] = `catch (` + name.description + `) ` + block(sub, src)
       return []
     }
@@ -752,7 +757,7 @@ export function $void() {
   return c.raw(wrapParensOpt(this, `void ` + out))
 }
 
-$void.macro = ctxVoid
+$void.macro = function voidBare() {}
 
 export function ctxVoid(ctx) {return c.ctxIsStatement(ctx) ? [] : undefined}
 
@@ -811,10 +816,10 @@ export function funcAsync() {
 export const funcMixin = Object.create(null)
 funcMixin.ret = ret
 funcMixin.guard = guard
-funcMixin.arguments = undefined
-funcMixin.this = undefined
+funcMixin.arguments = Symbol.for(`arguments`)
+funcMixin.this = Symbol.for(`this`)
 
-export const symRest = Symbol.for(`&`)
+export const symRest = Symbol.for(`...`)
 
 // For internal use.
 export function funcBase(name, param, ...body) {
@@ -826,13 +831,13 @@ export function funcBase(name, param, ...body) {
 
 export function funcParam(src) {
   if (c.isNil(src)) return `()`
-  if (c.isSym(src)) return c.ctxDeclare(this, src), c.wrapParens(`...` + src.description)
+  if (c.isSym(src)) return c.ctxDeclare(this, src, src), c.wrapParens(`...` + src.description)
   if (c.isArr(src)) return c.wrapParens(paramDeconstruction.call(this, src))
   throw SyntaxError(`function parameters must be either nil, a symbol, or a list deconstruction, got ${c.show(src)}`)
 }
 
 export function param(src) {
-  if (c.isSym(src)) return c.ctxDeclare(this, src), c.reqStr(src.description)
+  if (c.isSym(src)) return c.ctxDeclare(this, src, src), c.reqStr(src.description)
   if (c.isArr(src)) return c.wrapBrackets(paramDeconstruction.call(this, src))
   throw SyntaxError(`in a list deconstruction, every element must be a symbol or a list, got ${c.show(src)}`)
 }
@@ -854,10 +859,10 @@ export function paramDeconstruction(src) {
 function restParam(ctx, src, ind) {
   const more = c.reqArr(src).length - c.reqNat(ind)
   if (more !== 1) {
-    throw SyntaxError(`rest symbol ${c.show(symRest)} must be followed by exactly one node, found ${more} nodes`)
+    throw SyntaxError(`rest symbol ${c.show(symRest.description)} must be followed by exactly one node, found ${more} nodes`)
   }
   src = src[ind]
-  c.ctxDeclare(ctx, src)
+  c.ctxDeclare(ctx, src, src)
   return `...` + src.description
 }
 
@@ -871,10 +876,10 @@ expression mode have slightly different scoping rules.
 */
 function ctxWithFuncDecl(ctx, name, src) {
   const statement = c.ctxIsStatement(ctx)
-  if (statement) c.ctxDeclare(ctx, name)
+  if (statement) c.ctxDeclare(ctx, name, name)
 
   ctx = c.patch(c.ctxWithMixin(ctx), src)
-  if (!statement) c.ctxRedeclare(ctx, name)
+  if (!statement) c.ctxRedeclare(ctx, name, name)
 
   return Object.create(ctx)
 }
@@ -935,7 +940,7 @@ class FnOrdHan {
   get(tar, key) {
     if (!isOrdKey(key)) return tar[key]
     this.arity = Math.max(this.arity, 1 + (key.slice(1) | 0))
-    return undefined
+    return Symbol.for(key)
   }
 }
 
@@ -967,7 +972,7 @@ classMixin.static = $static
 classMixin.extend = extend
 classMixin.field = field
 classMixin.meth = meth
-classMixin.super = undefined
+classMixin.super = Symbol.for(`super`)
 
 export const symClass = Symbol.for(`jisp.class`)
 export const symExtend = Symbol.for(`jisp.extend`)
@@ -1012,7 +1017,7 @@ export function methAsync() {
 }
 
 export const methMixin = Object.create(funcMixin)
-methMixin.super = undefined
+methMixin.super = Symbol.for(`super`)
 
 /*
 Known limitation: this doesn't support arbitrary expressions in the name
@@ -1227,25 +1232,64 @@ function dictEntry(ctx, key, val) {
   )
 }
 
+// TODO: non-key symbols should be macroed and compiled into square bracket
+// access such as `[Symbol.iterator]`.
 function dictKey(val) {
+  if (c.isNat(val)) return String(val)
   if (c.isFin(val)) return `"` + val + `"`
-  if (c.isBigInt(val)) return `"` + val + `"`
+  if (c.isBigInt(val)) return String(val)
   if (c.isStr(val)) return c.compileNode(val)
-  if (c.isSym(val)) return identOrStr(val.description)
-  throw SyntaxError(`dict keys must be identifiers, strings, or numbers; got ${c.show(val)}`)
+  if (c.isSymKeyUnqual(val)) return identOrStr(val.description.slice(c.accessor.length))
+  throw SyntaxError(`dict keys must be strings, numbers, or unqualified key symbols starting with ${c.show(c.accessor)}; got ${c.show(val)}`)
 }
 
-export function get(...src) {
-  src = macroCompileExprs(this, src).map(bracketedOpt).join(``)
+export function get(src, ...path) {
+  c.reqArityMin(arguments.length, 1)
+  const ctx = c.ctxToExpression(this)
+  src = c.compileNode(c.macroNode(ctx, src))
+  src += getPathBase(ctx, path, c.compileAccess, accessBracketed)
   return src ? c.raw(src) : undefined
 }
 
-export function getOpt(...src) {
-  src = macroCompileExprs(this, src).map(bracketedOpt).join(`?.`)
+function accessBracketed(ctx, src) {
+  src = c.compileNode(c.macroNode(ctx, src))
+  return src && c.wrapBrackets(src)
+}
+
+export function getOpt(src, ...path) {
+  c.reqArityMin(arguments.length, 1)
+
+  const ctx = c.ctxToExpression(this)
+
+  src = c.macroNode(ctx, src)
+  src = c.isSym(src)
+    ? c.compileSymWith(src, c.compileAccessOpt)
+    : c.compileNode(src)
+
+  src += getPathBase(ctx, path, c.compileAccessOpt, accessBracketedOpt)
   return src ? c.raw(src) : undefined
 }
 
-function bracketedOpt(val, ind) {return ind ? c.wrapBrackets(val) : val}
+function accessBracketedOpt(ctx, src) {
+  src = c.compileNode(c.macroNode(ctx, src))
+  return src && (c.accessorOpt + c.wrapBrackets(src))
+}
+
+function getPathBase(ctx, src, keyFun, exprFun) {
+  let out = ``
+
+  for (src of c.reqArr(src)) {
+    if (c.isSym(src) && src.description.startsWith(c.accessor)) {
+      for (src of src.description.slice(c.accessor.length).split(c.accessor)) {
+        out += keyFun(src)
+      }
+    }
+    else {
+      out += exprFun(ctx, src)
+    }
+  }
+  return out
+}
 
 export function set(tar, src) {
   c.reqArity(arguments.length, 2)

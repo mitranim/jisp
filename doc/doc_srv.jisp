@@ -17,11 +17,11 @@
 ]
 
 [func methodNotAllowed [meth path]
-  [new Response [+ `method not allowed: ` meth ` ` path] [:: status 405]]
+  [new Response [+ `method not allowed: ` meth ` ` path] [: .status 405]]
 ]
 
 [func notFound [meth path]
-  [new Response [+ `not found: ` meth ` ` path] [:: status 404]]
+  [new Response [+ `not found: ` meth ` ` path] [: .status 404]]
 ]
 
 [func.async response [req]
@@ -36,7 +36,7 @@
 
   [new Response
     [await [Deno.readTextFile path]]
-    [and type [:: headers [:: `content-type` type]]]
+    [and type [: .headers [: `content-type` type]]]
   ]
 ]
 
@@ -48,7 +48,7 @@
   void
 ]
 
-[const lis [Deno.listen [:: port PORT]]]
+[const lis [Deno.listen [: .port PORT]]]
 
 [console.log [+ `listening on http://localhost:` PORT BASE]]
 

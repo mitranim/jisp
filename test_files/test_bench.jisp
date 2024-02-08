@@ -25,12 +25,13 @@ string
 
 [const pubConst [func privFunc [one two three]
   [if one two three]
+  [if one.two two.three three.four]
 ]]
 
 [func pubFunc [one two three]
   [if one [do two three] [do one two three]]
-  [if one [do two three] [do one two three]]
-  [if one [do two three] [do one two three]]
+  [if one [do two.three three.four] [do one two three]]
+  [if one [do two.three.four three.four.five] [do one two three]]
 ]
 
 [class PubCls
@@ -40,8 +41,8 @@ string
 
   [meth someMethod [one two three]
     [if one [do two three] [do one two three]]
-    [if one [do two three] [do one two three]]
-    [if one [do two three] [do one two three]]
+    [if one [do two.three three.four] [do one two three]]
+    [if one [do two.three.four three.four.five] [do one two three]]
   ]
 
   [static
