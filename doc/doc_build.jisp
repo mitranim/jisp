@@ -1,4 +1,2 @@
-[use.mac `jisp:prelude.mjs` *]
-
 ;; Causes the module to be built, but not executed. ;;
-[fn [use.async `./doc_client.jisp`]]
+[use.func `./doc_client.jisp` _]

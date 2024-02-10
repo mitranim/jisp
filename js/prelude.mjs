@@ -27,6 +27,7 @@ export {
   isNil,
   isSome,
   spread,
+  empty                                                    as '',
   list,                        list                        as '|',
   dict,                        dict                        as ':',
   get,                         get                         as '<-',

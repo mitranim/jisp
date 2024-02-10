@@ -348,6 +348,7 @@ function macroSymDeref(ctx, path) {
   return val
 }
 
+// SYNC[sym_get].
 function macroSymGet(ctx, src, key) {
   if (isSym(src)) return Symbol.for(src.description + accessor + key)
   if (!isComp(src)) return new KeyRef(src, key)
@@ -355,6 +356,15 @@ function macroSymGet(ctx, src, key) {
   if (canCompile(src)) return new KeyRef(src, key)
   if (!(isComp(src) && key in src)) throw errProp(key, src)
   return src[key]
+}
+
+// SYNC[sym_get].
+function symGetOpt(src, key) {
+  if (!isComp(src)) return undefined
+  if (canMacro(src)) return undefined
+  if (canCompile(src)) return undefined
+  if (key in src) return src[key]
+  return undefined
 }
 
 export class KeyRef {
@@ -470,6 +480,7 @@ export function compileList(src) {
     switch (src.length) {
       case 0: return ``
       case 1: return src[0] + `()`
+      case 2: return src[0] + wrapParens(src[1])
       default: return src[0] + wrapParens(src.slice(1).join(expressionSep))
     }
   }
@@ -513,7 +524,9 @@ export function wrapBracesOpt(src) {return reqStr(src) && wrapBraces(src)}
 export function wrapBracesMultiLine(src) {return reqStr(src) ? `{\n` + reqStr(src) + `\n}` : `{}`}
 export function wrapBracesMultiLineOpt(src) {return reqStr(src) && wrapBracesMultiLine(src)}
 export function wrapBrackets(src) {return `[` + reqStr(src) + `]`}
+export function wrapBracketsOpt(src) {return reqStr(src) && wrapBrackets(src)}
 export function wrapParens(src) {return `(` + reqStr(src) + `)`}
+export function wrapParensOpt(src) {return reqStr(src) && wrapParens(src)}
 
 export const statementSep = `;\n`
 export const expressionSep = `, `
@@ -935,19 +948,17 @@ export function reqGet(src, path) {
 }
 
 export function optGet(src, path) {
-  while (isComp(src) && reqStr(path)) {
-    const name = strNs(path)
-    if (!(name in src)) return undefined
-    src = src[name]
-    path = strWithoutNs(path, name)
-  }
-  return src
+  return reqStr(path).split(accessor).reduce(symGetOpt, src)
 }
 
 export function ctxDeclare(ctx, key, val) {
-  const name = symIdent(key)
-  if (hasOwn(ctx, name)) throw Error(`redundant declaration of ${show(name)}`)
-  ctx[name] = val
+  key = symIdent(key)
+  ctxReqNotDeclared(ctx, key)
+  ctx[key] = val
+}
+
+export function ctxReqNotDeclared(ctx, key) {
+  if (hasOwn(ctx, reqStr(key))) throw Error(`redundant declaration of ${show(key)}`)
 }
 
 export function ctxRedeclare(ctx, key, val) {ctx[symIdent(key)] = val}
@@ -1032,11 +1043,11 @@ export const accessor = `.`
 export const accessorOpt = `?.`
 export const ellipsis = `…`
 
-export function isStrUnqual(val) {return isStr(val) && !val.includes(accessor)}
+export function isStrUnqual(val) {return isStr(val) && !!val && !val.includes(accessor)}
 export function isStrQual(val) {return isStr(val) && val.includes(accessor)}
 
-export function isSymUnqual(val) {return isSym(val) && !val.description.includes(accessor)}
-export function isSymQual(val) {return isSym(val) && val.description.includes(accessor)}
+export function isSymUnqual(val) {return isSym(val) && isStrUnqual(val.description)}
+export function isSymQual(val) {return isSym(val) && isStrQual(val.description)}
 
 export function isStrKey(val) {return isStr(val) && val[0] === accessor}
 export function isStrKeyUnqual(val) {return isStr(val) && val.lastIndexOf(accessor) === 0}

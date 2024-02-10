@@ -175,5 +175,20 @@ export class PseudoFs extends Map {
   }
 }
 
+export function reqSymGlob(val) {
+  if (c.isSome(Symbol.keyFor(c.reqSym(val)))) return val
+  throw Error(`expected global symbol, got ${c.show(val)}`)
+}
+
+export function reqSymUniq(val) {
+  if (c.isNil(Symbol.keyFor(c.reqSym(val)))) return val
+  throw Error(`expected unique symbol, got ${c.show(val)}`)
+}
+
+export function reqSymUniqWith(val, str) {
+  if (reqSymUniq(val).description === str) return val
+  throw Error(`expected unique symbol with description ${c.show(str)}, got ${c.show(val)}`)
+}
+
 // Indicates benchmark accuracy. Should be ±0 nanoseconds.
 t.bench(function bench_baseline() {})

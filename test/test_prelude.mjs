@@ -1615,53 +1615,65 @@ return
     return ctx
   }
 
-  // In expression mode, the declaration is made in the mixin scope.
-  t.eq(ti.objFlat(test(null)), [
-    {[c.symStatement]: undefined},
-    {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
-  ])
+  {
+    const ctx = test(null)
+    ti.reqSymUniqWith(ctx.this, `this`)
 
-  // In statement mode, the declaration is made in the outer scope.
-  t.eq(ti.objFlat(test(c.ctxWithStatement(null))), [
-    {[c.symStatement]: undefined},
-    {[c.symMixin]: undefined, ...m.funcMixin},
-    {[c.symStatement]: undefined, one: sym(`one`)},
-  ])
+    // In expression mode, the declaration is made in the mixin scope.
+    t.eq(ti.objFlat(ctx), [
+      {[c.symStatement]: undefined, this: ctx.this},
+      {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
+    ])
+  }
 
   {
-    const ctx = Object.create(null)
-    ctx.ret = 10
+    const ctx = test(c.ctxWithStatement(null))
 
-    t.eq(ti.objFlat(test(ctx)), [
-      {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), this: sym(`this`), one: sym(`one`)},
+    // In statement mode, the declaration is made in the outer scope.
+    t.eq(ti.objFlat(ctx), [
+      {[c.symStatement]: undefined, this: ctx.this},
+      {[c.symMixin]: undefined, ...m.funcMixin},
+      {[c.symStatement]: undefined, one: sym(`one`)},
+    ])
+  }
+
+  {
+    let ctx = Object.create(null)
+    ctx.ret = 10
+    ctx = test(ctx)
+
+    t.eq(ti.objFlat(ctx), [
+      {[c.symStatement]: undefined, this: ctx.this},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), one: sym(`one`)},
       {ret: 10},
     ])
   }
 
   {
-    const ctx = Object.create(null)
+    let ctx = Object.create(null)
     ctx.ret = 10
     ctx.arguments = 20
     ctx.this = 30
+    ctx = test(ctx)
 
-    t.eq(ti.objFlat(test(ctx)), [
-      {[c.symStatement]: undefined},
+    t.eq(ti.objFlat(ctx), [
+      {[c.symStatement]: undefined, this: ctx.this},
       {[c.symMixin]: undefined, guard: m.guard, one: sym(`one`)},
       {ret: 10, arguments: 20, this: 30},
     ])
   }
 
   {
-    const ctx = Object.create(null)
+    let ctx = Object.create(null)
     ctx.ret = 10
     ctx.arguments = 20
     ctx.this = 30
     ctx.one = 40
+    ctx = test(ctx)
 
-    t.eq(ti.objFlat(test(ctx)), [
-      {[c.symStatement]: undefined},
-      // Unlike the other "mixin" properties, the function's name is added to
+    t.eq(ti.objFlat(ctx), [
+      {[c.symStatement]: undefined, this: ctx.this},
+      // Unlike most other "mixin" properties, the function's name is added to
       // its mixin scope unconditionally.
       {[c.symMixin]: undefined, guard: m.guard, one: sym(`one`)},
       {ret: 10, arguments: 20, this: 30, one: 40},
@@ -1678,9 +1690,9 @@ return
 }`)
 
     t.eq(ti.objFlat(ctx), [
-      {[c.symStatement]: undefined},
+      {[c.symStatement]: undefined, this: ctx.this},
       // Function name takes priority over mixin properties.
-      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), this: sym(`this`), ret: sym(`ret`)},
+      {[c.symMixin]: undefined, guard: m.guard, arguments: sym(`arguments`), ret: sym(`ret`)},
     ])
   }
 })
@@ -1815,18 +1827,9 @@ return
 }`)
 
   t.eq(ti.objFlat(ctx), [
-    {[c.symStatement]: undefined, two: sym(`two`), three: sym(`three`), four: sym(`four`)},
+    {[c.symStatement]: undefined, this: ctx.this, two: sym(`two`), three: sym(`three`), four: sym(`four`)},
     {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
   ])
-})
-
-t.test(function test_class_invalid() {
-  ti.fail(() => p.class.call(null),                 `expected at least 1 inputs, got 0 inputs`)
-  ti.fail(() => p.class.call(null, 10),             `expected variant of isSym, got 10`)
-  ti.fail(() => p.class.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
-  ti.fail(() => p.class.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
-  ti.fail(() => p.class.call(null, sym(`await`)),   `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
-  ti.fail(() => p.class.call(null, sym(`eval`)),    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 })
 
 t.test(function test_fn_empty() {
@@ -2009,6 +2012,15 @@ return $2
   }
 })
 
+t.test(function test_class_invalid() {
+  ti.fail(() => p.class.call(null),                 `expected at least 1 inputs, got 0 inputs`)
+  ti.fail(() => p.class.call(null, 10),             `expected variant of isSym, got 10`)
+  ti.fail(() => p.class.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
+  ti.fail(() => p.class.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
+  ti.fail(() => p.class.call(null, sym(`await`)),   `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
+  ti.fail(() => p.class.call(null, sym(`eval`)),    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
+})
+
 t.test(function test_class_declaration_and_export() {
   function run(ctx) {
     return [
@@ -2021,12 +2033,12 @@ t.test(function test_class_declaration_and_export() {
     const ctx = Object.create(null)
     const [out, sub] = run(ctx)
 
-    t.is(out.compile(), `class one {}`)
-
+    t.is(out.compile(), `(class one {})`)
     t.own(ctx, {})
+    ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {[m.symClass]: undefined},
+      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
       // In expression mode, the declaration is made in the mixin scope.
       {[c.symMixin]: undefined, ...m.classMixin, one: sym(`one`)},
       ctx,
@@ -2041,9 +2053,10 @@ t.test(function test_class_declaration_and_export() {
 
     // In statement mode, the declaration is made in the outer scope.
     t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
+    ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {[m.symClass]: undefined},
+      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
       {[c.symMixin]: undefined, ...m.classMixin},
       ctx,
     ])
@@ -2054,21 +2067,37 @@ t.test(function test_class_declaration_and_export() {
     const [out, sub] = run(ctx)
 
     t.is(out.compile(), `export class one {}`)
-
     t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
+    ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {[m.symClass]: undefined},
+      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
       {[c.symMixin]: undefined, ...m.classMixin},
       ctx,
     ])
   }
 })
 
-t.test(function test_extend() {
+t.test(function test_class_prototype() {
+  ti.fail(() => m.classPrototype.call(null), `expected class static context, got null`)
+
+  function run(src) {return p.class.call(null, sym(`one`), src)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  test([sym(`prototype`)], `(class one {})`)
+  test([sym(`prototype`), [], [[]]], `(class one {})`)
+
+  let ctx
+  test([sym(`prototype`), {macro(val) {ctx = val; return []}}], `(class one {})`)
+
+  ti.reqSymUniqWith(ctx.this, `this`)
+  t.own(ctx, {...m.classOverrideProto, [m.symClassProto]: ctx.this, this: ctx.this})
+})
+
+t.test(function test_class_extend() {
   ti.fail(
-    () => m.extend.call(null),
-    `unexpected non-class context null`,
+    () => m.classExtend.call(null),
+    `expected class static context, got null`,
   )
 
   function test(src, exp) {
@@ -2078,237 +2107,1236 @@ t.test(function test_extend() {
     )
   }
 
-  test([m.extend], `class one {}`)
-  test([sym(`extend`)], `class one {}`)
+  test([m.classExtend], `(class one {})`)
+  test([sym(`extend`)], `(class one {})`)
 
-  test([m.extend, []], `class one {}`)
-  test([sym(`extend`), []], `class one {}`)
+  test([m.classExtend, []], `(class one {})`)
+  test([sym(`extend`), []], `(class one {})`)
 
-  test([m.extend, [], [[]]], `class one {}`)
-  test([sym(`extend`), [], [[]]], `class one {}`)
+  test([m.classExtend, [], [[]]], `(class one {})`)
+  test([sym(`extend`), [], [[]]], `(class one {})`)
 
-  test([m.extend, 10], `class one extends 10 {}`)
-  test([m.extend, 10, 20], `class one extends 20(10) {}`)
-  test([m.extend, 10, 20, 30], `class one extends 30(20(10)) {}`)
+  test([m.classExtend, 10], `(class one extends 10 {})`)
+  test([m.classExtend, 10, 20], `(class one extends 20(10) {})`)
+  test([m.classExtend, 10, 20, 30], `(class one extends 30(20(10)) {})`)
 
   ti.fail(
-    () => test([m.extend, sym(`two`)]),
+    () => test([m.classExtend, sym(`two`)]),
     `missing declaration of "two"`,
   )
 
   ti.fail(
-    () => test([m.extend, 10, sym(`two`)]),
+    () => test([m.classExtend, 10, sym(`two`)]),
     `missing declaration of "two"`,
   )
 
   test(
-    [m.extend, ti.macReqExpressionOne],
-    `class one extends "one" {}`
+    [m.classExtend, ti.macReqExpressionOne],
+    `(class one extends "one" {})`
   )
 
   test(
-    [m.extend, ti.macReqExpressionOne, ti.macReqExpressionTwo],
-    `class one extends "two"("one") {}`
+    [m.classExtend, ti.macReqExpressionOne, ti.macReqExpressionTwo],
+    `(class one extends "two"("one") {})`
   )
 })
 
-t.test(function test_meth() {
-  ti.fail(
-    () => m.meth.call(null),
-    `expected at least 1 inputs, got 0 inputs`,
-  )
+t.test(function test_class_set_static() {
+  const fun = m.setForClassStatic
 
-  ti.fail(
-    () => m.meth.call(null, 10),
-    `field name must be a symbol representing an identifier, or a string; got 10`,
-  )
+  ti.fail(() => fun.call(null), `expected class static context, got null`)
 
-  ti.fail(
-    () => m.meth.call(null, sym(`one`), 10),
-    `function parameters must be either nil, a symbol, or a list deconstruction, got 10`,
-  )
+  function run(src) {return p.class.call(null, sym(`one`), src)}
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
 
-  ti.fail(
-    () => m.meth.call(null, sym(`one`), [10]),
-    `in a list deconstruction, every element must be a symbol or a list, got 10`,
-  )
+  fail(fun, `unable to usefully compile function [function setForClassStatic]`)
+  fail([fun], `expected 2 inputs, got 0 inputs`)
 
-  {
-    const ctx = Object.create(null)
+  test([fun, [], []], `(class one {})`)
+  fail([fun, [], 10], `unable to compile entry with empty left-hand side and value "10"`)
 
-    t.is(m.meth.call(ctx, sym(`one`)).compile(), `one () {}`)
-    t.own(ctx, {})
+  test([fun, 0, []], `(class one {
+static 0
+})`)
 
-    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
-    t.own(ctx, {})
-  }
+  // Inconsistent with how we compile numbers, but consistent with the behavior
+  // of computed field names in JS. We have the same behavior in dict literals.
+  test([fun, -0, []], `(class one {
+static 0
+})`)
 
-  {
-    const ctx = c.ctxWithStatement(null)
+  test([fun, 10, []], `(class one {
+static 10
+})`)
 
-    t.is(m.meth.call(ctx, sym(`one`)).compile(), `one () {}`)
-    t.own(ctx, {[c.symStatement]: undefined})
+  test([fun, -10, []], `(class one {
+static "-10"
+})`)
 
-    t.is(m.meth.call(ctx, sym(`one`), []).compile(), `one () {}`)
-    t.own(ctx, {[c.symStatement]: undefined})
-  }
+  test([fun, 10, 20], `(class one {
+static 10 = 20
+})`)
 
-  /*
-  Unlike function names, method names may be keywords or reserved names.
-  They can also be strings. However, they must be otherwise valid identifiers.
-  This means that using a symbol to define a method and access a method is a
-  reversible roundtrip.
-  */
-  {
-    ti.fail(() => m.meth.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
-    ti.fail(() => m.meth.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
+  test([fun, 12.34, 56.78], `(class one {
+static "12.34" = 56.78
+})`)
 
-    testMethBasic(sym(`await`), `await () {}`)
-    testMethBasic(sym(`eval`),  `eval () {}`)
-    testMethBasic(``,           `"" () {}`)
-    testMethBasic(`one`,        `"one" () {}`)
-  }
+  test([fun, -12.34, 56.78], `(class one {
+static "-12.34" = 56.78
+})`)
 
-  t.is(
-    m.meth.call(null, sym(`one`), [], 10).compile(),
-    `one () {
-return 10
-}`)
+  test([fun, 10n, 20n], `(class one {
+static 10 = 20n
+})`)
 
-  t.is(
-    m.meth.call(null, sym(`one`), [], 10, 20).compile(),
-    `one () {
-10;
-return 20
-}`)
+  test([fun, `one`, `two`], `(class one {
+static "one" = "two"
+})`)
 
-  t.is(
-    m.meth.call(null, sym(`one`), [], 10, 20, 30).compile(),
-    `one () {
-10;
-20;
-return 30
-}`)
+  fail([fun, 10, sym(`two`)], `missing declaration of "two"`)
+  fail([fun, 10, sym(`.one`)], `missing declaration of ""`)
+  fail([fun, 10, sym(`.two`)], `missing declaration of ""`)
+  fail([fun, 10, sym(`.one.two`)], `missing declaration of ""`)
 
-  {
-    let ctx
+  // Syntatically valid but would fail to run.
+  // That's fine for our purposes.
+  test([fun, sym(`one`), 10], `(class one {
+static [one] = 10
+})`)
 
-    t.is(
-      m.meth.call(null, sym(`one`), [sym(`two`), sym(`three`)],
-        ti.macReqStatementOne,
-        ti.macReqStatementTwo,
-        {macro(val) {
-          ti.macReqExpression.macro(val)
-          ctx = val
-          return 10
-        }},
-      ).compile(),
-      `one (two, three) {
-"one";
-"two";
-return 10
-}`)
+  test([fun, sym(`.`), 10], `(class one {
+static "" = 10
+})`)
 
-    t.eq(ti.objFlat(ctx), [
-      {},
-      {[c.symStatement]: undefined, two: sym(`two`), three: sym(`three`)},
-      {[c.symMixin]: undefined, ...m.funcMixin, ...m.methMixin},
-    ])
-  }
-})
+  test([fun, sym(`.one`), 10], `(class one {
+static one = 10
+})`)
 
-function testMethBasic(src, exp) {
-  t.is(
-    m.meth.call(null, src, []).compile(),
-    exp,
-  )
-}
+  test([fun, sym(`.!@#`), 10], `(class one {
+static "!@#" = 10
+})`)
 
-t.test(function test_field() {
-  ti.fail(() => m.field.call(null),                 `expected between 1 and 2 inputs, got 0 inputs`)
-  ti.fail(() => m.field.call(null, 10),             `field name must be a symbol representing an identifier, or a string; got 10`)
-  ti.fail(() => m.field.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
-  ti.fail(() => m.field.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
+  test([fun, sym(`.await`), 10], `(class one {
+static await = 10
+})`)
 
-  t.is(
-    m.field.call(null, sym(`one`)).compile(),
-    `one`,
-  )
+  test([fun, sym(`.eval`), 10], `(class one {
+static eval = 10
+})`)
 
-  t.is(
-    m.field.call(null, sym(`one`), undefined).compile(),
-    `one = undefined`,
-  )
+  test([fun, sym(`.123ident`), 10], `(class one {
+static "123ident" = 10
+})`)
 
-  t.is(
-    m.field.call(null, sym(`one`), null).compile(),
-    `one = null`,
-  )
-
-  t.is(
-    m.field.call(null, sym(`one`), 10).compile(),
-    `one = 10`,
-  )
-
-  t.is(
-    m.field.call(null, sym(`one`), ti.macReqExpression).compile(),
-    `one = "expression_value"`,
-  )
-
-  t.is(
-    m.field.call(null, `one`, ti.macReqExpression).compile(),
-    `"one" = "expression_value"`,
-  )
+  test([fun, ti.macReqExpressionOne, ti.macReqExpressionTwo], `(class one {
+static ["one"] = "two"
+})`)
 
   {
     const ctx = c.ctxWithStatement(null)
-
-    t.is(
-      m.field.call(ctx, sym(`one`), ti.macReqExpression).compile(),
-      `one = "expression_value"`,
-    )
-
     t.own(ctx, {[c.symStatement]: undefined})
-  }
 
-  {
-    const ctx = c.ctxWithStatement(null)
-
+    let sub
     t.is(
-      m.class.call(ctx, sym(`one`),
-        [m.field, sym(`two`), ti.macReqExpression],
+      p.class.call(
+        ctx,
+        sym(`one`),
+        [fun, sym(`.two`), 10],
+        {macro(val) {sub = val; return []}},
       ).compile(),
       `class one {
-two = "expression_value"
+static two = 10
 }`)
 
     t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
+    t.own(sub, {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this}, `no additional declarations`)
   }
 })
 
-t.test(function test_static() {
-  const ctx = Object.create(null)
-  ctx[m.symClass] = undefined
-  testBlockStatement(ctx, m.static, compileStatic)
+// Shares most of the implementation with the static version.
+// This test is a sanity check.
+t.test(function test_class_set_proto() {
+  const fun = m.setForClassProto
+
+  ti.fail(() => fun.call(null), `expected class prototype context, got null`)
+
+  function run(src) {return p.class.call(null, sym(`one`), [sym(`prototype`), src])}
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  fail([fun], `expected 2 inputs, got 0 inputs`)
+  test([fun, [], []], `(class one {})`)
+  fail([fun, [], 10], `unable to compile entry with empty left-hand side and value "10"`)
+
+  test([fun, 10, 20], `(class one {
+10 = 20
+})`)
+
+  test([fun, sym(`.two`), 10], `(class one {
+two = 10
+})`)
+
+  test([fun, ti.macReqExpressionOne, ti.macReqExpressionTwo], `(class one {
+["one"] = "two"
+})`)
+})
+
+function testClassLetInvalid(fun, run, fail) {
+  fail([fun], `expected between 1 and 2 inputs, got 0 inputs`)
+  fail([fun, 10], `expected unqualified symbol, got 10`)
+  fail([fun, 10, 20], `expected unqualified symbol, got 10`)
+  fail([fun, sym(``)], `expected unqualified symbol, got`)
+  fail([fun, sym(``), 10], `expected unqualified symbol, got`)
+  fail([fun, sym(`.two`)], `expected unqualified symbol, got .two`)
+  fail([fun, sym(`.two`), 10], `expected unqualified symbol, got .two`)
+  fail([fun, sym(`one.two`)], `expected unqualified symbol, got one.two`)
+  fail([fun, sym(`one.two`), 10], `expected unqualified symbol, got one.two`)
+  fail([fun, sym(`one`), sym(`two`)], `missing declaration of "two"`)
+
+  ti.fail(() => run([fun, sym(`two`)], [fun, sym(`two`)]), `redundant declaration of "two"`)
+  ti.fail(() => run([fun, sym(`two`), 10], [fun, sym(`two`)]), `redundant declaration of "two"`)
+  ti.fail(() => run([fun, sym(`two`)], [fun, sym(`two`), 10]), `redundant declaration of "two"`)
+  ti.fail(() => run([fun, sym(`two`), 10], [fun, sym(`two`), 20]), `redundant declaration of "two"`)
+}
+
+t.test(function test_class_let_static() {
+  const fun = m.letForClassStatic
+
+  function run(...src) {return p.class.call(null, sym(`one`), ...src)}
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  testClassLetInvalid(fun, run, fail)
+  ti.fail(() => fun.call(null), `expected class static context, got null`)
+  fail(fun, `unable to usefully compile function [function letForClassStatic]`)
+
+  test([fun, sym(`one`)], `(class one {})`)
+
+  test([fun, sym(`one`), []], `(class one {
+static one
+})`)
+
+  test([fun, sym(`one`), 10], `(class one {
+static one = 10
+})`)
+
+  /*
+  This happens because we declare the field `one` before macroing the value.
+  This example is useless, but this behavior can be useful in other cases, for
+  example if the value is an arrow function that may be invoked later and read
+  the updated value of the field. If we didn't declare the field `one` before
+  macroing the value, the assignment would be `static one = one`, referring
+  to the class name, which is already in scope. The resulting JS would parse
+  but fail to run.
+  */
+  t.is(
+    run([fun, sym(`one`), sym(`one`)]).compile(),
+    `(class one {
+static one = this.one
+})`)
+
+  test([fun, sym(`two`)], `(class one {})`)
+
+  test([fun, sym(`two`), []], `(class one {
+static two
+})`)
+
+  test([fun, sym(`two`), 10], `(class one {
+static two = 10
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`)],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+static two = this.one
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`), []],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+static one;
+static two = this.one
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`), 10],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+static one = 10;
+static two = this.one
+})`)
+
+  test([fun, sym(`await`)], `(class one {})`)
+
+  // Perfectly valid.
+  test([fun, sym(`await`), []], `(class one {
+static await
+})`)
+
+  test([fun, sym(`await`), 10], `(class one {
+static await = 10
+})`)
+
+  test([fun, sym(`eval`)], `(class one {})`)
+
+  test([fun, sym(`eval`), []], `(class one {
+static eval
+})`)
+
+  test([fun, sym(`eval`), 10], `(class one {
+static eval = 10
+})`)
+
+  test([fun, sym(`!@#`)], `(class one {})`)
+
+  test([fun, sym(`!@#`), []], `(class one {
+static "!@#"
+})`)
+
+  test([fun, sym(`!@#`), 10], `(class one {
+static "!@#" = 10
+})`)
+
+  test([fun, sym(`123ident`)], `(class one {})`)
+
+  test([fun, sym(`123ident`), []], `(class one {
+static "123ident"
+})`)
+
+  test([fun, sym(`123ident`), 10], `(class one {
+static "123ident" = 10
+})`)
+
+  test([fun, sym(`two`), ti.macReqExpressionOne], `(class one {
+static two = "one"
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`)],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+static "%^&" = this["!@#"]
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`), []],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+static "!@#";
+static "%^&" = this["!@#"]
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`), 10],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+static "!@#" = 10;
+static "%^&" = this["!@#"]
+})`)
+
+  test([fun, sym(`two`), [p.fn, sym(`two`)]], `(class one {
+static two = (() => this.two)
+})`)
+
+  fail(
+    [fun, sym(`two`), [p.func, sym(`three`), [], sym(`two`)]],
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    run(
+      [fun, sym(`two`)],
+      [p.func, sym(`three`), [], sym(`two`)],
+    ).compile(),
+    `(class one {
+static three () {
+return this.two
+}
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`two`), 10],
+      [p.func, sym(`three`), [], sym(`two`)],
+    ).compile(),
+    `(class one {
+static two = 10;
+static three () {
+return this.two
+}
+})`)
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [], sym(`two`)]],
+    `(class one {
+static two = function two () {
+return two
+}
+})`)
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [],
+      [p.func, sym(`two`), [], sym(`two`)],
+    ]],
+    `(class one {
+static two = function two () {
+return function two () {
+return two
+}
+}
+})`)
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [],
+      [p.func, sym(`three`), [], sym(`two`)],
+    ]],
+    `(class one {
+static two = function two () {
+return function three () {
+return two
+}
+}
+})`)
+
+  // Invalid JS. We're more concerned with context handling here.
+  t.is(
+    run(
+      [fun, sym(`two`)],
+      [sym(`prototype`), sym(`two`)],
+    ).compile(),
+    `(class one {
+this.constructor.two
+})`)
+
+  // Invalid JS. We're more concerned with context handling here.
+  t.is(
+    run(
+      [fun, sym(`two`), []],
+      [sym(`prototype`), sym(`two`)],
+    ).compile(),
+    `(class one {
+static two;
+this.constructor.two
+})`)
+
+  // Invalid JS. We're more concerned with context handling here.
+  t.is(
+    run(
+      [fun, sym(`two`), 10],
+      [sym(`prototype`), sym(`two`)],
+    ).compile(),
+    `(class one {
+static two = 10;
+this.constructor.two
+})`)
+
+  // Invalid JS. We're more concerned with context handling here.
+  t.is(
+    run(
+      [fun, sym(`two`), 10],
+      [sym(`prototype`), [p.fn, sym(`two`)]],
+    ).compile(),
+    `(class one {
+static two = 10;
+(() => this.constructor.two)
+})`)
+
+  ti.fail(
+    () => run(
+      [fun, sym(`two`)],
+      [sym(`prototype`), [p.fn,
+        [p.func, sym(`three`), [], sym(`two`)],
+      ]],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [fun, sym(`two`),
+        [p.class, sym(`three`),
+          [fun, sym(`four`), sym(`two`)],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [fun, sym(`two`),
+        [p.class, sym(`three`),
+          [fun, sym(`two`)],
+          [fun, sym(`four`), sym(`two`)],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+static two = (class three {
+static four = this.two
+})
+})`)
+})
+
+t.test(function test_class_let_proto() {
+  const fun = m.letForClassProto
+
+  function run(...src) {
+    return p.class.call(null, sym(`one`), [sym(`prototype`), ...src])
+  }
+
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  testClassLetInvalid(fun, run, fail)
+  ti.fail(() => fun.call(null), `expected class prototype context, got null`)
+
+  fail(fun, `unable to usefully compile function [function letForClassProto]`)
+
+  test([fun, sym(`one`)], `(class one {})`)
+
+  test([fun, sym(`one`), []], `(class one {
+one
+})`)
+
+  test([fun, sym(`one`), 10], `(class one {
+one = 10
+})`)
+
+  t.is(
+    run([fun, sym(`one`), sym(`one`)]).compile(),
+    `(class one {
+one = this.one
+})`)
+
+  test([fun, sym(`two`)], `(class one {})`)
+
+  test([fun, sym(`two`), []], `(class one {
+two
+})`)
+
+  test([fun, sym(`two`), 10], `(class one {
+two = 10
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`)],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+two = this.one
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`), []],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+one;
+two = this.one
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`one`), 10],
+      [fun, sym(`two`), sym(`one`)],
+    ).compile(),
+    `(class one {
+one = 10;
+two = this.one
+})`)
+
+  test([fun, sym(`await`)], `(class one {})`)
+
+  // Perfectly valid.
+  test([fun, sym(`await`), []], `(class one {
+await
+})`)
+
+  test([fun, sym(`await`), 10], `(class one {
+await = 10
+})`)
+
+  test([fun, sym(`eval`)], `(class one {})`)
+
+  test([fun, sym(`eval`), []], `(class one {
+eval
+})`)
+
+  test([fun, sym(`eval`), 10], `(class one {
+eval = 10
+})`)
+
+  test([fun, sym(`!@#`)], `(class one {})`)
+
+  test([fun, sym(`!@#`), []], `(class one {
+"!@#"
+})`)
+
+  test([fun, sym(`!@#`), 10], `(class one {
+"!@#" = 10
+})`)
+
+  test([fun, sym(`123ident`)], `(class one {})`)
+
+  test([fun, sym(`123ident`), []], `(class one {
+"123ident"
+})`)
+
+  test([fun, sym(`123ident`), 10], `(class one {
+"123ident" = 10
+})`)
+
+  test([fun, sym(`two`), ti.macReqExpressionOne], `(class one {
+two = "one"
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`)],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+"%^&" = this["!@#"]
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`), []],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+"!@#";
+"%^&" = this["!@#"]
+})`)
+
+  t.is(
+    run(
+      [fun, sym(`!@#`), 10],
+      [fun, sym(`%^&`), sym(`!@#`)],
+    ).compile(),
+    `(class one {
+"!@#" = 10;
+"%^&" = this["!@#"]
+})`)
+
+  test([fun, sym(`two`), [p.fn, sym(`two`)]], `(class one {
+two = (() => this.two)
+})`)
+
+  fail(
+    [fun, sym(`two`), [p.func, sym(`three`), [], sym(`two`)]],
+    `property "two" unavailable in current context`,
+  )
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [], sym(`two`)]],
+    `(class one {
+two = function two () {
+return two
+}
+})`)
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [],
+      [p.func, sym(`two`), [], sym(`two`)],
+    ]],
+    `(class one {
+two = function two () {
+return function two () {
+return two
+}
+}
+})`)
+
+  test(
+    [fun, sym(`two`), [p.func, sym(`two`), [],
+      [p.func, sym(`three`), [], sym(`two`)],
+    ]],
+    `(class one {
+two = function two () {
+return function three () {
+return two
+}
+}
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [fun, sym(`two`),
+          [p.class, sym(`three`),
+            [sym(`prototype`),
+              [fun, sym(`four`), sym(`two`)],
+            ],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [fun, sym(`two`),
+          [p.class, sym(`three`),
+            [sym(`prototype`),
+              [fun, sym(`two`)],
+              [fun, sym(`four`), sym(`two`)],
+            ],
+          ],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+two = (class three {
+four = this.two
+})
+})`)
+})
+
+t.test(function test_class_let_mixed() {
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.let, sym(`two`), 10],
+      [sym(`prototype`),
+        [p.let, sym(`three`), sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+static two = 10;
+three = this.constructor.two
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.let, sym(`two`), 10],
+      [sym(`prototype`),
+        [p.let, sym(`two`), sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+static two = 10;
+two = this.two
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.let, sym(`two`), 10],
+      ],
+      [p.let, sym(`two`), sym(`two`)],
+    ).compile(),
+    `(class one {
+two = 10;
+static two = this.two
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [p.let, sym(`two`),
+        [p.class, sym(`three`),
+          [sym(`prototype`),
+            [p.let, sym(`four`), sym(`two`)],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.let, sym(`two`),
+          [p.class, sym(`three`),
+            [p.let, sym(`four`), sym(`two`)],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+})
+
+function testClassFuncInvalid(fail) {
+  fail([p.func], `expected at least 1 inputs, got 0 inputs`)
+  fail([p.func, 10], `expected unqualified symbol, got 10`)
+  fail([p.func, sym(``)], `expected unqualified symbol, got`)
+  fail([p.func, sym(`.one`)], `expected unqualified symbol, got .one`)
+  fail([p.func, sym(`.two`)], `expected unqualified symbol, got .two`)
+  fail([p.func, sym(`one.two`)], `expected unqualified symbol, got one.two`)
+}
+
+t.test(function test_class_func_static() {
+  function run(...src) {return p.class.call(null, sym(`one`), ...src)}
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  testClassFuncInvalid(fail)
+
+  test(
+    [p.func, sym(`one`)],
+    `(class one {
+static one () {}
+})`)
+
+  test(
+    [p.func, sym(`two`)],
+    `(class one {
+static two () {}
+})`)
+
+  test(
+    [p.func, sym(`await`)],
+    `(class one {
+static await () {}
+})`)
+
+  test(
+    [p.func, sym(`eval`)],
+    `(class one {
+static eval () {}
+})`)
+
+  test(
+    [p.func, sym(`!@#`)],
+    `(class one {
+static "!@#" () {}
+})`)
+
+  test(
+    [p.func, sym(`123ident`)],
+    `(class one {
+static "123ident" () {}
+})`)
+
+  test(
+    [p.func, sym(`two`), [], sym(`one`)],
+    `(class one {
+static two () {
+return one
+}
+})`)
+
+  test(
+    [p.func, sym(`two`), [], sym(`two`)],
+    `(class one {
+static two () {
+return this.two
+}
+})`)
+
+  t.is(
+    run(
+      [p.func, sym(`one`)],
+      [p.func, sym(`two`), [], sym(`one`)],
+    ).compile(),
+    `(class one {
+static one () {};
+static two () {
+return this.one
+}
+})`)
+
+  t.is(
+    run(
+      [p.func, sym(`!@#`)],
+      [p.func, sym(`%^&`), [], sym(`!@#`)],
+    ).compile(),
+    `(class one {
+static "!@#" () {};
+static "%^&" () {
+return this["!@#"]
+}
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [p.func, sym(`two`), [],
+        [p.class, sym(`three`),
+          [p.func, sym(`four`), [], sym(`two`)],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func, sym(`two`), [],
+        [p.class, sym(`three`),
+          [p.func, sym(`two`)],
+          [p.func, sym(`four`), [], sym(`two`)],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+static two () {
+return (class three {
+static two () {};
+static four () {
+return this.two
+}
+})
+}
+})`)
+
+  test(
+    [p.func, sym(`one`), sym(`one`)],
+    `(class one {
+static one (...one) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), [sym(`one`)]],
+    `(class one {
+static one (one) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), [sym(`one`), sym(`two`)]],
+    `(class one {
+static one (one, two) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), sym(`one`), sym(`one`)],
+    `(class one {
+static one (...one) {
+return one
+}
+})`)
+})
+
+t.test(function test_class_func_proto() {
+  function run(...src) {
+    return p.class.call(null, sym(`one`), [sym(`prototype`), ...src])
+  }
+  function fail(src, msg) {return ti.fail(() => run(src), msg)}
+  function test(src, exp) {t.is(run(src).compile(), exp)}
+
+  testClassFuncInvalid(fail)
+
+  test(
+    [p.func, sym(`one`)],
+    `(class one {
+one () {}
+})`)
+
+  test(
+    [p.func, sym(`two`)],
+    `(class one {
+two () {}
+})`)
+
+  test(
+    [p.func, sym(`await`)],
+    `(class one {
+await () {}
+})`)
+
+  test(
+    [p.func, sym(`eval`)],
+    `(class one {
+eval () {}
+})`)
+
+  test(
+    [p.func, sym(`!@#`)],
+    `(class one {
+"!@#" () {}
+})`)
+
+  test(
+    [p.func, sym(`123ident`)],
+    `(class one {
+"123ident" () {}
+})`)
+
+  test(
+    [p.func, sym(`two`), [], sym(`one`)],
+    `(class one {
+two () {
+return one
+}
+})`)
+
+  test(
+    [p.func, sym(`two`), [], sym(`two`)],
+    `(class one {
+two () {
+return this.two
+}
+})`)
+
+  t.is(
+    run(
+      [p.func, sym(`one`)],
+      [p.func, sym(`two`), [], sym(`one`)],
+    ).compile(),
+    `(class one {
+one () {};
+two () {
+return this.one
+}
+})`)
+
+  t.is(
+    run(
+      [p.func, sym(`!@#`)],
+      [p.func, sym(`%^&`), [], sym(`!@#`)],
+    ).compile(),
+    `(class one {
+"!@#" () {};
+"%^&" () {
+return this["!@#"]
+}
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`two`), [],
+          [p.class, sym(`three`),
+            [sym(`prototype`),
+              [p.func, sym(`four`), [], sym(`two`)],
+            ],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`two`), [],
+          [p.class, sym(`three`),
+            [sym(`prototype`),
+              [p.func, sym(`two`)],
+              [p.func, sym(`four`), [], sym(`two`)],
+            ],
+          ],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+two () {
+return (class three {
+two () {};
+four () {
+return this.two
+}
+})
+}
+})`)
+
+  test(
+    [p.func, sym(`one`), sym(`one`)],
+    `(class one {
+one (...one) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), [sym(`one`)]],
+    `(class one {
+one (one) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), [sym(`one`), sym(`two`)]],
+    `(class one {
+one (one, two) {}
+})`)
+
+  test(
+    [p.func, sym(`one`), sym(`one`), sym(`one`)],
+    `(class one {
+one (...one) {
+return one
+}
+})`)
+})
+
+t.test(function test_class_func_mixed() {
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func, sym(`two`)],
+      [sym(`prototype`),
+        [p.func, sym(`three`), [], sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+static two () {};
+three () {
+return this.constructor.two
+}
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`three`), [], sym(`two`)],
+      ],
+      [p.func, sym(`two`)],
+    ),
+    `missing declaration of "two"`,
+  )
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`three`)],
+      ],
+      [p.func, sym(`two`), [], sym(`three`)],
+    ),
+    `missing declaration of "three"`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func, sym(`two`)],
+      [sym(`prototype`),
+        [p.func, sym(`two`), [], sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+static two () {};
+two () {
+return this.two
+}
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`two`), [], sym(`two`)],
+      ],
+      [p.func, sym(`two`)],
+    ).compile(),
+    `(class one {
+two () {
+return this.two
+};
+static two () {}
+})`)
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`two`), [],
+          [p.class, sym(`three`),
+            [p.func, sym(`four`), [], sym(`two`)],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  ti.fail(
+    () => p.class.call(null, sym(`one`),
+      [p.func, sym(`two`), [],
+        [p.class, sym(`three`),
+          [sym(`prototype`),
+            [p.func, sym(`four`), [], sym(`two`)],
+          ],
+        ],
+      ],
+    ),
+    `property "two" unavailable in current context`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [sym(`prototype`),
+        [p.func, sym(`two`), [],
+          [p.class, sym(`three`),
+            [p.func, sym(`two`)],
+            [p.func, sym(`four`), [], sym(`two`)],
+          ],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+two () {
+return (class three {
+static two () {};
+static four () {
+return this.two
+}
+})
+}
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func, sym(`two`), [],
+        [p.class, sym(`three`),
+          [sym(`prototype`),
+            [p.func, sym(`two`)],
+            [p.func, sym(`four`), [], sym(`two`)],
+          ],
+        ],
+      ],
+    ).compile(),
+    `(class one {
+static two () {
+return (class three {
+two () {};
+four () {
+return this.two
+}
+})
+}
+})`)
+})
+
+t.test(function test_class_do_static() {
+  t.is(
+    p.class.call(null, sym(`one`), [p.do]).compile(),
+    `(class one {})`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`), [p.do, [], [[]]]).compile(),
+    `(class one {})`,
+  )
+
+  t.is(
+    p.class.call(null, sym(`one`), [p.do, ti.macReqStatementOne]).compile(),
+    `(class one {
+static {
+"one"
+}
+})`)
+
+  const ctx = Object.assign(Object.create(null), m.classOverrideStatic)
+  ctx[m.symClassStatic] = undefined
+  testBlockStatement(ctx, p.do, compileStatic)
 })
 
 function compileStatic(val) {return `static ` + val}
-
-// The implementation reuses `meth` which is tested earlier.
-t.test(function test_static_meth() {
-  t.is(
-    m.static.meth.call(null, sym(`one`), []).compile(),
-    `static one () {}`,
-  )
-})
-
-// The implementation reuses `field` which is tested earlier.
-t.test(function test_static_field() {
-  t.is(
-    m.static.field.call(null, sym(`one`), 10).compile(),
-    `static one = 10`,
-  )
-})
 
 t.test(function test_class_misc() {
   const ctx = c.ctxWithStatement(null)
@@ -2317,31 +3345,33 @@ t.test(function test_class_misc() {
     p.class.call(ctx, sym(`one`),
       [sym(`extend`), 10, 20],
 
-      [sym(`meth`), sym(`two`), [sym(`three`)], 30, 40],
+      [p.do, 60, 70],
 
-      [sym(`field`), sym(`four`), 50],
+      [p.func, sym(`five`), sym(`six`), 80],
 
-      [sym(`static`), 60, 70],
+      [p.let, sym(`seven`), 90],
 
-      [sym(`static.meth`), sym(`five`), [sym(`six`)], 80],
+      [sym(`prototype`),
+        [p.func, sym(`two`), [sym(`three`)], 30, 40],
 
-      [sym(`static.field`), sym(`seven`), 90],
+        [p.let, sym(`four`), 50],
+      ]
     ).compile(),
 
     `class one extends 20(10) {
-two (three) {
-30;
-return 40
-};
-four = 50;
 static {
 60;
 70
 };
-static five (six) {
+static five (...six) {
 return 80
 };
-static seven = 90
+static seven = 90;
+two (three) {
+30;
+return 40
+};
+four = 50
 }`)
 
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
@@ -2349,15 +3379,15 @@ static seven = 90
   t.is(
     c.macroNode(
       null,
-      [p.class, sym(`one`), [m.extend, 10],
-        [m.static, [p.class, sym(`two`)]]
+      [p.class, sym(`one`), [m.classExtend, 10],
+        [p.do, [p.class, sym(`two`)]]
       ],
     ).compile(),
-    `class one extends 10 {
+    `(class one extends 10 {
 static {
 class two {}
 }
-}`)
+})`)
 })
 
 t.test(function test_throw_expression() {
@@ -2724,42 +3754,52 @@ t.test(function test_dict() {
 
     ti.fail(
       () => p.dict.call(ctx, undefined, 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got undefined`,
+      `unable to compile entry with empty left-hand side and value "10"`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, [], 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got []`,
-    )
-
-    ti.fail(
-      () => p.dict.call(ctx, NaN, 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got NaN`,
-    )
-
-    ti.fail(
-      () => p.dict.call(ctx, Infinity, 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got Infinity`,
-    )
-
-    ti.fail(
-      () => p.dict.call(ctx, -Infinity, 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got -Infinity`,
+      `unable to compile entry with empty left-hand side and value "10"`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, sym(`one`), 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got one`,
+      `missing declaration of "one"`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, sym(`one.two`), 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got one.two`,
+      `missing declaration of "one"`,
     )
 
     ti.fail(
       () => p.dict.call(ctx, sym(`.one.two`), 10),
-      `dict keys must be strings, numbers, or unqualified key symbols starting with "."; got .one.two`,
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, 10, sym(`.`)),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, 10, sym(`..`)),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, 10, sym(`...`)),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`..`), 10),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`....`), 10),
+      `missing declaration of ""`,
     )
   }
 
@@ -2769,8 +3809,20 @@ t.test(function test_dict() {
   t.is(p.dict.call(expr).compile(), `{}`)
   t.is(p.dict.call(stat).compile(), `({})`)
 
+  t.is(p.dict.call(expr, NaN, 10).compile(), `{"NaN": 10}`)
+  t.is(p.dict.call(stat, NaN, 10).compile(), `({"NaN": 10})`)
+
+  t.is(p.dict.call(expr, Infinity, 10).compile(), `{"Infinity": 10}`)
+  t.is(p.dict.call(stat, Infinity, 10).compile(), `({"Infinity": 10})`)
+
+  t.is(p.dict.call(expr, -Infinity, 10).compile(), `{"-Infinity": 10}`)
+  t.is(p.dict.call(stat, -Infinity, 10).compile(), `({"-Infinity": 10})`)
+
   t.is(p.dict.call(expr, -0, -0).compile(), `{0: -0}`)
   t.is(p.dict.call(stat, -0, -0).compile(), `({0: -0})`)
+
+  t.is(p.dict.call(expr, -0, 10).compile(), `{0: 10}`)
+  t.is(p.dict.call(stat, -0, 10).compile(), `({0: 10})`)
 
   t.is(p.dict.call(expr, 10, 20).compile(), `{10: 20}`)
   t.is(p.dict.call(stat, 10, 20).compile(), `({10: 20})`)
@@ -2833,6 +3885,14 @@ t.test(function test_dict() {
     p.dict.call(stat, 10, ti.macReqExpressionOne, 20, ti.macReqExpressionTwo).compile(),
     `({10: "one", 20: "two"})`,
   )
+
+  // Works by accident. We have no motive to avoid this.
+  t.is(p.dict.call(expr, sym(`.`), 10).compile(), `{"": 10}`)
+  t.is(p.dict.call(stat, sym(`.`), 10).compile(), `({"": 10})`)
+
+  // Spread support.
+  t.is(p.dict.call(expr, sym(`...`), 10).compile(), `{...10}`)
+  t.is(p.dict.call(stat, sym(`...`), 10).compile(), `({...10})`)
 })
 
 t.bench(function bench_dict_compile_core() {

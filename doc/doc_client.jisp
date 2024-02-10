@@ -6,15 +6,15 @@
 
 [func def [cls name] [customElements.define name cls]]
 
-[class PseudoFs
-  [extend Map]
-
-  [meth read [path]
-    [c.reqInst path URL]
-    [set path [c.reqCanonicalModulePath path.href]]
-    [??
-      [this.get path]
-      [throw [Error [+ `missing file: ` [c.show path]]]]
+[class PseudoFs [extend Map]
+  [prototype
+    [func read [path]
+      [c.reqInst path URL]
+      [set path [c.reqCanonicalModulePath path.href]]
+      [??
+        [this.get path]
+        [throw [Error [+ `missing file: ` [c.show path]]]]
+      ]
     ]
   ]
 ]
@@ -81,12 +81,16 @@ of multiline strings, mispace comments, etc.
 ]
 
 [class Module [extend c.Module]
-  [meth.async readMacroCompile src
-    [fmt [await [super.readMacroCompile [spread src]]]]
+  [prototype
+    [func.async readMacroCompile src
+      [fmt [await [super.readMacroCompile [spread src]]]]
+    ]
   ]
 ]
 
-[class Modules [extend c.Modules] [field Module Module]]
+[class Modules [extend c.Modules]
+  [prototype [let Module Module]]
+]
 
 [func makeCtx []
   [const ctx [c.rootCtx]]
@@ -96,90 +100,90 @@ of multiline strings, mispace comments, etc.
   ctx
 ]
 
-[class FileArea
-  [extend HTMLElement]
+[class FileArea [extend HTMLElement]
+  [prototype
+    [func connectedCallback []
+      [set [get [this.getBody] `oninput`] textareaResize]
+    ]
 
-  [meth connectedCallback []
-    [set [get [this.getBody] `oninput`] textareaResize]
-  ]
+    [func getHead [] [this.querySelector `code`]]
+    [func getBody [] [this.querySelector `textarea`]]
+    [func getPath [] [get [this.getHead] `textContent`]]
+    [func getContent [] [get [this.getBody] `value`]]
 
-  [meth getHead [] [this.querySelector `code`]]
-  [meth getBody [] [this.querySelector `textarea`]]
-  [meth getPath [] [get [this.getHead] `textContent`]]
-  [meth getContent [] [get [this.getBody] `value`]]
+    [func setContent [val]
+      [set [get [this.getBody] `value`] val]
+      [this.classList.remove `error`]
+    ]
 
-  [meth setContent [val]
-    [set [get [this.getBody] `value`] val]
-    [this.classList.remove `error`]
-  ]
-
-  [meth setErr [err]
-    [this.setContent [or err.stack err]]
-    [this.classList.add `error`]
+    [func setErr [err]
+      [this.setContent [or err.stack err]]
+      [this.classList.add `error`]
+    ]
   ]
 ]
 [def FileArea `file-area`]
 
-[class FilePairs
-  [extend HTMLElement]
-
-  [meth connectedCallback []
-    [set this.onkeydown this.onKeyDown]
-    [this.make]
-  ]
-
-  [meth.async run []
-    [console.clear]
-    [this.hint]
-    [this.hint [await [this.make true]]]
-  ]
-
-  [meth.async make [run]
-    [const ctx [makeCtx]]
-    [const fs [c.ctxReqFs ctx]]
-    [const mods [c.ctxReqModules ctx]]
-    [const pairs [this.querySelectorAll `file-pair`]]
-    [let errs 0]
-
-    [loop.iter [const pair pairs]
-      [const [src tar] [pair.querySelectorAll `file-area`]]
-
-      [const key [String [new URL [src.getPath] `blob:/`]]]
-      [fs.set key [src.getContent]]
-
-      [const mod [mods.getOrMake key]]
-
-      [try
-        [catch err
-          [console.error err]
-          [tar.setErr err]
-          [++ errs]
-        ]
-
-        [await [mod.ready ctx]]
-        [tar.setContent mod.tar]
-
-        [when run [await [use.async [mod.reqTarPath]]]]
-      ]
+[class FilePairs [extend HTMLElement]
+  [prototype
+    [func connectedCallback []
+      [set this.onkeydown this.onKeyDown]
+      [this.make]
     ]
 
-    [not errs]
-  ]
+    [func.async run []
+      [console.clear]
+      [this.hint]
+      [this.hint [await [this.make true]]]
+    ]
 
-  [meth hint [show]
-    [const hint [this.querySelector `[data-role=hint]`]]
-    [when hint [set hint.hidden [not show]]]
-  ]
+    [func.async make [run]
+      [const ctx [makeCtx]]
+      [const fs [c.ctxReqFs ctx]]
+      [const mods [c.ctxReqModules ctx]]
+      [const pairs [this.querySelectorAll `file-pair`]]
+      [let errs 0]
 
-  [meth onKeyDown [eve]
-    [when
-      [and
-        [eq eve.key `Enter`]
-        [or eve.ctrlKey eve.metaKey]
-        [not eve.shiftKey]
+      [loop.iter [const pair pairs]
+        [const [src tar] [pair.querySelectorAll `file-area`]]
+
+        [const key [String [new URL [src.getPath] `blob:/`]]]
+        [fs.set key [src.getContent]]
+
+        [const mod [mods.getOrMake key]]
+
+        [try
+          [catch err
+            [console.error err]
+            [tar.setErr err]
+            [++ errs]
+          ]
+
+          [await [mod.ready ctx]]
+          [tar.setContent mod.tar]
+
+          [when run [await [use.async [mod.reqTarPath]]]]
+        ]
       ]
-      [eve.preventDefault]
-      [this.run]
+
+      [not errs]
+    ]
+
+    [func hint [show]
+      [const hint [this.querySelector `[data-role=hint]`]]
+      [when hint [set hint.hidden [not show]]]
+    ]
+
+    [func onKeyDown [eve]
+      [when
+        [and
+          [eq eve.key `Enter`]
+          [or eve.ctrlKey eve.metaKey]
+          [not eve.shiftKey]
+        ]
+        [eve.preventDefault]
+        [this.run]
+      ]
     ]
   ]
 ]

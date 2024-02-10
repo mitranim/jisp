@@ -183,6 +183,18 @@ domGlobals.HTMLVideoElement = Symbol.for(`HTMLVideoElement`)
 domGlobals.SVGSvgElement = Symbol.for(`SVGSvgElement`)
 
 export const symStar = Symbol.for(`*`)
+export const symRest = Symbol.for(`...`)
+export const symDo = Symbol.for(`jisp.do`)
+export const symLet = Symbol.for(`jisp.let`)
+export const symSet = Symbol.for(`jisp.set`)
+export const symTry = Symbol.for(`jisp.try`)
+export const symCatch = Symbol.for(`jisp.catch`)
+export const symFinally = Symbol.for(`jisp.finally`)
+export const symFunc = Symbol.for(`jisp.func`)
+export const symFuncAsync = Symbol.for(`jisp.func.async`)
+export const symClassStatic = Symbol.for(`jisp.class.static`)
+export const symClassProto = Symbol.for(`jisp.class.proto`)
+export const symClassExtend = Symbol.for(`jisp.class.extend`)
 
 export function comment() {return []}
 
@@ -440,16 +452,17 @@ export function $const(tar, src) {
 
 $const.mac = constMac
 
-export function constMac(name, src) {
+export function constMac(key, val) {
   c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, name, c.reqSome(c.macroNode(this, src)))
+  c.ctxDeclare(this, key, c.reqSome(c.macroNode(this, val)))
   return []
 }
 
 export {$let as let}
 
 export function $let(tar, src) {
+  if (c.hasOwn(this, symLet)) return this[symLet].apply(this, arguments)
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
 
@@ -463,6 +476,76 @@ export function $let(tar, src) {
 
   if (src) return c.raw(c.joinSpaced(pre, `=`, src))
   return c.raw(pre)
+}
+
+export function letForClassStatic(key, val) {
+  ctxReqClassStatic(this)
+  c.reqArityBetween(arguments.length, 1, 2)
+  ctxDeclareStatic(this, key)
+  if (!(arguments.length > 1)) return []
+  return c.raw(`static ` + letClassBase(Object.create(this), key, val))
+}
+
+export function letForClassProto(key, val) {
+  ctxReqClassProto(this)
+  c.reqArityBetween(arguments.length, 1, 2)
+  ctxDeclareProto(this, key)
+  if (!(arguments.length > 1)) return []
+  return c.raw(letClassBase(Object.create(this), key, val))
+}
+
+function ctxDeclareStatic(ctx, key) {
+  key = c.reqSymUnqual(key).description
+  c.ctxReqNotDeclared(ctx, key)
+  ctx[key] = new ThisScopedKeyStatic(key, ctx.this)
+}
+
+function ctxDeclareProto(ctx, key) {
+  key = c.reqSymUnqual(key).description
+  c.ctxReqNotDeclared(ctx, key)
+  ctx[key] = new ThisScopedKeyProto(key, ctx.this)
+}
+
+function letClassBase(ctx, key, val) {
+  key = identOrStr(c.reqSym(key).description)
+  val = c.compileNode(c.macroNode(ctx, val))
+  if (val) return key + ` = ` + val
+  return key
+}
+
+class ThisScopedKeyBase extends String {
+  constructor(key, self) {super(c.reqStr(key)).this = self}
+}
+
+class ThisScopedKeyStatic extends ThisScopedKeyBase {
+  macro(ctx) {
+    if (c.isComp(ctx)) {
+      if (ctx.this === this.this) return this
+      if (ctx[symClassProto] === ctx.this && ctx[symClassStatic] === this.this) {
+        return new ThisScopedKeyCon(this.valueOf(), ctx.this)
+      }
+    }
+    throw errThisScoped(this.valueOf())
+  }
+
+  compile() {return `this` + c.compileAccess(this.valueOf())}
+}
+
+class ThisScopedKeyProto extends ThisScopedKeyBase {
+  macro(ctx) {
+    if (ctx?.this === this.this) return this
+    throw errThisScoped(this.valueOf())
+  }
+
+  compile() {return `this` + c.compileAccess(this.valueOf())}
+}
+
+class ThisScopedKeyCon extends ThisScopedKeyProto {
+  compile() {return `this.constructor` + c.compileAccess(this.valueOf())}
+}
+
+function errThisScoped(src) {
+  throw Error(`property ${c.show(src)} unavailable in current context`)
 }
 
 export {$if as if}
@@ -529,6 +612,7 @@ export function when(cond, ...body) {
 export {$do as do}
 
 export function $do() {
+  if (c.hasOwn(this, symDo)) return this[symDo].apply(this, arguments)
   if (c.ctxIsStatement(this)) return doStatement.apply(this, arguments)
   return doExpression.apply(this, arguments)
 }
@@ -546,6 +630,12 @@ export function doExpression(...src) {
     case 1: return c.raw(src[0])
     default: return c.raw(c.wrapParens(src.join(c.expressionSep)))
   }
+}
+
+export function doForClassStatic(...src) {
+  src = c.macroNodes(c.ctxWithStatement(ctxReqClassStatic(this)), src)
+  src = c.compileStatements(src)
+  return src ? c.raw(`static `, c.wrapBracesMultiLine(src)) : []
 }
 
 export {$try as try}
@@ -566,10 +656,6 @@ export function $try(...src) {
 const tryMixin = Object.create(null)
 tryMixin.catch = $catch
 tryMixin.finally = $finally
-
-export const symTry = Symbol.for(`jisp.try`)
-export const symCatch = Symbol.for(`jisp.catch`)
-export const symFinally = Symbol.for(`jisp.finally`)
 
 export function ctxIsTry(ctx) {return c.hasOwn(ctx, symTry)}
 
@@ -754,16 +840,13 @@ export {$void as void}
 export function $void() {
   let out = doExpression.apply(this, arguments)
   if (!out) return ctxVoid(this)
-  return c.raw(wrapParensOpt(this, `void ` + out))
+  out = `void ` + out.compile()
+  return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
 }
 
 $void.macro = function voidBare() {}
 
 export function ctxVoid(ctx) {return c.ctxIsStatement(ctx) ? [] : undefined}
-
-function wrapParensOpt(ctx, src) {
-  return c.ctxIsStatement(ctx) ? src : c.wrapParens(src)
-}
 
 export function ret(...src) {
   c.ctxReqIsStatement(this)
@@ -796,6 +879,8 @@ export function guard(cond, ...body) {
 }
 
 export function func() {
+  if (c.hasOwn(this, symFunc)) return this[symFunc].apply(this, arguments)
+
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `function`,
@@ -805,7 +890,52 @@ export function func() {
 
 func.async = funcAsync
 
+export const funcMixin = Object.create(null)
+funcMixin.ret = ret
+funcMixin.guard = guard
+funcMixin.arguments = Symbol.for(`arguments`)
+
+export function funcBase(name, param, ...body) {
+  c.reqArityMin(arguments.length, 1)
+  const ctx = ctxWithFuncDecl(this, name, funcMixin)
+  ctx[c.symStatement] = undefined
+  ctx.this = Symbol(`this`)
+  return funcMacroCompile(ctx, c.compileNode(name), param, body)
+}
+
+export function funcForClassStatic() {
+  return c.raw(`static ` + funcBaseForClassStatic.apply(this, arguments))
+}
+
+export function funcForClassProto() {
+  return c.raw(funcBaseForClassProto.apply(this, arguments))
+}
+
+export function funcBaseForClassStatic(name) {
+  ctxReqClassStatic(this)
+  c.reqArityMin(arguments.length, 1)
+  ctxDeclareStatic(this, name)
+  return funcBaseForClass.apply(this, arguments)
+}
+
+export function funcBaseForClassProto(name) {
+  ctxReqClassProto(this)
+  c.reqArityMin(arguments.length, 1)
+  ctxDeclareProto(this, name)
+  return funcBaseForClass.apply(this, arguments)
+}
+
+export function funcBaseForClass(name, param, ...body) {
+  c.reqArityMin(arguments.length, 1)
+  const ctx = Object.create(c.patch(c.ctxWithMixin(this), funcMixin))
+  ctx[c.symStatement] = undefined
+  name = identOrStr(c.reqSym(name).description)
+  return funcMacroCompile(ctx, name, param, body)
+}
+
 export function funcAsync() {
+  if (c.hasOwn(this, symFuncAsync)) return this[symFuncAsync].apply(this, arguments)
+
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `async function`,
@@ -813,20 +943,12 @@ export function funcAsync() {
   ))
 }
 
-export const funcMixin = Object.create(null)
-funcMixin.ret = ret
-funcMixin.guard = guard
-funcMixin.arguments = Symbol.for(`arguments`)
-funcMixin.this = Symbol.for(`this`)
+export function funcAsyncForClassStatic() {
+  return c.raw(`static async ` + funcBaseForClassStatic.apply(this, arguments))
+}
 
-export const symRest = Symbol.for(`...`)
-
-// For internal use.
-export function funcBase(name, param, ...body) {
-  c.reqArityMin(arguments.length, 1)
-  const ctx = ctxWithFuncDecl(this, name, funcMixin)
-  ctx[c.symStatement] = undefined
-  return funcCompile(name, funcParam.call(ctx, param), retStatementsOpt(ctx, body))
+export function funcAsyncForClassProto() {
+  return c.raw(`async ` + funcBaseForClassProto.apply(this, arguments))
 }
 
 export function funcParam(src) {
@@ -866,8 +988,12 @@ function restParam(ctx, src, ind) {
   return `...` + src.description
 }
 
-function funcCompile(name, param, body) {
-  return c.joinSpaced(c.compileNode(name), param, c.wrapBracesMultiLine(body))
+function funcMacroCompile(ctx, name, param, body) {
+  return c.joinSpaced(
+    name,
+    funcParam.call(ctx, param),
+    c.wrapBracesMultiLine(retStatementsOpt(ctx, body)),
+  )
 }
 
 /*
@@ -954,34 +1080,69 @@ export function $class(name, ...body) {
   c.reqArityMin(arguments.length, 1)
 
   const ctx = ctxWithFuncDecl(this, name, classMixin)
-  ctx[symClass] = undefined
-  body = c.reqArr(c.macroNodes(ctx, body))
-  const ext = c.hasOwn(ctx, symExtend) ? ctx[symExtend] : undefined
+  Object.assign(ctx, classOverrideStatic)
+  ctx.this = ctx[symClassStatic] = Symbol(`this`)
 
-  return c.raw(c.joinSpaced(
-    c.ctxCompileExport(this),
+  body = c.macroNodes(ctx, body)
+  const ext = c.hasOwn(ctx, symClassExtend) ? ctx[symClassExtend] : undefined
+
+  const out = c.joinSpaced(
     `class`,
     c.compileNode(name),
     compileClassExtend.apply(ctx, ext),
     c.compileBlock(body),
-  ))
+  )
+
+  if (!c.ctxIsStatement(this)) return c.raw(c.wrapParens(out))
+  return c.raw(c.joinSpaced(c.ctxCompileExport(this), out))
 }
 
 export const classMixin = Object.create(null)
-classMixin.static = $static
-classMixin.extend = extend
-classMixin.field = field
-classMixin.meth = meth
+classMixin.prototype = classPrototype
+classMixin.extend = classExtend
 classMixin.super = Symbol.for(`super`)
 
-export const symClass = Symbol.for(`jisp.class`)
-export const symExtend = Symbol.for(`jisp.extend`)
+export const classOverrideStatic = Object.create(null)
+classOverrideStatic[symDo] = doForClassStatic
+classOverrideStatic[symSet] = setForClassStatic
+classOverrideStatic[symLet] = letForClassStatic
+classOverrideStatic[symFunc] = funcForClassStatic
+classOverrideStatic[symFuncAsync] = funcAsyncForClassStatic
 
-export function ctxIsClass(ctx) {return c.hasOwn(ctx, symClass)}
+export function ctxIsClassStatic(ctx) {return c.hasOwn(ctx, symClassStatic)}
 
-export function ctxReqClass(ctx) {
-  if (ctxIsClass(ctx)) return ctx
-  throw Error(`unexpected non-class context ${c.show(ctx)}`)
+export function ctxReqClassStatic(ctx) {
+  if (ctxIsClassStatic(ctx)) return ctx
+  throw Error(`expected class static context, got ${c.show(ctx)}`)
+}
+
+export function ctxIsClassProto(ctx) {return c.hasOwn(ctx, symClassProto)}
+
+export function ctxReqClassProto(ctx) {
+  if (ctxIsClassProto(ctx)) return ctx
+  throw Error(`expected class prototype context, got ${c.show(ctx)}`)
+}
+
+export function classPrototype(...src) {
+  ctxReqClassStatic(this)
+  if (!src.length) return []
+
+  const ctx = Object.create(this)
+  Object.assign(ctx, classOverrideProto)
+  ctx.this = ctx[symClassProto] = Symbol(`this`)
+
+  return c.raw(c.compileStatements(c.macroNodes(ctx, src)))
+}
+
+export const classOverrideProto = Object.create(null)
+classOverrideProto[symSet] = setForClassProto
+classOverrideProto[symLet] = letForClassProto
+classOverrideProto[symFunc] = funcForClassProto
+classOverrideProto[symFuncAsync] = funcAsyncForClassProto
+
+export function classExtend(...src) {
+  ctxReqClassStatic(this)[symClassExtend] = c.reqArr(c.macroNodes(this, src))
+  return []
 }
 
 function compileClassExtend(...src) {
@@ -991,76 +1152,6 @@ function compileClassExtend(...src) {
 
 function appendCompileClassExtend(prev, next) {
   return c.compileNode(next) + (prev && c.wrapParens(prev))
-}
-
-export function extend(...src) {
-  ctxReqClass(this)[symExtend] = c.reqArr(c.macroNodes(this, src))
-  return []
-}
-
-/*
-Known limitation: this doesn't support arbitrary expressions in the name
-position. JS has some valid use cases such as `[Symbol.iterator]`.
-*/
-export function meth(name, param, ...body) {
-  c.reqArityMin(arguments.length, 1)
-  reqFieldName(name)
-  const ctx = Object.create(c.patch(c.ctxWithMixin(this), methMixin))
-  ctx[c.symStatement] = undefined
-  return c.raw(funcCompile(name, funcParam.call(ctx, param), retStatementsOpt(ctx, body)))
-}
-
-meth.async = methAsync
-
-export function methAsync() {
-  return c.raw(c.joinSpaced(`async ` + meth.apply(this, arguments).compile()))
-}
-
-export const methMixin = Object.create(funcMixin)
-methMixin.super = Symbol.for(`super`)
-
-/*
-Known limitation: this doesn't support arbitrary expressions in the name
-position. JS has some valid use cases such as `[Symbol.toStringTag]`.
-*/
-export function field(tar, src) {
-  c.reqArityBetween(arguments.length, 1, 2)
-  reqFieldName(tar)
-  src = c.macroNode(c.ctxToExpression(this), src)
-  if (arguments.length <= 1) return c.raw(c.compileNode(tar))
-  return c.raw(c.joinSpaced(c.compileNode(tar), `=`, c.compileNode(src)))
-}
-
-/*
-TODO: consider how to support arbitrary expressions as field names,
-which should compile to the square bracket syntax.
-*/
-export function reqFieldName(val) {
-  if (c.isSym(val)) {
-    c.reqStrIdentLike(val.description)
-    return val
-  }
-  if (c.isStr(val)) return val
-  throw Error(`field name must be a symbol representing an identifier, or a string; got ${c.show(val)}`)
-}
-
-export {$static as static}
-
-export function $static(...src) {
-  src = c.compileStatements(c.macroNodes(c.ctxWithStatement(ctxReqClass(this)), src))
-  if (!src) return []
-  return c.raw(`static `, c.wrapBracesMultiLine(src))
-}
-
-$static.meth = classStaticMeth
-$static.field = classStaticField
-
-export function classStaticMeth() {
-  return c.raw(`static `, meth.apply(this, arguments).compile())
-}
-
-export function classStaticField() {
-  return c.raw(`static `, field.apply(this, arguments).compile())
 }
 
 export {$throw as throw}
@@ -1200,9 +1291,19 @@ isSome.compile = () => `(a => a != null)`
 export function spread(src) {
   c.reqArity(arguments.length, 1)
   src = c.compileNode(c.macroNode(c.ctxToExpression(this), src))
-  if (src) return c.raw(`...(`, src, ` ?? [])`)
-  return c.raw(`...[]`)
+  return src ? c.raw(`...(${src} ?? [])`) : []
 }
+
+/*
+Exported by the prelude module under the empty string key.
+Allows the following syntax to work:
+
+  [. src key]
+  [.? src key]
+*/
+export const empty = Object.create(null)
+empty[``] = get
+empty[`?`] = getOpt
 
 export function list(...src) {
   return c.raw(c.wrapBrackets(macroCompileExprs(this, src).join(c.expressionSep)))
@@ -1219,28 +1320,34 @@ export function dict(...src) {
   const ctx = sta ? Object.create(this) : this
   const buf = []
   let ind = 0
-  while (ind < len) buf.push(dictEntry(ctx, src[ind++], src[ind++]))
-  const out = c.wrapBraces(buf.join(c.expressionSep))
+  while (ind < len) buf.push(dictEntry.call(ctx, src[ind++], src[ind++]))
+
+  const out = c.wrapBraces(c.join(buf, c.expressionSep))
   return c.raw(sta ? c.wrapParens(out) : out)
 }
 
-function dictEntry(ctx, key, val) {
-  return (
-    dictKey(key)
-    + `: `
-    + (c.compileNode(c.macroNode(ctx, val)) || `undefined`)
-  )
+export function dictEntry(key, val) {
+  key = key === symRest ? key : fieldName(this, key)
+  val = c.compileNode(c.macroNode(this, val))
+
+  if (key === symRest) return val && (`...` + val)
+  if (key) return key + `: ` + (val || `undefined`)
+  if (!val) return ``
+  throw errEntryLhs(val)
 }
 
-// TODO: non-key symbols should be macroed and compiled into square bracket
-// access such as `[Symbol.iterator]`.
-function dictKey(val) {
-  if (c.isNat(val)) return String(val)
-  if (c.isFin(val)) return `"` + val + `"`
-  if (c.isBigInt(val)) return String(val)
-  if (c.isStr(val)) return c.compileNode(val)
-  if (c.isSymKeyUnqual(val)) return identOrStr(val.description.slice(c.accessor.length))
-  throw SyntaxError(`dict keys must be strings, numbers, or unqualified key symbols starting with ${c.show(c.accessor)}; got ${c.show(val)}`)
+export function fieldName(ctx, key) {
+  if (c.isNil(key)) return ``
+  if (c.isNat(key)) return String(key)
+  if (c.isNum(key)) return `"` + String(key) + `"`
+  if (c.isBigInt(key)) return String(key)
+  if (c.isStr(key)) return c.compileNode(key)
+  if (c.isSymKeyUnqual(key)) return identOrStr(key.description.slice(c.accessor.length))
+  return c.wrapBracketsOpt(c.compileNode(c.macroNode(ctx, key)))
+}
+
+function errEntryLhs(val) {
+  throw SyntaxError(`unable to compile entry with empty left-hand side and value ${c.show(val)}`)
 }
 
 export function get(src, ...path) {
@@ -1292,23 +1399,49 @@ function getPathBase(ctx, src, keyFun, exprFun) {
 }
 
 export function set(tar, src) {
+  if (c.hasOwn(this, symSet)) return this[symSet].apply(this, arguments)
   c.reqArity(arguments.length, 2)
   return assign.call(this, tar, `=`, src)
 }
 
+export function setForClassStatic(key, val) {
+  ctxReqClassStatic(this)
+  c.reqArity(arguments.length, 2)
+  const out = fieldMacroCompile(Object.create(this), key, val)
+  return out ? c.raw(`static ` + out) : []
+}
+
+export function setForClassProto(key, val) {
+  ctxReqClassProto(this)
+  c.reqArity(arguments.length, 2)
+  const out = fieldMacroCompile(Object.create(this), key, val)
+  return out ? c.raw(out) : []
+}
+
+export function fieldMacroCompile(ctx, key, val) {
+  key = fieldName(ctx, key)
+  val = c.compileNode(c.macroNode(ctx, val))
+  if (key && val) return key + ` = ` + val
+  if (key) return key
+  if (!val) return ``
+  throw errEntryLhs(val)
+}
+
 export function assign(tar, inf, src) {
-  const ctx = c.ctxToExpression(this)
+  [tar, src] = assignMacroCompile(c.ctxToExpression(this), tar, src)
+  const out = c.joinSpaced(tar, inf, src || `undefined`)
+  return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
+}
+
+function assignMacroCompile(ctx, tar, src) {
   tar = c.macroNode(ctx, tar)
   src = c.macroNode(ctx, src)
 
-  return c.raw(wrapParensOpt(
-    this,
-    c.joinSpaced(
-      (c.compileNode(tar) || `undefined`),
-      inf,
-      (c.compileNode(src) || `undefined`),
-    ),
-  ))
+  tar = c.compileNode(tar)
+  src = c.compileNode(src)
+
+  if (tar) return [tar, src]
+  throw errEntryLhs(src)
 }
 
 export {$delete as delete}
@@ -1316,10 +1449,11 @@ export {$delete as delete}
 export function $delete() {
   c.reqArityMin(arguments.length, 1)
 
-  return c.raw(wrapParensOpt(this, c.joinSpaced(
-    `delete`,
-    c.compileNode(get.apply(this, arguments)) || `undefined`,
-  )))
+  let out = get.apply(this, arguments)
+  if (!out) return []
+
+  out = `delete ` + out
+  return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
 }
 
 export function and(...src) {

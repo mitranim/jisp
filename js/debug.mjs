@@ -21,30 +21,25 @@ export function compiling() {
   return []
 }
 
-export function running() {
-  c.reqArityNullary(arguments.length)
-  return [c.raw(`console.log`), `[debug] running module:`, c.ctxReqModule(this).pk()]
-}
-
 export function compiledString(...src) {
   return c.compileStatements(c.macroNodes(ctxBranch(this), src))
 }
 
 export function compiled(...src) {
-  src = c.compileStatements(c.macroNodes(this, src))
+  src = c.compileStatements(c.macroNodes(ctxBranch(this), src))
   if (src) {
     console.log(`[debug] compiled:`)
     console.log(src)
   }
-  return c.raw(src)
-}
-
-export function compile() {
-  compiled.apply(ctxBranch(this), arguments)
-  return []
+  return src ? c.raw(src) : []
 }
 
 function ctxBranch(ctx) {return Object.assign(Object.create(ctx), ctx)}
+
+export function running() {
+  c.reqArityNullary(arguments.length)
+  return [c.raw(`console.log`), `[debug] running module:`, c.ctxReqModule(this).pk()]
+}
 
 export function inspected(val) {
   c.reqArity(arguments.length, 1)
