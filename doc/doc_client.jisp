@@ -102,23 +102,23 @@ of multiline strings, mispace comments, etc.
 
 [class FileArea [extend HTMLElement]
   [prototype
-    [func connectedCallback []
-      [set [get [this.getBody] `oninput`] textareaResize]
-    ]
-
     [func getHead [] [this.querySelector `code`]]
     [func getBody [] [this.querySelector `textarea`]]
-    [func getPath [] [get [this.getHead] `textContent`]]
-    [func getContent [] [get [this.getBody] `value`]]
+    [func getPath [] [get [getHead] .textContent]]
+    [func getContent [] [get [getBody] .value]]
 
     [func setContent [val]
-      [set [get [this.getBody] `value`] val]
+      [set [get [getBody] .value] val]
       [this.classList.remove `error`]
     ]
 
     [func setErr [err]
-      [this.setContent [or err.stack err]]
+      [setContent [or err.stack err]]
       [this.classList.add `error`]
+    ]
+
+    [func connectedCallback []
+      [set [get [getBody] .oninput] textareaResize]
     ]
   ]
 ]
@@ -126,17 +126,6 @@ of multiline strings, mispace comments, etc.
 
 [class FilePairs [extend HTMLElement]
   [prototype
-    [func connectedCallback []
-      [set this.onkeydown this.onKeyDown]
-      [this.make]
-    ]
-
-    [func.async run []
-      [console.clear]
-      [this.hint]
-      [this.hint [await [this.make true]]]
-    ]
-
     [func.async make [run]
       [const ctx [makeCtx]]
       [const fs [c.ctxReqFs ctx]]
@@ -174,6 +163,12 @@ of multiline strings, mispace comments, etc.
       [when hint [set hint.hidden [not show]]]
     ]
 
+    [func.async run []
+      [console.clear]
+      [hint]
+      [hint [await [make true]]]
+    ]
+
     [func onKeyDown [eve]
       [when
         [and
@@ -182,8 +177,13 @@ of multiline strings, mispace comments, etc.
           [not eve.shiftKey]
         ]
         [eve.preventDefault]
-        [this.run]
+        [run]
       ]
+    ]
+
+    [func connectedCallback []
+      [set this.onkeydown onKeyDown]
+      [make]
     ]
   ]
 ]
