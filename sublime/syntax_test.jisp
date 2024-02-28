@@ -354,7 +354,7 @@ three
 """
 """...
 
-~ ! @ # % ^ & * : < > ? / \ | = + -
+~ ! @ # % ^ ... * : < > ? / \ | = + -
 ~~ !! @@ ## %% ^^ && ** :: << >> ?? // \\ || == ++ --
 ~~~ !!! @@@ ### %%% ^^^ &&& *** ::: <<< >>> ??? /// \\\ ||| === +++ ---
 ~-+ !~- @!~ #@! %#@ ^%# &^% *&^ :*& <:* ><: ?>< /?> \/? |\/ =|\ +=| -+=
@@ -626,11 +626,11 @@ pre.const
 [const.variant     name val]
 [pre.const.variant name val]
 
-;; Name declaration should support list deconstruction. ;;
-[const [one] val]
-[const [one two] val]
-[const [one [two]] val]
-[const [one [two & [three]]] val]
+;; Should work with deconstructions. ;;
+[const [@ one] val]
+[const [@ one two] val]
+[const [@ one [@ two]] val]
+[const [@ one [@ two ... [@ three]]] val]
 
 func
 pre.func
@@ -646,57 +646,58 @@ pre.func
 [pre.func         name]
 [func.variant     name]
 [pre.func.variant name]
-[func             name []]
-[pre.func         name []]
-[func.variant     name []]
-[pre.func.variant name []]
-[func             name [param]]
-[pre.func         name [param]]
-[func.variant     name [param]]
-[pre.func.variant name [param]]
-[func             name [param param]]
-[pre.func         name [param param]]
-[func.variant     name [param param]]
-[pre.func.variant name [param param]]
-[func             name [param param &]]
-[pre.func         name [param param &]]
-[func.variant     name [param param &]]
-[pre.func.variant name [param param &]]
-[func             name [param param & param]]
-[pre.func         name [param param & param]]
-[func.variant     name [param param & param]]
-[pre.func.variant name [param param & param]]
-[func             name [param param] body]
-[pre.func         name [param param] body]
-[func.variant     name [param param] body]
-[pre.func.variant name [param param] body]
-[func             name [param param &] body]
-[pre.func         name [param param &] body]
-[func.variant     name [param param &] body]
-[pre.func.variant name [param param &] body]
-[func             name [param param & param] body]
-[pre.func         name [param param & param] body]
-[func.variant     name [param param & param] body]
-[pre.func.variant name [param param & param] body]
-[func             name [param] [body] [body] [body] body]
-[func.variant     name [param] [body] [body] [body] body]
-[pre.func         name [param] [body] [body] [body] body]
-[pre.func.variant name [param] [body] [body] [body] body]
+[func             [name]]
+[pre.func         [name]]
+[func.variant     [name]]
+[pre.func.variant [name]]
+[func             [name param]]
+[pre.func         [name param]]
+[func.variant     [name param]]
+[pre.func.variant [name param]]
+[func             [name param param]]
+[pre.func         [name param param]]
+[func.variant     [name param param]]
+[pre.func.variant [name param param]]
+[func             [name param param ...]]
+[pre.func         [name param param ...]]
+[func.variant     [name param param ...]]
+[pre.func.variant [name param param ...]]
+[func             [name param param ... param]]
+[pre.func         [name param param ... param]]
+[func.variant     [name param param ... param]]
+[pre.func.variant [name param param ... param]]
+[func             [name param param] body]
+[pre.func         [name param param] body]
+[func.variant     [name param param] body]
+[pre.func.variant [name param param] body]
+[func             [name param param ...] body]
+[pre.func         [name param param ...] body]
+[func.variant     [name param param ...] body]
+[pre.func.variant [name param param ...] body]
+[func             [name param param ... param] body]
+[pre.func         [name param param ... param] body]
+[func.variant     [name param param ... param] body]
+[pre.func.variant [name param param ... param] body]
+[func             [name param] [body] [body] [body] body]
+[func.variant     [name param] [body] [body] [body] body]
+[pre.func         [name param] [body] [body] [body] body]
+[pre.func.variant [name param] [body] [body] [body] body]
 
-;; Parameter lists should support list deconstruction. ;;
-[func name [one two] body]
-[func name [one [two]] body]
-[func name [[one] two] body]
-[func name [[one two]] body]
-[func name [one [two] three] body]
-[func name [one [two] three [four]] body]
-[func name [one & [two] three [four & five]] body]
+;; Should work with deconstructions. ;;
+[func [name one two] body]
+[func [name one [@ two]] body]
+[func [name [@ one] two] body]
+[func [name [@ one two]] body]
+[func [name one [@ two] three] body]
+[func [name one [@ two] three [@ four]] body]
+[func [name one ... [@ two] three [@ four ... five]] body]
+[func [name one ... [list two] three [list four ... five]] body]
 
 ;;
 Only unqualified identifiers in the parameter list should be scoped as
 parameters. Everything else should be scoped as in root scope.
 ;;
-[func name [one two.three `str` !@#.four `str` five.!@# six] body]
+[func [name one two.three `str` !@#.four `str` five.!@# six] body]
 
 class
 pre.class
@@ -708,27 +709,35 @@ pre.class
 [pre.class]
 [class name]
 [pre.class name]
+[class [name]]
+[pre.class [name]]
 
 [class name
-  [meth                name]
-  [static.meth         name]
-  [meth.variant        name]
-  [static.meth.variant name]
+  [func         name]
+  [func.variant name]
 
-  [meth                name []]
-  [static.meth         name []]
-  [meth.variant        name []]
-  [static.meth.variant name []]
+  [func         [name]]
+  [func.variant [name]]
 
-  [meth                name [param]]
-  [static.meth         name [param]]
-  [meth.variant        name [param]]
-  [static.meth.variant name [param]]
+  [func         [name param]]
+  [func.variant [name param]]
 
-  [meth                name [param param]]
-  [static.meth         name [param param]]
-  [meth.variant        name [param param]]
-  [static.meth.variant name [param param]]
+  [func         [name param ... param]]
+  [func.variant [name param ... param]]
+
+  [prototype
+    [func         name]
+    [func.variant name]
+
+    [func         [name]]
+    [func.variant [name]]
+
+    [func         [name param]]
+    [func.variant [name param]]
+
+    [func         [name param ... param]]
+    [func.variant [name param ... param]]
+  ]
 ]
 
 [fn]

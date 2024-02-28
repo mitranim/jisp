@@ -73,7 +73,7 @@
 
 [debug.compiling]
 
-[func prn [src]
+[func [prn src]
   [list
     [c.raw `console.log`]
     [+ [c.reprNode src] `:`]
@@ -97,7 +97,7 @@
 
 [debug.compiling]
 
-[func someFunc [] `some_value`]
+[func someFunc `some_value`]
 </textarea>
     </file-area>
     <file-area>

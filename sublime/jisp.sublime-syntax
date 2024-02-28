@@ -35,7 +35,7 @@ variables:
   ident_chars: '\w\$'
 
   # SYNC[oper].
-  oper_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
+  oper_chars: "'~!@#%^&*:<>?/\\|=+-"
 
   sym_segment_chars: '{{ident_chars}}{{oper_chars}}'
   sym_unqual: '{{sym_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
@@ -323,7 +323,6 @@ contexts:
     - include: call-let-pop
     - include: call-func-pop
     - include: call-fn-pop
-    - include: call-meth-pop
     - include: call-class-pop
 
   call-unknown-maybe-pop:
@@ -377,19 +376,26 @@ contexts:
   call-func-pop:
     - match: '{{sym_segment_break_begin}}func{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      set: [func-name-pop, nonblank-pop, sym-rest-pop]
+      set: [func-sig-pop, nonblank-pop, sym-rest-pop]
+
+  func-sig-pop:
+    - match: \{
+      scope: punctuation.section.braces.begin.jisp
+      push: [braces-meta, params-brace-pop, func-name-pop, nonblank-pop]
+    - match: \[
+      scope: punctuation.section.brackets.begin.jisp
+      push: [brackets-meta, params-bracket-pop, func-name-pop, nonblank-pop]
+    - match: \(
+      scope: punctuation.section.parens.begin.jisp
+      push: [parens-meta, params-paren-pop, func-name-pop, nonblank-pop]
+    - include: func-name-pop
 
   func-name-pop:
     - include: sym-namespace-match
     - match: '[{{sym_segment_chars}}]+'
       scope: entity.name.function.jisp
-      set: [param-pop, req-delim-pop]
+      set: req-delim-pop
     - include: now-pop
-
-  call-meth-pop:
-    - match: '{{sym_segment_break_begin}}meth{{sym_segment_break_end}}'
-      scope: keyword.declaration.jisp
-      set: [func-name-pop, nonblank-pop, sym-rest-pop]
 
   param-match:
     - match: '{{ident_unqual}}'
@@ -397,13 +403,13 @@ contexts:
       push: req-delim-pop
     - match: \{
       scope: punctuation.section.braces.begin.jisp
-      push: [braces-meta, params-brace-pop]
+      push: [braces-meta, params-brace-pop, list-head-pop]
     - match: \[
       scope: punctuation.section.brackets.begin.jisp
-      push: [brackets-meta, params-bracket-pop]
+      push: [brackets-meta, params-bracket-pop, list-head-pop]
     - match: \(
       scope: punctuation.section.parens.begin.jisp
-      push: [parens-meta, params-paren-pop]
+      push: [parens-meta, params-paren-pop, list-head-pop]
     - include: main
 
   param-pop:
@@ -412,13 +418,13 @@ contexts:
       set: req-delim-pop
     - match: \{
       scope: punctuation.section.braces.begin.jisp
-      set: [braces-meta, params-brace-pop]
+      set: [braces-meta, params-brace-pop, list-head-pop]
     - match: \[
       scope: punctuation.section.brackets.begin.jisp
-      set: [brackets-meta, params-bracket-pop]
+      set: [brackets-meta, params-bracket-pop, list-head-pop]
     - match: \(
       scope: punctuation.section.parens.begin.jisp
-      set: [parens-meta, params-paren-pop]
+      set: [parens-meta, params-paren-pop, list-head-pop]
     - include: nonblank-pop
 
   params-brace-pop:
@@ -441,7 +447,19 @@ contexts:
   call-class-pop:
     - match: '{{sym_segment_break_begin}}class{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      set: [class-name-pop, nonblank-pop, sym-rest-pop]
+      set: [class-sig-pop, nonblank-pop, sym-rest-pop]
+
+  class-sig-pop:
+    - match: \{
+      scope: punctuation.section.braces.begin.jisp
+      push: [braces-meta, braces-pop, class-name-pop, nonblank-pop]
+    - match: \[
+      scope: punctuation.section.brackets.begin.jisp
+      push: [brackets-meta, brackets-pop, class-name-pop, nonblank-pop]
+    - match: \(
+      scope: punctuation.section.parens.begin.jisp
+      push: [parens-meta, parens-pop, class-name-pop, nonblank-pop]
+    - include: class-name-pop
 
   class-name-pop:
     - include: sym-namespace-match

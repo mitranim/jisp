@@ -3,13 +3,13 @@ import * as c from './core.mjs'
 /*
 Non-exhaustive list of missing keywords and operators:
 
-    function* (and method analog)
-    async*
-    yield
-    yield*
-    for .. in
-    do .. while
-    switch
+  function* (and method analog)
+  async*
+  yield
+  yield*
+  for .. in
+  do .. while
+  switch
 */
 
 /*
@@ -106,8 +106,9 @@ globals.WeakSet = Symbol.for(`WeakSet`)
 
 // Semi-placeholder. Missing a lot of globals.
 export const domGlobals = Object.create(null)
-domGlobals.document = Symbol.for(`document`)
 domGlobals.customElements = Symbol.for(`customElements`)
+domGlobals.document = Symbol.for(`document`)
+domGlobals.window = Symbol.for(`window`)
 domGlobals.Node = Symbol.for(`Node`)
 domGlobals.Text = Symbol.for(`Text`)
 domGlobals.Comment = Symbol.for(`Comment`)
@@ -187,6 +188,8 @@ export const symRest = Symbol.for(`...`)
 export const symDo = Symbol.for(`jisp.do`)
 export const symLet = Symbol.for(`jisp.let`)
 export const symSet = Symbol.for(`jisp.set`)
+export const symList = Symbol.for(`jisp.list`)
+export const symDict = Symbol.for(`jisp.dict`)
 export const symTry = Symbol.for(`jisp.try`)
 export const symCatch = Symbol.for(`jisp.catch`)
 export const symFinally = Symbol.for(`jisp.finally`)
@@ -194,7 +197,6 @@ export const symFunc = Symbol.for(`jisp.func`)
 export const symFuncAsync = Symbol.for(`jisp.func.async`)
 export const symClassStatic = Symbol.for(`jisp.class.static`)
 export const symClassProto = Symbol.for(`jisp.class.proto`)
-export const symClassExtend = Symbol.for(`jisp.class.extend`)
 
 export function comment() {return []}
 
@@ -220,13 +222,9 @@ function useAnon(src) {
   return useAnonCompile(src)
 }
 
-async function useAnonCompileAsync(src) {
-  return useAnonCompile(await src)
-}
+async function useAnonCompileAsync(src) {return useAnonCompile(await src)}
 
-function useAnonCompile(src) {
-  return c.raw(`import `, c.compileNode(src))
-}
+function useAnonCompile(src) {return c.raw(`import `, c.compileNode(src))}
 
 function useNamed(src, name) {
   c.reqArity(arguments.length, 2)
@@ -444,7 +442,7 @@ export function $const(tar, src) {
   return c.raw(c.joinSpaced(
     c.ctxCompileExport(this),
     `const`,
-    param.call(this, tar),
+    param.call(this, tar) || c.panic(errLhs(tar)),
     `=`,
     (c.compileNode(src) || `undefined`),
   ))
@@ -452,10 +450,22 @@ export function $const(tar, src) {
 
 $const.mac = constMac
 
+function errLhs(src) {
+  return SyntaxError(c.joinParagraphs(
+    `missing LHS in declaration or assignment`, c.nodeContext(src),
+  ))
+}
+
 export function constMac(key, val) {
-  c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 2)
-  c.ctxDeclare(this, key, c.reqSome(c.macroNode(this, val)))
+  val = c.macroNode(this, val)
+  if (c.isPromise(val)) return constMacAsync(this, key, val)
+  c.ctxDeclare(this, key, val)
+  return []
+}
+
+async function constMacAsync(ctx, key, val) {
+  c.ctxDeclare(ctx, key, await val)
   return []
 }
 
@@ -471,7 +481,7 @@ export function $let(tar, src) {
   const pre = c.joinSpaced(
     c.ctxCompileExport(this),
     `let`,
-    param.call(this, tar),
+    param.call(this, tar) || c.panic(errLhs(tar)),
   )
 
   if (src) return c.raw(c.joinSpaced(pre, `=`, src))
@@ -783,7 +793,7 @@ export function loopIterLet() {
 
 export function loopIterSet(tar, src) {
   c.reqArity(arguments.length, 2)
-  tar = c.compileNode(c.macroNode(this, tar)) || `[]`
+  tar = c.compileNode(c.macroNode(this, tar)) || c.panic(errLhs(tar))
   src = loopIterSrc(this, src)
   return c.raw(tar + ` of ` + src)
 }
@@ -791,7 +801,7 @@ export function loopIterSet(tar, src) {
 export function loopIterDecl(tar, src) {
   c.reqArity(arguments.length, 2)
   src = loopIterSrc(this, src)
-  tar = param.call(this, tar)
+  tar = param.call(this, tar) || c.panic(errLhs(tar))
   return tar + ` of ` + src
 }
 
@@ -895,11 +905,16 @@ funcMixin.ret = ret
 funcMixin.guard = guard
 funcMixin.arguments = Symbol.for(`arguments`)
 
-export function funcBase(name, param, ...body) {
+export function funcBase(param, ...body) {
   c.reqArityMin(arguments.length, 1)
+
+  const name = paramHead(param)
   const ctx = ctxWithFuncDecl(this, name, funcMixin)
+
   ctx[c.symStatement] = undefined
   ctx.this = Symbol(`this`)
+
+  param = paramTail(param)
   return funcMacroCompile(ctx, c.compileNode(name), param, body)
 }
 
@@ -911,23 +926,25 @@ export function funcForClassProto() {
   return c.raw(funcBaseForClassProto.apply(this, arguments))
 }
 
-export function funcBaseForClassStatic(name) {
+export function funcBaseForClassStatic(param, ...body) {
   ctxReqClassStatic(this)
   c.reqArityMin(arguments.length, 1)
+  const name = paramHead(param)
   ctxDeclareStatic(this, name)
-  return funcBaseForClass.apply(this, arguments)
+  return funcBaseForClass(this, name, paramTail(param), body)
 }
 
-export function funcBaseForClassProto(name) {
+export function funcBaseForClassProto(param, ...body) {
   ctxReqClassProto(this)
   c.reqArityMin(arguments.length, 1)
+  const name = paramHead(param)
   ctxDeclareProto(this, name)
-  return funcBaseForClass.apply(this, arguments)
+  return funcBaseForClass(this, name, paramTail(param), body)
 }
 
-export function funcBaseForClass(name, param, ...body) {
+export function funcBaseForClass(ctx, name, param, body) {
   c.reqArityMin(arguments.length, 1)
-  const ctx = Object.create(c.patch(c.ctxWithMixin(this), funcMixin))
+  ctx = Object.create(c.patch(c.ctxWithMixin(ctx), funcMixin))
   ctx[c.symStatement] = undefined
   name = identOrStr(c.reqSym(name).description)
   return funcMacroCompile(ctx, name, param, body)
@@ -951,32 +968,37 @@ export function funcAsyncForClassProto() {
   return c.raw(`async ` + funcBaseForClassProto.apply(this, arguments))
 }
 
-export function funcParam(src) {
-  if (c.isNil(src)) return `()`
-  if (c.isSym(src)) return c.ctxDeclare(this, src, src), c.wrapParens(`...` + src.description)
-  if (c.isArr(src)) return c.wrapParens(paramDeconstruction.call(this, src))
-  throw SyntaxError(`function parameters must be either nil, a symbol, or a list deconstruction, got ${c.show(src)}`)
+// Must be called with the "tail" of the function parameter list.
+export function funcParamList(ctx, src) {
+  return c.wrapParens(listDeconstructionInner(ctx, src))
 }
 
 export function param(src) {
-  if (c.isSym(src)) return c.ctxDeclare(this, src, src), c.reqStr(src.description)
-  if (c.isArr(src)) return c.wrapBrackets(paramDeconstruction.call(this, src))
-  throw SyntaxError(`in a list deconstruction, every element must be a symbol or a list, got ${c.show(src)}`)
-}
-
-export function paramDeconstruction(src) {
-  c.reqArr(src)
-  let out = ``
-  let ind = -1
-
-  while (++ind < src.length) {
-    const val = src[ind]
-    if (out) out += c.expressionSep
-    if (val === symRest) return out + restParam(this, src, ind + 1)
-    out += param.call(this, val)
+  if (c.isSym(src)) {
+    c.ctxDeclare(this, src, src)
+    return c.reqStr(src.description)
   }
-  return out
+
+  // Assume that the list represents a macro call suitable for use in parameter
+  // lists, typically a list deconstruction.
+  if (c.isArr(src)) {
+    const keys = Object.getOwnPropertySymbols(paramOverride)
+    for (const key of keys) this[key] = paramOverride[key]
+    try {return c.compileNode(c.macroNode(this, src))}
+    finally {for (const key of keys) delete this[key]}
+  }
+
+  throw SyntaxError(`every parameter must be a symbol or a list, got ${c.show(src)}`)
 }
+
+/*
+Allows some existing macros to be referenced in parameter deconstructions, with
+a different behavior, specialized for parameter / variable declarations. This
+allows symmetry between declaration and usage. Works particularly well for list
+construction / deconstruction.
+*/
+export const paramOverride = Object.create(null)
+paramOverride[symList] = listDeconstruction
 
 function restParam(ctx, src, ind) {
   const more = c.reqArr(src).length - c.reqNat(ind)
@@ -991,9 +1013,24 @@ function restParam(ctx, src, ind) {
 function funcMacroCompile(ctx, name, param, body) {
   return c.joinSpaced(
     name,
-    funcParam.call(ctx, param),
+    funcParamList(ctx, param),
     c.wrapBracesMultiLine(retStatementsOpt(ctx, body)),
   )
+}
+
+function paramHead(src) {
+  if (c.isSymUnqual(src)) return src
+  if (c.isArr(src) && c.isSymUnqual(src[0])) return src[0]
+
+  throw SyntaxError(c.joinParagraphs(
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
+    c.nodeContext(src),
+  ))
+}
+
+function paramTail(src) {
+  if (c.isArr(src) && src.length > 1) return src.slice(1)
+  return undefined
 }
 
 /*
@@ -1002,10 +1039,10 @@ expression mode have slightly different scoping rules.
 */
 function ctxWithFuncDecl(ctx, name, src) {
   const statement = c.ctxIsStatement(ctx)
-  if (statement) c.ctxDeclare(ctx, name, name)
+  if (c.isSome(name) && statement) c.ctxDeclare(ctx, name, name)
 
   ctx = c.patch(c.ctxWithMixin(ctx), src)
-  if (!statement) c.ctxRedeclare(ctx, name, name)
+  if (c.isSome(name) && !statement) c.ctxRedeclare(ctx, name, name)
 
   return Object.create(ctx)
 }
@@ -1076,20 +1113,29 @@ const ordKeyReg = /^[$]\d+$/
 
 export {$class as class}
 
-export function $class(name, ...body) {
+export function $class(param, ...body) {
   c.reqArityMin(arguments.length, 1)
+
+  const name = paramHead(param)
+
+  /*
+  References to the super-class and class mixins, if any, should be macroed
+  in the current context, before we declare any new names such as the class
+  we're defining.
+  */
+  let extend = paramTail(param)
+  if (c.isSome(extend)) extend = c.macroNodes(this, extend)
 
   const ctx = ctxWithFuncDecl(this, name, classMixin)
   Object.assign(ctx, classOverrideStatic)
   ctx.this = ctx[symClassStatic] = Symbol(`this`)
 
   body = c.macroNodes(ctx, body)
-  const ext = c.hasOwn(ctx, symClassExtend) ? ctx[symClassExtend] : undefined
 
   const out = c.joinSpaced(
     `class`,
     c.compileNode(name),
-    compileClassExtend.apply(ctx, ext),
+    compileClassExtend(extend),
     c.compileBlock(body),
   )
 
@@ -1099,7 +1145,6 @@ export function $class(name, ...body) {
 
 export const classMixin = Object.create(null)
 classMixin.prototype = classPrototype
-classMixin.extend = classExtend
 classMixin.super = Symbol.for(`super`)
 
 export const classOverrideStatic = Object.create(null)
@@ -1140,12 +1185,8 @@ classOverrideProto[symLet] = letForClassProto
 classOverrideProto[symFunc] = funcForClassProto
 classOverrideProto[symFuncAsync] = funcAsyncForClassProto
 
-export function classExtend(...src) {
-  ctxReqClassStatic(this)[symClassExtend] = c.reqArr(c.macroNodes(this, src))
-  return []
-}
-
-function compileClassExtend(...src) {
+function compileClassExtend(src) {
+  if (c.isNil(src)) return ``
   const out = src.reduce(appendCompileClassExtend, ``, this)
   return out && (`extends ` + out)
 }
@@ -1300,18 +1341,54 @@ Allows the following syntax to work:
 
   [. src key]
   [.? src key]
+  [... someList]
 */
 export const empty = Object.create(null)
-empty[``] = get
+empty[``] = emptyGet
 empty[`?`] = getOpt
 
+function emptyGet() {return get.apply(this, arguments)}
+emptyGet[``] = Object.create(null)
+emptyGet[``][``] = spread
+
 export function list(...src) {
+  if (c.hasOwn(this, symList)) return this[symList].apply(this, arguments)
   return c.raw(c.wrapBrackets(macroCompileExprs(this, src).join(c.expressionSep)))
 }
 
-list.compile = () => `((...a) => a)`
+/*
+Should be suitable for deconstructions in variable declarations and in function
+parameter declarations. Not suitable for the top level of function parameters,
+which must compile to parens, not brackets.
+*/
+export function listDeconstruction(...src) {
+  return c.raw(c.wrapBrackets(listDeconstructionInner(this, src)))
+}
+
+// Must be called with the "tail" of a list deconstruction.
+function listDeconstructionInner(ctx, src) {
+  if (c.isNil(src) || !c.reqArr(src).length) return ``
+
+  const buf = []
+  let ind = -1
+
+  while (++ind < src.length) {
+    let val = src[ind]
+
+    if (val === symRest) {
+      buf.push(restParam(ctx, src, ind + 1))
+      break
+    }
+
+    val = param.call(ctx, val)
+    if (val) buf.push(val)
+  }
+  return c.joinExpressions(buf)
+}
 
 export function dict(...src) {
+  if (c.hasOwn(this, symDict)) return this[symDict].apply(this, arguments)
+
   const sta = c.ctxIsStatement(this)
   const len = src.length
   if (!len) return c.raw(sta ? `({})` : `{}`)

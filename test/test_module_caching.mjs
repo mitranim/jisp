@@ -118,7 +118,7 @@ class TestModule extends c.Module {
     if (!this.isJispModule()) return
     const src = c.reqStr(await this.testReadSrc(this))
     const tar = c.reqStr(await this.testReadTar(this))
-    t.is(tar, (await this.readMacroCompile(ctx, src)), ti.inspect(this))
+    t.is(tar, (await this.compiled(ctx, src)), ti.inspect(this))
   }
 }
 

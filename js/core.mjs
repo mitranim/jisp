@@ -64,16 +64,16 @@ SYNC[sym].
 SYNC[ident].
 SYNC[oper].
 */
-export const regSymCharsBegin = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
-export const regSymCharsFull  = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
+export const regSymCharsBegin = /^(?:[.]|[\w$]|[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
+export const regSymCharsFull  = /^(?:[.]|[\w$]|[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
 
 // SYNC[ident].
 export const regIdentBegin = /^#?[A-Za-z_$][\w$]*/
 export const regIdentFull  = /^#?[A-Za-z_$][\w$]*$/
 
 // SYNC[oper].
-export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
-export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
+export const regOperBegin = /^[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
+export const regOperFull  = /^[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
 
 export const regSpace       = /^\s+/
 export const regComment     = /^(;{2,})(?!;)([^]*?)\1/
@@ -328,7 +328,10 @@ export function macroNode(ctx, tar, src) {
 }
 
 async function macroNodeAsync(ctx, tar, src) {
-  try {return await macroNode(ctx, (await tar), src)}
+  try {
+    tar = nodeWithSpan((await tar), nodeSpan(tar))
+    return await macroNode(ctx, tar, src)
+  }
   catch (err) {throw errWithContext(err, src)}
 }
 
@@ -337,7 +340,7 @@ export function macroSym(ctx, src) {
   catch (err) {throw errWithContext(err, src)}
 }
 
-function macroSymDeref(ctx, path) {
+export function macroSymDeref(ctx, path) {
   path = reqStr(path).split(accessor)
 
   const key = path[0]
@@ -382,14 +385,22 @@ export function macroList(ctx, src) {
 
     let val = src[0]
     if (isSym(val)) val = optGet(ctx, val.description)
-    if (isFun(val)) return macroNode(ctx, val.apply(ctx, src.slice(1)), src)
+
+    if (isFun(val)) {
+      return nodeWithSpan(
+        macroNode(ctx, val.apply(ctx, src.slice(1)), src),
+        nodeSpan(src),
+      )
+    }
 
     return macroNodes(ctxToExpression(ctx), src)
   }
   catch (err) {throw errWithContext(err, src)}
 }
 
-export function macroNodes(ctx, src) {return ctxMapDual(ctx, src, macroNode)}
+export function macroNodes(ctx, src) {
+  return nodeWithSpan(ctxMapDual(ctx, src, macroNode), nodeSpan(src))
+}
 
 /*
 # Compilation-related code
@@ -636,7 +647,7 @@ export class Module {
 
   get Reader() {return Reader}
 
-  async readMacroCompile(ctx, src) {
+  async compiled(ctx, src) {
     this.srcDeps = undefined
     this.tarDeps = undefined
     src = [...new this.Reader(src, undefined, undefined, this.srcPath)]
@@ -1576,7 +1587,7 @@ debugging.
 export function reqToUrl(path, base) {
   try {return new URL(...arguments)}
   catch (err) {
-    reqErr(err).message += dictEntrySep + show(path) + (base ? ` with base ${show(base)}` : ``)
+    reqErr(err).message += dictEntrySep + show(path) + (base ? (` with base ` + show(base)) : ``)
     throw err
   }
 }

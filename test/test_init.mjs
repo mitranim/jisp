@@ -1,10 +1,9 @@
-// import 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli_emptty.mjs'
-import * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/test.mjs'
-import * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli.mjs'
+import * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.53/test.mjs'
+import * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.53/cli.mjs'
 import * as c from '../js/core.mjs'
 
-export * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/test.mjs'
-export * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.52/cli.mjs'
+export * as t from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.53/test.mjs'
+export * as cl from 'https://cdn.jsdelivr.net/npm/@mitranim/js@0.1.53/cli.mjs'
 
 /*
 Should be sufficiently large to show any non-overflow stack traces, but also

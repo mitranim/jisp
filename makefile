@@ -13,6 +13,8 @@ CLEAR_SHORT := $(if $(filter $(clear),true),-c,)
 CLEAR_LONG := $(if $(filter $(clear),true),--clear,)
 SRC_DIR := ./js
 TAR_DIR := .jisp_target
+DOC_SRC_DIR := doc
+DOC_TAR_DIR := .doc_target
 TEST_DIR := ./test
 TEST_FILE := $(or $(file),test.mjs)
 TEST := $(TEST_DIR)/$(TEST_FILE) --test=true $(VERB_LONG) $(RUN)
@@ -25,6 +27,12 @@ WATCH := watchexec $(CLEAR_SHORT) -r -d=0 -n
 
 ifeq ($(verb),true)
 	OK = echo [$@] ok
+endif
+
+ifeq ($(OS),Windows_NT)
+	RM_DIR = if exist "$(1)" rmdir /s /q "$(1)"
+else
+	RM_DIR = rm -rf "$(1)"
 endif
 
 # TODO also watch files read by tests, in addition to those imported by tests,
@@ -59,16 +67,21 @@ doc.w:
 	$(MAKE_PAR) doc.srv doc.build.w
 
 doc.srv:
-	$(DENO) cli_deno.mjs doc/doc_srv.jisp
+	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_srv.jisp
 
-doc.build: export JISP_TARGET := .doc_target
+doc.build: export JISP_TARGET := $(DOC_TAR_DIR)
 doc.build: export JISP_ERRORS :=
 doc.build:
-	$(DENO) cli_deno.mjs doc/doc_build.jisp
+	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_build.jisp
 	$(OK)
 
 doc.build.w:
 	$(WATCH) -e=jisp -- $(MAKE_SEQ) doc.build verb=$(or $(verb),true)
+
+clean:
+	$(call RM_DIR,.tmp_test)
+	$(call RM_DIR,$(TAR_DIR))
+	$(call RM_DIR,$(DOC_TAR_DIR))
 
 mock.deno: export JISP_TARGET := $(TAR_DIR)
 mock.deno:

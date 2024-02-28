@@ -68,6 +68,16 @@ t.test(function test_const() {
   ti.fail(() => p.const.call(ctx, sym(`await`), 10), `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
   ti.fail(() => p.const.call(ctx, sym(`eval`), 10), `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 
+  ti.fail(
+    () => p.const.call(ctx, undefined, 10),
+    `every parameter must be a symbol or a list, got undefined`,
+  )
+
+  ti.fail(
+    () => p.const.call(ctx, 10, 20),
+    `every parameter must be a symbol or a list, got 10`,
+  )
+
   // The RHS should be macroed first, without access to the to-be-declared names.
   ti.fail(
     () => p.const.call(ctx, sym(`one`), sym(`one`)),
@@ -110,47 +120,89 @@ t.test(function test_const_deconstruction() {
   function mac(ctx, src) {return p.const.call(ctx, src, ti.macReqExpression)}
 
   ti.fail(
-    () => mac(c.ctxWithStatement(null), [sym(`one`), sym(`one`)]),
-    `redundant declaration of "one"`,
+    () => mac(c.ctxWithStatement(null), [sym(`one`)]),
+    `missing declaration of "one"`,
   )
 
   ti.fail(
-    () => mac(c.ctxWithStatement(null), [sym(`one`), [sym(`one`)]]),
-    `redundant declaration of "one"`,
+    () => mac(c.ctxWithStatement(null), [sym(`one`), sym(`two`)]),
+    `missing declaration of "one"`,
   )
 
   ti.fail(
-    () => mac(c.ctxWithStatement(null), undefined),
-    `in a list deconstruction, every element must be a symbol or a list, got undefined`,
+    () => mac(c.ctxWithStatement(null), [sym(`@`)]),
+    `missing declaration of "@"`,
+  )
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), [sym(`@`), sym(`one`)]),
+    `missing declaration of "@"`,
   )
 
   ti.fail(
     () => mac(c.ctxWithStatement(null), 10),
-    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+    `every parameter must be a symbol or a list, got 10`,
+  )
+
+  ti.fail(
+    () => mac(c.ctxWithStatement(null), []),
+    `missing LHS in declaration or assignment`,
+  )
+
+  /*
+  Also produces invalid syntax. This is a side effect of interpreting lists in
+  parameters as regular macro calls, which allows users to implement and use
+  arbitrary macros in parameter positions. Note that we support list
+  deconstructions via a special override for the list macro. See below.
+  */
+  t.is(
+    mac(c.ctxWithStatement(null), [10]).compile(),
+    `const 10() = "expression_value"`,
+  )
+
+  t.is(
+    mac(c.ctxWithStatement(null), [10, 20]).compile(),
+    `const 10(20) = "expression_value"`,
   )
 
   const ctx = c.ctxWithStatement(null)
-
-  t.is(mac(ctx, []).compile(), `const [] = "expression_value"`)
   t.own(ctx, {[c.symStatement]: undefined})
 
-  t.is(mac(ctx, [[[]]]).compile(), `const [[[]]] = "expression_value"`)
-  t.own(ctx, {[c.symStatement]: undefined})
+  ti.fail(
+    () => mac(ctx, [p.list, [sym(`one`)]]),
+    `missing declaration of "one"`,
+  )
 
-  t.is(mac(ctx, [sym(`one`)]).compile(), `const [one] = "expression_value"`)
+  t.is(
+    mac(ctx, [p.list, sym(`one`)]).compile(),
+    `const [one] = "expression_value"`,
+  )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
-  t.is(mac(ctx, [m.symRest, sym(`two`)]).compile(), `const [...two] = "expression_value"`)
+  // Also invalid syntax. See above.
+  t.is(
+    mac(ctx, [p.list, [sym(`one`)]]).compile(),
+    `const [one()] = "expression_value"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
+
+  t.is(
+    mac(ctx, [p.list, m.symRest, sym(`two`)]).compile(),
+    `const [...two] = "expression_value"`,
+  )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
-  t.is(mac(ctx, [sym(`three`), [sym(`four`), m.symRest, sym(`five`)]]).compile(), `const [three, [four, ...five]] = "expression_value"`)
+  t.is(
+    mac(ctx, [p.list, sym(`three`), [p.list, sym(`four`), m.symRest, sym(`five`)]]).compile(),
+    `const [three, [four, ...five]] = "expression_value"`,
+  )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`)})
 })
 
 t.test(function test_const_mac() {
   ti.fail(
     () => p.const.mac.call(null),
-    `expected statement context, got expression context`,
+    `expected 2 inputs, got 0 inputs`,
   )
 
   const ctx = c.ctxWithStatement(null)
@@ -166,25 +218,17 @@ t.test(function test_const_mac() {
   )
   t.own(ctx, {[c.symStatement]: undefined})
 
-  ti.fail(
-    () => p.const.mac.call(ctx, sym(`one`), undefined),
-    `expected variant of isSome, got undefined`,
-  )
-  t.own(ctx, {[c.symStatement]: undefined})
+  t.eq(p.const.mac.call(ctx, sym(`one`), undefined), [])
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
   ti.fail(
-    () => p.const.mac.call(ctx, sym(`one`), null),
-    `expected variant of isSome, got null`,
-  )
-  t.own(ctx, {[c.symStatement]: undefined})
-
-  t.eq(p.const.mac.call(ctx, sym(`one`), 10), [])
-  t.own(ctx, {[c.symStatement]: undefined, one: 10})
-
-  ti.fail(
-    () => p.const.mac.call(ctx, sym(`one`), 20),
+    () => p.const.mac.call(ctx, sym(`one`), 10),
     `redundant declaration of "one"`,
   )
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
+
+  delete ctx.one
+  t.eq(p.const.mac.call(ctx, sym(`one`), 10), [])
   t.own(ctx, {[c.symStatement]: undefined, one: 10})
 
   t.eq(p.const.mac.call(ctx, sym(`two`), sym(`one`)), [])
@@ -986,12 +1030,12 @@ t.test(function test_loop_iter() {
 
   ti.fail(
     () => p.loop.iter.call(ctx, [sym(`const`), 10, []]),
-    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+    `every parameter must be a symbol or a list, got 10`,
   )
 
   ti.fail(
     () => p.loop.iter.call(ctx, [sym(`let`), 10, []]),
-    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+    `every parameter must be a symbol or a list, got 10`,
   )
 
   // Side effect of allowing arbitrary expressions such as property paths.
@@ -1005,18 +1049,33 @@ t.test(function test_loop_iter() {
     `for (10[20][30] of []) {}`,
   )
 
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`const`), [], 10]),
+    `missing LHS in declaration or assignment`,
+  )
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`let`), [], 10]),
+    `missing LHS in declaration or assignment`,
+  )
+
+  ti.fail(
+    () => p.loop.iter.call(ctx, [sym(`set`), [], 10]),
+    `missing LHS in declaration or assignment`,
+  )
+
   t.is(
-    p.loop.iter.call(ctx, [sym(`const`), [], []]).compile(),
+    p.loop.iter.call(ctx, [sym(`const`), [p.list], []]).compile(),
     `for (const [] of []) {}`,
   )
 
   t.is(
-    p.loop.iter.call(ctx, [sym(`let`), [], []]).compile(),
+    p.loop.iter.call(ctx, [sym(`let`), [p.list], []]).compile(),
     `for (let [] of []) {}`,
   )
 
   t.is(
-    p.loop.iter.call(ctx, [sym(`set`), [], []]).compile(),
+    p.loop.iter.call(ctx, [sym(`set`), [p.list], []]).compile(),
     `for ([] of []) {}`,
   )
 
@@ -1134,7 +1193,7 @@ const two = 20
   t.is(
     p.loop.iter.call(
       ctx,
-      [sym(`const`), [sym(`one`), [sym(`two`)]], ti.macReqExpressionOne],
+      [sym(`const`), [p.list, sym(`one`), [p.list, sym(`two`)]], ti.macReqExpressionOne],
       ti.macReqStatementTwo,
       ti.macReqStatementThree,
     ).compile(),
@@ -1147,7 +1206,7 @@ const two = 20
   t.is(
     p.loop.iter.call(
       ctx,
-      [sym(`let`), [sym(`one`), [sym(`two`)]], ti.macReqExpressionOne],
+      [sym(`let`), [p.list, sym(`one`), [p.list, sym(`two`)]], ti.macReqExpressionOne],
       ti.macReqStatementTwo,
       ti.macReqStatementThree,
     ).compile(),
@@ -1164,11 +1223,11 @@ t.test(function test_loop_iter_await() {
   t.is(
     p.loop.iter.await.call(
       c.ctxWithStatement(null),
-      [sym(`const`), [], ti.macReqExpressionOne],
-      ti.macReqStatementTwo,
+      [sym(`const`), sym(`one`), ti.macReqExpressionTwo],
+      ti.macReqStatementThree,
     ).compile(),
-    `for await (const [] of "one" ?? []) {
-"two"
+    `for await (const one of "two" ?? []) {
+"three"
 }`)
 })
 
@@ -1359,12 +1418,14 @@ return 30
 })
 
 function testFuncInvalid(ctx) {
-  ti.fail(() => p.func.call(ctx),                 `expected at least 1 inputs, got 0 inputs`)
-  ti.fail(() => p.func.call(ctx, 10),             `expected variant of isSym, got 10`)
-  ti.fail(() => p.func.call(ctx, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
-  ti.fail(() => p.func.call(ctx, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
-  ti.fail(() => p.func.call(ctx, sym(`await`)),   `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
-  ti.fail(() => p.func.call(ctx, sym(`eval`)),    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
+  ti.fail(() => p.func.call(ctx),                   `expected at least 1 inputs, got 0 inputs`)
+  ti.fail(() => p.func.call(ctx, 10),               `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  ti.fail(() => p.func.call(ctx, [10]),             `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  ti.fail(() => p.func.call(ctx, sym(`one.two`)),   `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  ti.fail(() => p.func.call(ctx, [sym(`one.two`)]), `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  ti.fail(() => p.func.call(ctx, sym(`!@#`)),       `"!@#" does not represent a valid JS identifier`)
+  ti.fail(() => p.func.call(ctx, sym(`await`)),     `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
+  ti.fail(() => p.func.call(ctx, sym(`eval`)),      `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
 }
 
 t.test(function test_func_expression() {
@@ -1380,26 +1441,44 @@ t.test(function test_func_expression() {
   */
 
   ti.fail(
-    () => p.func.call(null, sym(`one`), 10),
-    `function parameters must be either nil, a symbol, or a list deconstruction, got 10`,
+    () => p.func.call(null),
+    `expected at least 1 inputs, got 0 inputs`,
   )
 
   ti.fail(
-    () => p.func.call(null, sym(`one`), [10]),
-    `in a list deconstruction, every element must be a symbol or a list, got 10`,
+    () => p.func.call(null, []),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
   )
 
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), [], sym(`two`)),
-    `missing declaration of "two"`,
+    () => p.func.call(null, 10),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
   )
-  t.own(ctx, {})
 
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), [sym(`one`)], sym(`two`)),
-    `missing declaration of "two"`,
+    () => p.func.call(null, [10]),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
   )
-  t.own(ctx, {})
+
+  ti.fail(
+    () => p.func.call(null, sym(`one.two`)),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
+  )
+
+  ti.fail(
+    () => p.func.call(null, [sym(`one.two`)]),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
+  )
+
+  ti.fail(
+    () => p.func.call(null, sym(`await`)),
+    `"await" is a keyword in JS`,
+  )
+
+  ti.fail(
+    () => p.func.call(null, sym(`eval`)),
+    `"eval" is a reserved name in JS`,
+  )
 
   t.is(
     p.func.call(ctx, sym(`one`)).compile(),
@@ -1408,71 +1487,147 @@ t.test(function test_func_expression() {
   t.own(ctx, {})
 
   t.is(
-    p.func.call(ctx, sym(`one`), []).compile(),
+    p.func.call(ctx, [sym(`one`)]).compile(),
     `function one () {}`,
+  )
+  t.own(ctx, {})
+
+  t.is(
+    p.func.call(ctx, [sym(`one`), [[]], [[[]]], sym(`two`)]).compile(),
+    `function one (two) {}`,
+  )
+  t.own(ctx, {})
+
+  t.is(
+    p.func.call(ctx, sym(`one`), []).compile(),
+    `function one () {
+return
+}`,
+  )
+  t.own(ctx, {})
+
+  t.is(
+    p.func.call(ctx, sym(`one`), 10).compile(),
+    `function one () {
+return 10
+}`,
+  )
+  t.own(ctx, {})
+
+  ti.fail(
+    () => p.func.call(ctx, sym(`one`), sym(`two`)),
+    `missing declaration of "two"`,
+  )
+  t.own(ctx, {})
+
+  ti.fail(
+    () => p.func.call(ctx, sym(`one`), [sym(`two`)]),
+    `missing declaration of "two"`,
+  )
+  t.own(ctx, {})
+
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`)], sym(`two`)),
+    `missing declaration of "two"`,
+  )
+  t.own(ctx, {})
+
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`)], [sym(`two`)]),
+    `missing declaration of "two"`,
   )
   t.own(ctx, {})
 
   // Function name should be in scope in function body.
   t.is(
-    p.func.call(ctx, sym(`one`), [], sym(`one`)).compile(),
+    p.func.call(ctx, sym(`one`), sym(`one`)).compile(),
     `function one () {
 return one
 }`)
   t.own(ctx, {})
 
-  // Should be able to redeclare function name in parameters.
   t.is(
-    p.func.call(ctx, sym(`one`), [sym(`one`)], sym(`one`)).compile(),
-    `function one (one) {
+    p.func.call(ctx, [sym(`one`)], sym(`one`)).compile(),
+    `function one () {
 return one
 }`)
   t.own(ctx, {})
 
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`), sym(`two`), sym(`two`)]),
+    `redundant declaration of "two"`,
+  )
+
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`), sym(`await`)]),
+    `"await" is a keyword in JS`,
+  )
+
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`), sym(`eval`)]),
+    `"eval" is a reserved name in JS`,
+  )
+
+  /*
+  In JS, it's possible to redeclare the function name in the parameters. This
+  works for both function statements and function expressions. In our system,
+  it makes no sense syntactically since we place the function's name in the
+  parameter list. Nevertheless, we endeavor to match the JS scoping behaviors
+  as best we can.
+  */
+  t.is(
+    p.func.call(ctx, [sym(`one`), sym(`one`)]).compile(),
+    `function one (one) {}`,
+  )
+  t.own(ctx, {})
+
   // Should be able to redeclare function name in function body.
   t.is(
-    p.func.call(ctx, sym(`one`), [], [p.const, sym(`one`), 10], []).compile(),
+    p.func.call(ctx, sym(`one`), [p.const, sym(`one`), 10], []).compile(),
     `function one () {
 const one = 10;
 return
 }`)
   t.own(ctx, {})
 
-  // Function parameters and body should have the same scope.
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), [sym(`one`)], [p.const, sym(`one`), 10], []),
+    () => p.func.call(ctx, [sym(`one`), sym(`one`), sym(`one`)]),
+    `redundant declaration of "one"`,
+  )
+
+  /*
+  Unlike the function name, function parameters can't be redeclared
+  immediately as variables in the function body. This is a standard
+  JS behavior that we're replicating.
+  */
+  ti.fail(
+    () => p.func.call(ctx, [sym(`one`), sym(`one`)], [p.const, sym(`one`), 10], []),
     `redundant declaration of "one"`,
   )
   t.own(ctx, {})
 
-  // Function parameters and body should have the same scope.
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), [sym(`two`)], [p.const, sym(`two`), 10], []),
+    () => p.func.call(ctx, [sym(`one`), sym(`two`)], [p.const, sym(`two`), 10], []),
     `redundant declaration of "two"`,
   )
   t.own(ctx, {})
 
   t.is(
-    p.func.call(ctx, sym(`one`), [sym(`two`)], sym(`two`)).compile(),
+    p.func.call(ctx, [sym(`one`), sym(`two`)], sym(`two`)).compile(),
     `function one (two) {
 return two
 }`)
   t.own(ctx, {})
 
-  ti.fail(
-    () => p.func.call(ctx, sym(`one`), [sym(`two`), sym(`two`)]),
-    `redundant declaration of "two"`,
-  )
-
   t.is(
-    p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10).compile(),
+    p.func.call(ctx, [sym(`one`), sym(`two`), sym(`three`)], 10).compile(),
     `function one (two, three) {
 return 10
 }`
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10, 20).compile(),
+    p.func.call(ctx, [sym(`one`), sym(`two`), sym(`three`)], 10, 20).compile(),
     `function one (two, three) {
 10;
 return 20
@@ -1480,7 +1635,7 @@ return 20
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [sym(`two`), sym(`three`)], 10, 20, 30).compile(),
+    p.func.call(ctx, [sym(`one`), sym(`two`), sym(`three`)], 10, 20, 30).compile(),
     `function one (two, three) {
 10;
 20;
@@ -1489,14 +1644,14 @@ return 30
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [], ti.macReqExpressionOne).compile(),
+    p.func.call(ctx, sym(`one`), ti.macReqExpressionOne).compile(),
     `function one () {
 return "one"
 }`
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [], ti.macReqStatementOne, ti.macReqExpressionTwo).compile(),
+    p.func.call(ctx, sym(`one`), ti.macReqStatementOne, ti.macReqExpressionTwo).compile(),
     `function one () {
 "one";
 return "two"
@@ -1504,7 +1659,7 @@ return "two"
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [], ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
+    p.func.call(ctx, sym(`one`), ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
     `function one () {
 "one";
 "two";
@@ -1513,13 +1668,13 @@ return "three"
   )
 
   t.is(
-    p.func.call(ctx, sym(`one`), [], [[[]]]).compile(),
+    p.func.call(ctx, sym(`one`), [[[]]]).compile(),
     `function one () {
 return
 }`)
 
   t.is(
-    p.func.call(ctx, sym(`one`), [], [[[]]], 10, [[[]]]).compile(),
+    p.func.call(ctx, sym(`one`), [[[]]], 10, [[[]]]).compile(),
     `function one () {
 10;
 return
@@ -1532,20 +1687,20 @@ t.test(function test_func_statement() {
   t.own(ctx, {[c.symStatement]: undefined})
 
   t.is(
-    p.func.call(ctx, sym(`one`), []).compile(),
+    p.func.call(ctx, sym(`one`)).compile(),
     `function one () {}`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   ti.fail(
-    () => p.func.call(ctx, sym(`one`), []),
+    () => p.func.call(ctx, sym(`one`)),
     `redundant declaration of "one"`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
   // Function name should be in scope in function body.
   t.is(
-    p.func.call(ctx, sym(`two`), [], sym(`two`)).compile(),
+    p.func.call(ctx, sym(`two`), sym(`two`)).compile(),
     `function two () {
 return two
 }`)
@@ -1553,7 +1708,7 @@ return two
 
   // Should be able to redeclare function name in parameters.
   t.is(
-    p.func.call(ctx, sym(`three`), [sym(`three`)], sym(`three`)).compile(),
+    p.func.call(ctx, [sym(`three`), sym(`three`)], sym(`three`)).compile(),
     `function three (three) {
 return three
 }`)
@@ -1561,7 +1716,7 @@ return three
 
   // Should be able to redeclare function name in function body.
 t.is(
-  p.func.call(ctx, sym(`four`), [], [p.const, sym(`four`), 10], []).compile(),
+  p.func.call(ctx, sym(`four`), [p.const, sym(`four`), 10], []).compile(),
   `function four () {
 const four = 10;
 return
@@ -1570,13 +1725,13 @@ return
 
   // Function parameters and body should have the same scope.
   ti.fail(
-    () => p.func.call(ctx, sym(`five`), [sym(`five`)], [p.const, sym(`five`), 10], []),
+    () => p.func.call(ctx, [sym(`five`), sym(`five`)], [p.const, sym(`five`), 10], []),
     `redundant declaration of "five"`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`)})
 
   t.is(
-    p.func.call(ctx, sym(`six`), [], ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
+    p.func.call(ctx, sym(`six`), ti.macReqStatementOne, ti.macReqStatementTwo, ti.macReqExpressionThree).compile(),
     `function six () {
 "one";
 "two";
@@ -1590,7 +1745,7 @@ t.test(function test_func_export() {
   let ctx = c.ctxWithModule(null)
 
   t.is(
-    p.func.call(ctx, sym(`one`), []).compile(),
+    p.func.call(ctx, sym(`one`)).compile(),
     `export function one () {}`,
   )
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined, one: sym(`one`)})
@@ -1598,7 +1753,7 @@ t.test(function test_func_export() {
   ctx = c.ctxWithStatement(ctx)
 
   t.is(
-    p.func.call(ctx, sym(`one`), []).compile(),
+    p.func.call(ctx, sym(`one`)).compile(),
     `function one () {}`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
@@ -1697,127 +1852,151 @@ return
   }
 })
 
+/*
+JS has list and dict deconstructions in function parameters, variable
+declarations, and assignments. We implement support for deconstructions by
+providing a contextual override for the equivalent construction macros (at the
+time of writing only the list variant is supported), and by interpreting any
+lists in function parameters the same way as anywhere else. We expect them to
+be list deconstructions or other similar macros, but users are free to use
+arbitrary forms.
+*/
 t.test(function test_func_param_deconstruction() {
-  function mac(src) {return p.func.call(null, sym(`one`), src)}
+  function mac(src) {return p.func.call(null, src)}
   function test(src, exp) {t.is(mac(src).compile(), exp)}
 
-  test(undefined, `function one () {}`)
+  test(sym(`one`), `function one () {}`)
+  test([sym(`one`)], `function one () {}`)
 
-  test(sym(`one`), `function one (...one) {}`)
-  test(sym(`two`), `function one (...two) {}`)
+  ti.fail(
+    () => mac([sym(`one`), [sym(`two`)]]),
+    `missing declaration of "two"`,
+  )
 
-  test([], `function one () {}`)
-  test([[]], `function one ([]) {}`)
-  test([[[]]], `function one ([[]]) {}`)
+  test([sym(`one`), []], `function one () {}`)
+  test([sym(`one`), [], [[]]], `function one () {}`)
+  test([sym(`one`), [p.list]], `function one ([]) {}`)
+  test([sym(`one`), [p.list, [p.list]]], `function one ([[]]) {}`)
 
-  test([sym(`two`)], `function one (two) {}`)
-  test([[sym(`two`)]], `function one ([two]) {}`)
-  test([[[sym(`two`)]]], `function one ([[two]]) {}`)
+  test([sym(`one`), sym(`two`)], `function one (two) {}`)
+  test([sym(`one`), [p.list, sym(`two`)]], `function one ([two]) {}`)
+  test([sym(`one`), [p.list, [p.list, sym(`two`)]]], `function one ([[two]]) {}`)
 
-  test([[], sym(`two`)], `function one ([], two) {}`)
-  test([[], [sym(`two`)]], `function one ([], [two]) {}`)
-  test([[], [[sym(`two`)]]], `function one ([], [[two]]) {}`)
+  test([sym(`one`), [p.list], sym(`two`)], `function one ([], two) {}`)
+  test([sym(`one`), [p.list], [p.list, sym(`two`)]], `function one ([], [two]) {}`)
+  test([sym(`one`), [p.list], [p.list, [p.list, sym(`two`)]]], `function one ([], [[two]]) {}`)
 
-  test([[], sym(`two`), [[]]], `function one ([], two, [[]]) {}`)
-  test([[], [sym(`two`)], [[]]], `function one ([], [two], [[]]) {}`)
-  test([[], [[sym(`two`)]], [[]]], `function one ([], [[two]], [[]]) {}`)
+  test([sym(`one`), [p.list], sym(`two`), [p.list, [p.list]]], `function one ([], two, [[]]) {}`)
+  test([sym(`one`), [p.list], [p.list, sym(`two`)], [p.list, [p.list]]], `function one ([], [two], [[]]) {}`)
+  test([sym(`one`), [p.list], [p.list, [p.list, sym(`two`)]], [p.list, [p.list]]], `function one ([], [[two]], [[]]) {}`)
 
-  test([sym(`two`), sym(`three`)], `function one (two, three) {}`)
-  test([[sym(`two`), sym(`three`)]], `function one ([two, three]) {}`)
-  test([[[sym(`two`), sym(`three`)]]], `function one ([[two, three]]) {}`)
+  test([sym(`one`), sym(`two`), sym(`three`)], `function one (two, three) {}`)
+  test([sym(`one`), [p.list, sym(`two`), sym(`three`)]], `function one ([two, three]) {}`)
+  test([sym(`one`), [p.list, [p.list, sym(`two`), sym(`three`)]]], `function one ([[two, three]]) {}`)
 
-  test([sym(`two`), sym(`three`)], `function one (two, three) {}`)
-  test([[sym(`two`), [sym(`three`)]]], `function one ([two, [three]]) {}`)
-  test([[[sym(`two`), [[sym(`three`)]]]]], `function one ([[two, [[three]]]]) {}`)
-  test([[[sym(`two`), [sym(`three`), sym(`four`)]]]], `function one ([[two, [three, four]]]) {}`)
+  test([sym(`one`), sym(`two`), sym(`three`)], `function one (two, three) {}`)
+  test([sym(`one`), [p.list, sym(`two`), [p.list, sym(`three`)]]], `function one ([two, [three]]) {}`)
+  test([sym(`one`), [p.list, [p.list, sym(`two`), [p.list, [p.list, sym(`three`)]]]]], `function one ([[two, [[three]]]]) {}`)
+  test([sym(`one`), [p.list, [p.list, sym(`two`), [p.list, sym(`three`), sym(`four`)]]]], `function one ([[two, [three, four]]]) {}`)
 
   ti.fail(
     () => mac([m.symRest]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
   )
 
   ti.fail(
-    () => mac([[m.symRest]]),
+    () => mac([sym(`one`), m.symRest]),
     `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
   )
 
   ti.fail(
     () => mac([sym(`one`), [m.symRest]]),
+    `missing declaration of ""`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), [p.list, m.symRest]]),
     `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
   )
 
   ti.fail(
-    () => mac([m.symRest, [], []]),
+    () => mac([sym(`one`), [p.list, m.symRest]]),
+    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
+  )
+
+  ti.fail(
+    () => mac([sym(`one`), m.symRest, [], []]),
     `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
   )
 
   ti.fail(
-    () => mac([m.symRest, sym(`one`), sym(`two`)]),
+    () => mac([sym(`one`), m.symRest, sym(`one`), sym(`two`)]),
     `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
   )
 
   ti.fail(
-    () => mac([m.symRest, []]),
+    () => mac([sym(`one`), m.symRest, []]),
     `expected variant of isSym, got []`,
   )
 
   ti.fail(
-    () => mac([m.symRest, 10]),
+    () => mac([sym(`one`), m.symRest, 10]),
     `expected variant of isSym, got 10`,
   )
 
   ti.fail(
-    () => mac([m.symRest, [sym(`two`)]]),
+    () => mac([sym(`one`), m.symRest, [sym(`two`)]]),
     `expected variant of isSym, got [two]`,
   )
 
   ti.fail(
-    () => mac([m.symRest, m.symRest]),
+    () => mac([sym(`one`), m.symRest, m.symRest]),
     c.show(m.symRest.description) + ` does not represent a valid JS identifier`,
   )
 
   ti.fail(
-    () => mac([m.symRest, sym(`one.two`)]),
+    () => mac([sym(`one`), m.symRest, sym(`one.two`)]),
     `"one.two" does not represent a valid JS identifier`,
   )
 
-  test([m.symRest, sym(`two`)], `function one (...two) {}`)
+  test([sym(`one`), m.symRest, sym(`one`)], `function one (...one) {}`)
+  test([sym(`one`), m.symRest, sym(`two`)], `function one (...two) {}`)
 
   test(
-    [sym(`two`), m.symRest, sym(`three`)],
+    [sym(`one`), sym(`two`), m.symRest, sym(`three`)],
     `function one (two, ...three) {}`,
   )
 
   test(
-    [sym(`two`), [m.symRest, sym(`three`)]],
+    [sym(`one`), sym(`two`), [p.list, m.symRest, sym(`three`)]],
     `function one (two, [...three]) {}`,
   )
 
   test(
-    [sym(`two`), [sym(`three`), m.symRest, sym(`four`)]],
+    [sym(`one`), sym(`two`), [p.list, sym(`three`), m.symRest, sym(`four`)]],
     `function one (two, [three, ...four]) {}`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), m.symRest, sym(`one`)]),
-    `redundant declaration of "one"`,
+    () => mac([sym(`one`), sym(`two`), m.symRest, sym(`two`)]),
+    `redundant declaration of "two"`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), [sym(`one`)]]),
-    `redundant declaration of "one"`,
+    () => mac([sym(`one`), sym(`two`), [p.list, sym(`two`)]]),
+    `redundant declaration of "two"`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), [m.symRest, sym(`one`)]]),
-    `redundant declaration of "one"`,
+    () => mac([sym(`one`), sym(`two`), [p.list, m.symRest, sym(`two`)]]),
+    `redundant declaration of "two"`,
   )
 
   let ctx
   t.is(
-    p.func.call(null,
-      sym(`one`),
-      [sym(`two`), [sym(`three`), m.symRest, sym(`four`)]],
+    p.func.call(
+      null,
+      [sym(`one`), sym(`two`), [p.list, sym(`three`), m.symRest, sym(`four`)]],
       {macro(val) {ctx = val; return sym(`one`)}},
       [],
     ).compile(),
@@ -2014,8 +2193,8 @@ return $2
 
 t.test(function test_class_invalid() {
   ti.fail(() => p.class.call(null),                 `expected at least 1 inputs, got 0 inputs`)
-  ti.fail(() => p.class.call(null, 10),             `expected variant of isSym, got 10`)
-  ti.fail(() => p.class.call(null, sym(`one.two`)), `"one.two" does not represent a valid JS identifier`)
+  ti.fail(() => p.class.call(null, 10),             `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  ti.fail(() => p.class.call(null, sym(`one.two`)), `expected an unqualified symbol or a list that begins with an unqualified symbol`)
   ti.fail(() => p.class.call(null, sym(`!@#`)),     `"!@#" does not represent a valid JS identifier`)
   ti.fail(() => p.class.call(null, sym(`await`)),   `"await" is a keyword in JS; attempting to use it as a regular identifier would generate invalid JS with a syntax error; please rename`)
   ti.fail(() => p.class.call(null, sym(`eval`)),    `"eval" is a reserved name in JS; attempting to redeclare it would generate invalid JS with a syntax error; please rename`)
@@ -2094,49 +2273,36 @@ t.test(function test_class_prototype() {
   t.own(ctx, {...m.classOverrideProto, [m.symClassProto]: ctx.this, this: ctx.this})
 })
 
-t.test(function test_class_extend() {
-  ti.fail(
-    () => m.classExtend.call(null),
-    `expected class static context, got null`,
-  )
+t.test(function test_class_extends() {
+  function test(src, exp) {t.is(p.class.call(null, src).compile(), exp)}
 
-  function test(src, exp) {
-    t.is(
-      p.class.call(null, sym(`one`), src).compile(),
-      exp,
-    )
-  }
+  test(sym(`one`), `(class one {})`)
+  test([sym(`one`)], `(class one {})`)
 
-  test([m.classExtend], `(class one {})`)
-  test([sym(`extend`)], `(class one {})`)
+  test([sym(`one`), []], `(class one {})`)
+  test([sym(`one`), [], [[]]], `(class one {})`)
 
-  test([m.classExtend, []], `(class one {})`)
-  test([sym(`extend`), []], `(class one {})`)
-
-  test([m.classExtend, [], [[]]], `(class one {})`)
-  test([sym(`extend`), [], [[]]], `(class one {})`)
-
-  test([m.classExtend, 10], `(class one extends 10 {})`)
-  test([m.classExtend, 10, 20], `(class one extends 20(10) {})`)
-  test([m.classExtend, 10, 20, 30], `(class one extends 30(20(10)) {})`)
+  test([sym(`one`), 10], `(class one extends 10 {})`)
+  test([sym(`one`), 10, 20], `(class one extends 20(10) {})`)
+  test([sym(`one`), 10, 20, 30], `(class one extends 30(20(10)) {})`)
 
   ti.fail(
-    () => test([m.classExtend, sym(`two`)]),
+    () => p.class.call(null, [sym(`one`), sym(`two`)]),
     `missing declaration of "two"`,
   )
 
   ti.fail(
-    () => test([m.classExtend, 10, sym(`two`)]),
+    () => p.class.call(null, [sym(`one`), 10, sym(`two`)]),
     `missing declaration of "two"`,
   )
 
   test(
-    [m.classExtend, ti.macReqExpressionOne],
+    [sym(`one`), ti.macReqExpressionOne],
     `(class one extends "one" {})`
   )
 
   test(
-    [m.classExtend, ti.macReqExpressionOne, ti.macReqExpressionTwo],
+    [sym(`one`), ti.macReqExpressionOne, ti.macReqExpressionTwo],
     `(class one extends "two"("one") {})`
   )
 })
@@ -2454,14 +2620,14 @@ static two = (() => this.two)
 })`)
 
   fail(
-    [fun, sym(`two`), [p.func, sym(`three`), [], sym(`two`)]],
+    [fun, sym(`two`), [p.func, sym(`three`), sym(`two`)]],
     `property "two" unavailable in current context`,
   )
 
   t.is(
     run(
       [fun, sym(`two`)],
-      [p.func, sym(`three`), [], sym(`two`)],
+      [p.func, sym(`three`), sym(`two`)],
     ).compile(),
     `(class one {
 static three () {
@@ -2472,7 +2638,7 @@ return this.two
   t.is(
     run(
       [fun, sym(`two`), 10],
-      [p.func, sym(`three`), [], sym(`two`)],
+      [p.func, sym(`three`), sym(`two`)],
     ).compile(),
     `(class one {
 static two = 10;
@@ -2482,7 +2648,7 @@ return this.two
 })`)
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [], sym(`two`)]],
+    [fun, sym(`two`), [p.func, sym(`two`), sym(`two`)]],
     `(class one {
 static two = function two () {
 return two
@@ -2490,8 +2656,8 @@ return two
 })`)
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [],
-      [p.func, sym(`two`), [], sym(`two`)],
+    [fun, sym(`two`), [p.func, sym(`two`),
+      [p.func, sym(`two`), sym(`two`)],
     ]],
     `(class one {
 static two = function two () {
@@ -2502,8 +2668,8 @@ return two
 })`)
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [],
-      [p.func, sym(`three`), [], sym(`two`)],
+    [fun, sym(`two`), [p.func, sym(`two`),
+      [p.func, sym(`three`), sym(`two`)],
     ]],
     `(class one {
 static two = function two () {
@@ -2560,7 +2726,7 @@ static two = 10;
     () => run(
       [fun, sym(`two`)],
       [sym(`prototype`), [p.fn,
-        [p.func, sym(`three`), [], sym(`two`)],
+        [p.func, sym(`three`), sym(`two`)],
       ]],
     ),
     `property "two" unavailable in current context`,
@@ -2742,12 +2908,12 @@ two = (() => this.two)
 })`)
 
   fail(
-    [fun, sym(`two`), [p.func, sym(`three`), [], sym(`two`)]],
+    [fun, sym(`two`), [p.func, sym(`three`), sym(`two`)]],
     `property "two" unavailable in current context`,
   )
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [], sym(`two`)]],
+    [fun, sym(`two`), [p.func, sym(`two`), sym(`two`)]],
     `(class one {
 two = function two () {
 return two
@@ -2755,8 +2921,8 @@ return two
 })`)
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [],
-      [p.func, sym(`two`), [], sym(`two`)],
+    [fun, sym(`two`), [p.func, sym(`two`),
+      [p.func, sym(`two`), sym(`two`)],
     ]],
     `(class one {
 two = function two () {
@@ -2767,8 +2933,8 @@ return two
 })`)
 
   test(
-    [fun, sym(`two`), [p.func, sym(`two`), [],
-      [p.func, sym(`three`), [], sym(`two`)],
+    [fun, sym(`two`), [p.func, sym(`two`),
+      [p.func, sym(`three`), sym(`two`)],
     ]],
     `(class one {
 two = function two () {
@@ -2879,11 +3045,11 @@ static two = this.two
 
 function testClassFuncInvalid(fail) {
   fail([p.func], `expected at least 1 inputs, got 0 inputs`)
-  fail([p.func, 10], `expected unqualified symbol, got 10`)
-  fail([p.func, sym(``)], `expected unqualified symbol, got`)
-  fail([p.func, sym(`.one`)], `expected unqualified symbol, got .one`)
-  fail([p.func, sym(`.two`)], `expected unqualified symbol, got .two`)
-  fail([p.func, sym(`one.two`)], `expected unqualified symbol, got one.two`)
+  fail([p.func, 10], `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  fail([p.func, sym(``)], `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  fail([p.func, sym(`.one`)], `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  fail([p.func, sym(`.two`)], `expected an unqualified symbol or a list that begins with an unqualified symbol`)
+  fail([p.func, sym(`one.two`)], `expected an unqualified symbol or a list that begins with an unqualified symbol`)
 }
 
 t.test(function test_class_func_static() {
@@ -2900,7 +3066,19 @@ static one () {}
 })`)
 
   test(
+    [p.func, [sym(`one`)]],
+    `(class one {
+static one () {}
+})`)
+
+  test(
     [p.func, sym(`two`)],
+    `(class one {
+static two () {}
+})`)
+
+  test(
+    [p.func, [sym(`two`)]],
     `(class one {
 static two () {}
 })`)
@@ -2930,7 +3108,7 @@ static "123ident" () {}
 })`)
 
   test(
-    [p.func, sym(`two`), [], sym(`one`)],
+    [p.func, sym(`two`), sym(`one`)],
     `(class one {
 static two () {
 return one
@@ -2938,7 +3116,7 @@ return one
 })`)
 
   test(
-    [p.func, sym(`two`), [], sym(`two`)],
+    [p.func, sym(`two`), sym(`two`)],
     `(class one {
 static two () {
 return this.two
@@ -2948,7 +3126,7 @@ return this.two
   t.is(
     run(
       [p.func, sym(`one`)],
-      [p.func, sym(`two`), [], sym(`one`)],
+      [p.func, sym(`two`), sym(`one`)],
     ).compile(),
     `(class one {
 static one () {};
@@ -2960,7 +3138,7 @@ return this.one
   t.is(
     run(
       [p.func, sym(`!@#`)],
-      [p.func, sym(`%^&`), [], sym(`!@#`)],
+      [p.func, sym(`%^&`), sym(`!@#`)],
     ).compile(),
     `(class one {
 static "!@#" () {};
@@ -2971,9 +3149,9 @@ return this["!@#"]
 
   ti.fail(
     () => p.class.call(null, sym(`one`),
-      [p.func, sym(`two`), [],
+      [p.func, sym(`two`),
         [p.class, sym(`three`),
-          [p.func, sym(`four`), [], sym(`two`)],
+          [p.func, sym(`four`), sym(`two`)],
         ],
       ],
     ),
@@ -2982,10 +3160,10 @@ return this["!@#"]
 
   t.is(
     p.class.call(null, sym(`one`),
-      [p.func, sym(`two`), [],
+      [p.func, sym(`two`),
         [p.class, sym(`three`),
           [p.func, sym(`two`)],
-          [p.func, sym(`four`), [], sym(`two`)],
+          [p.func, sym(`four`), sym(`two`)],
         ],
       ],
     ).compile(),
@@ -3001,25 +3179,25 @@ return this.two
 })`)
 
   test(
-    [p.func, sym(`one`), sym(`one`)],
-    `(class one {
-static one (...one) {}
-})`)
-
-  test(
-    [p.func, sym(`one`), [sym(`one`)]],
+    [p.func, [sym(`one`), sym(`one`)]],
     `(class one {
 static one (one) {}
 })`)
 
   test(
-    [p.func, sym(`one`), [sym(`one`), sym(`two`)]],
+    [p.func, [sym(`one`), m.symRest, sym(`one`)]],
+    `(class one {
+static one (...one) {}
+})`)
+
+  test(
+    [p.func, [sym(`one`), sym(`one`), sym(`two`)]],
     `(class one {
 static one (one, two) {}
 })`)
 
   test(
-    [p.func, sym(`one`), sym(`one`), sym(`one`)],
+    [p.func, [sym(`one`), m.symRest, sym(`one`)], sym(`one`)],
     `(class one {
 static one (...one) {
 return one
@@ -3073,7 +3251,7 @@ eval () {}
 })`)
 
   test(
-    [p.func, sym(`two`), [], sym(`one`)],
+    [p.func, sym(`two`), sym(`one`)],
     `(class one {
 two () {
 return one
@@ -3081,7 +3259,7 @@ return one
 })`)
 
   test(
-    [p.func, sym(`two`), [], sym(`two`)],
+    [p.func, sym(`two`), sym(`two`)],
     `(class one {
 two () {
 return this.two
@@ -3091,7 +3269,7 @@ return this.two
   t.is(
     run(
       [p.func, sym(`one`)],
-      [p.func, sym(`two`), [], sym(`one`)],
+      [p.func, sym(`two`), sym(`one`)],
     ).compile(),
     `(class one {
 one () {};
@@ -3103,7 +3281,7 @@ return this.one
   t.is(
     run(
       [p.func, sym(`!@#`)],
-      [p.func, sym(`%^&`), [], sym(`!@#`)],
+      [p.func, sym(`%^&`), sym(`!@#`)],
     ).compile(),
     `(class one {
 "!@#" () {};
@@ -3115,10 +3293,10 @@ return this["!@#"]
   ti.fail(
     () => p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`two`), [],
+        [p.func, sym(`two`),
           [p.class, sym(`three`),
             [sym(`prototype`),
-              [p.func, sym(`four`), [], sym(`two`)],
+              [p.func, sym(`four`), sym(`two`)],
             ],
           ],
         ],
@@ -3130,11 +3308,11 @@ return this["!@#"]
   t.is(
     p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`two`), [],
+        [p.func, sym(`two`),
           [p.class, sym(`three`),
             [sym(`prototype`),
               [p.func, sym(`two`)],
-              [p.func, sym(`four`), [], sym(`two`)],
+              [p.func, sym(`four`), sym(`two`)],
             ],
           ],
         ],
@@ -3152,25 +3330,31 @@ return this.two
 })`)
 
   test(
-    [p.func, sym(`one`), sym(`one`)],
-    `(class one {
-one (...one) {}
-})`)
-
-  test(
-    [p.func, sym(`one`), [sym(`one`)]],
+    [p.func, [sym(`one`), sym(`one`)]],
     `(class one {
 one (one) {}
 })`)
 
   test(
-    [p.func, sym(`one`), [sym(`one`), sym(`two`)]],
+    [p.func, [sym(`one`), sym(`two`)]],
+    `(class one {
+one (two) {}
+})`)
+
+  test(
+    [p.func, [sym(`one`), m.symRest, sym(`one`)]],
+    `(class one {
+one (...one) {}
+})`)
+
+  test(
+    [p.func, [sym(`one`), sym(`one`), sym(`two`)]],
     `(class one {
 one (one, two) {}
 })`)
 
   test(
-    [p.func, sym(`one`), sym(`one`), sym(`one`)],
+    [p.func, [sym(`one`), m.symRest, sym(`one`)], sym(`one`)],
     `(class one {
 one (...one) {
 return one
@@ -3183,7 +3367,7 @@ t.test(function test_class_func_mixed() {
     p.class.call(null, sym(`one`),
       [p.func, sym(`two`)],
       [sym(`prototype`),
-        [p.func, sym(`three`), [], sym(`two`)],
+        [p.func, sym(`three`), sym(`two`)],
       ],
     ).compile(),
     `(class one {
@@ -3196,7 +3380,7 @@ return this.constructor.two
   ti.fail(
     () => p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`three`), [], sym(`two`)],
+        [p.func, sym(`three`), sym(`two`)],
       ],
       [p.func, sym(`two`)],
     ),
@@ -3208,7 +3392,7 @@ return this.constructor.two
       [sym(`prototype`),
         [p.func, sym(`three`)],
       ],
-      [p.func, sym(`two`), [], sym(`three`)],
+      [p.func, sym(`two`), sym(`three`)],
     ),
     `missing declaration of "three"`,
   )
@@ -3217,7 +3401,7 @@ return this.constructor.two
     p.class.call(null, sym(`one`),
       [p.func, sym(`two`)],
       [sym(`prototype`),
-        [p.func, sym(`two`), [], sym(`two`)],
+        [p.func, sym(`two`), sym(`two`)],
       ],
     ).compile(),
     `(class one {
@@ -3230,7 +3414,7 @@ return this.two
   t.is(
     p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`two`), [], sym(`two`)],
+        [p.func, sym(`two`), sym(`two`)],
       ],
       [p.func, sym(`two`)],
     ).compile(),
@@ -3244,9 +3428,9 @@ static two () {}
   ti.fail(
     () => p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`two`), [],
+        [p.func, sym(`two`),
           [p.class, sym(`three`),
-            [p.func, sym(`four`), [], sym(`two`)],
+            [p.func, sym(`four`), sym(`two`)],
           ],
         ],
       ],
@@ -3256,10 +3440,10 @@ static two () {}
 
   ti.fail(
     () => p.class.call(null, sym(`one`),
-      [p.func, sym(`two`), [],
+      [p.func, sym(`two`),
         [p.class, sym(`three`),
           [sym(`prototype`),
-            [p.func, sym(`four`), [], sym(`two`)],
+            [p.func, sym(`four`), sym(`two`)],
           ],
         ],
       ],
@@ -3270,10 +3454,10 @@ static two () {}
   t.is(
     p.class.call(null, sym(`one`),
       [sym(`prototype`),
-        [p.func, sym(`two`), [],
+        [p.func, sym(`two`),
           [p.class, sym(`three`),
             [p.func, sym(`two`)],
-            [p.func, sym(`four`), [], sym(`two`)],
+            [p.func, sym(`four`), sym(`two`)],
           ],
         ],
       ],
@@ -3291,11 +3475,11 @@ return this.two
 
   t.is(
     p.class.call(null, sym(`one`),
-      [p.func, sym(`two`), [],
+      [p.func, sym(`two`),
         [p.class, sym(`three`),
           [sym(`prototype`),
             [p.func, sym(`two`)],
-            [p.func, sym(`four`), [], sym(`two`)],
+            [p.func, sym(`four`), sym(`two`)],
           ],
         ],
       ],
@@ -3342,17 +3526,15 @@ t.test(function test_class_misc() {
   const ctx = c.ctxWithStatement(null)
 
   t.is(
-    p.class.call(ctx, sym(`one`),
-      [sym(`extend`), 10, 20],
-
+    p.class.call(ctx, [sym(`one`), 10, 20],
       [p.do, 60, 70],
 
-      [p.func, sym(`five`), sym(`six`), 80],
+      [p.func, [sym(`five`), sym(`six`)], 80],
 
       [p.let, sym(`seven`), 90],
 
       [sym(`prototype`),
-        [p.func, sym(`two`), [sym(`three`)], 30, 40],
+        [p.func, [sym(`two`), sym(`three`)], 30, 40],
 
         [p.let, sym(`four`), 50],
       ]
@@ -3363,7 +3545,7 @@ static {
 60;
 70
 };
-static five (...six) {
+static five (six) {
 return 80
 };
 static seven = 90;
@@ -3379,7 +3561,7 @@ four = 50
   t.is(
     c.macroNode(
       null,
-      [p.class, sym(`one`), [m.classExtend, 10],
+      [p.class, [sym(`one`), 10],
         [p.do, [p.class, sym(`two`)]]
       ],
     ).compile(),
@@ -3699,7 +3881,6 @@ function testCompilable(src, exp) {
 t.test(function test_list() {
   testList(null)
   testList(c.ctxWithStatement(null))
-  testCompilable(p.list, `((...a) => a)`)
 })
 
 function testList(ctx) {
