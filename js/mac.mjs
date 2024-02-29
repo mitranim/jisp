@@ -10,6 +10,7 @@ Non-exhaustive list of missing keywords and operators:
   for .. in
   do .. while
   switch
+  setter functions
 */
 
 /*
@@ -195,6 +196,7 @@ export const symCatch = Symbol.for(`jisp.catch`)
 export const symFinally = Symbol.for(`jisp.finally`)
 export const symFunc = Symbol.for(`jisp.func`)
 export const symFuncAsync = Symbol.for(`jisp.func.async`)
+export const symFuncGet = Symbol.for(`jisp.func.get`)
 export const symClassStatic = Symbol.for(`jisp.class.static`)
 export const symClassProto = Symbol.for(`jisp.class.proto`)
 
@@ -284,9 +286,7 @@ function useAsync(src) {
   return useAsyncCompile(src)
 }
 
-async function useAsyncCompileAsync(src) {
-  return useAsyncCompile(await src)
-}
+async function useAsyncCompileAsync(src) {return useAsyncCompile(await src)}
 
 function useAsyncCompile(src) {
   return c.raw(`import(`, c.compileNode(src), `)`)
@@ -899,6 +899,7 @@ export function func() {
 }
 
 func.async = funcAsync
+func.get = funcGet
 
 export const funcMixin = Object.create(null)
 funcMixin.ret = ret
@@ -966,6 +967,19 @@ export function funcAsyncForClassStatic() {
 
 export function funcAsyncForClassProto() {
   return c.raw(`async ` + funcBaseForClassProto.apply(this, arguments))
+}
+
+export function funcGet() {
+  if (c.hasOwn(this, symFuncGet)) return this[symFuncGet].apply(this, arguments)
+  throw Error(`missing override for getter function`)
+}
+
+export function funcGetForClassStatic() {
+  return c.raw(`static get ` + funcBaseForClassStatic.apply(this, arguments))
+}
+
+export function funcGetForClassProto() {
+  return c.raw(`get ` + funcBaseForClassProto.apply(this, arguments))
 }
 
 // Must be called with the "tail" of the function parameter list.
@@ -1153,6 +1167,7 @@ classOverrideStatic[symSet] = setForClassStatic
 classOverrideStatic[symLet] = letForClassStatic
 classOverrideStatic[symFunc] = funcForClassStatic
 classOverrideStatic[symFuncAsync] = funcAsyncForClassStatic
+classOverrideStatic[symFuncGet] = funcGetForClassStatic
 
 export function ctxIsClassStatic(ctx) {return c.hasOwn(ctx, symClassStatic)}
 
@@ -1184,6 +1199,7 @@ classOverrideProto[symSet] = setForClassProto
 classOverrideProto[symLet] = letForClassProto
 classOverrideProto[symFunc] = funcForClassProto
 classOverrideProto[symFuncAsync] = funcAsyncForClassProto
+classOverrideProto[symFuncGet] = funcGetForClassProto
 
 function compileClassExtend(src) {
   if (c.isNil(src)) return ``

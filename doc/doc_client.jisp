@@ -90,7 +90,7 @@ of multiline strings, mispace comments, etc.
 
 [class [Modules c.Modules]
   [prototype
-    [let Module FmtedModule]
+    [func.get Module FmtedModule]
   ]
 ]
 
@@ -104,14 +104,13 @@ of multiline strings, mispace comments, etc.
 
 [class [FileArea HTMLElement]
   [prototype
-    ;; TODO convert from getter functions to getter properties after adding support. ;;
-    [func getHead [this.querySelector `code`]]
-    [func getBody [this.querySelector `textarea`]]
-    [func getPath [get [getHead] .textContent]]
-    [func getContent [get [getBody] .value]]
+    [func.get head [this.querySelector `code`]]
+    [func.get body [this.querySelector `textarea`]]
+    [func.get path head.textContent]
+    [func.get content body.value]
 
     [func [setContent val]
-      [set [get [getBody] .textContent] val]
+      [set body.textContent val]
       [this.classList.remove `error`]
     ]
 
@@ -121,7 +120,7 @@ of multiline strings, mispace comments, etc.
     ]
 
     [func connectedCallback
-      [set [get [getBody] .oninput] textareaResize]
+      [set body.oninput textareaResize]
     ]
   ]
 ]
@@ -139,8 +138,8 @@ of multiline strings, mispace comments, etc.
       [loop.iter [const pair pairs]
         [const [@ src tar] [pair.querySelectorAll `file-area`]]
 
-        [const key [String [new URL [src.getPath] `blob:/`]]]
-        [fs.set key [src.getContent]]
+        [const key [String [new URL src.path `blob:/`]]]
+        [fs.set key src.content]
 
         [const mod [mods.getOrMake key]]
 

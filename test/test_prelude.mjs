@@ -3496,6 +3496,76 @@ return this.two
 })`)
 })
 
+/*
+Most of the implementation is shared with regular methods.
+We only need basic sanity checks.
+*/
+t.test(function test_class_func_get_static() {
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func.get, sym(`two`)],
+    ).compile(),
+    `(class one {
+static get two () {}
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func.get, sym(`two`)],
+      [p.func.get, sym(`!@#`), sym(`two`)],
+    ).compile(),
+    `(class one {
+static get two () {};
+static get "!@#" () {
+return this.two
+}
+})`)
+})
+
+/*
+Most of the implementation is shared with regular methods.
+We only need basic sanity checks.
+*/
+t.test(function test_class_func_get_proto() {
+  t.is(
+    p.class.call(null, sym(`one`),
+      [m.classPrototype,
+        [p.func.get, sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+get two () {}
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [m.classPrototype,
+        [p.func.get, sym(`two`)],
+        [p.func.get, sym(`!@#`), sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+get two () {};
+get "!@#" () {
+return this.two
+}
+})`)
+
+  t.is(
+    p.class.call(null, sym(`one`),
+      [p.func.get, sym(`two`)],
+      [m.classPrototype,
+        [p.func.get, sym(`!@#`), sym(`two`)],
+      ],
+    ).compile(),
+    `(class one {
+static get two () {};
+get "!@#" () {
+return this.constructor.two
+}
+})`)
+})
+
 t.test(function test_class_do_static() {
   t.is(
     p.class.call(null, sym(`one`), [p.do]).compile(),
