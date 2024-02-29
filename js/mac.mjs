@@ -216,6 +216,7 @@ use.meta = c.raw(`import.meta`)
 use.async = useAsync
 use.mac = useMac
 use.func = useFunc
+use.resolve = useResolve
 
 function useAnon(src) {
   c.reqArity(arguments.length, 1)
@@ -377,6 +378,8 @@ function useFuncCompile(src, name) {
     `() {return import(`, c.compileNode(src), `)}`
   )
 }
+
+export function useResolve(src) {return importTarDepPath(this, src)}
 
 export function declare(src) {
   c.ctxReqIsStatement(this)

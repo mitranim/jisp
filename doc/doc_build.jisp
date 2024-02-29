@@ -1,2 +1,2 @@
 ;; Causes the module to be built, but not executed. ;;
-[use.func `./doc_client.jisp` _]
+[use.resolve `./doc_client.jisp`]
