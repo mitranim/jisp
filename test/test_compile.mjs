@@ -222,7 +222,7 @@ source node:
 })
 
 t.test(function test_compile_error_context_with_spans() {
-  const src = [...new c.Reader(`
+  const src = [...new c.DelimReader(`
 10
 [[[20 30 40 50 60]]]
 70

@@ -115,7 +115,7 @@ class TestModule extends c.Module {
   }
 
   async testCode() {
-    if (!this.isJispModule()) return
+    if (!this.isJispDialect()) return
     const src = c.reqStr(await this.testReadSrc(this))
     const tar = c.reqStr(await this.testReadTar(this))
     t.is(tar, (await this.compiled(ctx, src)), ti.inspect(this))

@@ -818,7 +818,7 @@ source node:
 })
 
 t.test(function test_macro_error_context_with_spans() {
-  const node = [...new c.Reader(`
+  const node = [...new c.DelimReader(`
 10
 [20 [30 [one 40]]]
 50

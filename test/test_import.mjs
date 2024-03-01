@@ -312,7 +312,7 @@ await t.test(async function test_use_mac() {
 
   await ti.fail(
     async () => p.use.mac.call(ctx, missingJsFileUrl),
-    `Module not found ${c.show(missingJsFileUrl)}`,
+    `missing modules in context {[Symbol(jisp.statement)]: undefined}`,
   )
 
   await ti.fail(
@@ -321,6 +321,11 @@ await t.test(async function test_use_mac() {
   )
 
   ctx = c.ctxWithStatement(c.rootCtx())
+
+  await ti.fail(
+    async () => p.use.mac.call(ctx, missingJsFileUrl),
+    `Module not found ${c.show(missingJsFileUrl)}`,
+  )
 
   await ti.fail(
     async () => p.use.mac.call(ctx, missingJispFileSrcUrl),

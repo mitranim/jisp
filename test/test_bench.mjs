@@ -3,23 +3,19 @@ import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 import * as pre from '../js/prelude.mjs'
 
-const testBenchSrc = await ti.fsReadOnly.read(new URL(`../test_files/test_bench.jisp`, import.meta.url))
+const testSrcDelim = await ti.fsReadOnly.read(new URL(`../test_files/test_bench.jisp`, import.meta.url))
+const testSrcIndent = await ti.fsReadOnly.read(new URL(`../test_files/test_bench.jis`, import.meta.url))
 
-class TestModule extends c.Module {
-  testRun() {
-    const ctx = c.ctxWithModule(c.ctxWithMixin(pre), this)
-    const nodes = [...new this.Reader(testBenchSrc)]
-    c.joinStatements(c.compileNodes(c.macroNodes(ctx, nodes)))
-  }
+function run(src, Reader) {
+  c.joinStatements(c.compileNodes(c.macroNodes(
+    c.ctxWithModule(c.ctxWithMixin(pre), new c.Module()),
+    [...new Reader(src)],
+  )))
 }
 
-function nop() {}
+t.bench(function bench_srcToTar() {c.srcToTar(import.meta.url, ti.TEST_TAR_URL.href)})
 
 const stringForDecoding = Function(`return arguments[0]`)(`"\\n one \\r two \\n three \\n four \\n five \\u1234 six"`)
-
-t.bench(function bench_module_read() {nop([...new c.Reader(testBenchSrc)])})
-t.bench(function bench_module_roundtrip() {new TestModule().testRun()})
-t.bench(function bench_srcToTar() {c.srcToTar(import.meta.url, ti.TEST_TAR_URL.href)})
 
 /*
 At the time of writing and testing, on the author's machine using Deno 1.24.3
@@ -28,5 +24,11 @@ input.
 */
 t.bench(function bench_string_decoding_native() {JSON.parse(stringForDecoding)})
 t.bench(function bench_string_decoding_ours() {c.strDecode(stringForDecoding)})
+
+t.bench(function bench_module_delim_read() {[...new c.DelimReader(testSrcDelim)]})
+t.bench(function bench_module_delim_roundtrip() {run(testSrcDelim, c.DelimReader)})
+
+t.bench(function bench_module_indent_read() {[...new c.IndentReader(testSrcIndent)]})
+t.bench(function bench_module_indent_roundtrip() {run(testSrcIndent, c.IndentReader)})
 
 if (import.meta.main) ti.flush()

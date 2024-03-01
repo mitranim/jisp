@@ -331,8 +331,8 @@ function importTarDepPath(ctx, src) {
 
 async function importSrcDepPathFromUrl(ctx, src) {
   ctx[c.symModule]?.addSrcDep(src)
-  if (!c.isJispPath(src)) return src
-  const mod = c.ctxReqModules(ctx).getOrMake(src)
+  const mod = c.ctxReqModules(ctx).getOrMake(src).init(ctx)
+  if (!mod.isJispDialect()) return src
   await mod.ready(ctx)
   return mod.reqTarPath()
 }
@@ -342,9 +342,9 @@ function importTarDepPathFromUrl(ctx, src) {
   own?.addTarDep(src)
   own = own?.tarPath
 
-  if (!c.isJispPath(src)) return tarPath(own, src)
-
   let imp = c.ctxReqModules(ctx).getOrMake(src).init(ctx)
+  if (!imp.isJispDialect()) return tarPath(own, src)
+
   const tar = imp.tarPath
   if (tar) return tarPath(own, tar)
 
@@ -651,6 +651,13 @@ export function doForClassStatic(...src) {
   return src ? c.raw(`static `, c.wrapBracesMultiLine(src)) : []
 }
 
+export function statements(...src) {
+  c.ctxReqIsStatement(this)
+  src = c.macroNodes(c.ctxReqIsStatement(this), src)
+  src = c.compileStatements(src)
+  return src ? c.raw(src) : []
+}
+
 export {$try as try}
 
 export function $try(...src) {
@@ -733,7 +740,8 @@ loopMixin.continue = $continue
 export {$break as break}
 
 export function $break() {
-  throw SyntaxError(`"break" must be mentioned, not called; loop labels are not currently supported`)
+  c.reqArityNullary(arguments.length)
+  return $break
 }
 
 $break.macro = selfStatement
@@ -742,7 +750,8 @@ $break.compile = () => `break`
 export {$continue as continue}
 
 export function $continue() {
-  throw SyntaxError(`"continue" must be mentioned, not called; loop labels are not currently supported`)
+  c.reqArityNullary(arguments.length)
+  return $continue
 }
 
 $continue.macro = selfStatement

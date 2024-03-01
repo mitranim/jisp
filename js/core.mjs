@@ -12,6 +12,21 @@ In Lisp-style languages, "reading" means taking source code and generating AST
 nodes from it.
 */
 
+export function dialects() {
+  return [
+    {
+      contentType: `application/jisp`,
+      extension: `.jisp`,
+      Reader: DelimReader,
+    },
+    {
+      contentType: `application/jis`,
+      extension: `.jis`,
+      Reader: IndentReader,
+    },
+  ]
+}
+
 /*
 Describes a view over a source string, spanning from position A to position B,
 where positions may be anywhere in the source string.
@@ -64,18 +79,19 @@ SYNC[sym].
 SYNC[ident].
 SYNC[oper].
 */
-export const regSymCharsBegin = /^(?:[.]|[\w$]|[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
-export const regSymCharsFull  = /^(?:[.]|[\w$]|[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
+export const regSymCharsBegin = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
+export const regSymCharsFull  = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
 
 // SYNC[ident].
 export const regIdentBegin = /^#?[A-Za-z_$][\w$]*/
 export const regIdentFull  = /^#?[A-Za-z_$][\w$]*$/
 
 // SYNC[oper].
-export const regOperBegin = /^[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
-export const regOperFull  = /^[\'\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
+export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
+export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
 
-export const regSpace       = /^\s+/
+export const regAnySpace    = /^\s+/
+export const regLineSpace   = /^[ \t\v]/
 export const regComment     = /^(;{2,})(?!;)([^]*?)\1/
 export const regBigInt      = /^(-?\d+(?:_\d+)*)n/
 export const regFloat       = /^-?\d+(?:_\d+)*(?:[.]\d+(?:_\d+)*)?/
@@ -83,20 +99,13 @@ export const regStrBacktick = /^(?:``(?!`)|(`+)(?!`)([^]*?)\1)/
 export const regStrDouble   = /^(?:""(?!")|("+)(?!")((?:\\[^]|[^])*?)\1)/
 export const regFieldKey    = /^(\d+|[A-Za-z_$][\w$]*)$/
 
-export class Reader extends Span {
-  *[Symbol.iterator]() {
-    let val
-    while (isSome(val = this.read())) yield val
-  }
-
-  read() {
-    if (!this.more()) return undefined
+// Base functionality shared by `DelimReader` and `IndentReader`.
+export class TokenReader extends Span {
+  readToken() {
+    if (!this.hasMore()) return undefined
 
     return (
       undefined
-      ?? this.readBraces()
-      ?? this.readBrackets()
-      ?? this.readParens()
       ?? this.readBigInt()
       ?? this.readFloat()
       ?? this.readStrBacktick()
@@ -104,59 +113,6 @@ export class Reader extends Span {
       ?? this.readSym()
       ?? panic(this.errUnrec())
     )
-  }
-
-  more() {return this.skippedCosmetic(), this.hasMore()}
-
-  /*
-  SYNC[delim].
-
-  TODO consider an additional restriction: an opening delimiter must be
-  preceded by either a general delimiter or another opening delimiter.
-  */
-  reqDelim() {
-    const head = this.src[this.pos]
-    if (
-      !head
-      || head === ` `
-      || head === `\t`
-      || head === `\v`
-      || head === `\r`
-      || head === `\n`
-      || head === `{`
-      || head === `}`
-      || head === `[`
-      || head === `]`
-      || head === `(`
-      || head === `)`
-    ) return
-    throw this.errUnrec(`expected whitespace, delimiter, or EOF`)
-  }
-
-  readBraces() {return this.readList(`{`, `}`)}
-  readBrackets() {return this.readList(`[`, `]`)}
-  readParens() {return this.readList(`(`, `)`)}
-
-  readList(pre, suf) {
-    reqValidStr(pre)
-    reqValidStr(suf)
-    this.reqNoPrefix(suf)
-
-    const start = this.pos
-    if (!this.skippedPrefix(pre)) return undefined
-
-    const out = []
-
-    for (;;) {
-      if (!this.more()) break
-      if (this.skippedPrefix(suf)) {
-        nodeSpanSet(out, this.spanSince(start))
-        return out
-      }
-      out.push(this.read())
-    }
-
-    throw this.err(`expected closing ${show(suf)}, found EOF`)
   }
 
   readBigInt() {
@@ -195,7 +151,7 @@ export class Reader extends Span {
     if (!mat) return undefined
 
     let out
-    try {out = this.strDecode(laxStr(mat[2]))}
+    try {out = strDecode(laxStr(mat[2]))}
     catch (err) {
       reqErr(err).message = joinParagraphs(err.message, this.context())
       throw err
@@ -205,8 +161,6 @@ export class Reader extends Span {
     this.reqDelim()
     return out
   }
-
-  strDecode(src) {return strDecode(src)}
 
   readSym() {
     const mat = laxStr(this.view().match(regSymCharsBegin)?.[0])
@@ -222,31 +176,247 @@ export class Reader extends Span {
     return new Span(this.src, ind, this.pos, this.path)
   }
 
-  skippedCosmetic() {
-    const pos = this.pos
-    while (this.skippedSpace() || this.skippedComment()) {}
-    return this.pos > pos
-  }
-
   skippedComment() {return this.skippedReg(regComment) && (this.reqDelim(), true)}
-  skippedSpace() {return this.skippedReg(regSpace)}
-
+  skippedAnySpace() {return this.skippedReg(regAnySpace)}
+  skippedLineSpace() {return this.skippedReg(regLineSpace)}
   // Assumes that the regex starts with `^`.
   skippedReg(reg) {return this.skipped(this.view().match(reqReg(reg))?.[0].length)}
-  skipped(len) {return laxNat(len) > 0 && (this.skip(len), true)}
   skippedPrefix(pre) {return this.hasPrefix(pre) && this.skipped(pre.length)}
+  skipped(len) {return laxNat(len) > 0 && (this.skip(len), true)}
   hasPrefix(pre) {return this.view().startsWith(reqStr(pre))}
+  headChar() {return this.src[this.pos]}
+  errUnrec(msg) {return this.err(`unrecognized syntax` + (msg ? (`; ` + msg) : ``))}
+  err(msg) {return SyntaxError(joinParagraphs(msg, this.context()))}
+}
+
+export class DelimReader extends TokenReader {
+  *[Symbol.iterator]() {
+    let val
+    while (isSome(val = this.read())) yield val
+  }
+
+  read() {
+    if (!this.more()) return undefined
+
+    return (
+      undefined
+      ?? this.readBraces()
+      ?? this.readBrackets()
+      ?? this.readParens()
+      ?? this.readToken()
+    )
+  }
+
+  /*
+  SYNC[delim].
+
+  TODO consider an additional restriction: an opening delimiter must be
+  preceded by either a general delimiter or another opening delimiter.
+  */
+  reqDelim() {
+    const head = this.src[this.pos]
+    if (
+      !head
+      || isAnySpace(head)
+      || head === `{` || head === `}`
+      || head === `[` || head === `]`
+      || head === `(` || head === `)`
+    ) return
+    throw this.errUnrec(`expected whitespace, delimiter, or EOF`)
+  }
+
+  readBraces() {return this.readList(`{`, `}`)}
+  readBrackets() {return this.readList(`[`, `]`)}
+  readParens() {return this.readList(`(`, `)`)}
+
+  readList(pre, suf) {
+    reqValidStr(pre)
+    reqValidStr(suf)
+    this.reqNoPrefix(suf)
+
+    const start = this.pos
+    if (!this.skippedPrefix(pre)) return undefined
+
+    const out = []
+
+    for (;;) {
+      if (!this.more()) break
+      if (this.skippedPrefix(suf)) {
+        nodeSpanSet(out, this.spanSince(start))
+        return out
+      }
+      out.push(this.read())
+    }
+
+    throw this.err(`expected closing ${show(suf)}, found EOF`)
+  }
+
+  more() {return this.skippedCosmetic(), this.hasMore()}
+
+  skippedCosmetic() {
+    const pos = this.pos
+    while (this.skippedAnySpace() || this.skippedComment()) {}
+    return this.pos > pos
+  }
 
   reqNoPrefix(pre) {
     reqValidStr(pre)
     if (this.hasPrefix(pre)) throw this.err(`unexpected ${show(pre)}`)
   }
+}
 
-  errUnrec(msg) {
-    return this.err(`unrecognized syntax` + (msg ? (`; ` + msg) : ``))
+// https://mitranim.com/posts/spaces-tabs
+export const INDENT = `  `
+
+// SYNC[lister].
+export const LISTER = `:`
+
+// SYNC[splicer].
+export const SPLICER = `'`
+
+export const MODE_BOL = 0
+export const MODE_COL = 1
+export const MODE_ROW = 2
+
+export class IndentReader extends TokenReader {
+  [Symbol.iterator]() {
+    const out = []
+    this.readList(out, 0, MODE_BOL)
+    return out.values()
   }
 
-  err(msg) {return SyntaxError(joinParagraphs(msg, this.context()))}
+  readList(out, lvl, mode) {
+    reqArr(out)
+    reqInt(lvl)
+    reqNum(mode)
+
+    for (;;) {
+      if (mode !== MODE_BOL && this.readAnySpace()) mode = MODE_BOL
+      if (mode === MODE_BOL) {
+        if (this.readIndent(lvl)) return
+        mode = MODE_COL
+      }
+
+      if (this.skippedComment()) continue
+      const start = this.pos
+
+      if (this.skippedLister()) {
+        const buf = []
+        this.readList(buf, (mode === MODE_COL ? (lvl + 1) : lvl), MODE_ROW)
+        nodeSpanSet(buf, this.spanSince(start))
+        out.push(buf)
+        mode = MODE_BOL
+        continue
+      }
+
+      if (this.skippedSplicer()) {
+        this.readList(out, (mode === MODE_COL ? (lvl + 1) : lvl), MODE_ROW)
+        mode = MODE_BOL
+        continue
+      }
+
+      const val = this.readToken()
+      if (isNil(val)) return
+
+      if (mode === MODE_COL) {
+        const buf = [val]
+        this.readList(buf, lvl + 1, MODE_ROW)
+        nodeSpanSet(buf, this.spanSince(start))
+        out.push(buf)
+        mode = MODE_BOL
+        continue
+      }
+
+      out.push(val)
+      mode = MODE_ROW
+    }
+  }
+
+  readToken() {
+    if (!this.hasMore()) return undefined
+
+    return (
+      undefined
+      ?? this.readBigInt()
+      ?? this.readFloat()
+      ?? this.readStrBacktick()
+      ?? this.readStrDouble()
+      ?? this.readSym()
+      ?? panic(this.errUnrec())
+    )
+  }
+
+  /*
+  Needs a better name. Tries to read any space. Returns true if a newline
+  was read. Returns false if no newline was read.
+  */
+  readAnySpace() {
+    while (this.hasMore()) {
+      const char = this.headChar()
+      this.reqNotTab(char)
+
+      if (isSpace(char)) {
+        this.pos++
+        continue
+      }
+
+      if (isNewline(char)) {
+        this.pos++
+        return true
+      }
+
+      break
+    }
+    return false
+  }
+
+  // Returns `true` in case of un-indent.
+  readIndent(prev) {
+    reqInt(prev)
+
+    const src = this.src
+    let pos = this.pos
+    let next = 0
+
+    for (;;) {
+      if (src.slice(pos).startsWith(INDENT)) {
+        next++
+        pos += INDENT.length
+        continue
+      }
+
+      const char = src[pos]
+      if (isNewline(char)) {
+        next = 0
+        pos++
+        continue
+      }
+
+      this.reqNotTab(char)
+      if (isSpace(char)) throw this.err(`indentation not divisible by ${show(INDENT)}`)
+      break
+    }
+
+    if (next > prev) throw this.err(`unexpected indentation increase`)
+    if (next < prev) return true
+    this.pos = pos
+    return false
+  }
+
+  skippedLister() {return this.skippedPrefix(LISTER) && (this.reqDelim(), true)}
+  skippedSplicer() {return this.skippedPrefix(SPLICER) && (this.reqDelim(), true)}
+
+  // SYNC[delim].
+  reqDelim() {
+    const char = this.headChar()
+    if (!char || isAnySpace(char)) return
+    throw this.errUnrec(`expected whitespace, delimiter, or EOF`)
+  }
+
+  reqNotTab(val) {
+    if (isTab(val)) throw this.err(`unexpected tab character`)
+    return val
+  }
 }
 
 export const nodeSpans = new WeakMap()
@@ -560,8 +730,8 @@ used by imports, and to implement module caching and reuse.
 export class Module {
   /*
   Short for "source path". Must be absolute; see `reqCanonicalModulePath`.
-  In Jisp modules, must end with `.jisp`. In other modules, must be equal
-  to the target path.
+  In Jisp modules, must end with an extension matching one of the registered
+  dialects. In other modules, must be equal to the target path.
   */
   srcPath = undefined /* : reqCanonicalModulePath */
 
@@ -574,36 +744,58 @@ export class Module {
   tarPath = undefined /* : reqCanonicalModulePath */
 
   /*
-  Short for "source dependencies". Must be used for dependencies which are
-  imported by the current module's source file (at macro time), but not
-  necessarily by its target file (at runtime). The most typical examples
-  are imports via the macros `use.mac` and `declare`.
+  Short for "source dependencies". Must be used for dependencies
+  which are imported by the current module's source file (at macro time),
+  but not necessarily by its target file (at runtime).
+
+  The most typical examples are imports via the macros `use.mac` and `declare`.
   */
   srcDeps = undefined /* : Set<reqCanonicalModulePath> */
 
   /*
-  Short for "target dependencies". Must be used for dependencies which
-  are imported by the current module's target file (at runtime), but not
-  necessarily by its source file (at macro time). The most typical example
-  is imports via the macro `use`.
+  Short for "target dependencies". Must be used for dependencies
+  which are imported by the current module's target file (at runtime),
+  but not necessarily by its source file (at macro time).
+
+  The most typical example is imports via the macro `use`.
   */
   tarDeps = undefined /* : Set<reqCanonicalModulePath> */
+
+  /*
+  Short for "source". May be used to provide source code. If missing, the
+  module attempts to read source from the filesystem (via `ctx[symFs]`).
+  */
+  src = undefined /* : string */
 
   // Short for "target". Stores compiled code.
   tar = undefined /* : string */
 
+  /*
+  In Jisp modules using the delimiter-based dialect, should be `DelimReader`.
+  In Jisp modules using the indent-based dialect, should be `IndentReader`.
+  Jisp users are free to define new dialects with new readers.
+  In other modules, must be nil.
+  */
+  Reader = undefined /* : DelimReader | IndentReader | ??? */
+
   // Short for "primary key".
   pk() {return this.srcPath}
 
-  reqTarPath() {return this.tarPath ?? panic(Error(`missing target path in module ${show(this.srcPath || this)}`))}
+  reqTarPath() {
+    return this.tarPath ?? panic(Error(`missing target path in module ${show(this.srcPath || this)}`))
+  }
 
   init(ctx) {
-    this.tarPath ||= ctxSrcToTar(ctx, this.srcPath)
+    const src = this.srcPath
+    if (src) {
+      this.Reader ??= ctxDialect(ctx, src)?.Reader
+      this.tarPath ||= this.isJispDialect() ? ctxSrcToTar(ctx, src) : src
+    }
     return this
   }
 
   initAsync(ctx) {
-    return this.#init ??= this.isJispModule() ? this.initJispModule(ctx) : this.init(ctx)
+    return this.#init ??= this.isJispDialect() ? this.initJispModule(ctx) : this.init(ctx)
   }
   #init = undefined
 
@@ -615,7 +807,10 @@ export class Module {
   }
 
   ready(ctx) {
-    return this.#ready ??= this.isJispModule() ? this.readyJispModule(ctx) : this
+    return this.#ready ??= (
+      this.init(ctx),
+      (this.isJispDialect() ? this.readyJispModule(ctx) : this)
+    )
   }
   #ready = undefined
 
@@ -634,9 +829,9 @@ export class Module {
 
   async make(ctx) {
     try {
-      const src = await ctxReqFs(ctx).read(reqToUrl(this.srcPath))
-      const out = await this.readMacroCompile(ctx, src)
-      await this.commit(ctx, out)
+      this.src ??= await ctxReqFs(ctx).read(reqToUrl(this.srcPath))
+      this.tar ??= await this.compiled(ctx, this.src)
+      await this.commit(ctx, this.tar)
     }
     catch (err) {
       reqErr(err).message = joinParagraphs(err.message, this.context())
@@ -644,8 +839,6 @@ export class Module {
       throw err
     }
   }
-
-  get Reader() {return Reader}
 
   async compiled(ctx, src) {
     this.srcDeps = undefined
@@ -656,9 +849,8 @@ export class Module {
   }
 
   commit(ctx, body) {
-    this.tar = body
     if (ctx?.[symTar]) return this.write(ctx, body)
-    this.tarPath ||= blobUrl(body)
+    this.tarPath ??= blobUrl(body)
     return undefined
   }
 
@@ -729,7 +921,7 @@ export class Module {
   files used as dependencies of Jisp files. It would require parsing JS.
   */
   async isUpToDate(ctx) {
-    if (!this.isJispModule()) return true
+    if (!this.isJispDialect()) return true
 
     const srcTime = optFin(await this.optSrcTime(ctx))
     if (isNil(srcTime)) return false
@@ -768,7 +960,7 @@ export class Module {
 
   srcTime = undefined /* : isFin | Promise<isFin> */
   optSrcTime(ctx) {
-    if (!this.isJispModule()) return undefined
+    if (!this.isJispDialect()) return undefined
     return this.srcTime ??= this.srcTimeAsync(ctx)
   }
 
@@ -781,7 +973,7 @@ export class Module {
 
   async tarTimeAsync(ctx) {
     const out = await ctx?.[symFs]?.timestampOpt?.(optToUrl(this.tarPath))
-    if (this.isJispModule()) return optFin(out)
+    if (this.isJispDialect()) return optFin(out)
     return laxFin(out)
   }
 
@@ -802,7 +994,7 @@ export class Module {
     ])))
   }
 
-  isJispModule() {return isJispModulePath(this.srcPath)}
+  isJispDialect() {return !!this.Reader}
 
   context() {
     const src = this.srcPath
@@ -874,6 +1066,7 @@ export function rootCtx() {
   const ctx = Object.create(null)
   ctx[symRoot] = undefined
   ctx[symModules] = new Modules()
+  ctx[symDialects] = dialects()
   return ctx
 }
 
@@ -884,6 +1077,7 @@ macro code is free to invent its own symbolic keys for its own internal data.
 export const symRoot = Symbol.for(`jisp.root`)
 export const symModule = Symbol.for(`jisp.module`)
 export const symModules = Symbol.for(`jisp.modules`)
+export const symDialects = Symbol.for(`jisp.dialects`)
 export const symFs = Symbol.for(`jisp.fs`)
 export const symTar = Symbol.for(`jisp.tar`)
 export const symMain = Symbol.for(`jisp.main`)
@@ -1003,6 +1197,14 @@ export function ctxWithMixin(ctx) {
   ctx = Object.create(ctx)
   ctx[symMixin] = undefined
   return ctx
+}
+
+export function ctxDialect(ctx, path) {
+  if (!optStr(path)) return undefined
+  return ctx?.[symDialects]?.find(function test(val) {
+    const ext = val.extension
+    return isValidStr(ext) && path.endsWith(ext)
+  })
 }
 
 export function importSrcUrl(ctx, src) {
@@ -1216,7 +1418,6 @@ export function reqArityBetween(len, min, max) {
   throw SyntaxError(`expected between ${min} and ${max} inputs, got ${len} inputs`)
 }
 
-export const fileExtJisp = `.jisp`
 export const schemeJisp = `jisp:`
 export const fileExtJs = `.mjs`
 
@@ -1241,21 +1442,10 @@ export function reqCanonicalModulePath(val) {
   throw Error(`expected canonical module path, got ${show(val)}`)
 }
 
-export function isJispPath(val) {
-  return isStr(val) && val.endsWith(fileExtJisp)
-}
-
-export function isJispModulePath(val) {
-  return isJispPath(val) && isStrWithScheme(val)
-}
-
 export function ctxSrcToTar(ctx, src) {
-  reqStr(src)
-  if (!isJispModulePath(src)) return src
-
+  if (!optStr(src)) return undefined
   const tar = ctx[symTar]
   if (!tar) return undefined
-
   return srcToTar(src, tar, ctx[symMain])
 }
 
@@ -1498,7 +1688,6 @@ export function trunc(src, len, suf) {
     prev = char.length
     ind += prev
   }
-
   return src
 }
 
@@ -1671,3 +1860,9 @@ function commonPrefixLen(one, two) {
   while (++len < one.length && len < two.length && Object.is(one[len], two[len])) {}
   return len
 }
+
+function isAnySpace(val) {return isLineSpace(val) || isNewline(val)}
+function isLineSpace(val) {return isSpace(val) || isTab(val)}
+function isSpace(val) {return val === ` `}
+function isTab(val) {return val === `\t` || val === `\v`}
+function isNewline(val) {return val === `\r` || val === `\n`}

@@ -1,0 +1,212 @@
+%YAML 1.2
+---
+version: 2
+extends: Packages/jisp/jisp_base.sublime-syntax
+scope: source.jisp.indent
+file_extensions: [jis]
+
+variables:
+  # SYNC[lister].
+  lister: ':'
+
+  # SYNC[splicer].
+  splicer: "'"
+
+contexts:
+  main:
+    - match: '{{space}}'
+    - include: lister-match
+
+    # By default (without any strange macros involved), numbers and string in
+    # list head positions are guaranteed to cause runtime exceptions. It's
+    # possible to write a macro that would interpret such lists in some other
+    # way, but we don't plan to. Accidental use of numbers and strings on their
+    # own lines is likely to be a common error in this dialect. Scoping them as
+    # illegal should help avoid that.
+    - match: (?=\d|{{string_backtick_delim}}|{{string_double_delim}})
+      push: req-delim-pop
+
+    - include: sym-call-match
+
+    - match: (?=\S)
+      push: row-pop
+
+  row-pop:
+    - include: newline-pop
+    - include: lister-pop
+    - include: row-match
+
+  row-match:
+    - include: number-match
+    - include: string-match
+    - include: sym-match
+    - include: punct-match
+
+  punct-match:
+    - include: lister-match
+    - include: splicer-match
+
+  lister-match:
+    - match: '{{lister}}'
+      scope: storage.modifier.jisp
+      push: req-delim-pop
+
+  lister-pop:
+    - match: '{{lister}}'
+      scope: storage.modifier.jisp
+      set: req-delim-pop
+
+  splicer-match:
+    - match: '{{splicer}}'
+      scope: storage.modifier.jisp
+      push: req-delim-pop
+
+  splicer-pop:
+    - match: '{{splicer}}'
+      scope: storage.modifier.jisp
+      set: req-delim-pop
+
+  sym-call-match:
+    - include: call-known-maybe-match
+    - include: call-unknown-maybe-match
+    - include: sym-namespace-match
+
+  call-known-maybe-match:
+    - include: call-use-match
+    - include: call-const-match
+    - include: call-let-match
+    - include: call-func-match
+    - include: call-fn-match
+    - include: call-meth-match
+    - include: call-class-match
+
+  call-unknown-maybe-match:
+    - match: '{{sym_segment_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
+      scope: variable.function.jisp
+      push: [row-pop, req-delim-pop]
+
+  call-use-match:
+    - match: '{{sym_segment_break_begin}}use{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [use-decl-pop, use-addr-pop, sym-rest-pop]
+
+  # Semi-placeholder. Instead of special-case string support, we should pop an
+  # arbitrary expression here.
+  use-addr-pop:
+    - include: newline-pop
+
+    - match: '({{string_backtick_delim}})[^{{string_backtick_delim}}]*({{string_backtick_delim}})(?!{{string_backtick_delim}})'
+      scope: string.quoted.other.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+      set: req-delim-pop
+
+    - match: '({{string_double_delim}})[^{{string_double_delim}}]*({{string_double_delim}})(?!{{string_double_delim}})'
+      scope: string.quoted.double.jisp
+      captures:
+        1: punctuation.definition.string.begin.jisp
+        2: punctuation.definition.string.end.jisp
+      set: req-delim-pop
+
+    - include: nonblank-row-pop
+
+  use-decl-pop:
+    - include: newline-pop
+    - match: '{{ident_unqual}}'
+      scope: meta.binding.name.jisp variable.other.jisp
+      set: req-delim-pop
+    - match: '{{sym_unqual}}'
+      scope: keyword.operator.jisp
+      set: req-delim-pop
+    - include: nonblank-row-pop
+
+  call-const-match:
+    - match: '{{sym_segment_break_begin}}const{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [param-or-params-pop, sym-rest-pop]
+
+  call-let-match:
+    - match: '{{sym_segment_break_begin}}let{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [param-or-params-pop, sym-rest-pop]
+
+  call-func-match:
+    - match: '{{sym_segment_break_begin}}func{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [func-name-or-func-name-with-params-pop, sym-rest-pop]
+
+  # Somewhat similar to `param-or-params-pop`, but scopes the first symbol as a
+  # function name. These contexts are related but not symmetric.
+  func-name-or-func-name-with-params-pop:
+    - match: '{{sym_unqual}}'
+      scope: entity.name.function.jisp
+      set: [row-pop, req-delim-pop]
+    - match: \n
+      set: func-name-and-param-or-params-pop
+    - include: nonblank-row-pop
+
+  # Somewhat similar to `param-call-and-row-pop`, but scopes the first symbol as
+  # a function name rather than a call.
+  func-name-and-param-or-params-pop:
+    - include: newline-pop
+    - include: punct-match
+    - match: '{{sym_unqual}}'
+      scope: entity.name.function.jisp
+      set: [param-row-pop, req-delim-pop]
+    - include: nonblank-row-pop
+
+  # Somewhat similar to `func-name-or-func-name-with-params-pop`, but scopes
+  # the next symbol on the same line as a name, or switches into list mode
+  # where the first symbol is scoped as a call. These contexts are related
+  # but not symmetric.
+  param-or-params-pop:
+    - match: '{{ident_unqual}}'
+      scope: variable.parameter.jisp
+      set: [row-pop, req-delim-pop]
+    - match: \n
+      set: param-call-and-row-pop
+    - include: nonblank-row-pop
+
+  # Similar to `func-name-and-param-or-params-pop`, but scopes the list head,
+  # if any, as a call rather than a function name.
+  param-call-and-row-pop:
+    - include: newline-pop
+    - include: punct-match
+    - include: sym-namespace-match
+    - match: '[{{sym_segment_chars}}]+'
+      scope: variable.function.jisp
+      set: [param-row-pop, req-delim-pop]
+    - include: row-match
+
+  param-row-pop:
+    - include: newline-pop
+    - include: punct-match
+    - match: '{{ident_unqual}}'
+      scope: variable.parameter.jisp
+      push: req-delim-pop
+    - include: row-match
+
+  call-fn-match:
+    - match: '{{sym_segment_break_begin}}fn{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [row-pop, sym-rest-pop]
+
+  call-class-match:
+    - match: '{{sym_segment_break_begin}}class{{sym_segment_break_end}}'
+      scope: keyword.declaration.jisp
+      push: [class-name-pop, nonblank-pop, sym-rest-pop]
+
+  class-name-pop:
+    - match: '{{sym_unqual}}'
+      scope: entity.name.class.jisp
+      set: [row-pop, req-delim-pop]
+    - include: now-pop
+
+  newline-pop:
+    - match: \n
+      pop: 1
+
+  nonblank-row-pop:
+    - match: (?=\S)
+      set: row-pop

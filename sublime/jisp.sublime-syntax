@@ -1,95 +1,20 @@
 %YAML 1.2
 ---
 version: 2
-scope: source.jisp
+extends: Packages/jisp/jisp_base.sublime-syntax
+scope: source.jisp.delim
 file_extensions: [jisp]
 
 variables:
-  comment_delim: ;
-  comment_fence: '({{comment_delim}}{2,})(?!{{comment_delim}})'
-
-  string_backtick_delim: '`'
-  string_backtick_fence: '({{string_backtick_delim}}+)(?!{{string_backtick_delim}})'
-
-  string_double_delim: '"'
-  string_double_fence: '({{string_double_delim}}+)(?!{{string_double_delim}})'
-
-  char_escape: \\(?:.|\n)
-  accessor: \.
-  space: \s*
-  eol: (?:\n|$)
-
   # SYNC[delim].
   delim_chars: '\s\{\}\[\]\(\)'
 
-  # int_bin: '(?:[0-1][0-1_]*)'
-  # int_oct: '(?:[0-7][0-7_]*)'
-  int_dec: '(?:[0-9][0-9_]*)'
-  # int_hex: '(?:[0-9a-f][0-9a-f_]*)'
-
-  # SYNC[sym].
-  # Our reader should recognize any sequence of these characters as a symbol.
-  sym_chars: '{{accessor}}{{sym_segment_chars}}'
-
-  # SYNC[ident].
-  ident_chars: '\w\$'
-
-  # SYNC[oper].
-  oper_chars: "'~!@#%^&*:<>?/\\|=+-"
-
-  sym_segment_chars: '{{ident_chars}}{{oper_chars}}'
-  sym_unqual: '{{sym_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
-  ident_unqual: '{{sym_break_begin}}[{{ident_chars}}]+{{sym_break_end}}'
-  oper_unqual: '{{sym_break_begin}}[{{oper_chars}}]+{{sym_break_end}}'
-
-  sym_break_begin: (?<![{{sym_chars}}])
-  sym_break_end: (?![{{sym_chars}}])
-
-  sym_segment_break_begin: (?<![{{sym_segment_chars}}])
-  sym_segment_break_end: (?![{{sym_segment_chars}}])
-
-  ident_ord_param: '{{sym_break_begin}}([$])\d+{{sym_segment_break_end}}'
-
 contexts:
-  prototype:
-    - include: comment-match
-
-  # Should match `Tokenizer`.
   main:
     - include: delim-match
     - include: number-match
     - include: string-match
     - include: sym-match
-
-  comment-match:
-    - include: comment-fenced-match
-
-  comment-fenced-match:
-    - match: '{{comment_fence}}'
-      scope: comment.block.jisp punctuation.definition.comment.begin.jisp
-      push: [req-delim-pop, comment-block-meta, comment-fenced-pop]
-
-  comment-fenced-pop:
-    - meta_include_prototype: false
-    - match: \1
-      scope: comment.block.jisp punctuation.definition.comment.end.jisp
-      pop: 1
-    - include: comment-markup
-
-  comment-block-meta:
-    - meta_content_scope: comment.block.jisp
-    - include: now-pop
-
-  comment-markup:
-    - include: comment-heading-match
-
-  # Known limitation: this doesn't match headings placed between comment
-  # delimiters on a single line.
-  comment-heading-match:
-    - match: '^{{space}}((#+)\s+\S.*)(?:{{eol}})'
-      captures:
-        1: markup.heading.jisp
-        2: punctuation.definition.heading.begin.jisp
 
   delim-match:
     - include: braces-match
@@ -156,161 +81,6 @@ contexts:
     - meta_content_scope: meta.block.jisp meta.parens.jisp
     - include: now-pop
 
-  accessor-match:
-    - match: '{{accessor}}'
-      scope: punctuation.accessor.jisp
-
-  accessor-pop-now:
-    - match: '{{accessor}}'
-      scope: punctuation.accessor.jisp
-      pop: 1
-    - include: now-pop
-
-  number-match:
-    - include: number-bigint-match
-    - include: number-dec-match
-
-  number-bigint-match:
-    - match: '(-)?{{int_dec}}(n)'
-      scope: constant.numeric.jisp
-      captures:
-        1: keyword.operator.arithmetic.jisp
-        2: constant.numeric.suffix.jisp
-      push: req-delim-pop
-
-  # Must match `Num.regex`.
-  number-dec-match:
-    - include: number-dec-frac-match
-    - include: number-dec-int-match
-
-  number-dec-frac-match:
-    - match: '(-)?{{int_dec}}(\.){{int_dec}}'
-      scope: constant.numeric.jisp
-      captures:
-        1: keyword.operator.arithmetic.jisp
-        2: punctuation.separator.decimal.jisp
-      push: req-delim-pop
-
-  number-dec-int-match:
-    - match: '(-)?{{int_dec}}'
-      scope: constant.numeric.jisp
-      captures:
-        1: keyword.operator.arithmetic.jisp
-      push: req-delim-pop
-
-  string-match:
-    - include: string-backtick-match
-    - include: string-double-match
-
-  string-backtick-match:
-    - include: string-backtick-empty-match
-    - include: string-backtick-fenced-match
-
-  # This special case matches two quotes with no other content, treating it as
-  # an empty string. This means we won't be treating it as an opening fence.
-  string-backtick-empty-match:
-    - match: '({{string_backtick_delim}})({{string_backtick_delim}})(?!{{string_backtick_delim}})'
-      scope: string.quoted.other.jisp
-      captures:
-        1: punctuation.definition.string.begin.jisp
-        2: punctuation.definition.string.end.jisp
-      push: req-delim-pop
-
-  string-backtick-fenced-match:
-    - match: '{{string_backtick_fence}}'
-      scope: string.quoted.other.jisp punctuation.definition.string.begin.jisp
-      push: [req-delim-pop, string-backtick-meta, string-backtick-pop]
-
-  string-backtick-pop:
-    - meta_include_prototype: false
-    - match: \1
-      scope: punctuation.definition.string.end.jisp
-      pop: 1
-
-  string-backtick-meta:
-    - meta_content_scope: string.quoted.other.jisp
-    - include: now-pop
-
-  string-double-match:
-    - include: string-double-empty-match
-    - include: string-double-fenced-match
-
-  # This special case matches two quotes with no other content, treating it as
-  # an empty string. This means we won't be treating it as an opening fence.
-  string-double-empty-match:
-    - match: '({{string_double_delim}})({{string_double_delim}})(?!{{string_double_delim}})'
-      scope: string.quoted.other.jisp
-      captures:
-        1: punctuation.definition.string.begin.jisp
-        2: punctuation.definition.string.end.jisp
-      push: req-delim-pop
-
-  string-double-fenced-match:
-    - match: '{{string_double_fence}}'
-      scope: string.quoted.double.jisp punctuation.definition.string.begin.jisp
-      push: [req-delim-pop, string-double-meta, string-double-pop]
-
-  string-double-pop:
-    - meta_include_prototype: false
-    - include: string-escape-match
-    - match: \1
-      scope: punctuation.definition.string.end.jisp
-      pop: 1
-
-  string-double-meta:
-    - meta_content_scope: string.quoted.double.jisp
-    - include: now-pop
-
-  string-escape-match:
-    - match: '{{char_escape}}'
-      scope: constant.character.escape.jisp
-
-  sym-match:
-    - include: ident-constant-match
-    - include: ident-ord-param-match
-    - match: (?=[{{sym_chars}}])
-      push: sym-rest-pop
-
-  # Unlike most languages, Jisp does not have any keywords or reserved words,
-  # and it's possible for these names to refer to something other than the
-  # built-in constants. However, the vast majority of code is expected to
-  # simply `[declare globals]` and never redeclare these names.
-  #
-  # This includes `void` because the `void` macro exported by our prelude module
-  # supports the "bare" mode which compiles to `undefined`, and we assume that
-  # if anyone redeclares `void`, the redeclaration will have similar behaviors.
-  # Note that `void` is a keyword in JS, which means the user is prevented from
-  # accidentally masking it with a regular declaration.
-  ident-constant-match:
-    - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_segment_break_end}}'
-      scope: constant.language.jisp
-      push: sym-rest-pop
-
-  ident-ord-param-match:
-    - match: '{{ident_ord_param}}'
-      scope: variable.parameter.jisp
-      captures:
-        1: storage.modifier.jisp
-      push: sym-rest-pop
-
-  sym-namespace-match:
-    - include: accessor-match
-    - match: '{{ident_ord_param}}(?={{accessor}})'
-      scope: variable.parameter.jisp
-      captures:
-        1: storage.modifier.jisp
-    - match: '[{{sym_segment_chars}}]+(?={{accessor}})'
-      scope: variable.other.jisp
-
-  sym-rest-pop:
-    - include: accessor-match
-    - match: '[{{oper_chars}}]+{{sym_segment_break_end}}'
-      scope: keyword.operator.jisp
-    - match: '[{{sym_segment_chars}}]+'
-      scope: variable.other.jisp
-    - match: ''
-      set: req-delim-pop
-
   list-head-pop:
     - include: call-known-maybe-pop
     - include: call-unknown-maybe-pop
@@ -355,11 +125,11 @@ contexts:
     - include: nonblank-pop
 
   use-decl-pop:
-    - match: '{{sym_break_begin}}\*{{sym_break_end}}'
-      scope: keyword.operator.jisp
-      set: req-delim-pop
     - match: '{{ident_unqual}}'
       scope: meta.binding.name.jisp variable.other.jisp
+      set: req-delim-pop
+    - match: '{{sym_unqual}}'
+      scope: keyword.operator.jisp
       set: req-delim-pop
     - include: nonblank-pop
 
@@ -392,7 +162,7 @@ contexts:
 
   func-name-pop:
     - include: sym-namespace-match
-    - match: '[{{sym_segment_chars}}]+'
+    - match: '{{sym_unqual}}'
       scope: entity.name.function.jisp
       set: req-delim-pop
     - include: now-pop
@@ -463,7 +233,7 @@ contexts:
 
   class-name-pop:
     - include: sym-namespace-match
-    - match: '[{{sym_segment_chars}}]+'
+    - match: '{{sym_unqual}}'
       scope: entity.name.class.jisp
       set: req-delim-pop
     - include: now-pop

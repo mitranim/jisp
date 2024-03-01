@@ -51,7 +51,7 @@ t.test(function test_module_implicit_relative() {
   t.is(mod.tarPath, undefined)
   mod.init(ctx)
   t.is(mod.tarPath, path)
-  t.no(mod.isJispModule())
+  t.no(mod.isJispDialect())
 })
 
 await t.test(async function test_module_non_jisp_unreachable() {
@@ -66,7 +66,7 @@ await t.test(async function test_module_non_jisp_unreachable() {
   t.is(mod.tarPath, undefined)
   mod.init(ctx)
   t.is(mod.tarPath, path)
-  t.no(mod.isJispModule())
+  t.no(mod.isJispDialect())
 
   t.is((await mod.timeMax(ctx)), 0)
   await mod.ready(ctx)
@@ -85,7 +85,7 @@ await t.test(async function test_module_non_jisp_reachable_missing() {
   t.is(mod.tarPath, undefined)
   mod.init(ctx)
   t.is(mod.tarPath, path)
-  t.no(mod.isJispModule())
+  t.no(mod.isJispDialect())
 
   t.is((await mod.timeMax(ctx)), 0)
   await mod.ready(ctx)
@@ -104,7 +104,7 @@ await t.test(async function test_module_non_jisp_reachable_existing() {
   t.is(mod.tarPath, undefined)
   mod.init(ctx)
   t.is(mod.tarPath, path)
-  t.no(mod.isJispModule())
+  t.no(mod.isJispDialect())
 
   const time = await mod.timeMax(ctx)
   t.is(time, await ti.fsReadOnly.timestamp(new URL(path)))
@@ -116,11 +116,11 @@ await t.test(async function test_module_jisp_reachable_missing() {
   const mods = c.ctxReqModules(ctx)
   const url = new URL(`missing_file.jisp`, import.meta.url)
   const path = url.href
-  const mod = await mods.getOrMake(path)
+  const mod = await mods.getOrMake(path).init(ctx)
 
   t.is(mod.pk(), path)
   t.is(mod.srcPath, path)
-  t.ok(mod.isJispModule())
+  t.ok(mod.isJispDialect())
 
   await ti.fail(async () => mod.ready(ctx), `No such file or directory (os error 2), stat '${url.pathname}'`)
 })
@@ -142,7 +142,7 @@ await t.test(async function test_module_jisp_without_dependencies() {
   t.is(mod.tarPath, undefined)
   mod.init(ctx)
   t.is(mod.tarPath, tar)
-  t.ok(mod.isJispModule())
+  t.ok(mod.isJispDialect())
 
   t.no((await mod.isUpToDate(ctx)))
   ti.reqFinPos(await mod.optSrcTime(ctx))
@@ -193,8 +193,9 @@ await t.test(async function test_module_init_from_meta() {
   const mod = new c.Module()
   mod.srcPath = srcPath
   mod.tarPath = tarPath
+  mod.init(ctx)
 
-  t.ok(mod.isJispModule())
+  t.ok(mod.isJispDialect())
   await mod.initAsync(ctx)
 
   t.is(mod.srcPath, srcPath)

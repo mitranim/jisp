@@ -924,21 +924,6 @@ const two = "three"
     `missing declaration of "break"`,
   )
 
-  ti.fail(
-    () => p.loop.while.call(ctx, sym(`continue`)),
-    `missing declaration of "continue"`,
-  )
-
-  ti.fail(
-    () => p.loop.while.call(ctx, [], [sym(`break`)]),
-    `"break" must be mentioned, not called; loop labels are not currently supported`,
-  )
-
-  ti.fail(
-    () => p.loop.while.call(ctx, [], [sym(`continue`)]),
-    `"continue" must be mentioned, not called; loop labels are not currently supported`,
-  )
-
   t.is(
     p.loop.while.call(ctx, [], sym(`break`)).compile(),
     `while (undefined) {
@@ -946,10 +931,37 @@ break
 }`)
 
   t.is(
+    p.loop.while.call(ctx, [], [sym(`break`)]).compile(),
+    `while (undefined) {
+break
+}`)
+
+  ti.fail(
+    () => p.loop.while.call(ctx, [], [sym(`break`), 10]),
+    `expected no inputs, got 1 inputs`,
+  )
+
+  ti.fail(
+    () => p.loop.while.call(ctx, sym(`continue`)),
+    `missing declaration of "continue"`,
+  )
+
+  t.is(
     p.loop.while.call(ctx, [], sym(`continue`)).compile(),
     `while (undefined) {
 continue
 }`)
+
+  t.is(
+    p.loop.while.call(ctx, [], [sym(`continue`)]).compile(),
+    `while (undefined) {
+continue
+}`)
+
+  ti.fail(
+    () => p.loop.while.call(ctx, [], [sym(`continue`), 10]),
+    `expected no inputs, got 1 inputs`,
+  )
 
   t.is(
     p.loop.while.call(ctx, 10, 20, sym(`break`), 30).compile(),
