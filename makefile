@@ -67,16 +67,16 @@ doc.w:
 	$(MAKE_PAR) doc.srv doc.build.w
 
 doc.srv:
-	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_srv.jisp
+	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_srv.jis
 
 doc.build: export JISP_TARGET := $(DOC_TAR_DIR)
 doc.build: export JISP_ERRORS :=
 doc.build:
-	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_build.jisp
+	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_build.jis
 	$(OK)
 
 doc.build.w:
-	$(WATCH) -e=jisp -- $(MAKE_SEQ) doc.build verb=$(or $(verb),true)
+	$(WATCH) -e=jisp,jis -- $(MAKE_SEQ) doc.build verb=$(or $(verb),true)
 
 clean:
 	$(call RM_DIR,.tmp_test)
@@ -89,7 +89,7 @@ mock.deno:
 	$(OK)
 
 mock.deno.w:
-	$(WATCH) -e=jisp -- $(MAKE_SEQ) mock.deno verb=$(or $(verb),true)
+	$(WATCH) -e=jisp,jis -- $(MAKE_SEQ) mock.deno verb=$(or $(verb),true)
 
 mock.node: export JISP_TARGET := $(TAR_DIR)
 mock.node:
@@ -97,4 +97,4 @@ mock.node:
 	$(OK)
 
 mock.node.w:
-	$(WATCH) -e=jisp -- $(MAKE_SEQ) mock.node verb=$(or $(verb),true)
+	$(WATCH) -e=jisp,jis -- $(MAKE_SEQ) mock.node verb=$(or $(verb),true)

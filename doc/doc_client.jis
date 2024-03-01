@@ -1,0 +1,227 @@
+use.mac `jisp:prelude.mjs` *
+use.mac `jisp:debug.mjs` debug
+use `jisp:core.mjs` c
+use `jisp:prelude.mjs` p
+declare globals
+declare domGlobals
+
+func
+  def cls name
+  customElements.define name cls
+
+class
+  PseudoFs Map
+
+  prototype
+    func
+      read path
+      c.reqInst path URL
+      set path : c.reqCanonicalModulePath path.href
+      ??
+        this.get path
+        throw : Error : + `missing file: ` : c.show path
+
+func
+  last src
+  get src : - src.length 1
+
+func
+  arr src
+  if
+    isSome src
+    Array.from src
+    @
+
+func
+  map src ... arg
+  if
+    isSome src
+    Array.prototype.map.apply src arg
+    @
+
+func
+  lines src
+  if src
+    src.split : regexp `\r\n|\r|\n` `g`
+    @
+
+func
+  isLineOpen src
+  or
+    src.endsWith `{`
+    src.endsWith `[`
+    src.endsWith `(`
+
+func
+  isLineClose src
+  or
+    src.startsWith `}`
+    src.startsWith `]`
+    src.startsWith `)`
+
+;;
+Primitive JS formatter. Intended only for the output of our compiler, which
+follows very simple and consistent rules which we can exploit here.
+
+TODO consider moving to core. Could be a hazard. This is unsuitable for
+arbitrary JS code in the general case. Will accidentally modify the contents
+of multiline strings, mispace comments, etc.
+;;
+func
+  fmt src
+
+  const INDENT `  `
+  let lvl 0
+  let prev ``
+  const buf : @
+
+  loop.iter
+    set src : lines src
+    set src : src.trim
+    when
+      not src
+      set prev src
+      when
+        last buf
+        buf.push src
+      continue
+
+    const open : isLineOpen src
+    const close : isLineClose src
+    when close : -- lvl
+
+    when
+      and open
+        last buf
+        not : isLineOpen prev
+      buf.push ``
+
+    when
+      and close
+        not : last buf
+        or
+          isLineOpen prev
+          isLineClose prev
+      buf.pop
+
+    buf.push : +
+      INDENT.repeat lvl
+      ' src
+    when close : buf.push ``
+    when open : ++ lvl
+    set prev src
+
+  buf.join "\n"
+
+func textareaResize
+  set this.rows : ??= this.dataset.min : or
+    bitOr this.rows
+    ' 2
+
+  loop.while
+    and
+      > this.scrollHeight this.clientHeight
+      <= this.rows 64
+    ++ this.rows
+  void
+
+class
+  FmtedModule c.Module
+  prototype
+    func.async
+      compiled ctx src
+      fmt : await : super.compiled ctx src
+
+class
+  Modules c.Modules
+  prototype
+    func.get Module FmtedModule
+
+func makeCtx
+  const ctx : c.rootCtx
+  set
+    get ctx c.symModules
+    new Modules
+  set
+    get ctx c.symFs
+    new PseudoFs
+  set ctx.use p.use
+  ' ctx
+
+class
+  FileArea HTMLElement
+  prototype
+    func.get head : this.querySelector `code`
+    func.get body : this.querySelector `textarea`
+    func.get path head.textContent
+    func.get content body.value
+
+    func
+      setContent val
+      set body.textContent val
+      this.classList.remove `error`
+
+    func
+      setErr err
+      setContent : or err.stack err
+      this.classList.add `error`
+
+    func connectedCallback
+      set body.oninput textareaResize
+def FileArea `file-area`
+
+class
+  FilePairs HTMLElement
+  prototype
+    func.async
+      make run
+      const ctx : makeCtx
+      const fs : c.ctxReqFs ctx
+      const mods : c.ctxReqModules ctx
+      const pairs : this.querySelectorAll `file-pair`
+      let errs 0
+
+      loop.iter
+        const pair pairs
+        const
+          @ src tar
+          pair.querySelectorAll `file-area`
+        const key : String : new URL src.path `blob:/`
+        fs.set key src.content
+
+        const mod : mods.getOrMake key
+
+        try
+          catch err
+            console.error err
+            tar.setErr err
+            ++ errs
+          await : mod.ready ctx
+          tar.setContent mod.tar
+          when run : await : use.async : mod.reqTarPath
+
+      not errs
+
+    func
+      hint show
+      const hint : this.querySelectorAll `[data-role=hint]`
+      when hint : set hint.hidden : not show
+
+    func.async run
+      console.clear
+      hint
+      hint : await : make true
+
+    func
+      onKeyDown eve
+      when
+        and
+          eq eve.key `Enter`
+          not eve.shiftKey
+          or eve.ctrlKey eve.metaKey
+        run
+
+    func connectedCallback
+      set this.onkeydown onKeyDown
+      make
+def FilePairs `file-pairs`

@@ -66,20 +66,21 @@
 <file-pairs>
   <file-pair>
     <file-area>
-      <code>mac.jisp</code>
-      <textarea rows="12" placeholder="[use.mac `jisp:prelude.mjs` *]">[use.mac `jisp:prelude.mjs` *]
-[use.mac `jisp:debug.mjs` debug]
-[use `jisp:core.mjs` c]
+      <code>mac.jis</code>
+      <textarea rows="12" placeholder="use.mac `jisp:prelude.mjs` *">use.mac `jisp:prelude.mjs` *
+use.mac `jisp:debug.mjs` debug
+use `jisp:core.mjs` c
 
-[debug.compiling]
+debug.compiling
 
-[func [prn src]
-  [list
-    [c.raw `console.log`]
-    [+ [c.reprNode src] `:`]
-    src
-  ]
-]
+func
+  prn src
+  list
+    c.raw `console.log`
+    +
+      c.reprNode src
+      ' `:`
+    ' src
 </textarea>
     </file-area>
     <file-area>
@@ -90,14 +91,14 @@
 
   <file-pair>
     <file-area>
-      <code>util.jisp</code>
-      <textarea class="code" rows="12" placeholder="[use.mac `jisp:prelude.mjs` *]">[use.mac `jisp:prelude.mjs` *]
-[use.mac `jisp:debug.mjs` debug]
-[use `jisp:core.mjs` c]
+      <code>util.jis</code>
+      <textarea class="code" rows="12" placeholder="use.mac `jisp:prelude.mjs` *">use.mac `jisp:prelude.mjs` *
+use.mac `jisp:debug.mjs` debug
+use `jisp:core.mjs` c
 
-[debug.compiling]
+debug.compiling
 
-[func someFunc `some_value`]
+func someFunc `some_value`
 </textarea>
     </file-area>
     <file-area>
@@ -108,18 +109,20 @@
 
   <file-pair>
     <file-area>
-      <code>main.jisp</code>
-      <textarea class="code" rows="12" placeholder="[use.mac `jisp:prelude.mjs` *]">[use.mac `jisp:prelude.mjs` *]
-[use.mac `jisp:debug.mjs` debug]
-[use.mac `./mac.jisp` m]
-[use `./util.jisp` u]
-[declare globals]
+      <code>main.jis</code>
+      <textarea class="code" rows="12" placeholder="use.mac `jisp:prelude.mjs` *">use.mac `jisp:prelude.mjs` *
+use.mac `jisp:debug.mjs` debug
+use.mac `./mac.jis` m
+use `./util.jis` u
+declare globals
 
-[debug.compiling]
+debug.compiling
 
-[console.log `hello world!`]
-[console.log `imported utility module:` u]
-[m.prn [list 10 20 30]]
+console.log `hello world!`
+console.log `imported utility module:` u
+
+m.prn
+  list 10 20 30
 </textarea>
     </file-area>
     <file-area>
