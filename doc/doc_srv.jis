@@ -23,7 +23,7 @@ func
       src.endsWith `.js`
       src.endsWith `.mjs`
     ' `application/javascript`
-  void
+  ' void
 
 func
   methodNotAllowed meth path
@@ -68,7 +68,7 @@ func.async
     const eve : Deno.serveHttp conn
     const res : response eve.request
     eve.respondWith : res.catch errRes
-  void
+  ' void
 
 const lis : Deno.listen : # `port` PORT
 

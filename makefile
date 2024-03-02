@@ -14,7 +14,6 @@ CLEAR_LONG := $(if $(filter $(clear),true),--clear,)
 SRC_DIR := ./js
 TAR_DIR := .jisp_target
 DOC_SRC_DIR := doc
-DOC_TAR_DIR := .doc_target
 TEST_DIR := ./test
 TEST_FILE := $(or $(file),test.mjs)
 TEST := $(TEST_DIR)/$(TEST_FILE) --test=true $(VERB_LONG) $(RUN)
@@ -63,25 +62,12 @@ endif
 lint.fix:
 	$(ESLINT) --fix
 
-doc.w:
-	$(MAKE_PAR) doc.srv doc.build.w
-
 doc.srv:
 	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_srv.jis
-
-doc.build: export JISP_TARGET := $(DOC_TAR_DIR)
-doc.build: export JISP_ERRORS :=
-doc.build:
-	$(DENO) cli_deno.mjs $(DOC_SRC_DIR)/doc_build.jis
-	$(OK)
-
-doc.build.w:
-	$(WATCH) -e=jisp,jis -- $(MAKE_SEQ) doc.build verb=$(or $(verb),true)
 
 clean:
 	$(call RM_DIR,.tmp_test)
 	$(call RM_DIR,$(TAR_DIR))
-	$(call RM_DIR,$(DOC_TAR_DIR))
 
 mock.deno: export JISP_TARGET := $(TAR_DIR)
 mock.deno:

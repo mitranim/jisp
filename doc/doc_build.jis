@@ -1,2 +1,0 @@
-;; Causes the module to be built, but not executed. ;;
-use.resolve `./doc_client.jis`
