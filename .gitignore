@@ -9,6 +9,7 @@
 !/index.html
 !/cli_deno.mjs
 !/cli_node.mjs
+!/dom.mjs
 
 !/js
 !/doc
