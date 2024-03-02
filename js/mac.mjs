@@ -454,9 +454,7 @@ export function $const(tar, src) {
 $const.mac = constMac
 
 function errLhs(src) {
-  return SyntaxError(c.joinParagraphs(
-    `missing LHS in declaration or assignment`, c.nodeContext(src),
-  ))
+  return c.errWithNodeContext(SyntaxError(`missing LHS in declaration or assignment`), src)
 }
 
 export function constMac(key, val) {
@@ -840,15 +838,14 @@ export function macroListWith(ctx, src) {
       const key = head.description
       if (key in ctx) {
         try {return c.macroNode(ctx, ctx[key].apply(this, src.slice(1)), src)}
-        catch (err) {throw c.errWithContext(err, src)}
+        catch (err) {throw c.errWithNodeContext(err, src)}
       }
     }
   }
 
-  throw SyntaxError(c.joinParagraphs(
+  throw c.errWithNodeContext(SyntaxError(
     `expected list that begins with one of: ${keysIn(ctx).join(c.expressionSep)}; got ${c.show(src)}`,
-    c.nodeContext(src),
-  ))
+  ), src)
 }
 
 function keysIn(src) {
@@ -1048,10 +1045,9 @@ function paramHead(src) {
   if (c.isSymUnqual(src)) return src
   if (c.isArr(src) && c.isSymUnqual(src[0])) return src[0]
 
-  throw SyntaxError(c.joinParagraphs(
+  throw c.errWithNodeContext(SyntaxError(
     `expected an unqualified symbol or a list that begins with an unqualified symbol`,
-    c.nodeContext(src),
-  ))
+  ), src)
 }
 
 function paramTail(src) {

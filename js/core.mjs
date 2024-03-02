@@ -186,7 +186,7 @@ export class TokenReader extends Span {
   hasPrefix(pre) {return this.view().startsWith(reqStr(pre))}
   headChar() {return this.src[this.pos]}
   errUnrec(msg) {return this.err(`unrecognized syntax` + (msg ? (`; ` + msg) : ``))}
-  err(msg) {return SyntaxError(joinParagraphs(msg, this.context()))}
+  err(msg) {return errWithSrcContext(SyntaxError(msg), this.context())}
 }
 
 export class DelimReader extends TokenReader {
@@ -429,20 +429,36 @@ export function nodeWithSpan(node, span) {
   return node
 }
 
-export function nodeContext(src) {
-  const span = nodeSpan(src)
-  const out = span?.context()
-  if (out) return joinParagraphs(`source node context:`, out)
-  if (isFun(src)) return joinParagraphs(`source function:`, show(src))
-  return joinParagraphs(`source node:`, show(src))
-}
-
 /*
 TODO: consider also representing the local context object.
 May be useful for declaration-related errors.
 */
-export function errWithContext(err, src) {
-  reqErr(err).message = joinParagraphs(err.message, nodeContext(src))
+export function errWithNodeContext(err, src) {
+  reqErr(err)
+  if (err[symSrc]) return err
+
+  let tar = nodeSpan(src)?.context()
+  if (tar) {
+    tar = joinParagraphs(`source node context:`, tar)
+    err[symSrc] = tar
+  }
+  else if (isFun(src)) {
+    tar = joinParagraphs(`source function:`, show(src))
+  }
+  else {
+    tar = joinParagraphs(`source node:`, show(src))
+  }
+
+  err.message = joinParagraphs(err.message, tar)
+  return err
+}
+
+export function errWithSrcContext(err, src) {
+  reqErr(err)
+  if (optStr(src)) {
+    err[symSrc] = src
+    err.message = joinParagraphs(err.message, src)
+  }
   return err
 }
 
@@ -492,7 +508,7 @@ export function macroNode(ctx, tar, src) {
   if (isArr(tar)) return macroList(ctx, tar)
   if (canMacro(tar)) {
     try {return macroNode(ctx, tar.macro(ctx), tar)}
-    catch (err) {throw errWithContext(err, tar)}
+    catch (err) {throw errWithNodeContext(err, tar)}
   }
   return tar
 }
@@ -502,12 +518,12 @@ async function macroNodeAsync(ctx, tar, src) {
     tar = nodeWithSpan((await tar), nodeSpan(tar))
     return await macroNode(ctx, tar, src)
   }
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 }
 
 export function macroSym(ctx, src) {
   try {return macroNode(ctx, macroSymDeref(ctx, reqSym(src).description), src)}
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 }
 
 export function macroSymDeref(ctx, path) {
@@ -565,7 +581,7 @@ export function macroList(ctx, src) {
 
     return macroNodes(ctxToExpression(ctx), src)
   }
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 }
 
 export function macroNodes(ctx, src) {
@@ -591,15 +607,12 @@ export function compileNode(src) {
 
 export function compileFallback(src) {
   try {if (canCompile(src)) return reqStr(src.compile())}
-  catch (err) {throw errWithContext(err, src)}
-  throw TypeError(msgCompile(src))
+  catch (err) {throw errWithNodeContext(err, src)}
+  throw errWithNodeContext(TypeError(msgCompile(src)), src)
 }
 
 function msgCompile(src) {
-  return joinParagraphs(
-    `unable to usefully compile ${typeof src} ${show(src)}; hint: arbitrary nodes can compile by implementing the method ".compile"`,
-    nodeContext(src),
-  )
+  return `unable to usefully compile ${typeof src} ${show(src)}; hint: arbitrary nodes can compile by implementing the method ".compile"`
 }
 
 export function compileSym(src) {return compileSymWith(src, compileAccess)}
@@ -649,10 +662,10 @@ export function compileObj(src) {
   if (isInst(src, RegExp)) return reqStr(src.toString())
 
   try {if (canCompile(src)) return reqStr(src.compile())}
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 
   if (isDict(src)) return compileDict(src)
-  throw TypeError(msgCompile(src))
+  throw errWithNodeContext(TypeError(msgCompile(src)), src)
 }
 
 export function compileList(src) {
@@ -665,7 +678,7 @@ export function compileList(src) {
       default: return src[0] + wrapParens(src.slice(1).join(expressionSep))
     }
   }
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 }
 
 /*
@@ -683,7 +696,7 @@ export function compileDictExpr(src) {
     }
     return wrapBraces(buf.join(expressionSep))
   }
-  catch (err) {throw errWithContext(err, src)}
+  catch (err) {throw errWithNodeContext(err, src)}
 }
 
 export function compileNodes(src) {
@@ -1079,6 +1092,7 @@ export const symModule = Symbol.for(`jisp.module`)
 export const symModules = Symbol.for(`jisp.modules`)
 export const symDialects = Symbol.for(`jisp.dialects`)
 export const symFs = Symbol.for(`jisp.fs`)
+export const symSrc = Symbol.for(`jisp.src`)
 export const symTar = Symbol.for(`jisp.tar`)
 export const symMain = Symbol.for(`jisp.main`)
 export const symStatement = Symbol.for(`jisp.statement`)

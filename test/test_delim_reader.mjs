@@ -302,21 +302,27 @@ t.test(function test_DelimReader() {
   many(srcs.join(` ;; some comment ;; `), exps)
 })
 
-t.test(function test_node_context() {
-  t.test(function test_node_context_without_span() {
-    t.is(c.nodeContext(), c.joinParagraphs(`source node:`, `undefined`))
-    t.is(c.nodeContext(null), c.joinParagraphs(`source node:`, `null`))
-    t.is(c.nodeContext(123), c.joinParagraphs(`source node:`, `123`))
-    t.is(c.nodeContext(`str`), c.joinParagraphs(`source node:`, `"str"`))
-    t.is(c.nodeContext([]), c.joinParagraphs(`source node:`, `[]`))
-    t.is(c.nodeContext([10]), c.joinParagraphs(`source node:`, `[10]`))
-    t.is(c.nodeContext([10, [20]]), c.joinParagraphs(`source node:`, `[10, [20]]`))
-    t.is(c.nodeContext({one: 10}), c.joinParagraphs(`source node:`, `{one: 10}`))
-    t.is(c.nodeContext(c.nodeContext), c.joinParagraphs(`source function:`, `[function nodeContext]`))
-    t.is(c.nodeContext(Promise.resolve()), c.joinParagraphs(`source node:`, `[object Promise]`))
+t.test(function test_errWithNodeContext() {
+  t.test(function test_without_span() {
+    function test(src, msg) {
+      const err = c.errWithNodeContext(Error(``), src)
+      t.is(err.message, msg)
+      t.no(c.hasOwn(err, c.symSrc))
+    }
+
+    test(undefined, c.joinParagraphs(`source node:`, `undefined`))
+    test(null, c.joinParagraphs(`source node:`, `null`))
+    test(123, c.joinParagraphs(`source node:`, `123`))
+    test(`str`, c.joinParagraphs(`source node:`, `"str"`))
+    test([], c.joinParagraphs(`source node:`, `[]`))
+    test([10], c.joinParagraphs(`source node:`, `[10]`))
+    test([10, [20]], c.joinParagraphs(`source node:`, `[10, [20]]`))
+    test({one: 10}, c.joinParagraphs(`source node:`, `{one: 10}`))
+    test(c.errWithNodeContext, c.joinParagraphs(`source function:`, `[function errWithNodeContext]`))
+    test(Promise.resolve(), c.joinParagraphs(`source node:`, `[object Promise]`))
   })
 
-  t.test(function test_node_context_with_span() {
+  t.test(function test_with_span() {
     const src = new c.DelimReader(ts.srcLong)
     src.read()
     src.read()
@@ -324,7 +330,78 @@ t.test(function test_node_context() {
     const node = src.read()
     t.eq(node, [30, 40])
     t.is(c.nodeSpan(node).view(), `[30 40]`)
-    t.is(c.nodeContext(node), c.joinParagraphs(`source node context:`, ts.contextLong))
+
+    const msg = c.joinParagraphs(`source node context:`, ts.contextLong)
+    const err = c.errWithNodeContext(Error(``), node)
+
+    t.is(err.message, msg)
+    t.is(err[c.symSrc], msg)
+  })
+
+  t.test(function test_mixed() {
+    let err = c.errWithNodeContext(Error(`some_error`), 123)
+    t.is(err.message, `some_error
+
+source node:
+
+123`)
+    t.no(c.hasOwn(err, c.symSrc))
+
+    t.is(err, err = c.errWithNodeContext(err, 456))
+    t.is(err.message, `some_error
+
+source node:
+
+123
+
+source node:
+
+456`)
+    t.no(c.hasOwn(err, c.symSrc))
+
+    t.is(err, err = c.errWithNodeContext(err, c.nodeWithSpan([], new c.Span(`source_code_one`))))
+    t.is(err.message, `some_error
+
+source node:
+
+123
+
+source node:
+
+456
+
+source node context:
+
+:1:1
+
+source_code_one`)
+    t.is(err[c.symSrc], `source node context:
+
+:1:1
+
+source_code_one`)
+
+    t.is(err, err = c.errWithNodeContext(err, c.nodeWithSpan([], new c.Span(`source_code_two`))))
+    t.is(err.message, `some_error
+
+source node:
+
+123
+
+source node:
+
+456
+
+source node context:
+
+:1:1
+
+source_code_one`)
+    t.is(err[c.symSrc], `source node context:
+
+:1:1
+
+source_code_one`)
   })
 })
 
