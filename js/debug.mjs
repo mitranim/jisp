@@ -91,5 +91,9 @@ export function module(src) {
 
 export function prn(src) {
   c.reqArity(arguments.length, 1)
-  return [c.raw(`console.log`), c.reprNode(src) + `:`, src]
+  return [
+    c.raw(`console.log`),
+    `[debug] ` + c.reprNode(src).trim() + `:`,
+    src,
+  ]
 }
