@@ -7,6 +7,46 @@ import * as m from '../js/mac.mjs'
 function sym(val) {return Symbol.for(c.reqStr(val))}
 function id(val) {return val}
 
+/*
+We could deduplicate "mixin" definitions between macro code and test code by
+using object-style definitions in macro code. It used to be implemented that
+way. But that approach involves measurable overheads. Test convenience has no
+business affecting the main code.
+*/
+
+// SYNC[func_mixin].
+const funcMixin = Object.create(null)
+funcMixin.ret = m.ret
+funcMixin.guard = m.guard
+funcMixin.arguments = Symbol.for(`arguments`)
+
+// SYNC[class_mixin].
+const classMixin = Object.create(null)
+classMixin.prototype = m.classPrototype
+classMixin.super = Symbol.for(`super`)
+
+// SYNC[class_override_static].
+const classOverrideStatic = Object.create(null)
+classOverrideStatic[m.symDo] = m.doForClassStatic
+classOverrideStatic[m.symSet] = m.setForClassStatic
+classOverrideStatic[m.symLet] = m.letForClassStatic
+classOverrideStatic[m.symFunc] = m.funcForClassStatic
+classOverrideStatic[m.symFuncAsync] = m.funcAsyncForClassStatic
+classOverrideStatic[m.symFuncGet] = m.funcGetForClassStatic
+
+// SYNC[class_override_proto].
+const classOverrideProto = Object.create(null)
+classOverrideProto[m.symSet] = m.setForClassProto
+classOverrideProto[m.symLet] = m.letForClassProto
+classOverrideProto[m.symFunc] = m.funcForClassProto
+classOverrideProto[m.symFuncAsync] = m.funcAsyncForClassProto
+classOverrideProto[m.symFuncGet] = m.funcGetForClassProto
+
+// SYNC[loop_mixin].
+const loopMixin = Object.create(null)
+loopMixin.break = m.break
+loopMixin.continue = m.continue
+
 t.test(function test_export() {
   ti.fail(() => p.export.call(null), `expected module context`)
 
@@ -987,7 +1027,7 @@ continue;
     )
     t.eq(ti.objFlat(tar), [
       {[c.symStatement]: undefined},
-      {[c.symMixin]: undefined, ...m.loopMixin},
+      {[c.symMixin]: undefined, ...loopMixin},
       ...ti.objFlat(ctx),
     ])
   }
@@ -1789,7 +1829,7 @@ return
     // In expression mode, the declaration is made in the mixin scope.
     t.eq(ti.objFlat(ctx), [
       {[c.symStatement]: undefined, this: ctx.this},
-      {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
+      {[c.symMixin]: undefined, ...funcMixin, one: sym(`one`)},
     ])
   }
 
@@ -1799,7 +1839,7 @@ return
     // In statement mode, the declaration is made in the outer scope.
     t.eq(ti.objFlat(ctx), [
       {[c.symStatement]: undefined, this: ctx.this},
-      {[c.symMixin]: undefined, ...m.funcMixin},
+      {[c.symMixin]: undefined, ...funcMixin},
       {[c.symStatement]: undefined, one: sym(`one`)},
     ])
   }
@@ -2019,7 +2059,7 @@ return
 
   t.eq(ti.objFlat(ctx), [
     {[c.symStatement]: undefined, this: ctx.this, two: sym(`two`), three: sym(`three`), four: sym(`four`)},
-    {[c.symMixin]: undefined, ...m.funcMixin, one: sym(`one`)},
+    {[c.symMixin]: undefined, ...funcMixin, one: sym(`one`)},
   ])
 })
 
@@ -2229,9 +2269,9 @@ t.test(function test_class_declaration_and_export() {
     ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
+      {...classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
       // In expression mode, the declaration is made in the mixin scope.
-      {[c.symMixin]: undefined, ...m.classMixin, one: sym(`one`)},
+      {[c.symMixin]: undefined, ...classMixin, one: sym(`one`)},
       ctx,
     ])
   }
@@ -2247,8 +2287,8 @@ t.test(function test_class_declaration_and_export() {
     ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
-      {[c.symMixin]: undefined, ...m.classMixin},
+      {...classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
+      {[c.symMixin]: undefined, ...classMixin},
       ctx,
     ])
   }
@@ -2262,8 +2302,8 @@ t.test(function test_class_declaration_and_export() {
     ti.reqSymUniqWith(sub.this, `this`)
 
     t.eq(ti.objFlat(sub), [
-      {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
-      {[c.symMixin]: undefined, ...m.classMixin},
+      {...classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this},
+      {[c.symMixin]: undefined, ...classMixin},
       ctx,
     ])
   }
@@ -2282,7 +2322,7 @@ t.test(function test_class_prototype() {
   test([sym(`prototype`), {macro(val) {ctx = val; return []}}], `(class one {})`)
 
   ti.reqSymUniqWith(ctx.this, `this`)
-  t.own(ctx, {...m.classOverrideProto, [m.symClassProto]: ctx.this, this: ctx.this})
+  t.own(ctx, {...classOverrideProto, [m.symClassProto]: ctx.this, this: ctx.this})
 })
 
 t.test(function test_class_extends() {
@@ -2428,7 +2468,7 @@ static two = 10
 }`)
 
     t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
-    t.own(sub, {...m.classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this}, `no additional declarations`)
+    t.own(sub, {...classOverrideStatic, [m.symClassStatic]: sub.this, this: sub.this}, `no additional declarations`)
   }
 })
 
@@ -3597,7 +3637,7 @@ static {
 }
 })`)
 
-  const ctx = Object.assign(Object.create(null), m.classOverrideStatic)
+  const ctx = Object.assign(Object.create(null), classOverrideStatic)
   ctx[m.symClassStatic] = undefined
   testBlockStatement(ctx, p.do, compileStatic)
 })

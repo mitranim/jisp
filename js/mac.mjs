@@ -200,6 +200,9 @@ export const symFuncGet = Symbol.for(`jisp.func.get`)
 export const symClassStatic = Symbol.for(`jisp.class.static`)
 export const symClassProto = Symbol.for(`jisp.class.proto`)
 
+const symArguments = Symbol.for(`arguments`)
+const symSuper = Symbol.for(`super`)
+
 export function comment() {return []}
 
 export function use(src, name) {
@@ -494,7 +497,7 @@ export function letForClassStatic(key, val) {
   c.reqArityBetween(arguments.length, 1, 2)
   ctxDeclareStatic(this, key)
   if (!(arguments.length > 1)) return []
-  return c.raw(`static ` + letClassBase(Object.create(this), key, val))
+  return c.raw(`static ` + letForClassBase(Object.create(this), key, val))
 }
 
 export function letForClassProto(key, val) {
@@ -502,7 +505,7 @@ export function letForClassProto(key, val) {
   c.reqArityBetween(arguments.length, 1, 2)
   ctxDeclareProto(this, key)
   if (!(arguments.length > 1)) return []
-  return c.raw(letClassBase(Object.create(this), key, val))
+  return c.raw(letForClassBase(Object.create(this), key, val))
 }
 
 function ctxDeclareStatic(ctx, key) {
@@ -517,7 +520,7 @@ function ctxDeclareProto(ctx, key) {
   ctx[key] = new ThisScopedKeyProto(key, ctx.this)
 }
 
-function letClassBase(ctx, key, val) {
+function letForClassBase(ctx, key, val) {
   key = identOrStr(c.reqSym(key).description)
   val = c.compileNode(c.macroNode(ctx, val))
   if (val) return key + ` = ` + val
@@ -659,7 +662,7 @@ export function statements(...src) {
 export {$try as try}
 
 export function $try(...src) {
-  const ctx = c.ctxWithStatement(c.patch(c.ctxWithMixin(c.ctxReqIsStatement(this)), tryMixin))
+  const ctx = c.ctxWithStatement(ctxMixinTry(c.ctxWithMixin(c.ctxReqIsStatement(this))))
   ctx[symTry] = undefined
 
   const main = c.compileBlockOpt(c.macroNodes(ctx, src))
@@ -671,9 +674,11 @@ export function $try(...src) {
   return []
 }
 
-const tryMixin = Object.create(null)
-tryMixin.catch = $catch
-tryMixin.finally = $finally
+function ctxMixinTry(ctx) {
+  if (!(`catch` in ctx)) ctx.catch = $catch
+  if (!(`finally` in ctx)) ctx.finally = $finally
+  return ctx
+}
 
 export function ctxIsTry(ctx) {return c.hasOwn(ctx, symTry)}
 
@@ -727,13 +732,14 @@ export function loop(...src) {
 loop.while = loopWhile
 loop.iter = loopIter
 
-function loopCtx(ctx) {
-  return c.ctxWithStatement(c.patch(c.ctxWithMixin(ctx), loopMixin))
-}
+function loopCtx(ctx) {return c.ctxWithStatement(ctxMixinLoop(c.ctxWithMixin(ctx)))}
 
-export const loopMixin = Object.create(null)
-loopMixin.break = $break
-loopMixin.continue = $continue
+// SYNC[loop_mixin].
+function ctxMixinLoop(ctx) {
+  if (!(`break` in ctx)) ctx.break = $break
+  if (!(`continue` in ctx)) ctx.continue = $continue
+  return ctx
+}
 
 export {$break as break}
 
@@ -910,16 +916,18 @@ export function func() {
 func.async = funcAsync
 func.get = funcGet
 
-export const funcMixin = Object.create(null)
-funcMixin.ret = ret
-funcMixin.guard = guard
-funcMixin.arguments = Symbol.for(`arguments`)
+// SYNC[func_mixin].
+function ctxMixinFunc(ctx) {
+  ctx = ctxMixinFn(ctx)
+  if (!(`arguments` in ctx)) ctx.arguments = symArguments
+  return ctx
+}
 
 export function funcBase(param, ...body) {
   c.reqArityMin(arguments.length, 1)
 
-  const name = paramHead(param)
-  const ctx = ctxWithFuncDecl(this, name, funcMixin)
+  const name = c.reqSym(paramHead(param))
+  const ctx = ctxDeclFunc(this, ctxMixinFunc(c.ctxWithMixin(this)), name)
 
   ctx[c.symStatement] = undefined
   ctx.this = Symbol(`this`)
@@ -954,7 +962,7 @@ export function funcBaseForClassProto(param, ...body) {
 
 export function funcBaseForClass(ctx, name, param, body) {
   c.reqArityMin(arguments.length, 1)
-  ctx = Object.create(c.patch(c.ctxWithMixin(ctx), funcMixin))
+  ctx = Object.create(ctxMixinFunc(c.ctxWithMixin(ctx)))
   ctx[c.symStatement] = undefined
   name = identOrStr(c.reqSym(name).description)
   return funcMacroCompile(ctx, name, param, body)
@@ -1056,17 +1064,13 @@ function paramTail(src) {
 }
 
 /*
-Should be used for function and class declarations, where statement and
-expression mode have slightly different scoping rules.
+For function and class declarations, where statement and
+expression mode have slightly different declaration rules.
 */
-function ctxWithFuncDecl(ctx, name, src) {
-  const statement = c.ctxIsStatement(ctx)
-  if (c.isSome(name) && statement) c.ctxDeclare(ctx, name, name)
-
-  ctx = c.patch(c.ctxWithMixin(ctx), src)
-  if (c.isSome(name) && !statement) c.ctxRedeclare(ctx, name, name)
-
-  return Object.create(ctx)
+function ctxDeclFunc(sup, sub, name) {
+  if (c.ctxIsStatement(sup)) c.ctxDeclare(sup, name, name)
+  else c.ctxRedeclare(sub, name, name)
+  return Object.create(sub)
 }
 
 export function fn() {
@@ -1079,9 +1083,11 @@ export function fnAsync() {
   return c.raw(c.wrapParens(`async ` + fnBase.apply(this, arguments)))
 }
 
-const fnMixin = Object.create(null)
-fnMixin.ret = ret
-fnMixin.guard = guard
+function ctxMixinFn(ctx) {
+  if (!(`ret` in ctx)) ctx.ret = ret
+  if (!(`guard` in ctx)) ctx.guard = guard
+  return ctx
+}
 
 // For internal use.
 export function fnBase() {
@@ -1100,7 +1106,7 @@ export function fnExpr(src) {
 
 export function fnBlock(...src) {
   const han = new FnOrdHan()
-  const ctx = new Proxy(c.ctxWithStatement(c.patch(c.ctxWithMixin(this), fnMixin)), han)
+  const ctx = new Proxy(c.ctxWithStatement(ctxMixinFn(c.ctxWithMixin(this))), han)
   src = c.wrapBracesMultiLine(retStatementsOpt(ctx, src))
   return compileFn(han.arity, src)
 }
@@ -1138,7 +1144,7 @@ export {$class as class}
 export function $class(param, ...body) {
   c.reqArityMin(arguments.length, 1)
 
-  const name = paramHead(param)
+  const name = c.reqSym(paramHead(param))
 
   /*
   References to the super-class and class mixins, if any, should be macroed
@@ -1148,8 +1154,10 @@ export function $class(param, ...body) {
   let extend = paramTail(param)
   if (c.isSome(extend)) extend = c.macroNodes(this, extend)
 
-  const ctx = ctxWithFuncDecl(this, name, classMixin)
-  Object.assign(ctx, classOverrideStatic)
+  let ctx = c.ctxWithMixin(this)
+  ctx = ctxMixinClass(ctx)
+  ctx = ctxDeclFunc(this, ctx, name)
+  ctx = ctxOverrideClassStatic(ctx)
   ctx.this = ctx[symClassStatic] = Symbol(`this`)
 
   body = c.macroNodes(ctx, body)
@@ -1165,17 +1173,23 @@ export function $class(param, ...body) {
   return c.raw(c.joinSpaced(c.ctxCompileExport(this), out))
 }
 
-export const classMixin = Object.create(null)
-classMixin.prototype = classPrototype
-classMixin.super = Symbol.for(`super`)
+// SYNC[class_mixin].
+function ctxMixinClass(ctx) {
+  if (!(`prototype` in ctx)) ctx.prototype = classPrototype
+  if (!(`super` in ctx)) ctx.super = symSuper
+  return ctx
+}
 
-export const classOverrideStatic = Object.create(null)
-classOverrideStatic[symDo] = doForClassStatic
-classOverrideStatic[symSet] = setForClassStatic
-classOverrideStatic[symLet] = letForClassStatic
-classOverrideStatic[symFunc] = funcForClassStatic
-classOverrideStatic[symFuncAsync] = funcAsyncForClassStatic
-classOverrideStatic[symFuncGet] = funcGetForClassStatic
+// SYNC[class_override_static].
+function ctxOverrideClassStatic(ctx) {
+  ctx[symDo] = doForClassStatic
+  ctx[symSet] = setForClassStatic
+  ctx[symLet] = letForClassStatic
+  ctx[symFunc] = funcForClassStatic
+  ctx[symFuncAsync] = funcAsyncForClassStatic
+  ctx[symFuncGet] = funcGetForClassStatic
+  return ctx
+}
 
 export function ctxIsClassStatic(ctx) {return c.hasOwn(ctx, symClassStatic)}
 
@@ -1195,19 +1209,21 @@ export function classPrototype(...src) {
   ctxReqClassStatic(this)
   if (!src.length) return []
 
-  const ctx = Object.create(this)
-  Object.assign(ctx, classOverrideProto)
+  const ctx = ctxOverrideClassProto(Object.create(this))
   ctx.this = ctx[symClassProto] = Symbol(`this`)
 
   return c.raw(c.compileStatements(c.macroNodes(ctx, src)))
 }
 
-export const classOverrideProto = Object.create(null)
-classOverrideProto[symSet] = setForClassProto
-classOverrideProto[symLet] = letForClassProto
-classOverrideProto[symFunc] = funcForClassProto
-classOverrideProto[symFuncAsync] = funcAsyncForClassProto
-classOverrideProto[symFuncGet] = funcGetForClassProto
+// SYNC[class_override_proto].
+function ctxOverrideClassProto(ctx) {
+  ctx[symSet] = setForClassProto
+  ctx[symLet] = letForClassProto
+  ctx[symFunc] = funcForClassProto
+  ctx[symFuncAsync] = funcAsyncForClassProto
+  ctx[symFuncGet] = funcGetForClassProto
+  return ctx
+}
 
 function compileClassExtend(src) {
   if (c.isNil(src)) return ``

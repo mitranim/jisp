@@ -35,12 +35,14 @@ string
 ]
 
 [class [PubCls pubFunc]
-  [let someField `some_value`]
+  [prototype
+    [let someField `some_value`]
 
-  [func [someMethod one two three]
-    [if one [do two three] [do one two three]]
-    [if one [do two.three three.four] [do one two three]]
-    [if one [do two.three.four three.four.five] [do one two three]]
+    [func [someMethod one two three]
+      [if one [do two three] [do one two three]]
+      [if one [do two.three three.four] [do one two three]]
+      [if one [do two.three.four three.four.five] [do one two three]]
+    ]
   ]
 
   [do

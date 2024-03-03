@@ -282,11 +282,11 @@ use `jisp:core.mjs` c
 
 func
   prn src
-  let repr : c.reprNode src
-  set repr : repr.trim
+  let tar : c.reprNode src
+  set tar : tar.trim
   list
     c.raw `console.log`
-    + repr `:`
+    + tar `:`
     ' src
 ```
       fileTar `mac.mjs`
