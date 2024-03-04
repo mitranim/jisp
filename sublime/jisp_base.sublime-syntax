@@ -32,7 +32,7 @@ variables:
   ident_chars: '\w\$'
 
   # SYNC[oper].
-  oper_chars: '\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-'
+  oper_chars: '\~\!\@\#\%\^\&\*\<\>\?\/\\\|\=\+\-'
 
   sym_segment_chars: '{{ident_chars}}{{oper_chars}}'
   sym_unqual: '{{sym_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'

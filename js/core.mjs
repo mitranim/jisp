@@ -79,16 +79,16 @@ SYNC[sym].
 SYNC[ident].
 SYNC[oper].
 */
-export const regSymCharsBegin = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+/
-export const regSymCharsFull  = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-])+$/
+export const regSymCharsBegin = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\<\>\?\/\\\|\=\+\-])+/
+export const regSymCharsFull  = /^(?:[.]|[\w$]|[\~\!\@\#\%\^\&\*\<\>\?\/\\\|\=\+\-])+$/
 
 // SYNC[ident].
 export const regIdentBegin = /^#?[A-Za-z_$][\w$]*/
 export const regIdentFull  = /^#?[A-Za-z_$][\w$]*$/
 
 // SYNC[oper].
-export const regOperBegin = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+/
-export const regOperFull  = /^[\~\!\@\#\%\^\&\*\:\<\>\?\/\\\|\=\+\-]+$/
+export const regOperBegin = /^[\~\!\@\#\%\^\&\*\<\>\?\/\\\|\=\+\-]+/
+export const regOperFull  = /^[\~\!\@\#\%\^\&\*\<\>\?\/\\\|\=\+\-]+$/
 
 export const regAnySpace    = /^\s+/
 export const regLineSpace   = /^[ \t\v]/

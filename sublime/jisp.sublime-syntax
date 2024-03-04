@@ -168,7 +168,7 @@ contexts:
     - include: now-pop
 
   param-match:
-    - match: '{{ident_unqual}}'
+    - match: '{{sym_unqual}}'
       scope: variable.parameter.jisp
       push: req-delim-pop
     - match: \{
@@ -183,7 +183,7 @@ contexts:
     - include: main
 
   param-pop:
-    - match: '{{ident_unqual}}'
+    - match: '{{sym_unqual}}'
       scope: variable.parameter.jisp
       set: req-delim-pop
     - match: \{

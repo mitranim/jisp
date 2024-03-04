@@ -26,7 +26,8 @@ contexts:
     - match: (?=\d|{{string_backtick_delim}}|{{string_double_delim}})
       push: req-delim-pop
 
-    - include: sym-call-match
+    - match: (?=[{{sym_chars}}])
+      push: sym-call-pop
 
     - match: (?=\S)
       push: row-pop
@@ -66,29 +67,29 @@ contexts:
       scope: storage.modifier.jisp
       set: req-delim-pop
 
-  sym-call-match:
-    - include: call-known-maybe-match
-    - include: call-unknown-maybe-match
+  sym-call-pop:
+    - include: call-known-maybe-pop
+    - include: call-unknown-maybe-pop
     - include: sym-namespace-match
+    - include: now-row-pop
 
-  call-known-maybe-match:
-    - include: call-use-match
-    - include: call-const-match
-    - include: call-let-match
-    - include: call-func-match
-    - include: call-fn-match
-    - include: call-meth-match
-    - include: call-class-match
+  call-known-maybe-pop:
+    - include: call-use-pop
+    - include: call-const-pop
+    - include: call-let-pop
+    - include: call-func-pop
+    - include: call-fn-pop
+    - include: call-class-pop
 
-  call-unknown-maybe-match:
+  call-unknown-maybe-pop:
     - match: '{{sym_segment_break_begin}}[{{sym_segment_chars}}]+{{sym_break_end}}'
       scope: variable.function.jisp
-      push: [row-pop, req-delim-pop]
+      set: [row-pop, req-delim-pop]
 
-  call-use-match:
+  call-use-pop:
     - match: '{{sym_segment_break_begin}}use{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [use-decl-pop, use-addr-pop, sym-rest-pop]
+      set: [use-decl-pop, use-addr-pop, sym-rest-pop]
 
   # Semi-placeholder. Instead of special-case string support, we should pop an
   # arbitrary expression here.
@@ -121,20 +122,20 @@ contexts:
       set: req-delim-pop
     - include: nonblank-row-pop
 
-  call-const-match:
+  call-const-pop:
     - match: '{{sym_segment_break_begin}}const{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [param-or-params-pop, sym-rest-pop]
+      set: [param-or-params-pop, sym-rest-pop]
 
-  call-let-match:
+  call-let-pop:
     - match: '{{sym_segment_break_begin}}let{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [param-or-params-pop, sym-rest-pop]
+      set: [param-or-params-pop, sym-rest-pop]
 
-  call-func-match:
+  call-func-pop:
     - match: '{{sym_segment_break_begin}}func{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [func-name-or-func-name-with-params-pop, sym-rest-pop]
+      set: [func-name-or-func-name-with-params-pop, sym-rest-pop]
 
   # Somewhat similar to `param-or-params-pop`, but scopes the first symbol as a
   # function name. These contexts are related but not symmetric.
@@ -161,7 +162,7 @@ contexts:
   # where the first symbol is scoped as a call. These contexts are related
   # but not symmetric.
   param-or-params-pop:
-    - match: '{{ident_unqual}}'
+    - match: '{{sym_unqual}}'
       scope: variable.parameter.jisp
       set: [row-pop, req-delim-pop]
     - match: \n
@@ -182,20 +183,20 @@ contexts:
   param-row-pop:
     - include: newline-pop
     - include: punct-match
-    - match: '{{ident_unqual}}'
+    - match: '{{sym_unqual}}'
       scope: variable.parameter.jisp
       push: req-delim-pop
     - include: row-match
 
-  call-fn-match:
+  call-fn-pop:
     - match: '{{sym_segment_break_begin}}fn{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [row-pop, sym-rest-pop]
+      set: [row-pop, sym-rest-pop]
 
-  call-class-match:
+  call-class-pop:
     - match: '{{sym_segment_break_begin}}class{{sym_segment_break_end}}'
       scope: keyword.declaration.jisp
-      push: [class-name-pop, nonblank-pop, sym-rest-pop]
+      set: [class-name-pop, nonblank-pop, sym-rest-pop]
 
   class-name-pop:
     - match: '{{sym_unqual}}'
@@ -209,4 +210,8 @@ contexts:
 
   nonblank-row-pop:
     - match: (?=\S)
+      set: row-pop
+
+  now-row-pop:
+    - match: ''
       set: row-pop
