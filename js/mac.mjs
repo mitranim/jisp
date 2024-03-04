@@ -199,6 +199,7 @@ export const symFuncAsync = Symbol.for(`jisp.func.async`)
 export const symFuncGet = Symbol.for(`jisp.func.get`)
 export const symClassStatic = Symbol.for(`jisp.class.static`)
 export const symClassProto = Symbol.for(`jisp.class.proto`)
+export const symObjThis = Symbol.for(`jisp.obj.this`)
 
 const symArguments = Symbol.for(`arguments`)
 const symSuper = Symbol.for(`super`)
@@ -495,36 +496,63 @@ export function $let(tar, src) {
 export function letForClassStatic(key, val) {
   ctxReqClassStatic(this)
   c.reqArityBetween(arguments.length, 1, 2)
-  ctxDeclareStatic(this, key)
+  ctxDeclareClassStatic(this, key)
   if (!(arguments.length > 1)) return []
-  return c.raw(`static ` + letForClassBase(Object.create(this), key, val))
+  return c.raw(`static ` + letForField(Object.create(this), key, ` = `, val, ``))
 }
 
 export function letForClassProto(key, val) {
   ctxReqClassProto(this)
   c.reqArityBetween(arguments.length, 1, 2)
-  ctxDeclareProto(this, key)
+  ctxDeclareClassProto(this, key)
   if (!(arguments.length > 1)) return []
-  return c.raw(letForClassBase(Object.create(this), key, val))
+  return c.raw(letForField(Object.create(this), key, ` = `, val, ``))
 }
 
-function ctxDeclareStatic(ctx, key) {
+export function letForObj(key, val) {
+  c.reqArityBetween(arguments.length, 1, 2)
+  ctxDeclareObj(this, key)
+  if (!(arguments.length > 1)) return []
+  return c.raw(letForField(Object.create(this), key, `: `, val, `undefined`))
+}
+
+function ctxDeclareClassStatic(ctx, key) {
   key = c.reqSymUnqual(key).description
   c.ctxReqNotDeclared(ctx, key)
   ctx[key] = new ThisScopedKeyStatic(key, ctx.this)
 }
 
-function ctxDeclareProto(ctx, key) {
+function ctxDeclareClassProto(ctx, key) {
   key = c.reqSymUnqual(key).description
   c.ctxReqNotDeclared(ctx, key)
   ctx[key] = new ThisScopedKeyProto(key, ctx.this)
 }
 
-function letForClassBase(ctx, key, val) {
-  key = identOrStr(c.reqSym(key).description)
-  val = c.compileNode(c.macroNode(ctx, val))
-  if (val) return key + ` = ` + val
-  return key
+function ctxDeclareObj(ctx, key) {
+  key = c.reqSymUnqual(key).description
+  c.ctxReqNotDeclared(ctx, key)
+  ctx[key] = new ThisScopedKeyProto(key, ctxReqObjThis(ctx))
+}
+
+function letForField(ctx, key, inf, val, def) {
+  return entry(
+    identOrStr(c.reqSym(key).description),
+    inf,
+    c.compileNode(c.macroNode(ctx, val)),
+    def,
+  )
+}
+
+function entry(key, inf, val, def) {
+  c.reqStr(key)
+  c.reqStr(inf)
+  c.reqStr(val)
+  c.reqStr(def)
+  if (key && val) return key + inf + val
+  if (key && def) return key + inf + def
+  if (val) throw errEntryLhs(val)
+  if (key) return key
+  return ``
 }
 
 class ThisScopedKeyBase extends String {
@@ -944,26 +972,38 @@ export function funcForClassProto() {
   return c.raw(funcBaseForClassProto.apply(this, arguments))
 }
 
+export function funcForObj() {
+  return c.raw(funcBaseForObj.apply(this, arguments))
+}
+
 export function funcBaseForClassStatic(param, ...body) {
   ctxReqClassStatic(this)
   c.reqArityMin(arguments.length, 1)
   const name = paramHead(param)
-  ctxDeclareStatic(this, name)
-  return funcBaseForClass(this, name, paramTail(param), body)
+  ctxDeclareClassStatic(this, name)
+  return funcBaseMethod(this, undefined, name, paramTail(param), body)
 }
 
 export function funcBaseForClassProto(param, ...body) {
   ctxReqClassProto(this)
   c.reqArityMin(arguments.length, 1)
   const name = paramHead(param)
-  ctxDeclareProto(this, name)
-  return funcBaseForClass(this, name, paramTail(param), body)
+  ctxDeclareClassProto(this, name)
+  return funcBaseMethod(this, undefined, name, paramTail(param), body)
 }
 
-export function funcBaseForClass(ctx, name, param, body) {
+export function funcBaseForObj(param, ...body) {
+  c.reqArityMin(arguments.length, 1)
+  const name = paramHead(param)
+  ctxDeclareObj(this, name)
+  return funcBaseMethod(this, ctxReqObjThis(this), name, paramTail(param), body)
+}
+
+export function funcBaseMethod(ctx, self, name, param, body) {
   c.reqArityMin(arguments.length, 1)
   ctx = Object.create(ctxMixinFunc(c.ctxWithMixin(ctx)))
   ctx[c.symStatement] = undefined
+  if (self) ctx.this = self
   name = identOrStr(c.reqSym(name).description)
   return funcMacroCompile(ctx, name, param, body)
 }
@@ -986,6 +1026,10 @@ export function funcAsyncForClassProto() {
   return c.raw(`async ` + funcBaseForClassProto.apply(this, arguments))
 }
 
+export function funcAsyncForObj() {
+  return c.raw(`async ` + funcBaseForObj.apply(this, arguments))
+}
+
 export function funcGet() {
   if (c.hasOwn(this, symFuncGet)) return this[symFuncGet].apply(this, arguments)
   throw Error(`missing override for getter function`)
@@ -997,6 +1041,10 @@ export function funcGetForClassStatic() {
 
 export function funcGetForClassProto() {
   return c.raw(`get ` + funcBaseForClassProto.apply(this, arguments))
+}
+
+export function funcGetForObj() {
+  return c.raw(`get ` + funcBaseForObj.apply(this, arguments))
 }
 
 // Must be called with the "tail" of the function parameter list.
@@ -1180,7 +1228,7 @@ function ctxMixinClass(ctx) {
   return ctx
 }
 
-// SYNC[class_override_static].
+// SYNC[class_static_override].
 function ctxOverrideClassStatic(ctx) {
   ctx[symDo] = doForClassStatic
   ctx[symSet] = setForClassStatic
@@ -1215,7 +1263,7 @@ export function classPrototype(...src) {
   return c.raw(c.compileStatements(c.macroNodes(ctx, src)))
 }
 
-// SYNC[class_override_proto].
+// SYNC[class_proto_override].
 function ctxOverrideClassProto(ctx) {
   ctx[symSet] = setForClassProto
   ctx[symLet] = letForClassProto
@@ -1467,6 +1515,32 @@ function errEntryLhs(val) {
   throw SyntaxError(`unable to compile entry with empty left-hand side and value ${c.show(val)}`)
 }
 
+export function obj(...src) {
+  const sta = c.ctxIsStatement(this)
+  if (!src.length) return c.raw(sta ? `({})` : `{}`)
+
+  const ctx = ctxOverrideObj(Object.create(this))
+  ctx[symObjThis] = Symbol(`this`)
+
+  src = c.compileExpressionsInBraces(c.macroNodes(ctx, src))
+  return c.raw(sta ? c.wrapParens(src) : src)
+}
+
+// SYNC[obj_override].
+function ctxOverrideObj(ctx) {
+  ctx[symSet] = setForObj
+  ctx[symLet] = letForObj
+  ctx[symFunc] = funcForObj
+  ctx[symFuncAsync] = funcAsyncForObj
+  ctx[symFuncGet] = funcGetForObj
+  return ctx
+}
+
+function ctxReqObjThis(ctx) {
+  if (c.hasOwn(ctx, symObjThis)) return ctx[symObjThis]
+  throw Error(`unexpected non-obj context ${c.show(ctx)}`)
+}
+
 export function get(src, ...path) {
   c.reqArityMin(arguments.length, 1)
   const ctx = c.ctxToExpression(this)
@@ -1524,24 +1598,30 @@ export function set(tar, src) {
 export function setForClassStatic(key, val) {
   ctxReqClassStatic(this)
   c.reqArity(arguments.length, 2)
-  const out = fieldMacroCompile(Object.create(this), key, val)
+  const out = fieldMacroCompile(Object.create(this), key, ` = `, val, ``)
   return out ? c.raw(`static ` + out) : []
 }
 
 export function setForClassProto(key, val) {
   ctxReqClassProto(this)
   c.reqArity(arguments.length, 2)
-  const out = fieldMacroCompile(Object.create(this), key, val)
+  const out = fieldMacroCompile(Object.create(this), key, ` = `, val, ``)
   return out ? c.raw(out) : []
 }
 
-export function fieldMacroCompile(ctx, key, val) {
-  key = fieldName(ctx, key)
-  val = c.compileNode(c.macroNode(ctx, val))
-  if (key && val) return key + ` = ` + val
-  if (key) return key
-  if (!val) return ``
-  throw errEntryLhs(val)
+export function setForObj(key, val) {
+  c.reqArity(arguments.length, 2)
+  const out = fieldMacroCompile(Object.create(this), key, `: `, val, `undefined`)
+  return out ? c.raw(out) : []
+}
+
+export function fieldMacroCompile(ctx, key, inf, val, def) {
+  return entry(
+    fieldName(ctx, key),
+    inf,
+    c.compileNode(c.macroNode(ctx, val)),
+    def,
+  )
 }
 
 export function assign(tar, inf, src) {

@@ -30,6 +30,7 @@ export {
   empty                                                    as '',
   list,                        list                        as '@',
   dict,                        dict                        as '#',
+  obj,                         obj                         as '##',
   get,                         get                         as '<-',
   getOpt,                      getOpt                      as '<-?',
   set,                         set                         as '->',

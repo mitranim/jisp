@@ -3,7 +3,7 @@ This file should be used for benching.
 
 This assumes that the prelude is pre-imported into the module scope in mixin
 mode. We do that for this benchmark because `use.mac` is always asynchonous,
-but we want to run the benchmark synchronously.
+and we want to run the benchmark synchronously.
 ;;
 
 123

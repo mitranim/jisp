@@ -17,11 +17,6 @@ t.bench(function bench_srcToTar() {c.srcToTar(import.meta.url, ti.TEST_TAR_URL.h
 
 const stringForDecoding = Function(`return arguments[0]`)(`"\\n one \\r two \\n three \\n four \\n five \\u1234 six"`)
 
-/*
-At the time of writing and testing, on the author's machine using Deno 1.24.3
-with V8 10.4.132.20, our version is about two times slower for this particular
-input.
-*/
 t.bench(function bench_string_decoding_native() {JSON.parse(stringForDecoding)})
 t.bench(function bench_string_decoding_ours() {c.strDecode(stringForDecoding)})
 

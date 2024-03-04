@@ -25,7 +25,7 @@ const classMixin = Object.create(null)
 classMixin.prototype = m.classPrototype
 classMixin.super = Symbol.for(`super`)
 
-// SYNC[class_override_static].
+// SYNC[class_static_override].
 const classOverrideStatic = Object.create(null)
 classOverrideStatic[m.symDo] = m.doForClassStatic
 classOverrideStatic[m.symSet] = m.setForClassStatic
@@ -34,13 +34,21 @@ classOverrideStatic[m.symFunc] = m.funcForClassStatic
 classOverrideStatic[m.symFuncAsync] = m.funcAsyncForClassStatic
 classOverrideStatic[m.symFuncGet] = m.funcGetForClassStatic
 
-// SYNC[class_override_proto].
+// SYNC[class_proto_override].
 const classOverrideProto = Object.create(null)
 classOverrideProto[m.symSet] = m.setForClassProto
 classOverrideProto[m.symLet] = m.letForClassProto
 classOverrideProto[m.symFunc] = m.funcForClassProto
 classOverrideProto[m.symFuncAsync] = m.funcAsyncForClassProto
 classOverrideProto[m.symFuncGet] = m.funcGetForClassProto
+
+// SYNC[obj_override].
+const objOverride = Object.create(null)
+objOverride[m.symSet] = m.setForObj
+objOverride[m.symLet] = m.letForObj
+objOverride[m.symFunc] = m.funcForObj
+objOverride[m.symFuncAsync] = m.funcAsyncForObj
+objOverride[m.symFuncGet] = m.funcGetForObj
 
 // SYNC[loop_mixin].
 const loopMixin = Object.create(null)
@@ -4204,6 +4212,351 @@ t.bench(function bench_dict_compile_core() {
 
 t.bench(function bench_dict_compile_macro() {
   p.dict.call(null, `one`, 10, `two`, 20, `three`, 30, `four`, 40).compile()
+})
+
+t.test(function test_obj() {
+  t.test(function test_basic() {
+    let ctx = null
+    function mac(...src) {return c.macroNode(ctx, [p.obj, ...src])}
+
+    t.is(mac().compile(), `{}`)
+    t.is(mac([]).compile(), `{}`)
+    t.is(mac([], [[]]).compile(), `{}`)
+
+    // Invalid JS.
+    t.is(mac(10).compile(), `{10}`)
+    t.is(mac(10, 20).compile(), `{10, 20}`)
+    t.is(mac(10, 20, 30).compile(), `{10, 20, 30}`)
+    t.is(mac(10, [], 20, [[]], 30).compile(), `{10, 20, 30}`)
+
+    // Invalid JS.
+    t.is(mac(ti.macReqExpressionOne).compile(), `{"one"}`)
+    t.is(mac(ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(), `{"one", "two"}`)
+
+    ti.fail(() => mac(sym(`one`)), `missing declaration of "one"`)
+
+    ctx = Object.create(null)
+    ctx.one = sym(`one`)
+    ctx.two = sym(`two`)
+
+    t.is(mac(sym(`one`)).compile(), `{one}`)
+    t.is(mac(sym(`one`), sym(`two`)).compile(), `{one, two}`)
+  })
+
+  t.test(function test_spread() {
+    function mac(...src) {return c.macroNode(null, [p.obj, ...src])}
+
+    t.is(mac([p.spread, []]).compile(), `{}`)
+
+    // `?? []` is added by the `spread` macro for list contexts, and is useless
+    // in dict contexts. May avoid later.
+    t.is(mac([p.spread, 10]).compile(), `{...(10 ?? [])}`)
+
+    t.is(
+      mac(10, [p.spread, 20], 30, [p.spread, 40]).compile(),
+      `{10, ...(20 ?? []), 30, ...(40 ?? [])}`,
+    )
+  })
+
+  t.test(function test_set() {
+    const ctx = Object.create(null)
+    function mac(...src) {return c.macroNode(ctx, [p.obj, ...src])}
+
+    ti.fail(() => mac([p.set]), `expected 2 inputs, got 0 inputs`)
+
+    t.is(mac([p.set, [], []]).compile(), `{}`)
+
+    ti.fail(
+      () => mac([p.set, [], 10]),
+      `unable to compile entry with empty left-hand side and value "10"`,
+    )
+
+    t.is(
+      mac([p.set, 10, []]).compile(),
+      `{10: undefined}`,
+    )
+
+    t.is(
+      mac([p.set, 10, 20]).compile(),
+      `{10: 20}`,
+    )
+
+    t.is(
+      mac([p.set, `one`, 10]).compile(),
+      `{"one": 10}`,
+    )
+
+    ti.fail(
+      () => mac([p.set, sym(`one`), 10]),
+      `missing declaration of "one"`,
+    )
+
+    ctx.one = sym(`one`)
+
+    t.is(
+      mac([p.set, sym(`one`), 10]).compile(),
+      `{[one]: 10}`,
+    )
+
+    t.is(
+      mac([p.set, ti.macReqExpressionOne, ti.macReqExpressionTwo]).compile(),
+      `{["one"]: "two"}`,
+    )
+
+    t.is(
+      mac([p.set, [10, 20], [30, 40]]).compile(),
+      `{[10(20)]: 30(40)}`,
+    )
+  })
+
+  t.test(function test_let() {
+    const ctx = Object.create(null)
+    function mac(...src) {return c.macroNode(ctx, [p.obj, ...src])}
+
+    ti.fail(() => mac([p.let]), `expected between 1 and 2 inputs, got 0 inputs`)
+    ti.fail(() => mac([p.let, 10]), `expected unqualified symbol, got 10`)
+    ti.fail(() => mac([p.let, 10, 20]), `expected unqualified symbol, got 10`)
+
+    /*
+    This behavior is consistent with class fields.
+    This declaration should still add `one` to scope.
+    See other tests below.
+    */
+    t.is(mac([p.let, sym(`one`)]).compile(), `{}`)
+
+    t.is(mac([p.let, sym(`one`), []]).compile(), `{one: undefined}`)
+    t.is(mac([p.let, sym(`one`), 10]).compile(), `{one: 10}`)
+    t.is(mac([p.let, sym(`await`), 10]).compile(), `{await: 10}`)
+    t.is(mac([p.let, sym(`eval`), 10]).compile(), `{eval: 10}`)
+    t.is(mac([p.let, sym(`!@#`), 10]).compile(), `{"!@#": 10}`)
+    t.is(mac([p.let, sym(`one-two`), 10]).compile(), `{"one-two": 10}`)
+
+    // Outer context should be unaffected.
+    t.own(ctx, {})
+
+    /*
+    This variant of `let` should declare names in the inner context created by
+    the object literal macro, and the resulting declarations should be usable
+    only in contexts where `this` is the object we're creating. When the name
+    is visible in the context but `this` doesn't match, attempting to use the
+    name should cause a compile-time exception. The correct `this` should be
+    available in methods; see other tests below.
+    */
+    ti.fail(
+      () => mac([p.let, sym(`one`), sym(`one`)]),
+      `property "one" unavailable in current context`,
+    )
+
+    ti.fail(
+      () => mac(
+        [p.let, sym(`one`), 10],
+        [p.let, sym(`two`), sym(`one`)],
+      ),
+      `property "one" unavailable in current context`,
+    )
+
+    t.is(
+      mac(
+        [p.let, sym(`one`), 10],
+        [p.let, sym(`two`), 20],
+      ).compile(),
+      `{one: 10, two: 20}`,
+    )
+
+    ti.fail(
+      () => mac(
+        [p.let, sym(`one`), 10],
+        [p.let, sym(`two`), 20],
+        [p.let, sym(`three`), sym(`two`)],
+      ),
+      `property "two" unavailable in current context`,
+    )
+
+    ti.fail(
+      () => mac([p.let, sym(`one`), sym(`!@#`)]),
+      `missing declaration of "!@#"`,
+    )
+
+    ti.fail(
+      () => mac([p.let, sym(`!@#`), sym(`!@#`)]),
+      `property "!@#" unavailable in current context`,
+    )
+  })
+
+  t.test(function test_func() {
+    const ctx = Object.create(null)
+    function mac(...src) {return c.macroNode(ctx, [p.obj, ...src])}
+
+    t.is(
+      mac([p.func, sym(`one`)]).compile(),
+      `{one () {}}`,
+    )
+
+    // Outer context should be unaffected.
+    t.own(ctx, {})
+
+    t.is(
+      mac([p.func, sym(`one`), 10]).compile(),
+      `{one () {
+return 10
+}}`)
+
+    t.is(
+      mac(
+        [p.func, sym(`one`)],
+        [p.func, sym(`two`)],
+      ).compile(),
+      `{one () {}, two () {}}`,
+    )
+
+    t.is(
+      mac(
+        10,
+        [p.func, sym(`one`)],
+        20,
+        [p.func, sym(`two`)],
+        30,
+      ).compile(),
+      `{10, one () {}, 20, two () {}, 30}`,
+    )
+
+    /*
+    Just like names declared with object `let`, names declared with object
+    `func` must be visible in the object's context, but attempting to use
+    them in this context must cause a compile exception. At runtime, these
+    properties become available only in methods.
+    */
+    ti.fail(
+      () => mac(
+        [p.func, sym(`one`)],
+        [p.let, sym(`two`), sym(`one`)],
+      ),
+      `property "one" unavailable in current context`,
+    )
+
+    /*
+    At runtime, properties declared with specific `let` and `func` are available
+    inside of methods (accessible on `this`), and we must mirror that.
+    */
+    t.is(
+      mac(
+        [p.let, sym(`one`)],
+        [p.func, sym(`two`), sym(`one`)],
+      ).compile(),
+      `{two () {
+return this.one
+}}`)
+
+    t.is(
+      mac(
+        [p.let, sym(`one`), 10],
+        [p.func, sym(`two`), sym(`one`)],
+      ).compile(),
+      `{one: 10, two () {
+return this.one
+}}`)
+
+    t.is(
+      mac(
+        [p.func, sym(`one`)],
+        [p.func, sym(`two`), sym(`one`)],
+      ).compile(),
+      `{one () {}, two () {
+return this.one
+}}`)
+
+    /*
+    Inside of methods, entering another context that changes `this` should make
+    properties of the current object unavailable again.
+    */
+    ti.fail(
+      () => mac(
+        [p.let, sym(`one`), 10],
+        [p.func, sym(`two`), [p.func, sym(`three`), sym(`one`)]],
+      ),
+      `property "one" unavailable in current context`,
+    )
+
+    let sub
+    t.is(
+      mac(
+        [p.func, sym(`one`), {macro(val) {
+          sub = val
+          return []
+        }}],
+      ).compile(),
+      `{one () {
+return
+}}`)
+
+    ti.reqSymUniqWith(sub.this, `this`)
+
+    t.eq(ti.objFlat(sub), [
+      {},
+      {[c.symStatement]: undefined, this: c.reqSym(sub.this)},
+      {[c.symMixin]: undefined, ...funcMixin},
+      {
+        [m.symObjThis]: c.reqSym(sub.this),
+        ...objOverride,
+        one: sub.one,
+      },
+      ...ti.objFlat(ctx),
+    ])
+  })
+
+  // Implementation is shared with normal methods.
+  // We need only basic sanity checks.
+  t.test(function test_func_async() {
+    function mac(...src) {return c.macroNode(null, [p.obj, ...src])}
+
+    t.is(
+      mac(
+        [p.func.async, sym(`one`)],
+        [p.func.async, sym(`two`), sym(`one`)],
+      ).compile(),
+      `{async one () {}, async two () {
+return this.one
+}}`)
+  })
+
+  // Implementation is shared with normal methods.
+  // We need only basic sanity checks.
+  t.test(function test_func_get() {
+    function mac(...src) {return c.macroNode(null, [p.obj, ...src])}
+
+    t.is(
+      mac(
+        [p.func.get, sym(`one`)],
+        [p.func.get, sym(`two`), sym(`one`)],
+      ).compile(),
+      `{get one () {}, get two () {
+return this.one
+}}`)
+  })
+
+  t.test(function test_mixed() {
+    function mac(...src) {return c.macroNode(null, [p.obj, ...src])}
+
+    t.is(
+      mac(
+        [p.set, 10, 20],
+        [p.let, sym(`one`)],
+        [p.let, sym(`two`), 30],
+        [p.func, sym(`three`), sym(`one`)],
+        [p.func.async, sym(`four`), sym(`two`)],
+        [p.func.get, sym(`five`), sym(`three`)],
+        [p.spread, []],
+        [p.spread, 40],
+      ).compile(),
+      `{10: 20, two: 30, three () {
+return this.one
+}, async four () {
+return this.two
+}, get five () {
+return this.three
+}, ...(40 ?? [])}`,
+    )
+  })
 })
 
 t.test(function test_get() {

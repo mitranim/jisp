@@ -257,27 +257,27 @@ func
   E FileArea void
     E `code` void name
     E `textarea`
-      #
-        ' `rows` 12
-        ' `placeholder` "use.mac `jisp:prelude.mjs` *"
+      ##
+        let rows 12
+        let placeholder "use.mac `jisp:prelude.mjs` *"
       ' text
 
 func
   fileTar name
+
   E FileArea void
     E `code` void name
     E `textarea`
-      #
-        ' `rows` 12
-        ' `disabled` true
-        ' `placeholder` `Compiled code should appear here.`
+      ##
+        let rows 12
+        let disabled true
+        let placeholder `Compiled code should appear here.`
 
 document.body.appendChild
   E FilePairs void
     E `file-pair` void
       fileSrc `mac.jis` ```
 use.mac `jisp:prelude.mjs` *
-use.mac `jisp:debug.mjs` debug
 use `jisp:core.mjs` c
 
 func
@@ -294,8 +294,6 @@ func
     E `file-pair` void
       fileSrc `util.jis` ```
 use.mac `jisp:prelude.mjs` *
-use.mac `jisp:debug.mjs` debug
-use `jisp:core.mjs` c
 
 func someFunc `some_value`
 ```
@@ -309,6 +307,8 @@ use.mac `./mac.jis` m
 use `./util.jis` u
 declare globals
 
+debug.compiling
+
 console.log `hello world!`
 console.log `imported utility module:` u
 
@@ -318,9 +318,14 @@ m.prn
       fileTar `main.mjs`
 
     E `button`
-      # `type` `button` `onclick` `this.parentNode.run()`
+      ##
+        let type `button`
+        let onclick `this.parentNode.run()`
       ' `run [ctrl+enter]`
 
     E `span`
-      # `class` `hint` `data-role` `hint` `hidden` true
+      ##
+        let class `hint`
+        let data-role `hint`
+        let hidden true
       ' `Success! See the browser console.`
