@@ -26,14 +26,13 @@ Partial reference:
 */
 export const globals = Object.create(null)
 
-// Built-in constants. Mixture of keywords, reserved names, and predeclareds.
-globals.undefined = Symbol.for(`undefined`)
-globals.null = Symbol.for(`null`)
-globals.false = Symbol.for(`false`)
-globals.true = Symbol.for(`true`)
-globals.NaN = Symbol.for(`NaN`)
-globals.Infinity = Symbol.for(`Infinity`)
-globals.this = Symbol.for(`this`)
+// Built-in constants.
+globals.undefined = undefined
+globals.null = null
+globals.false = false
+globals.true = true
+globals.NaN = NaN
+globals.Infinity = Infinity
 
 // Built-in singletons and functions.
 globals.globalThis = Symbol.for(`globalThis`)
