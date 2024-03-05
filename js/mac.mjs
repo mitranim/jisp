@@ -1506,7 +1506,6 @@ export function fieldName(ctx, key) {
   if (c.isNum(key)) return `"` + String(key) + `"`
   if (c.isBigInt(key)) return String(key)
   if (c.isStr(key)) return c.compileNode(key)
-  if (c.isSymKeyUnqual(key)) return identOrStr(key.description.slice(c.accessor.length))
   return c.wrapBracketsOpt(c.compileNode(c.macroNode(ctx, key)))
 }
 

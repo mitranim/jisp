@@ -17,7 +17,7 @@ contexts:
     - match: '{{space}}'
     - include: lister-match
 
-    # By default (without any strange macros involved), numbers and string in
+    # By default (without any strange macros involved), numbers and strings in
     # list head positions are guaranteed to cause runtime exceptions. It's
     # possible to write a macro that would interpret such lists in some other
     # way, but we don't plan to. Accidental use of numbers and strings on their

@@ -1276,14 +1276,6 @@ export function isStrQual(val) {return isStr(val) && val.includes(accessor)}
 export function isSymUnqual(val) {return isSym(val) && isStrUnqual(val.description)}
 export function isSymQual(val) {return isSym(val) && isStrQual(val.description)}
 
-export function isStrKey(val) {return isStr(val) && val[0] === accessor}
-export function isStrKeyUnqual(val) {return isStr(val) && val.lastIndexOf(accessor) === 0}
-export function isStrKeyQual(val) {return isStrKey(val) && val.lastIndexOf(accessor) > 0}
-
-export function isSymKey(val) {return isSym(val) && isStrKey(val.description)}
-export function isSymKeyUnqual(val) {return isSym(val) && isStrKeyUnqual(val.description)}
-export function isSymKeyQual(val) {return isSym(val) && isStrKeyQual(val.description)}
-
 export function reqSymUnqual(val) {
   if (isSymUnqual(val)) return val
   throw TypeError(`expected unqualified symbol, got ${show(val)}`)

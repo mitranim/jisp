@@ -39,7 +39,7 @@ variables:
   ident_unqual: '{{sym_break_begin}}[{{ident_chars}}]+{{sym_break_end}}'
   oper_unqual: '{{sym_break_begin}}[{{oper_chars}}]+{{sym_break_end}}'
 
-  sym_break_begin: (?<![{{sym_chars}}])
+  sym_break_begin: (?<![{{sym_chars}}])(?!-?\d)
   sym_break_end: (?![{{sym_chars}}])
 
   sym_segment_break_begin: (?<![{{sym_segment_chars}}])

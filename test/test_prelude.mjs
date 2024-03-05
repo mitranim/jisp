@@ -2420,10 +2420,16 @@ static 10 = 20n
 static "one" = "two"
 })`)
 
-  fail([fun, 10, sym(`two`)], `missing declaration of "two"`)
-  fail([fun, 10, sym(`.one`)], `missing declaration of ""`)
-  fail([fun, 10, sym(`.two`)], `missing declaration of ""`)
-  fail([fun, 10, sym(`.one.two`)], `missing declaration of ""`)
+  fail([fun, 10,              sym(`two`)],      `missing declaration of "two"`)
+  fail([fun, 10,              sym(`.`)],        `missing declaration of ""`)
+  fail([fun, 10,              sym(`.one`)],     `missing declaration of ""`)
+  fail([fun, 10,              sym(`.two`)],     `missing declaration of ""`)
+  fail([fun, 10,              sym(`.one.two`)], `missing declaration of ""`)
+  fail([fun, sym(`two`),      10],              `missing declaration of "two"`)
+  fail([fun, sym(`.`),        10],              `missing declaration of ""`)
+  fail([fun, sym(`.one`),     10],              `missing declaration of ""`)
+  fail([fun, sym(`.two`),     10],              `missing declaration of ""`)
+  fail([fun, sym(`.one.two`), 10],              `missing declaration of ""`)
 
   // Syntatically valid but would fail to run.
   // That's fine for our purposes.
@@ -2431,28 +2437,8 @@ static "one" = "two"
 static [one] = 10
 })`)
 
-  test([fun, sym(`.`), 10], `(class one {
-static "" = 10
-})`)
-
-  test([fun, sym(`.one`), 10], `(class one {
-static one = 10
-})`)
-
-  test([fun, sym(`.!@#`), 10], `(class one {
-static "!@#" = 10
-})`)
-
-  test([fun, sym(`.await`), 10], `(class one {
-static await = 10
-})`)
-
-  test([fun, sym(`.eval`), 10], `(class one {
-static eval = 10
-})`)
-
-  test([fun, sym(`.123ident`), 10], `(class one {
-static "123ident" = 10
+  test([fun, `one`, 10], `(class one {
+static "one" = 10
 })`)
 
   test([fun, ti.macReqExpressionOne, ti.macReqExpressionTwo], `(class one {
@@ -2468,11 +2454,11 @@ static ["one"] = "two"
       p.class.call(
         ctx,
         sym(`one`),
-        [fun, sym(`.two`), 10],
+        [fun, `two`, 10],
         {macro(val) {sub = val; return []}},
       ).compile(),
       `class one {
-static two = 10
+static "two" = 10
 }`)
 
     t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
@@ -2495,12 +2481,17 @@ t.test(function test_class_set_proto() {
   test([fun, [], []], `(class one {})`)
   fail([fun, [], 10], `unable to compile entry with empty left-hand side and value "10"`)
 
+  fail([fun, sym(`.`), 10], `missing declaration of ""`)
+  fail([fun, sym(`.one`), 10], `missing declaration of ""`)
+  fail([fun, sym(`.two`), 10], `missing declaration of ""`)
+  fail([fun, sym(`.one.two`), 10], `missing declaration of ""`)
+
   test([fun, 10, 20], `(class one {
 10 = 20
 })`)
 
-  test([fun, sym(`.two`), 10], `(class one {
-two = 10
+  test([fun, `one`, 10], `(class one {
+"one" = 10
 })`)
 
   test([fun, ti.macReqExpressionOne, ti.macReqExpressionTwo], `(class one {
@@ -4084,6 +4075,16 @@ t.test(function test_dict() {
     )
 
     ti.fail(
+      () => p.dict.call(ctx, sym(`.`), 10),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, sym(`.one`), 10),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
       () => p.dict.call(ctx, sym(`.one.two`), 10),
       `missing declaration of ""`,
     )
@@ -4110,6 +4111,11 @@ t.test(function test_dict() {
 
     ti.fail(
       () => p.dict.call(ctx, sym(`....`), 10),
+      `missing declaration of ""`,
+    )
+
+    ti.fail(
+      () => p.dict.call(ctx, 10, sym(`...`)),
       `missing declaration of ""`,
     )
   }
@@ -4168,15 +4174,6 @@ t.test(function test_dict() {
   t.is(p.dict.call(expr, `one`, 10, `two`, 20).compile(), `{"one": 10, "two": 20}`)
   t.is(p.dict.call(stat, `one`, 10, `two`, 20).compile(), `({"one": 10, "two": 20})`)
 
-  t.is(p.dict.call(expr, sym(`.one`), `two`, sym(`.three`), `four`).compile(), `{one: "two", three: "four"}`)
-  t.is(p.dict.call(stat, sym(`.one`), `two`, sym(`.three`), `four`).compile(), `({one: "two", three: "four"})`)
-
-  t.is(p.dict.call(expr, sym(`.one`), 10, sym(`.two`), 20).compile(), `{one: 10, two: 20}`)
-  t.is(p.dict.call(stat, sym(`.one`), 10, sym(`.two`), 20).compile(), `({one: 10, two: 20})`)
-
-  t.is(p.dict.call(expr, sym(`.!@#`), 10).compile(), `{"!@#": 10}`)
-  t.is(p.dict.call(stat, sym(`.!@#`), 10).compile(), `({"!@#": 10})`)
-
   t.is(
     p.dict.call(expr, 10, ti.macReqExpressionOne).compile(),
     `{10: "one"}`,
@@ -4196,10 +4193,6 @@ t.test(function test_dict() {
     p.dict.call(stat, 10, ti.macReqExpressionOne, 20, ti.macReqExpressionTwo).compile(),
     `({10: "one", 20: "two"})`,
   )
-
-  // Works by accident. We have no motive to avoid this.
-  t.is(p.dict.call(expr, sym(`.`), 10).compile(), `{"": 10}`)
-  t.is(p.dict.call(stat, sym(`.`), 10).compile(), `({"": 10})`)
 
   // Spread support.
   t.is(p.dict.call(expr, sym(`...`), 10).compile(), `{...10}`)
