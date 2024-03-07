@@ -395,18 +395,18 @@ export function useResolve(src) {return importTarDepPath(this, src)}
 export function declare(src) {
   c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 1)
+  if (c.isNil(src)) return []
   if (c.isSym(src)) return declareFromSym(this, src.description)
   if (c.isStr(src)) return declareFromStr(this, src)
-  throw TypeError(`expected either symbol or string, got ${c.show(src)}`)
+  if (c.isDict(src)) return declareFromDict(this, src)
+  throw TypeError(`unable to declare from ${c.show(src)}`)
 }
 
 function declareFromSym(ctx, src) {
   const val = c.ctxReqGet(ctx, src)
-  if (c.isDict(val)) {
-    c.patchDecl(c.ctxReqParentMixin(ctx), val)
-    return []
-  }
-  throw TypeError(`expected to resolve ${c.show(src)} to plain object, got ${c.show(val)}`)
+  if (c.isNil(val)) return []
+  if (c.isDict(val)) return declareFromDict(ctx, val)
+  throw TypeError(`expected to resolve ${c.show(src)} to nil or plain object, got ${c.show(val)}`)
 }
 
 async function declareFromStr(ctx, src) {
@@ -414,6 +414,11 @@ async function declareFromStr(ctx, src) {
     c.ctxReqParentMixin(ctx),
     await import(await importSrcDepPath(ctx, src)),
   )
+  return []
+}
+
+function declareFromDict(ctx, src) {
+  c.patchDecl(c.ctxReqParentMixin(ctx), src)
   return []
 }
 

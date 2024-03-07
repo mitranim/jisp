@@ -424,9 +424,8 @@ t.test(function test_declare_invalid() {
 
   const ctx = c.ctxWithStatement(null)
   ti.fail(() => p.declare.call(ctx),            `expected 1 inputs, got 0 inputs`)
-  ti.fail(() => p.declare.call(ctx, undefined), `expected either symbol or string, got undefined`)
-  ti.fail(() => p.declare.call(ctx, 10),        `expected either symbol or string, got 10`)
-  ti.fail(() => p.declare.call(ctx, []),        `expected either symbol or string, got []`)
+  ti.fail(() => p.declare.call(ctx, 10),        `unable to declare from 10`)
+  ti.fail(() => p.declare.call(ctx, []),        `unable to declare from []`)
 })
 
 t.test(function test_declare_sym() {
@@ -443,10 +442,8 @@ t.test(function test_declare_sym() {
   let ctx = c.ctxWithStatement(null)
   ctx.one = undefined
 
-  ti.fail(
-    () => p.declare.call(ctx, sym(`one`)),
-    `expected to resolve "one" to plain object, got undefined`,
-  )
+  testNone(p.declare.call(ctx, sym(`one`)))
+  t.own(ctx, {[c.symStatement]: undefined, one: undefined})
 
   ti.fail(
     () => p.declare.call(ctx, sym(`one.two`)),
@@ -457,7 +454,7 @@ t.test(function test_declare_sym() {
 
   ti.fail(
     () => p.declare.call(ctx, sym(`one`)),
-    `expected to resolve "one" to plain object, got 123`,
+    `expected to resolve "one" to nil or plain object, got 123`,
   )
 
   ti.fail(
@@ -470,7 +467,7 @@ t.test(function test_declare_sym() {
 
   ti.fail(
     () => p.declare.call(ctx, sym(`one`)),
-    `expected to resolve "one" to plain object, got false`,
+    `expected to resolve "one" to nil or plain object, got false`,
   )
 
   ti.fail(
@@ -522,7 +519,7 @@ await t.test(async function test_declare_str() {
   await ti.fail(async () => p.declare.call(ctx, ``), `missing mixin namespace in context {[Symbol(jisp.statement)]: undefined}`)
 
   ctx = c.ctxWithStatement(c.ctxWithMixin(ctx))
-  await ti.fail(async () => p.declare.call(ctx, 10),    `expected either symbol or string, got 10`)
+  await ti.fail(async () => p.declare.call(ctx, 10),    `unable to declare from 10`)
   await ti.fail(async () => p.declare.call(ctx, ``),    `Relative import path "" not prefixed with / or ./ or ../`)
   await ti.fail(async () => p.declare.call(ctx, `one`), `Relative import path "one" not prefixed with / or ./ or ../`)
 
