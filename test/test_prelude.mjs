@@ -234,17 +234,61 @@ t.test(function test_const_deconstruction() {
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
+  /*
+  No special support for `...` in deconstructions. It just happens to refer
+  to the `spread` macro, which has a special override in deconstructions.
+  */
+  {
+    ti.fail(
+      () => mac(c.ctxWithStatement(null), m.symRest),
+      `"..." does not represent a valid JS identifier`,
+    )
+
+    ti.fail(
+      () => mac(c.ctxWithStatement(null), [p.list, m.symRest]),
+      `"..." does not represent a valid JS identifier`,
+    )
+
+    ti.fail(
+      () => mac(c.ctxWithStatement(null), [p.list, m.symRest, sym(`two`)]),
+      `"..." does not represent a valid JS identifier`,
+    )
+
+    ti.fail(
+      () => mac(c.ctxWithStatement(null), [p.list, m.symRest, sym(`two`)]),
+      `"..." does not represent a valid JS identifier`,
+    )
+  }
+
+  /*
+  Generates invalid JS. Correct usage of the `spread` macro requires a call to
+  the `list` macro, which also has a special override here. See below.
+  */
   t.is(
-    mac(ctx, [p.list, m.symRest, sym(`two`)]).compile(),
-    `const [...two] = "expression_value"`,
+    mac(ctx, [p.spread, sym(`two`)]).compile(),
+    `const ...two = "expression_value"`,
   )
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   t.is(
-    mac(ctx, [p.list, sym(`three`), [p.list, sym(`four`), m.symRest, sym(`five`)]]).compile(),
-    `const [three, [four, ...five]] = "expression_value"`,
+    mac(ctx, [p.list, [p.spread, sym(`three`)]]).compile(),
+    `const [...three] = "expression_value"`,
   )
-  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`)})
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`)})
+
+  t.is(
+    mac(ctx, [p.list, sym(`four`), [p.list, sym(`five`), [p.spread, sym(`six`)]]]).compile(),
+    `const [four, [five, ...six]] = "expression_value"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`), six: sym(`six`)})
+
+  // User code tends to reference the `spread` macro this way.
+  ctx[``] = m.empty
+  t.is(
+    mac(ctx, [p.list, [m.symRest, sym(`seven`)]]).compile(),
+    `const [...seven] = "expression_value"`,
+  )
+  t.own(ctx, {[c.symStatement]: undefined, '': m.empty, one: sym(`one`), two: sym(`two`), three: sym(`three`), four: sym(`four`), five: sym(`five`), six: sym(`six`), seven: sym(`seven`)})
 })
 
 t.test(function test_const_mac() {
@@ -1965,8 +2009,13 @@ t.test(function test_func_param_deconstruction() {
   )
 
   ti.fail(
+    () => mac([p.spread]),
+    `expected an unqualified symbol or a list that begins with an unqualified symbol`,
+  )
+
+  ti.fail(
     () => mac([sym(`one`), m.symRest]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
+    `"..." does not represent a valid JS identifier`,
   )
 
   ti.fail(
@@ -1976,69 +2025,49 @@ t.test(function test_func_param_deconstruction() {
 
   ti.fail(
     () => mac([sym(`one`), [p.list, m.symRest]]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
+    `"..." does not represent a valid JS identifier`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), [p.list, m.symRest]]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 0 nodes`,
-  )
-
-  ti.fail(
-    () => mac([sym(`one`), m.symRest, [], []]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
-  )
-
-  ti.fail(
-    () => mac([sym(`one`), m.symRest, sym(`one`), sym(`two`)]),
-    `rest symbol ${c.show(m.symRest.description)} must be followed by exactly one node, found 2 nodes`,
-  )
-
-  ti.fail(
-    () => mac([sym(`one`), m.symRest, []]),
-    `expected variant of isSym, got []`,
-  )
-
-  ti.fail(
-    () => mac([sym(`one`), m.symRest, 10]),
+    () => mac([sym(`one`), [p.spread, 10]]),
     `expected variant of isSym, got 10`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), m.symRest, [sym(`two`)]]),
+    () => mac([sym(`one`), [p.spread, [sym(`two`)]]]),
     `expected variant of isSym, got [two]`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), m.symRest, m.symRest]),
-    c.show(m.symRest.description) + ` does not represent a valid JS identifier`,
-  )
-
-  ti.fail(
-    () => mac([sym(`one`), m.symRest, sym(`one.two`)]),
+    () => mac([sym(`one`), [p.spread, sym(`one.two`)]]),
     `"one.two" does not represent a valid JS identifier`,
   )
 
-  test([sym(`one`), m.symRest, sym(`one`)], `function one (...one) {}`)
-  test([sym(`one`), m.symRest, sym(`two`)], `function one (...two) {}`)
+  ti.fail(
+    () => mac([sym(`one`), [p.spread, sym(`two.three`)]]),
+    `"two.three" does not represent a valid JS identifier`,
+  )
+
+  test([sym(`one`), [p.spread, sym(`one`)]], `function one (...one) {}`)
+  test([sym(`one`), [p.spread, sym(`two`)]], `function one (...two) {}`)
 
   test(
-    [sym(`one`), sym(`two`), m.symRest, sym(`three`)],
+    [sym(`one`), sym(`two`), [p.spread, sym(`three`)]],
     `function one (two, ...three) {}`,
   )
 
   test(
-    [sym(`one`), sym(`two`), [p.list, m.symRest, sym(`three`)]],
+    [sym(`one`), sym(`two`), [p.list, [p.spread, sym(`three`)]]],
     `function one (two, [...three]) {}`,
   )
 
   test(
-    [sym(`one`), sym(`two`), [p.list, sym(`three`), m.symRest, sym(`four`)]],
+    [sym(`one`), sym(`two`), [p.list, sym(`three`), [p.spread, sym(`four`)]]],
     `function one (two, [three, ...four]) {}`,
   )
 
   ti.fail(
-    () => mac([sym(`one`), sym(`two`), m.symRest, sym(`two`)]),
+    () => mac([sym(`one`), sym(`two`), [p.spread, sym(`two`)]]),
     `redundant declaration of "two"`,
   )
 
@@ -2048,7 +2077,7 @@ t.test(function test_func_param_deconstruction() {
   )
 
   ti.fail(
-    () => mac([sym(`one`), sym(`two`), [p.list, m.symRest, sym(`two`)]]),
+    () => mac([sym(`one`), sym(`two`), [p.list, [p.spread, sym(`two`)]]]),
     `redundant declaration of "two"`,
   )
 
@@ -2056,7 +2085,7 @@ t.test(function test_func_param_deconstruction() {
   t.is(
     p.func.call(
       null,
-      [sym(`one`), sym(`two`), [p.list, sym(`three`), m.symRest, sym(`four`)]],
+      [sym(`one`), sym(`two`), [p.list, sym(`three`), [p.spread, sym(`four`)]]],
       {macro(val) {ctx = val; return sym(`one`)}},
       [],
     ).compile(),
@@ -3236,7 +3265,7 @@ static one (one) {}
 })`)
 
   test(
-    [p.func, [sym(`one`), m.symRest, sym(`one`)]],
+    [p.func, [sym(`one`), [p.spread, sym(`one`)]]],
     `(class one {
 static one (...one) {}
 })`)
@@ -3248,7 +3277,7 @@ static one (one, two) {}
 })`)
 
   test(
-    [p.func, [sym(`one`), m.symRest, sym(`one`)], sym(`one`)],
+    [p.func, [sym(`one`), [p.spread, sym(`one`)]], sym(`one`)],
     `(class one {
 static one (...one) {
 return one
@@ -3393,7 +3422,7 @@ one (two) {}
 })`)
 
   test(
-    [p.func, [sym(`one`), m.symRest, sym(`one`)]],
+    [p.func, [sym(`one`), [p.spread, sym(`one`)]]],
     `(class one {
 one (...one) {}
 })`)
@@ -3405,7 +3434,7 @@ one (one, two) {}
 })`)
 
   test(
-    [p.func, [sym(`one`), m.symRest, sym(`one`)], sym(`one`)],
+    [p.func, [sym(`one`), [p.spread, sym(`one`)]], sym(`one`)],
     `(class one {
 one (...one) {
 return one
@@ -4194,9 +4223,8 @@ t.test(function test_dict() {
     `({10: "one", 20: "two"})`,
   )
 
-  // Spread support.
-  t.is(p.dict.call(expr, sym(`...`), 10).compile(), `{...10}`)
-  t.is(p.dict.call(stat, sym(`...`), 10).compile(), `({...10})`)
+  t.is(p.dict.call(expr, m.symRest, 10).compile(), `{...10}`)
+  t.is(p.dict.call(stat, m.symRest, 10).compile(), `({...10})`)
 })
 
 t.bench(function bench_dict_compile_core() {

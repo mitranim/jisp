@@ -33,7 +33,7 @@ func
     @
 
 func
-  map src ... arg
+  map src : ... arg
   if
     isSome src
     Array.prototype.map.apply src arg
@@ -228,7 +228,7 @@ class
 def FilePairs `file-pairs`
 
 func
-  E type props ... chi
+  E type props : ... chi
 
   const tar : if
     c.isFun type

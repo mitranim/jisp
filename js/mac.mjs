@@ -190,6 +190,7 @@ export const symFuncGet = Symbol.for(`jisp.func.get`)
 export const symClassStatic = Symbol.for(`jisp.class.static`)
 export const symClassProto = Symbol.for(`jisp.class.proto`)
 export const symObjThis = Symbol.for(`jisp.obj.this`)
+export const symSpread = Symbol.for(`jisp.spread`)
 
 const symArguments = Symbol.for(`arguments`)
 const symSuper = Symbol.for(`super`)
@@ -1051,52 +1052,48 @@ export function funcGetForObj() {
   return c.raw(`get ` + funcBaseForObj.apply(this, arguments))
 }
 
-// Must be called with the "tail" of the function parameter list.
-export function funcParamList(ctx, src) {
-  return c.wrapParens(listDeconstructionInner(ctx, src))
-}
-
 export function param(src) {
   if (c.isSym(src)) {
     c.ctxDeclare(this, src, src)
     return c.reqStr(src.description)
   }
 
-  // Assume that the list represents a macro call suitable for use in parameter
-  // lists, typically a list deconstruction.
+  /*
+  Assume that the list represents a macro call suitable for use in parameter
+  lists, typically a list deconstruction.
+  */
   if (c.isArr(src)) {
-    const keys = Object.getOwnPropertySymbols(paramOverride)
-    for (const key of keys) this[key] = paramOverride[key]
+    ctxOverrideParam(this)
     try {return c.compileNode(c.macroNode(this, src))}
-    finally {for (const key of keys) delete this[key]}
+    finally {ctxUnderrideParam(this)}
   }
 
   throw SyntaxError(`every parameter must be a symbol or a list, got ${c.show(src)}`)
 }
 
-/*
-Allows some existing macros to be referenced in parameter deconstructions, with
-a different behavior, specialized for parameter / variable declarations. This
-allows symmetry between declaration and usage. Works particularly well for list
-construction / deconstruction.
-*/
-export const paramOverride = Object.create(null)
-paramOverride[symList] = listDeconstruction
+function ctxOverrideParam(ctx) {
+  ctx[symList] = listDeconstruction
+  ctx[symSpread] = restParam
+  return ctx
+}
 
-function restParam(ctx, src, ind) {
-  const more = c.reqArr(src).length - c.reqNat(ind)
-  if (more !== 1) {
-    throw SyntaxError(`rest symbol ${c.show(symRest.description)} must be followed by exactly one node, found ${more} nodes`)
-  }
-  src = src[ind]
-  c.ctxDeclare(ctx, src, src)
-  return `...` + src.description
+function ctxUnderrideParam(ctx) {
+  delete ctx[symList]
+  delete ctx[symSpread]
+  return ctx
+}
+
+function restParam(src) {
+  c.reqArity(arguments.length, 1)
+  c.reqSym(src)
+  c.ctxDeclare(this, src, src)
+  return c.raw(`...` + src.description)
 }
 
 function funcMacroCompile(ctx, name, param, body) {
   return c.joinSpaced(
     name,
-    funcParamList(ctx, param),
+    c.wrapParens(listDeconstructionInner.apply(ctx, param)),
     c.wrapBracesMultiLine(retStatementsOpt(ctx, body)),
   )
 }
@@ -1422,6 +1419,7 @@ export function isSome(val) {
 isSome.compile = () => `(a => a != null)`
 
 export function spread(src) {
+  if (c.hasOwn(this, symSpread)) return this[symSpread].apply(this, arguments)
   c.reqArity(arguments.length, 1)
   src = c.compileNode(c.macroNode(c.ctxToExpression(this), src))
   return src ? c.raw(`...(${src} ?? [])`) : []
@@ -1454,28 +1452,14 @@ parameter declarations. Not suitable for the top level of function parameters,
 which must compile to parens, not brackets.
 */
 export function listDeconstruction(...src) {
-  return c.raw(c.wrapBrackets(listDeconstructionInner(this, src)))
+  if (!src.length) return c.raw(`[]`)
+  return c.raw(c.wrapBrackets(listDeconstructionInner.apply(this, src)))
 }
 
 // Must be called with the "tail" of a list deconstruction.
-function listDeconstructionInner(ctx, src) {
-  if (c.isNil(src) || !c.reqArr(src).length) return ``
-
-  const buf = []
-  let ind = -1
-
-  while (++ind < src.length) {
-    let val = src[ind]
-
-    if (val === symRest) {
-      buf.push(restParam(ctx, src, ind + 1))
-      break
-    }
-
-    val = param.call(ctx, val)
-    if (val) buf.push(val)
-  }
-  return c.joinExpressions(buf)
+function listDeconstructionInner(...src) {
+  if (!src.length) return ``
+  return c.joinExpressions(src.map(param, this))
 }
 
 export function dict(...src) {
@@ -1496,10 +1480,13 @@ export function dict(...src) {
 }
 
 export function dictEntry(key, val) {
-  key = key === symRest ? key : fieldName(this, key)
-  val = c.compileNode(c.macroNode(this, val))
+  if (key === symRest) {
+    val = c.compileNode(c.macroNode(this, val))
+    return val && (`...` + val)
+  }
 
-  if (key === symRest) return val && (`...` + val)
+  key = fieldName(this, key)
+  val = c.compileNode(c.macroNode(this, val))
   if (key) return key + `: ` + (val || `undefined`)
   if (!val) return ``
   throw errEntryLhs(val)

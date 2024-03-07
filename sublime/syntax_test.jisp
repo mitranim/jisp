@@ -630,7 +630,7 @@ pre.const
 [const [@ one] val]
 [const [@ one two] val]
 [const [@ one [@ two]] val]
-[const [@ one [@ two ... [@ three]]] val]
+[const [@ one [@ two [... three]]] val]
 
 func
 pre.func
@@ -666,6 +666,10 @@ pre.func
 [pre.func         [name param param ... param]]
 [func.variant     [name param param ... param]]
 [pre.func.variant [name param param ... param]]
+[func             [name param param [... param]]]
+[pre.func         [name param param [... param]]]
+[func.variant     [name param param [... param]]]
+[pre.func.variant [name param param [... param]]]
 [func             [name param param] body]
 [pre.func         [name param param] body]
 [func.variant     [name param param] body]
@@ -678,6 +682,10 @@ pre.func
 [pre.func         [name param param ... param] body]
 [func.variant     [name param param ... param] body]
 [pre.func.variant [name param param ... param] body]
+[func             [name param param [... param]] body]
+[pre.func         [name param param [... param]] body]
+[func.variant     [name param param [... param]] body]
+[pre.func.variant [name param param [... param]] body]
 [func             [name param] [body] [body] [body] body]
 [func.variant     [name param] [body] [body] [body] body]
 [pre.func         [name param] [body] [body] [body] body]
@@ -690,8 +698,9 @@ pre.func
 [func [name [@ one two]] body]
 [func [name one [@ two] three] body]
 [func [name one [@ two] three [@ four]] body]
-[func [name one ... [@ two] three [@ four ... five]] body]
-[func [name one ... [list two] three [list four ... five]] body]
+[func [name one ... two three [@ four ... five]] body]
+[func [name one [... two] three [@ four [... five]]] body]
+[func [name one [spread two] three [@ four [spread five]]] body]
 
 ;;
 Only unqualified identifiers in the parameter list should be scoped as
@@ -725,6 +734,9 @@ pre.class
   [func         [name param ... param]]
   [func.variant [name param ... param]]
 
+  [func         [name param [... param]]]
+  [func.variant [name param [... param]]]
+
   [prototype
     [func         name]
     [func.variant name]
@@ -737,6 +749,9 @@ pre.class
 
     [func         [name param ... param]]
     [func.variant [name param ... param]]
+
+    [func         [name param [... param]]]
+    [func.variant [name param [... param]]]
   ]
 ]
 
