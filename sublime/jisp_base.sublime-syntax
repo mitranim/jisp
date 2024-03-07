@@ -226,15 +226,6 @@ contexts:
     - match: ''
       set: req-delim-pop
 
-  # sym-rest-pop:
-  #   - include: accessor-match
-  #   - match: '[{{oper_chars}}]+{{sym_segment_break_end}}'
-  #     scope: keyword.operator.jisp
-  #   - match: '[{{sym_segment_chars}}]+'
-  #     scope: variable.other.jisp
-  #   - match: ''
-  #     set: req-delim-pop
-
   req-delim-pop:
     - match: \S+
       scope: invalid.illegal.jisp

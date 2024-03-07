@@ -1172,7 +1172,9 @@ export function reqGet(src, path) {
 }
 
 export function optGet(src, path) {
-  return reqStr(path).split(accessor).reduce(symGetOpt, src)
+  reqStr(path)
+  if (isComp(src)) return path.split(accessor).reduce(symGetOpt, src)
+  return undefined
 }
 
 export function ctxDeclare(ctx, key, val) {
