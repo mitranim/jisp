@@ -196,18 +196,10 @@ contexts:
     - match: (?=[{{sym_chars}}])
       push: sym-rest-pop
 
-  # Unlike most languages, Jisp does not have any keywords or reserved words,
-  # and it's possible for these names to refer to something other than the
-  # built-in constants. However, the vast majority of code is expected to
-  # simply `[declare globals]` and never redeclare these names.
-  #
-  # This includes `void` because the `void` macro exported by our prelude module
-  # supports the "bare" mode which compiles to `undefined`, and we assume that
-  # if anyone redeclares `void`, the redeclaration will have similar behaviors.
-  # Note that `void` is a keyword in JS, which means the user is prevented from
-  # accidentally masking it with a regular declaration.
+  # Constants exported by prelude. This highlighting assumes that nearly all
+  # user code will import prelude as `...` and will not redeclare these.
   ident-constant-match:
-    - match: '{{sym_break_begin}}(?:void|undefined|null|false|true|NaN|Infinity){{sym_segment_break_end}}'
+    - match: '{{sym_break_begin}}(?:void|null|no|ok|nan|inf|-inf){{sym_segment_break_end}}'
       scope: constant.language.jisp
       push: sym-rest-pop
 

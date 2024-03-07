@@ -579,8 +579,8 @@ one
 [one two] three
 [one two three]
 
-    void     undefined     null     false     true     NaN     Infinity
-pre.void pre.undefined pre.null pre.false pre.true pre.NaN pre.Infinity
+    void     null     no     ok     nan     inf     -inf
+pre.void pre.null pre.no pre.ok pre.nan pre.inf pre.-inf
 
 use
 pre.use

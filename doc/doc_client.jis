@@ -210,8 +210,8 @@ class
 
     func.async run
       console.clear
-      hint false
-      hint : await : make true
+      hint no
+      hint : await : make ok
 
     func
       onKeyDown eve
@@ -270,7 +270,7 @@ func
     E `textarea`
       ##
         let rows 12
-        let disabled true
+        let disabled ok
         let placeholder `Compiled code should appear here.`
 
 document.body.appendChild
@@ -327,5 +327,5 @@ m.prn
       ##
         let class `hint`
         let data-role `hint`
-        let hidden true
+        let hidden ok
       ' `Success! See the browser console.`

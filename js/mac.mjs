@@ -26,14 +26,6 @@ Partial reference:
 */
 export const globals = Object.create(null)
 
-// Built-in constants.
-globals.undefined = undefined
-globals.null = null
-globals.false = false
-globals.true = true
-globals.NaN = NaN
-globals.Infinity = Infinity
-
 // Built-in singletons and functions.
 globals.globalThis = Symbol.for(`globalThis`)
 globals.console = Symbol.for(`console`)

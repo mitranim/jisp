@@ -1,3 +1,14 @@
+const nul = null
+export {nul as null}
+
+export const no = false
+export const ok = true
+export const nan = NaN
+export const inf = Infinity
+
+const negInf = -Infinity
+export {negInf as '-inf'}
+
 export {
   globals,
   domGlobals,
