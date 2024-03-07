@@ -97,3 +97,18 @@ export function prn(src) {
     src,
   ]
 }
+
+export function timed(...src) {
+  if (!src.length) return []
+
+  const time0 = performance.now()
+  src = c.macroNodes(this, src)
+  const time1 = performance.now()
+  src = c.compileStatements(src)
+  const time2 = performance.now()
+
+  console.log(`[debug] macro time:`, time1 - time0, `ms`)
+  console.log(`[debug] compile time:`, time2 - time1, `ms`)
+  console.log(`[debug] total time:`, time2 - time0, `ms`)
+  return src ? c.raw(src) : []
+}
