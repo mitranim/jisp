@@ -1375,12 +1375,12 @@ instof.compile = () => `((a, b) => a instanceof b)`
 
 export {$in as in}
 
-export function $in(val, key) {
+export function $in(key, val) {
   c.reqArity(arguments.length, 2)
   return binaryInfix(this, key, `in`, val)
 }
 
-$in.compile = () => `((a, b) => b in a)`
+$in.compile = () => `((a, b) => a in b)`
 
 /*
 Only valid if the declaration of `Object` in the current scope refers to the

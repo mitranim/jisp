@@ -3928,40 +3928,8 @@ function testBinary(fun, inf) {
 }
 
 t.test(function test_in() {
-  // Inverse copy of `testBinary`.
-  function test(ctx) {
-    ti.fail(() => p.in.call(ctx), `expected 2 inputs, got 0 inputs`)
-
-    t.is(
-      p.in.call(ctx, [], []).compile(),
-      `(undefined in undefined)`,
-    )
-
-    t.is(
-      p.in.call(ctx, 10, []).compile(),
-      `(undefined in 10)`,
-    )
-
-    t.is(
-      p.in.call(ctx, [], 10).compile(),
-      `(10 in undefined)`,
-    )
-
-    t.is(
-      p.in.call(ctx, 10, 20).compile(),
-      `(20 in 10)`,
-    )
-
-    t.is(
-      p.in.call(ctx, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(),
-      `("two" in "one")`,
-    )
-  }
-
-  test(null)
-  test(c.ctxWithStatement(null))
-
-  testCompilable(p.in, `((a, b) => b in a)`)
+  testBinary(p.in, `in`)
+  testCompilable(p.in, `((a, b) => a in b)`)
 })
 
 /*
