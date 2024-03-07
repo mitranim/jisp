@@ -639,22 +639,17 @@ export function compileSymWith(src, fun) {
 }
 
 export function compileAccess(src) {
-  reqNonEmptyKey(src)
+  reqStr(src)
   if (/^\d+$/.test(src)) return wrapBrackets(src)
   if (regIdentFull.test(src)) return accessor + src
   return wrapBrackets(JSON.stringify(src))
 }
 
 export function compileAccessOpt(src) {
-  reqNonEmptyKey(src)
+  reqStr(src)
   if (/^\d+$/.test(src)) return accessorOpt + wrapBrackets(src)
   if (regIdentFull.test(src)) return accessorOpt + src
   return accessorOpt + wrapBrackets(JSON.stringify(src))
-}
-
-export function reqNonEmptyKey(src) {
-  if (reqStr(src)) return src
-  throw SyntaxError(`unexpected empty key`)
 }
 
 export function compileObj(src) {

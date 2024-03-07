@@ -63,9 +63,6 @@ t.test(function test_compile_sym() {
   fail(Symbol.for(`...`), `unexpected leading accessor in "..."`)
   fail(Symbol.for(`.one`), `unexpected leading accessor in ".one"`)
   fail(Symbol.for(`.one.two`), `unexpected leading accessor in ".one.two"`)
-  fail(Symbol.for(`one.`), `unable to compile "one." to valid JS: unexpected empty key`)
-  fail(Symbol.for(`one.two.`), `unable to compile "one.two." to valid JS: unexpected empty key`)
-  fail(Symbol.for(`one..two`), `unable to compile "one..two" to valid JS: unexpected empty key`)
 
   test(Symbol(``), ``)
   test(Symbol.for(``), ``)
@@ -80,6 +77,14 @@ t.test(function test_compile_sym() {
   test(Symbol.for(`#one.two`), `#one.two`)
   test(Symbol.for(`one.#two`), `one.#two`)
   test(Symbol.for(`#one.#two`), `#one.#two`)
+
+  test(Symbol.for(`one.`), `one[""]`)
+  test(Symbol.for(`one..`), `one[""][""]`)
+  test(Symbol.for(`one.two.`), `one.two[""]`)
+  test(Symbol.for(`one.two..`), `one.two[""][""]`)
+  test(Symbol.for(`one..two`), `one[""].two`)
+  test(Symbol.for(`one..two.`), `one[""].two[""]`)
+  test(Symbol.for(`one..two..`), `one[""].two[""][""]`)
 
   fail(Symbol.for(`10`), `"10" does not represent a valid JS identifier`)
   fail(Symbol.for(`10.20`), `"10" does not represent a valid JS identifier`)
