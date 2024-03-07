@@ -1,4 +1,4 @@
-use.mac `jisp:prelude.mjs` *
+use.mac `jisp:prelude.mjs` ...
 use `jisp:core.mjs` c
 declare globals
 

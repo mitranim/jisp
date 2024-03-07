@@ -1,4 +1,4 @@
-[use.mac `jisp:prelude.mjs` *]
+[use.mac `jisp:prelude.mjs` ...]
 [use.mac `./test_caching_usemac.jisp`]
 [use.mac `./test_caching_usemac.mjs`]
 [use `./test_caching_use.jisp`]

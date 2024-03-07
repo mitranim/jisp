@@ -210,7 +210,7 @@ await t.test(async function test_module_context_inheritance() {
   const fs = new ti.PseudoFs()
 
   fs.set(`blob:/one.jisp`, c.joinLines(
-    `[use.mac "jisp:prelude.mjs" *]`,
+    `[use.mac "jisp:prelude.mjs" ...]`,
     `[const someName 10]`,
     `[use.mac "./two.jisp"]`,
   ))

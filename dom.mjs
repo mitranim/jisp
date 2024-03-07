@@ -15,13 +15,13 @@ Scripts with `src`:
 Inline scripts:
 
   <script type="application/jisp">
-    [use `jisp:prelude.mjs` *]
+    [use `jisp:prelude.mjs` ...]
     [declare globals]
     [console.log `hello world!`]
   </script>
 
   <script type="application/jis">
-    use `jisp:prelude.mjs` *
+    use `jisp:prelude.mjs` ...
     declare globals
     console.log `hello world!`
   </script>

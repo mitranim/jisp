@@ -2,6 +2,7 @@ import {t} from './test_init.mjs'
 import * as ti from './test_init.mjs'
 import * as c from '../js/core.mjs'
 import * as p from '../js/prelude.mjs'
+import * as m from '../js/mac.mjs'
 
 function sym(val) {return Symbol.for(c.reqStr(val))}
 function testNone(val) {t.eq(val, [])}
@@ -22,6 +23,17 @@ const existingJispFileSrcUrl = new URL(`test_simple_export.jisp`, ti.TEST_SRC_UR
 const existingJispFileTarUrl = new URL(`test_simple_export.mjs`, ti.TEST_TAR_SUB_URL).href
 const missingJsUrl = `one://two.three/four.mjs`
 
+t.test(function test_use_invalid() {
+  ti.fail(() => p.use.call(null), `expected module context`)
+
+  const ctx = c.ctxWithModule(c.ctxWithMixin(makeCtx()))
+
+  ti.fail(() => p.use.call(ctx), `expected between 1 and 2 inputs, got 0 inputs`)
+  ti.fail(() => p.use.call(ctx, 10), `expected variant of isStr, got 10`)
+  ti.fail(() => p.use.call(ctx, ``, 10), `expected ... or unqualified symbol, got 10`)
+  ti.fail(() => p.use.call(ctx, ``, sym(`one.two`)), `expected ... or unqualified symbol, got one.two`)
+})
+
 await t.test(async function test_use_mixin() {
   const ctx = c.ctxWithModule(c.ctxWithMixin(makeCtx()))
 
@@ -32,7 +44,7 @@ await t.test(async function test_use_mixin() {
   here.
   */
   await ti.fail(
-    async () => p.use.call(ctx, `some_path`, sym(`*`)),
+    async () => p.use.call(ctx, `some_path`, m.symRest),
     `Relative import path "some_path" not prefixed with / or ./ or ../`,
   )
 
@@ -40,7 +52,7 @@ await t.test(async function test_use_mixin() {
   t.own(mix, {[c.symMixin]: undefined})
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
-  const out = await p.use.call(ctx, existingJsFileUrl, sym(`*`))
+  const out = await p.use.call(ctx, existingJsFileUrl, m.symRest)
   t.own(mix, {[c.symMixin]: undefined, one: mix.one, two: mix.two})
   t.own(ctx, {[c.symModule]: undefined, [c.symStatement]: undefined, [c.symExport]: undefined})
 
@@ -368,12 +380,12 @@ async function testUseMacMixin(ctx, src, tar) {
   ctx = c.ctxWithStatement(ctx)
 
   await ti.fail(
-    async () => p.use.mac.call(ctx, src, sym(`*`)),
+    async () => p.use.mac.call(ctx, src, m.symRest),
     `missing mixin namespace in context`,
   )
 
   ctx = c.ctxWithStatement(c.ctxWithMixin(ctx))
-  testNone(await p.use.mac.call(ctx, src, sym(`*`)))
+  testNone(await p.use.mac.call(ctx, src, m.symRest))
 
   t.own(ctx, {[c.symStatement]: undefined})
 

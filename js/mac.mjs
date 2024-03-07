@@ -183,7 +183,6 @@ domGlobals.HTMLUListElement = Symbol.for(`HTMLUListElement`)
 domGlobals.HTMLVideoElement = Symbol.for(`HTMLVideoElement`)
 domGlobals.SVGSvgElement = Symbol.for(`SVGSvgElement`)
 
-export const symStar = Symbol.for(`*`)
 export const symRest = Symbol.for(`...`)
 export const symDo = Symbol.for(`jisp.do`)
 export const symLet = Symbol.for(`jisp.let`)
@@ -209,9 +208,11 @@ export function use(src, name) {
   c.ctxReqIsModule(this)
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
-
-  if (name === symStar) return useMixin.call(this, src)
-  if (c.isSome(name)) return useNamed.apply(this, arguments)
+  if (arguments.length > 1) {
+    if (name === symRest) return useMixin.call(this, src)
+    if (c.isSymUnqual(name)) return useNamed.apply(this, arguments)
+    throw errUseName(name)
+  }
   return useAnon.call(this, src)
 }
 
@@ -299,8 +300,11 @@ function useAsyncCompile(src) {
 export function useMac(src, name) {
   c.ctxReqIsStatement(this)
   c.reqArityBetween(arguments.length, 1, 2)
-  if (name === symStar) return useMacMixin.call(this, src)
-  if (c.isSome(name)) return useMacNamed.apply(this, arguments)
+  if (arguments.length > 1) {
+    if (name === symRest) return useMacMixin.call(this, src)
+    if (c.isSymUnqual(name)) return useMacNamed.apply(this, arguments)
+    throw errUseName(name)
+  }
   return useMacAnon.apply(this, arguments)
 }
 
@@ -320,6 +324,10 @@ async function useMacMixin(src) {
   c.reqArity(arguments.length, 1)
   c.patch(c.ctxReqParentMixin(this), await import(await importSrcDepPath(this, src)))
   return []
+}
+
+function errUseName(src) {
+  return SyntaxError(`expected ${c.show(symRest)} or unqualified symbol, got ${c.show(src)}`)
 }
 
 function importSrcDepPath(ctx, src) {

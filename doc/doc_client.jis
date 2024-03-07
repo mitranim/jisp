@@ -1,4 +1,4 @@
-use.mac `jisp:prelude.mjs` *
+use.mac `jisp:prelude.mjs` ...
 use.mac `jisp:debug.mjs` debug
 use `jisp:core.mjs` c
 use `jisp:prelude.mjs` p
@@ -259,7 +259,7 @@ func
     E `textarea`
       ##
         let rows 12
-        let placeholder "use.mac `jisp:prelude.mjs` *"
+        let placeholder "use.mac `jisp:prelude.mjs` ..."
       ' text
 
 func
@@ -277,7 +277,7 @@ document.body.appendChild
   E FilePairs void
     E `file-pair` void
       fileSrc `mac.jis` ```
-use.mac `jisp:prelude.mjs` *
+use.mac `jisp:prelude.mjs` ...
 use `jisp:core.mjs` c
 
 func
@@ -293,7 +293,7 @@ func
 
     E `file-pair` void
       fileSrc `util.jis` ```
-use.mac `jisp:prelude.mjs` *
+use.mac `jisp:prelude.mjs` ...
 
 func someFunc `some_value`
 ```
@@ -301,7 +301,7 @@ func someFunc `some_value`
 
     E `file-pair` void
       fileSrc `main.jis` ```
-use.mac `jisp:prelude.mjs` *
+use.mac `jisp:prelude.mjs` ...
 use.mac `jisp:debug.mjs` debug
 use.mac `./mac.jis` m
 use `./util.jis` u
