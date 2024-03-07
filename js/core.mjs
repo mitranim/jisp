@@ -594,9 +594,9 @@ export function macroNodes(ctx, src) {
 
 export function compileNode(src) {
   switch (typeof src) {
-    case `undefined`: return `undefined`
+    case `undefined`: return `undefined` // See `reservedNames`.
     case `boolean`: return String(src)
-    case `number`: return Object.is(src, -0) ? `-0` : String(src)
+    case `number`: return compileNum(src)
     case `bigint`: return String(src) + `n`
     case `symbol`: return compileSym(src)
     case `string`: return JSON.stringify(src)
@@ -650,6 +650,16 @@ export function compileAccessOpt(src) {
   if (/^\d+$/.test(src)) return accessorOpt + wrapBrackets(src)
   if (regIdentFull.test(src)) return accessorOpt + src
   return accessorOpt + wrapBrackets(JSON.stringify(src))
+}
+
+// Avoids mentioning `NaN` and `Infinity` because they may be redeclared.
+export function compileNum(src) {
+  reqNum(src)
+  if (Object.is(src, NaN)) return `(0/0)`
+  if (Object.is(src, Infinity)) return `(1/0)`
+  if (Object.is(src, -Infinity)) return `(-1/0)`
+  if (Object.is(src, -0)) return `-0`
+  return String(src)
 }
 
 export function compileObj(src) {

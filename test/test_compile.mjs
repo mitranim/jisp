@@ -39,7 +39,7 @@ t.test(function test_compile_num() {
     t.is((-0).toString(), `0`)
     t.is(`` + -0, `0`)
 
-    // And yet we must produce the right result.
+    // We must produce the right result.
     test(-0, `-0`)
   }
 
@@ -48,10 +48,13 @@ t.test(function test_compile_num() {
   test(123.456, `123.456`)
   test(-123.456, `-123.456`)
 
-  // We don't support decoding these values, but we do support encoding them.
-  test(NaN, `NaN`)
-  test(Infinity, `Infinity`)
-  test(-Infinity, `-Infinity`)
+  /*
+  The compiled representations avoid mentioning `NaN` and `Infinity`
+  because these are predeclared, not reserved, and may be redeclared.
+  */
+  test(NaN, `(0/0)`)
+  test(Infinity, `(1/0)`)
+  test(-Infinity, `(-1/0)`)
 })
 
 t.test(function test_compile_sym() {
