@@ -38,7 +38,7 @@ export {
   isNil,
   isSome,
   spread,
-  empty                                                    as '',
+  empty as '',
   list,                        list                        as '@',
   dict,                        dict                        as '#',
   obj,                         obj                         as '##',

@@ -833,6 +833,8 @@ export function loopIterBase(tar, ...body) {
   )
 }
 
+// TODO replace this with regular contextual overrides, same as what's used
+// in object literals and class definitions.
 export const loopIterHeadCtx = Object.create(null)
 loopIterHeadCtx.const = loopIterConst
 loopIterHeadCtx.let = loopIterLet
@@ -1185,14 +1187,14 @@ class FnOrdHan {
 
   get(tar, key) {
     if (!isOrdKey(key)) return tar[key]
-    this.arity = Math.max(this.arity, 1 + (key.slice(1) | 0))
+    this.arity = Math.max(this.arity, 1 + ordKeyNum(key))
     return Symbol.for(key)
   }
 }
 
-function isOrdKey(val) {return c.isStr(val) && ordKeyReg.test(val)}
-
 const ordKeyReg = /^[$]\d+$/
+function isOrdKey(val) {return c.isStr(val) && ordKeyReg.test(val)}
+function ordKeyNum(val) {return c.reqStr(val).slice(`$`.length) | 0}
 
 export {$class as class}
 
@@ -1978,7 +1980,7 @@ convert regexps into their JS representations.
 */
 export function regexp(src, flags) {
   c.reqArityBetween(arguments.length, 1, 2)
-  return new RegExp(c.reqStr(src), c.optStr(flags))
+  return RegExp(c.reqStr(src), c.optStr(flags))
 }
 
 export function pipe(name, ...exprs) {
