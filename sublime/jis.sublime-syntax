@@ -24,7 +24,7 @@ contexts:
     # own lines is likely to be a common error in this dialect. Scoping them as
     # illegal should help avoid that.
     - match: (?=\d|{{string_backtick_delim}}|{{string_double_delim}})
-      push: req-delim-pop
+      push: illegal-row-pop
 
     - match: (?=[{{sym_chars}}])
       push: sym-call-pop
@@ -174,15 +174,23 @@ contexts:
   param-call-and-row-pop:
     - include: newline-pop
     - include: punct-match
+    - match: (?=[{{sym_chars}}])
+      set: [param-row-pop, param-call-pop]
+    - match: (?=\S)
+      set: param-row-pop
+
+  param-call-pop:
     - include: sym-namespace-match
     - match: '[{{sym_segment_chars}}]+'
       scope: variable.function.jisp
-      set: [param-row-pop, req-delim-pop]
-    - include: row-match
+      set: req-delim-pop
+    - include: now-pop
 
   param-row-pop:
     - include: newline-pop
-    - include: punct-match
+    - match: '{{lister}}'
+      scope: storage.modifier.jisp
+      set: [param-call-and-row-pop, req-delim-pop]
     - match: '{{sym_unqual}}'
       scope: variable.parameter.jisp
       push: req-delim-pop
@@ -203,6 +211,11 @@ contexts:
       scope: entity.name.class.jisp
       set: [row-pop, req-delim-pop]
     - include: now-pop
+
+  illegal-row-pop:
+    - match: \S+
+      scope: invalid.illegal.jisp
+    - include: newline-pop
 
   newline-pop:
     - match: \n
