@@ -155,7 +155,7 @@ t.test(function test_const() {
   t.is(p.const.call(ctx, sym(`one`), 40).compile(), `const one = 40`)
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
-  t.is(p.const.call(ctx, sym(`two`), []).compile(), `const two = undefined`)
+  t.is(p.const.call(ctx, sym(`two`), []).compile(), `const two = (void 0)`)
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   ctx = c.ctxWithModule(ctx)
@@ -388,7 +388,7 @@ t.test(function test_let() {
   t.is(p.let.call(ctx, sym(`one`)).compile(), `let one`)
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`)})
 
-  t.is(p.let.call(ctx, sym(`two`), undefined).compile(), `let two = undefined`)
+  t.is(p.let.call(ctx, sym(`two`), undefined).compile(), `let two = (void 0)`)
   t.own(ctx, {[c.symStatement]: undefined, one: sym(`one`), two: sym(`two`)})
 
   t.is(p.let.call(ctx, sym(`three`), null).compile(), `let three = null`)
@@ -415,8 +415,8 @@ t.test(function test_if_expression() {
 
   t.is(p.if.call(ctx), undefined)
   t.eq(p.if.call(ctx, []), [])
-  t.is(p.if.call(ctx, [], []).compile(), `(undefined ? undefined : undefined)`)
-  t.is(p.if.call(ctx, [], [], []).compile(), `(undefined ? undefined : undefined)`)
+  t.is(p.if.call(ctx, [], []).compile(), `((void 0) ? (void 0) : (void 0))`)
+  t.is(p.if.call(ctx, [], [], []).compile(), `((void 0) ? (void 0) : (void 0))`)
 
   t.is(p.if.call(ctx, undefined), undefined)
   t.is(p.if.call(ctx, null), null)
@@ -430,10 +430,10 @@ source node:
 
 {macro: [function reqStatement]}`)
 
-  t.is(p.if.call(ctx, 10, 20).compile(), `(10 ? 20 : undefined)`)
+  t.is(p.if.call(ctx, 10, 20).compile(), `(10 ? 20 : (void 0))`)
   t.is(p.if.call(ctx, 10, 20, 30).compile(), `(10 ? 20 : 30)`)
 
-  t.is(p.if.call(ctx, ti.macOne, ti.macTwo).compile(), `("one" ? "two" : undefined)`)
+  t.is(p.if.call(ctx, ti.macOne, ti.macTwo).compile(), `("one" ? "two" : (void 0))`)
   t.is(p.if.call(ctx, ti.macOne, ti.macTwo, ti.macThree).compile(), `("one" ? "two" : "three")`)
 })
 
@@ -454,9 +454,9 @@ t.test(function test_if_statement() {
   t.is(p.if.call(ctx, 10, []).compile(), `if (10) {}`)
   t.is(p.if.call(ctx, 10, [], []).compile(), `if (10) {}`)
 
-  t.is(p.if.call(ctx, [], 10).compile(), `if (undefined) 10`)
+  t.is(p.if.call(ctx, [], 10).compile(), `if ((void 0)) 10`)
 
-  t.is(p.if.call(ctx, [], 10, 20).compile(), `if (undefined) 10
+  t.is(p.if.call(ctx, [], 10, 20).compile(), `if ((void 0)) 10
 else 20`)
 
   t.is(p.if.call(ctx, 10, [], 20).compile(), `if (10) {}
@@ -516,47 +516,47 @@ t.test(function test_when() {
   t.is(mac(expr, []), undefined)
   t.eq(mac(stat, []), [])
 
-  t.is(mac(expr, [], [[]]).compile(), `(undefined ? undefined : undefined)`)
+  t.is(mac(expr, [], [[]]).compile(), `((void 0) ? (void 0) : (void 0))`)
   t.eq(mac(stat, [], [[]]), [])
 
-  t.is(mac(expr, [], [[]], [[[]]]).compile(), `(undefined ? undefined : undefined)`)
+  t.is(mac(expr, [], [[]], [[[]]]).compile(), `((void 0) ? (void 0) : (void 0))`)
   t.eq(mac(stat, [], [[]], [[[]]]), [])
 
   t.is(mac(expr, 10).compile(), `(void 10)`)
   t.is(mac(stat, 10).compile(), `void 10`)
 
-  t.is(mac(expr, 10, 20).compile(), `(10 ? 20 : undefined)`)
+  t.is(mac(expr, 10, 20).compile(), `(10 ? 20 : (void 0))`)
   t.is(mac(stat, 10, 20).compile(), `if (10) {
 20
 }`)
 
-  t.is(mac(expr, 10, 20, 30).compile(), `(10 ? (20, 30) : undefined)`)
+  t.is(mac(expr, 10, 20, 30).compile(), `(10 ? (20, 30) : (void 0))`)
   t.is(mac(stat, 10, 20, 30).compile(), `if (10) {
 20;
 30
 }`)
 
-  t.is(mac(expr, 10, 20, 30, 40).compile(), `(10 ? (20, 30, 40) : undefined)`)
+  t.is(mac(expr, 10, 20, 30, 40).compile(), `(10 ? (20, 30, 40) : (void 0))`)
   t.is(mac(stat, 10, 20, 30, 40).compile(), `if (10) {
 20;
 30;
 40
 }`)
 
-  t.is(mac(expr, [], 10, 20, 30, 40).compile(), `(undefined ? (10, 20, 30, 40) : undefined)`)
-  t.is(mac(stat, [], 10, 20, 30, 40).compile(), `if (undefined) {
+  t.is(mac(expr, [], 10, 20, 30, 40).compile(), `((void 0) ? (10, 20, 30, 40) : (void 0))`)
+  t.is(mac(stat, [], 10, 20, 30, 40).compile(), `if ((void 0)) {
 10;
 20;
 30;
 40
 }`)
 
-  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(), `("one" ? "two" : undefined)`)
+  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo).compile(), `("one" ? "two" : (void 0))`)
   t.is(mac(stat, ti.macReqExpressionOne, ti.macReqStatementTwo).compile(), `if ("one") {
 "two"
 }`)
 
-  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(), `("one" ? ("two", "three") : undefined)`)
+  t.is(mac(expr, ti.macReqExpressionOne, ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(), `("one" ? ("two", "three") : (void 0))`)
   t.is(mac(stat, ti.macReqExpressionOne, ti.macReqStatementTwo, ti.macReqStatementThree).compile(), `if ("one") {
 "two";
 "three"
@@ -570,18 +570,18 @@ t.test(function test_do_expression() {
   t.is(p.do.call(ctx, []), undefined)
   t.is(p.do.call(ctx, [], []), undefined)
 
-  t.is(p.do.call(ctx, [], [undefined], [[[]]]).compile(), `undefined()`)
+  t.is(p.do.call(ctx, [], [undefined], [[[]]]).compile(), `(void 0)()`)
   t.is(p.do.call(ctx, 10).compile(), `10`)
   t.eq(p.do.call(ctx, [10]).compile(), `10()`)
   t.eq(p.do.call(ctx, [[10]]).compile(), `10()()`)
-  t.eq(p.do.call(ctx, [undefined]).compile(), `undefined()`)
-  t.eq(p.do.call(ctx, [[undefined]]).compile(), `undefined()()`)
+  t.eq(p.do.call(ctx, [undefined]).compile(), `(void 0)()`)
+  t.eq(p.do.call(ctx, [[undefined]]).compile(), `(void 0)()()`)
   t.is(p.do.call(ctx, 10, []).compile(), `10`)
   t.is(p.do.call(ctx, [], 10, []).compile(), `10`)
   t.is(p.do.call(ctx, 10, 20).compile(), `(10, 20)`)
   t.is(p.do.call(ctx, 10, 20, 30).compile(), `(10, 20, 30)`)
   t.is(p.do.call(ctx, 10, [], 20, [[]], 30).compile(), `(10, 20, 30)`)
-  t.is(p.do.call(ctx, 10, [undefined], 20, [[null]], 30).compile(), `(10, undefined(), 20, null()(), 30)`)
+  t.is(p.do.call(ctx, 10, [undefined], 20, [[null]], 30).compile(), `(10, (void 0)(), 20, null()(), 30)`)
 
   t.is(p.do.call(ctx, ti.macReqExpressionOne).compile(), `"one"`)
   t.is(p.do.call(ctx, [], ti.macReqExpressionOne, []).compile(), `"one"`)
@@ -601,11 +601,11 @@ function testBlockStatement(ctx, fun, comp) {
   t.eq(fun.call(ctx, [], [[[]]]), [])
 
   t.is(fun.call(ctx, undefined).compile(), comp(`{
-undefined
+(void 0)
 }`))
 
   t.is(fun.call(ctx, [undefined]).compile(), comp(`{
-undefined()
+(void 0)()
 }`))
 
   t.is(fun.call(ctx, 10).compile(), comp(`{
@@ -970,13 +970,13 @@ t.test(function test_loop_while() {
   const ctx = c.ctxWithStatement(null)
   ti.fail(() => p.loop.while.call(ctx), `expected at least 1 inputs, got 0 inputs`)
 
-  t.is(p.loop.while.call(ctx, []).compile(), `while (undefined) {}`)
+  t.is(p.loop.while.call(ctx, []).compile(), `while ((void 0)) {}`)
   t.is(p.loop.while.call(ctx, false).compile(), `while (false) {}`)
   t.is(p.loop.while.call(ctx, ti.macReqExpressionOne).compile(), `while ("one") {}`)
 
   t.is(
     p.loop.while.call(ctx, [], 10).compile(),
-    `while (undefined) {
+    `while ((void 0)) {
 10
 }`)
 
@@ -1018,13 +1018,13 @@ const two = "three"
 
   t.is(
     p.loop.while.call(ctx, [], sym(`break`)).compile(),
-    `while (undefined) {
+    `while ((void 0)) {
 break
 }`)
 
   t.is(
     p.loop.while.call(ctx, [], [sym(`break`)]).compile(),
-    `while (undefined) {
+    `while ((void 0)) {
 break
 }`)
 
@@ -1040,13 +1040,13 @@ break
 
   t.is(
     p.loop.while.call(ctx, [], sym(`continue`)).compile(),
-    `while (undefined) {
+    `while ((void 0)) {
 continue
 }`)
 
   t.is(
     p.loop.while.call(ctx, [], [sym(`continue`)]).compile(),
-    `while (undefined) {
+    `while ((void 0)) {
 continue
 }`)
 
@@ -1353,13 +1353,13 @@ t.test(function test_void_expression() {
   t.is(p.void.call(ctx, [], []), undefined)
   t.is(p.void.call(ctx, [], [[]]), undefined)
 
-  t.is(p.void.call(ctx, undefined).compile(), `(void undefined)`)
+  t.is(p.void.call(ctx, undefined).compile(), `(void (void 0))`)
   t.is(p.void.call(ctx, null).compile(), `(void null)`)
   t.is(p.void.call(ctx, 10).compile(), `(void 10)`)
   t.is(p.void.call(ctx, 10, 20).compile(), `(void (10, 20))`)
   t.is(p.void.call(ctx, 10, 20, 30).compile(), `(void (10, 20, 30))`)
   t.is(p.void.call(ctx, 10, [], 20, [], 30).compile(), `(void (10, 20, 30))`)
-  t.is(p.void.call(ctx, [[undefined]], [[[null]]]).compile(), `(void (undefined()(), null()()()))`)
+  t.is(p.void.call(ctx, [[undefined]], [[[null]]]).compile(), `(void ((void 0)()(), null()()()))`)
 
   t.is(
     p.void.call(ctx, ti.macReqExpressionOne).compile(),
@@ -1380,13 +1380,13 @@ t.test(function test_void_statement() {
   t.eq(p.void.call(ctx, [], []), [])
   t.eq(p.void.call(ctx, [], [[]]), [])
 
-  t.is(p.void.call(ctx, undefined).compile(), `void undefined`)
+  t.is(p.void.call(ctx, undefined).compile(), `void (void 0)`)
   t.is(p.void.call(ctx, null).compile(), `void null`)
   t.is(p.void.call(ctx, 10).compile(), `void 10`)
   t.is(p.void.call(ctx, 10, 20).compile(), `void (10, 20)`)
   t.is(p.void.call(ctx, 10, 20, 30).compile(), `void (10, 20, 30)`)
   t.is(p.void.call(ctx, 10, [], 20, [], 30).compile(), `void (10, 20, 30)`)
-  t.is(p.void.call(ctx, [[undefined]], [[[null]]]).compile(), `void (undefined()(), null()()())`)
+  t.is(p.void.call(ctx, [[undefined]], [[[null]]]).compile(), `void ((void 0)()(), null()()())`)
 
   t.is(
     p.void.call(ctx, ti.macReqExpressionOne).compile(),
@@ -1419,7 +1419,7 @@ t.test(function test_ret_statement() {
   t.is(m.ret.call(ctx).compile(), `return`)
   t.is(m.ret.call(ctx, []).compile(), `return`)
   t.is(m.ret.call(ctx, [[]]).compile(), `return`)
-  t.is(m.ret.call(ctx, undefined).compile(), `return undefined`)
+  t.is(m.ret.call(ctx, undefined).compile(), `return (void 0)`)
   t.is(m.ret.call(ctx, null).compile(), `return null`)
   t.is(m.ret.call(ctx, 10).compile(), `return 10`)
   t.is(m.ret.call(ctx, ti.macReqExpression).compile(), `return "expression_value"`)
@@ -1481,7 +1481,7 @@ t.test(function test_guard() {
   ti.fail(() => mac(null), `expected statement context, got expression context`)
   const ctx = c.ctxWithStatement(null)
 
-  t.is(mac(ctx).compile(), `if (undefined) return`)
+  t.is(mac(ctx).compile(), `if ((void 0)) return`)
   t.is(mac(ctx, 10).compile(), `if (10) return`)
   t.is(mac(ctx, 10, 20).compile(), `if (10) return 20`)
 
@@ -1868,7 +1868,7 @@ t.test(function test_func_mixin() {
     t.is(
       p.func.call(ctx, sym(`one`), [], {macro(val) {ctx = val}}, []).compile(),
       `function one () {
-undefined;
+(void 0);
 return
 }`)
     return ctx
@@ -1944,7 +1944,7 @@ return
     t.is(
       p.func.call(ctx, sym(`ret`), [], {macro(val) {ctx = val}}, []).compile(),
       `function ret () {
-undefined;
+(void 0);
 return
 }`)
 
@@ -2252,7 +2252,7 @@ return 10;
 20;
 return 30
 };
-if (undefined) return;
+if ((void 0)) return;
 if (40) return;
 if (50) return 60;
 return
@@ -3726,7 +3726,7 @@ t.test(function test_throw_expression() {
   ti.fail(() => p.throw.call(null), `expected 1 inputs, got 0 inputs`)
   ti.fail(() => p.throw.call(null, []), `unexpected empty input`)
 
-  t.is(p.throw.call(null, undefined).compile(), `(err => {throw err})(undefined)`)
+  t.is(p.throw.call(null, undefined).compile(), `(err => {throw err})((void 0))`)
   t.is(p.throw.call(null, null).compile(), `(err => {throw err})(null)`)
   t.is(p.throw.call(null, 10).compile(), `(err => {throw err})(10)`)
   t.is(p.throw.call(null, ti.macReqExpression).compile(), `(err => {throw err})("expression_value")`)
@@ -3737,7 +3737,7 @@ t.test(function test_throw_statement() {
   ti.fail(() => p.throw.call(ctx), `expected 1 inputs, got 0 inputs`)
   ti.fail(() => p.throw.call(ctx, []), `unexpected empty input`)
 
-  t.is(p.throw.call(ctx, undefined).compile(), `throw undefined`)
+  t.is(p.throw.call(ctx, undefined).compile(), `throw (void 0)`)
   t.is(p.throw.call(ctx, null).compile(), `throw null`)
   t.is(p.throw.call(ctx, 10).compile(), `throw 10`)
   t.is(p.throw.call(ctx, ti.macReqExpression).compile(), `throw "expression_value"`)
@@ -3844,7 +3844,7 @@ function testUnary(fun, pre) {
   function test(ctx) {
     ti.fail(() => fun.call(ctx), `expected 1 inputs, got 0 inputs`)
 
-    t.is(fun.call(ctx, []).compile(), `(${pre} undefined)`)
+    t.is(fun.call(ctx, []).compile(), `(${pre} (void 0))`)
     t.is(fun.call(ctx, 10).compile(), `(${pre} 10)`)
 
     t.is(
@@ -3899,17 +3899,17 @@ function testBinary(fun, inf) {
 
     t.is(
       fun.call(ctx, [], []).compile(),
-      `(undefined ${inf} undefined)`,
+      `((void 0) ${inf} (void 0))`,
     )
 
     t.is(
       fun.call(ctx, 10, []).compile(),
-      `(10 ${inf} undefined)`,
+      `(10 ${inf} (void 0))`,
     )
 
     t.is(
       fun.call(ctx, [], 10).compile(),
-      `(undefined ${inf} 10)`,
+      `((void 0) ${inf} 10)`,
     )
 
     t.is(
@@ -4147,14 +4147,14 @@ t.test(function test_dict() {
   t.is(p.dict.call(expr, 10.20, 30, 40.50, 60).compile(), `{"10.2": 30, "40.5": 60}`)
   t.is(p.dict.call(stat, 10.20, 30, 40.50, 60).compile(), `({"10.2": 30, "40.5": 60})`)
 
-  t.is(p.dict.call(expr, 10, []).compile(), `{10: undefined}`)
-  t.is(p.dict.call(stat, 10, []).compile(), `({10: undefined})`)
+  t.is(p.dict.call(expr, 10, []).compile(), `{10: (void 0)}`)
+  t.is(p.dict.call(stat, 10, []).compile(), `({10: (void 0)})`)
 
-  t.is(p.dict.call(expr, 10, [], 20, 30).compile(), `{10: undefined, 20: 30}`)
-  t.is(p.dict.call(stat, 10, [], 20, 30).compile(), `({10: undefined, 20: 30})`)
+  t.is(p.dict.call(expr, 10, [], 20, 30).compile(), `{10: (void 0), 20: 30}`)
+  t.is(p.dict.call(stat, 10, [], 20, 30).compile(), `({10: (void 0), 20: 30})`)
 
-  t.is(p.dict.call(expr, 10, [], 20, 30, 40, [[]]).compile(), `{10: undefined, 20: 30, 40: undefined}`)
-  t.is(p.dict.call(stat, 10, [], 20, 30, 40, [[]]).compile(), `({10: undefined, 20: 30, 40: undefined})`)
+  t.is(p.dict.call(expr, 10, [], 20, 30, 40, [[]]).compile(), `{10: (void 0), 20: 30, 40: (void 0)}`)
+  t.is(p.dict.call(stat, 10, [], 20, 30, 40, [[]]).compile(), `({10: (void 0), 20: 30, 40: (void 0)})`)
 
   t.is(p.dict.call(expr, 10n, 20n).compile(), `{10: 20n}`)
   t.is(p.dict.call(stat, 10n, 20n).compile(), `({10: 20n})`)
@@ -4262,7 +4262,7 @@ t.test(function test_obj() {
 
     t.is(
       mac([p.set, 10, []]).compile(),
-      `{10: undefined}`,
+      `{10: (void 0)}`,
     )
 
     t.is(
@@ -4313,7 +4313,7 @@ t.test(function test_obj() {
     */
     t.is(mac([p.let, sym(`one`)]).compile(), `{}`)
 
-    t.is(mac([p.let, sym(`one`), []]).compile(), `{one: undefined}`)
+    t.is(mac([p.let, sym(`one`), []]).compile(), `{one: (void 0)}`)
     t.is(mac([p.let, sym(`one`), 10]).compile(), `{one: 10}`)
     t.is(mac([p.let, sym(`await`), 10]).compile(), `{await: 10}`)
     t.is(mac([p.let, sym(`eval`), 10]).compile(), `{eval: 10}`)
@@ -4618,14 +4618,14 @@ t.test(function test_set() {
   fail(ctx)
 
   ctx.one = 123
-  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(123 = undefined)`)
+  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(123 = (void 0))`)
 
   ctx.one = sym(`one`)
-  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(one = undefined)`)
+  t.is(p.set.call(ctx, sym(`one`), []).compile(), `(one = (void 0))`)
 
   t.is(
     p.set.call(c.ctxWithStatement(ctx), sym(`one`), []).compile(),
-    `one = undefined`,
+    `one = (void 0)`,
   )
 
   t.is(

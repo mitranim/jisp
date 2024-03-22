@@ -594,7 +594,7 @@ export function macroNodes(ctx, src) {
 
 export function compileNode(src) {
   switch (typeof src) {
-    case `undefined`: return `undefined` // See `reservedNames`.
+    case `undefined`: return `(void 0)`
     case `boolean`: return String(src)
     case `number`: return compileNum(src)
     case `bigint`: return String(src) + `n`
@@ -697,7 +697,7 @@ export function compileDictExpr(src) {
   try {
     const buf = []
     for (const key of Object.keys(src)) {
-      buf.push(compileNode(key) + dictEntrySep + (compileNode(src[key]) || `undefined`))
+      buf.push(compileNode(key) + dictEntrySep + (compileNode(src[key]) || `(void 0)`))
     }
     return wrapBraces(buf.join(expressionSep))
   }
@@ -1340,6 +1340,8 @@ export function reqNotReservedName(val) {
 }
 
 /*
+## Overview
+
 Should exactly match the set of names which, in ES5+, can be used on their own
 as expressions, but can not be redeclared. Attempting to redeclare such names
 typically causes a syntax error in ES.
@@ -1349,21 +1351,26 @@ using ES keywords and reserved names in declarations. Note that such names can
 still be used for exports. Even in ES, there are absolutely no restrictions on
 exported names.
 
-Some of these names may be used on their own as expressions. In other words,
-some of these names act as regular identifiers or nullary keywords. The
-simplest way to make them available in Jisp code is by declaring them as
-globals:
+`eval` is forbidden in JS modules, and we compile to JS modules, so Jisp code
+can never use the old native `eval`, nor can it declare a local name `eval`.
+This is a legacy JS restriction and we're stuck with it.
 
-  [use.mac `jisp:prelude.mjs` jp]
-  [jp.declare jp.globals]
+The values `null`, `false`, `true` can be brought into scope as actual values,
+under arbitrary names, and would compile to the correct JS keywords regardless
+of their Jisp names. Our prelude module provides these values.
 
-Some of these names can be used only in specific contexts. Examples include
-`arguments` and `super`. It's worth understanding that in ES, all names which
-have contextual meaning are always reserved globally. At the time of writing,
-this rule holds for all contextual names and keywords in ES. This prevents
-contextually-provided names and keywords from accidentally masking user-defined
-names, because user-defined names are not allowed to match any keywords or
-reserved names.
+The other names in this list must remain opaque (as names, not values), and we
+bring them into scope contextually: `arguments`, `super`, `this` are available
+only in functions and classes. Technically, `this` could be used anywhere, but
+it's always `undefined` in the root of a JS module, so there's no point.
+
+## Misc
+
+It's worth understanding that in ES, all names which have contextual meaning
+are always reserved globally. At the time of writing, this rule holds for all
+contextual names and keywords in ES. This prevents contextually-provided names
+and keywords from accidentally masking user-defined names, because user-defined
+names are not allowed to match any keywords or reserved names.
 
 In Jisp, contextual names must also avoid collision with user-defined names.
 However, Jisp does not reserve any names, and never will. This means that
@@ -1377,18 +1384,8 @@ For example, `func` contextually declares the macro `ret`, if and only if the
 name `ret` is completely missing from the current scope. If the name `ret` is
 already declared, then `func` does not declare it. If it does declare `ret`, it
 ensures that `ret` can still be redeclared.
-
-As a special case, this set includes `undefined`. At the time of writing,
-`undefined` is NOT a reserved name in ES. It's a regular predeclared
-identifier. In ES5+, the predeclared `undefined` can't be reassigned or
-redeclared in root scope, but can be redeclared in local scope. We forbid its
-redeclaration because this allows us to safely use the name `undefined` in
-compiled code. We could also use something like `void 0` to safely obtain the
-native value of `undefined`, but that's just too easy to forget. Even if we
-correctly handle redeclaration of `undefined` in the compiler codebase, user
-code could forget. Banning its redeclaration seems like a safer choice.
 */
-export const reservedNames = new Set([`arguments`, `eval`, `false`, `null`, `super`, `this`, `true`, `undefined`])
+export const reservedNames = new Set([`arguments`, `eval`, `false`, `null`, `super`, `this`, `true`])
 
 export function symNs(val) {return strNs(reqSym(val).description)}
 

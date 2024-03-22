@@ -456,7 +456,7 @@ export function $const(tar, src) {
     `const`,
     param.call(this, tar) || c.panic(errLhs(tar)),
     `=`,
-    (c.compileNode(src) || `undefined`),
+    (c.compileNode(src) || `(void 0)`),
   ))
 }
 
@@ -518,7 +518,7 @@ export function letForObj(key, val) {
   c.reqArityBetween(arguments.length, 1, 2)
   ctxDeclareObj(this, key)
   if (!(arguments.length > 1)) return []
-  return c.raw(letForField(Object.create(this), key, `: `, val, `undefined`))
+  return c.raw(letForField(Object.create(this), key, `: `, val, `(void 0)`))
 }
 
 function ctxDeclareClassStatic(ctx, key) {
@@ -622,7 +622,7 @@ export function ifStatement(predicate, branchThen, branchElse) {
   return c.raw(c.joinLines(
     c.joinSpaced(
       `if`,
-      c.wrapParens(predicate || `undefined`),
+      c.wrapParens(predicate || `(void 0)`),
       (branchThen || `{}`),
     ),
     (branchElse && (`else ` + branchElse)),
@@ -640,11 +640,11 @@ export function ifExpression(predicate, branchThen, branchElse) {
   branchElse = c.macroNode(this, branchElse)
 
   return c.raw(c.wrapParens(c.joinSpaced(
-    (c.compileNode(predicate) || `undefined`),
+    (c.compileNode(predicate) || `(void 0)`),
     `?`,
-    (c.compileNode(branchThen) || `undefined`),
+    (c.compileNode(branchThen) || `(void 0)`),
     `:`,
-    (c.compileNode(branchElse) || `undefined`),
+    (c.compileNode(branchElse) || `(void 0)`),
   )))
 }
 
@@ -800,7 +800,7 @@ export function loopWhile(cond, ...body) {
 
   return c.raw(c.joinSpaced(
     `while`,
-    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `undefined`),
+    c.wrapParens(c.compileNode(c.macroNode(Object.create(this), cond)) || `(void 0)`),
     block(loopCtx(this), body),
   ))
 }
@@ -1350,7 +1350,7 @@ function unaryPrefix(ctx, pre, val) {
   c.reqStr(pre)
   return c.raw(c.wrapParens(c.joinSpaced(
     pre,
-    c.compileNode(c.macroNode(c.ctxToExpression(ctx), val)) || `undefined`,
+    c.compileNode(c.macroNode(c.ctxToExpression(ctx), val)) || `(void 0)`,
   )))
 }
 
@@ -1360,9 +1360,9 @@ function binaryInfix(ctx, one, inf, two) {
   two = c.macroNode(ctx, two)
 
   return c.raw(c.wrapParens(c.joinSpaced(
-    c.compileNode(one) || `undefined`,
+    c.compileNode(one) || `(void 0)`,
     inf,
-    c.compileNode(two) || `undefined`,
+    c.compileNode(two) || `(void 0)`,
   )))
 }
 
@@ -1396,7 +1396,7 @@ export function isNil(val) {
   c.reqArity(arguments.length, 1)
   return c.isNil(val) || c.raw(
     `(null == `,
-    (c.compileNode(c.macroNode(c.ctxToExpression(this), val)) || `undefined`),
+    (c.compileNode(c.macroNode(c.ctxToExpression(this), val)) || `(void 0)`),
     `)`,
   )
 }
@@ -1411,7 +1411,7 @@ export function isSome(val) {
   c.reqArity(arguments.length, 1)
   return c.isSome(val) && c.raw(
     `(null != `,
-    (c.compileNode(c.macroNode(c.ctxToExpression(this), val)) || `undefined`),
+    (c.compileNode(c.macroNode(c.ctxToExpression(this), val)) || `(void 0)`),
     `)`,
   )
 }
@@ -1487,7 +1487,7 @@ export function dictEntry(key, val) {
 
   key = fieldName(this, key)
   val = c.compileNode(c.macroNode(this, val))
-  if (key) return key + `: ` + (val || `undefined`)
+  if (key) return key + `: ` + (val || `(void 0)`)
   if (!val) return ``
   throw errEntryLhs(val)
 }
@@ -1601,7 +1601,7 @@ export function setForClassProto(key, val) {
 
 export function setForObj(key, val) {
   c.reqArity(arguments.length, 2)
-  const out = fieldMacroCompile(Object.create(this), key, `: `, val, `undefined`)
+  const out = fieldMacroCompile(Object.create(this), key, `: `, val, `(void 0)`)
   return out ? c.raw(out) : []
 }
 
@@ -1616,7 +1616,7 @@ export function fieldMacroCompile(ctx, key, inf, val, def) {
 
 export function assign(tar, inf, src) {
   [tar, src] = assignMacroCompile(c.ctxToExpression(this), tar, src)
-  const out = c.joinSpaced(tar, inf, src || `undefined`)
+  const out = c.joinSpaced(tar, inf, src || `(void 0)`)
   return c.raw(c.ctxIsStatement(this) ? out : c.wrapParens(out))
 }
 

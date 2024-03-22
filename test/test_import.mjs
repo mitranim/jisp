@@ -300,7 +300,7 @@ source node:
   )
 
   const ctx = makeCtx()
-  t.is(p.use.async.call(ctx, undefined).compile(),           `import(undefined)`)
+  t.is(p.use.async.call(ctx, undefined).compile(),           `import((void 0))`)
   t.is(p.use.async.call(ctx, null).compile(),                `import(null)`)
   t.is(p.use.async.call(ctx, 10).compile(),                  `import(10)`)
   t.is(p.use.async.call(ctx, ti.macReqExpression).compile(), `import("expression_value")`)

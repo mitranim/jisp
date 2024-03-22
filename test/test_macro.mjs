@@ -354,15 +354,15 @@ function testMacroSymSync(fun) {
   ti.fail(() => mac(`one`), `missing declaration of "one"`)
   ctx.one = undefined
   test(`one`, undefined)
-  testCompile(`one.two`, `undefined.two`)
-  testCompile(`one.two.three`, `undefined.two.three`)
+  testCompile(`one.two`, `(void 0).two`)
+  testCompile(`one.two.three`, `(void 0).two.three`)
 
   ctx = Object.create(null)
   ti.fail(() => mac(`!@#`), `missing declaration of "!@#"`)
   ctx[`!@#`] = undefined
   test(`!@#`, undefined)
-  testCompile(`!@#.two`, `undefined.two`)
-  testCompile(`!@#.two.three`, `undefined.two.three`)
+  testCompile(`!@#.two`, `(void 0).two`)
+  testCompile(`!@#.two.three`, `(void 0).two.three`)
 
   ctx = Object.create(null)
   ti.fail(() => mac(`one`), `missing declaration of "one"`)
@@ -404,7 +404,7 @@ function testMacroSymSync(fun) {
   ctx.one = {two: undefined}
   test(`one`, ctx.one)
   test(`one.two`, undefined)
-  testCompile(`one.two.three`, `undefined.three`)
+  testCompile(`one.two.three`, `(void 0).three`)
 
   ctx = Object.create(null)
   ctx.one = {two: 123}
