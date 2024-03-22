@@ -336,10 +336,12 @@ t.test(function test_macro_symbol_sync() {
 
 function testMacroSymSync(fun) {
   let ctx = null
+
   function mac(src) {return fun(ctx, sym(src))}
   function same(src) {t.is(mac(src), sym(src))}
   function test(src, exp) {t.is(mac(src), exp)}
   function testCompile(src, exp) {t.is(c.compileNode(mac(src)), exp)}
+  function testKeyRef(tar, src, key) {ti.testKeyRef(mac(tar), src, key)}
 
   ctx = Object.create(null)
   ti.fail(() => mac(`one`),           `missing declaration of "one"`)
@@ -432,15 +434,18 @@ function testMacroSymSync(fun) {
   testCompile(`one.two`, `"some_node".two`)
   testCompile(`one.three`, `"some_node".three`)
   testCompile(`one.two.three`, `"some_node".two.three`)
+  testKeyRef(`one.two`, "some_node", `two`)
 
+  ctx = Object.create(null)
   ctx.one = {macro() {return this}, two: 123}
   test(`one`, ctx.one)
-  {
-    const out = mac(`one.two`)
-    t.inst(out, c.KeyRef)
-    t.is(out.src, ctx.one)
-    t.is(out.key, `two`)
-  }
+  test(`one.two`, 123)
+  testCompile(`one.two`, `123`)
+
+  ti.fail(
+    () => mac(`one.three`),
+    `missing property "three" in {macro: [function macro], two: 123}`,
+  )
 
   ctx = Object.create(null)
   ctx.one = function one() {throw Error(`unreachable`)}

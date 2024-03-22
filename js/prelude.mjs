@@ -9,6 +9,10 @@ export const inf = Infinity
 const negInf = -Infinity
 export {negInf as '-inf'}
 
+// Allows to reference empty-name declarations such as `empty`
+// or those created by `pipe`.
+export const $ = Symbol.for(``)
+
 export {
   globals,
   domGlobals,

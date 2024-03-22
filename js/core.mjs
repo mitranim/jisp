@@ -539,9 +539,9 @@ export function macroSymDeref(ctx, path) {
 
 // SYNC[sym_get].
 function macroSymGet(ctx, src, key) {
+  if (canMacro(src)) src = macroNode(ctx, src.macro(ctx), src)
   if (isSym(src)) return Symbol.for(src.description + accessor + key)
   if (!isComp(src)) return new KeyRef(src, key)
-  if (canMacro(src)) return new KeyRef(macroNode(ctx, src.macro(ctx), src), key)
   if (canCompile(src)) return new KeyRef(src, key)
   if (!(isComp(src) && key in src)) throw errProp(key, src)
   return src[key]

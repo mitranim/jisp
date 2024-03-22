@@ -1983,13 +1983,21 @@ export function regexp(src, flags) {
   return RegExp(c.reqStr(src), c.optStr(flags))
 }
 
-export function pipe(name, ...exprs) {
-  c.reqSymUnqual(name)
-  if (!exprs.length) return name
-  return [$do, ...exprs.map(setWith, name), name]
-}
+export function pipe(tar, ...src) {
+  switch (arguments.length) {
+    case 0: return []
+    case 1: return tar
+  }
 
-function setWith(val) {return [set, this, val]}
+  const ref = Object.create(null)
+  ref.macro = () => tar
+
+  const ctx = Object.create(this)
+  ctx[``] = ref
+
+  for (src of src) tar = c.macroNode(ctx, src)
+  return tar
+}
 
 export {$private as private}
 

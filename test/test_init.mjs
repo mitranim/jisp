@@ -191,3 +191,10 @@ export function reqSymUniqWith(val, str) {
 
 // Indicates benchmark accuracy. Should be ±0 nanoseconds.
 t.bench(function bench_baseline() {})
+
+export function testKeyRef(tar, src, key) {
+  t.inst(tar, c.KeyRef)
+  t.eq(tar.src, src)
+  t.is(tar.key, key)
+  return tar
+}

@@ -4851,71 +4851,111 @@ t.test(function test_regexp() {
 })
 
 t.test(function test_pipe() {
-  function mac(ctx, ...src) {return c.macroNode(ctx, [m.pipe, ...src])}
+  let ctx
+  function mac() {return p.pipe.apply(ctx, arguments)}
 
-  function fail(ctx) {
-    ti.fail(() => mac(ctx), `expected unqualified symbol, got undefined`)
-    ti.fail(() => mac(ctx, 10), `expected unqualified symbol, got 10`)
-    ti.fail(() => mac(ctx, sym(`one.two`)), `expected unqualified symbol, got one.two`)
-    ti.fail(() => mac(ctx, sym(`one`)), `missing declaration of "one"`)
+  ctx = null
+  test()
+
+  ctx = c.ctxWithStatement(null)
+  test()
+
+  function test() {
+    t.eq(mac(), [])
+
+    t.is(mac(10), 10)
+    t.is(mac(10, 20), 20)
+    t.is(mac(10, 20, 30), 30)
+
+    t.is(mac(`one`), `one`)
+    t.is(mac(`one`, `two`), `two`)
+    t.is(mac(`one`, `two`, `three`), `three`)
+
+    /*
+    When there is only one input, it's returned as-is. The caller, which is
+    typically `c.macroNode`, will macroexpand the output after it's returned.
+    */
+    t.is(mac(ti.macUnreachable), ti.macUnreachable)
+
+    /*
+    The first input is never macroed directly. It's expected to be referenced
+    by some of the other inputs, via empty name (see below).
+    */
+    t.is(mac(ti.macUnreachable, 10), 10)
+    t.is(mac(ti.macUnreachable, 10, 20), 20)
+    t.is(mac(ti.macUnreachable, 10, 20, 30), 30)
+
+    ti.fail(
+      () => mac(ti.macUnreachable, ti.macReqStatement),
+      `expected statement context, got expression context`
+    )
+
+    ti.fail(
+      () => mac(ti.macUnreachable, ti.macReqExpression, ti.macReqStatement),
+      `expected statement context, got expression context`
+    )
+
+    /*
+    Each node after the first should be able to reference the result of macroing
+    the previous node via empty name, which is implicitly brought into scope.
+    */
+    t.is(mac(10, sym(``)), 10)
+    t.is(mac(10, 20, sym(``)), 20)
+    t.is(mac(10, 20, 30, sym(``)), 30)
+    t.is(mac(10, sym(``), sym(``)), 10)
+    t.is(mac(10, sym(``), sym(``), sym(``)), 10)
+    t.is(mac(10, sym(``), 20, sym(``)), 20)
+    t.is(mac(10, sym(``), 20, sym(``), 30), 30)
+    t.is(mac(10, sym(``), 20, sym(``), 30, sym(``)), 30)
+
+    t.is(mac(ti.macReqExpression, sym(``)), `expression_value`)
+
+    ti.fail(
+      () => mac(sym(``), sym(``)),
+      `Maximum call stack size exceeded`,
+    )
+
+    /*
+    The empty name reference should be usable in any position in arbitrarily
+    nested expressions.
+    */
+    t.eq(mac(10, [sym(``), 20]), [10, 20])
+    t.eq(mac(10, [20, sym(``)]), [20, 10])
+    t.eq(mac(10, [sym(``), 20], [[sym(``)]]), [[[10, 20]]])
+
+    /*
+    Symbols with a leading dot are considered to be property references on the
+    empty name declaration. When the value referenced by the empty name is not
+    macroable or compilable, the property access should be performed at macro
+    time, under the same rules as everywhere else. When the value referenced
+    by the empty name is either macroable or compilable, macroing these symbols
+    should produce `KeyRef` just like elsewhere.
+    */
+
+    ti.fail(
+      () => mac({one: 10}, sym(`.`)),
+      `missing property "" in {one: 10}`,
+    )
+
+    ti.fail(
+      () => mac({one: 10}, sym(`.two`)),
+      `missing property "two" in {one: 10}`,
+    )
+
+    ti.testKeyRef(mac(10, sym(`.`)), 10, ``)
+
+    ti.testKeyRef(mac(10, sym(`.one`)), 10, `one`)
+
+    ti.testKeyRef(
+      mac(10, sym(`.one.two`)),
+      ti.testKeyRef(
+        mac(10, sym(`.one`)),
+        10,
+        `one`,
+      ),
+      `two`,
+    )
   }
-
-  const expr = Object.create(null)
-  const stat = c.ctxWithStatement(expr)
-
-  fail(expr)
-  fail(stat)
-
-  expr.one = sym(`one`)
-
-  t.is(mac(expr, sym(`one`)), sym(`one`))
-  t.is(mac(stat, sym(`one`)), sym(`one`))
-
-  t.is(
-    mac(expr, sym(`one`), 10).compile(),
-    `((one = 10), one)`,
-  )
-
-  t.is(
-    mac(stat, sym(`one`), 10).compile(),
-    `{
-one = 10;
-one
-}`)
-
-  t.is(
-    mac(expr, sym(`one`), 10, 20).compile(),
-    `((one = 10), (one = 20), one)`,
-  )
-
-  t.is(
-    mac(stat, sym(`one`), 10, 20).compile(),
-    `{
-one = 10;
-one = 20;
-one
-}`)
-
-  t.is(
-    mac(expr, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
-    `((one = "two"), (one = "three"), one)`,
-  )
-
-  t.is(
-    mac(stat, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
-    `{
-one = "two";
-one = "three";
-one
-}`)
-
-  t.is(
-    mac(stat, sym(`one`), ti.macReqExpressionTwo, ti.macReqExpressionThree).compile(),
-    `{
-one = "two";
-one = "three";
-one
-}`)
 })
 
 if (import.meta.main) ti.flush()
