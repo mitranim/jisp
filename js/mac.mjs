@@ -177,6 +177,7 @@ domGlobals.SVGSvgElement = Symbol.for(`SVGSvgElement`)
 
 export const symRest = Symbol.for(`...`)
 export const symDo = Symbol.for(`jisp.do`)
+export const symConst = Symbol.for(`jisp.const`)
 export const symLet = Symbol.for(`jisp.let`)
 export const symSet = Symbol.for(`jisp.set`)
 export const symList = Symbol.for(`jisp.list`)
@@ -446,6 +447,7 @@ function identOrStr(val) {
 export {$const as const}
 
 export function $const(tar, src) {
+  if (c.hasOwn(this, symConst)) return this[symConst].apply(this, arguments)
   c.ctxReqIsStatement(this)
   c.reqArity(arguments.length, 2)
 
@@ -477,6 +479,10 @@ export function constMac(key, val) {
 async function constMacAsync(ctx, key, val) {
   c.ctxDeclare(ctx, key, await val)
   return []
+}
+
+export function constUnsupported() {
+  throw Error(`current context does not support "const", use "let" instead`)
 }
 
 export {$let as let}
@@ -1232,8 +1238,9 @@ function ctxMixinClass(ctx) {
 // SYNC[class_static_override].
 function ctxOverrideClassStatic(ctx) {
   ctx[symDo] = doForClassStatic
-  ctx[symSet] = setForClassStatic
+  ctx[symConst] = constUnsupported
   ctx[symLet] = letForClassStatic
+  ctx[symSet] = setForClassStatic
   ctx[symFunc] = funcForClassStatic
   ctx[symFuncAsync] = funcAsyncForClassStatic
   ctx[symFuncGet] = funcGetForClassStatic
@@ -1266,8 +1273,9 @@ export function classPrototype(...src) {
 
 // SYNC[class_proto_override].
 function ctxOverrideClassProto(ctx) {
-  ctx[symSet] = setForClassProto
+  ctx[symConst] = constUnsupported
   ctx[symLet] = letForClassProto
+  ctx[symSet] = setForClassProto
   ctx[symFunc] = funcForClassProto
   ctx[symFuncAsync] = funcAsyncForClassProto
   ctx[symFuncGet] = funcGetForClassProto
@@ -1518,8 +1526,9 @@ export function obj(...src) {
 
 // SYNC[obj_override].
 function ctxOverrideObj(ctx) {
-  ctx[symSet] = setForObj
+  ctx[symConst] = constUnsupported
   ctx[symLet] = letForObj
+  ctx[symSet] = setForObj
   ctx[symFunc] = funcForObj
   ctx[symFuncAsync] = funcAsyncForObj
   ctx[symFuncGet] = funcGetForObj

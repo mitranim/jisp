@@ -28,24 +28,27 @@ classMixin.super = Symbol.for(`super`)
 // SYNC[class_static_override].
 const classOverrideStatic = Object.create(null)
 classOverrideStatic[m.symDo] = m.doForClassStatic
-classOverrideStatic[m.symSet] = m.setForClassStatic
+classOverrideStatic[m.symConst] = m.constUnsupported
 classOverrideStatic[m.symLet] = m.letForClassStatic
+classOverrideStatic[m.symSet] = m.setForClassStatic
 classOverrideStatic[m.symFunc] = m.funcForClassStatic
 classOverrideStatic[m.symFuncAsync] = m.funcAsyncForClassStatic
 classOverrideStatic[m.symFuncGet] = m.funcGetForClassStatic
 
 // SYNC[class_proto_override].
 const classOverrideProto = Object.create(null)
-classOverrideProto[m.symSet] = m.setForClassProto
+classOverrideProto[m.symConst] = m.constUnsupported
 classOverrideProto[m.symLet] = m.letForClassProto
+classOverrideProto[m.symSet] = m.setForClassProto
 classOverrideProto[m.symFunc] = m.funcForClassProto
 classOverrideProto[m.symFuncAsync] = m.funcAsyncForClassProto
 classOverrideProto[m.symFuncGet] = m.funcGetForClassProto
 
 // SYNC[obj_override].
 const objOverride = Object.create(null)
-objOverride[m.symSet] = m.setForObj
+objOverride[m.symConst] = m.constUnsupported
 objOverride[m.symLet] = m.letForObj
+objOverride[m.symSet] = m.setForObj
 objOverride[m.symFunc] = m.funcForObj
 objOverride[m.symFuncAsync] = m.funcAsyncForObj
 objOverride[m.symFuncGet] = m.funcGetForObj
