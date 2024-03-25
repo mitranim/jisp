@@ -257,7 +257,7 @@ func
   E FileArea void
     E `code` void name
     E `textarea`
-      ##
+      #
         let rows 12
         let placeholder "use.mac `jisp:prelude.mjs` ..."
       ' text
@@ -268,7 +268,7 @@ func
   E FileArea void
     E `code` void name
     E `textarea`
-      ##
+      #
         let rows 12
         let disabled ok
         let placeholder `Compiled code should appear here.`
@@ -318,13 +318,13 @@ m.prn
       fileTar `main.mjs`
 
     E `button`
-      ##
+      #
         let type `button`
         let onclick `this.parentNode.run()`
       ' `run [ctrl+enter]`
 
     E `span`
-      ##
+      #
         let class `hint`
         let data-role `hint`
         let hidden ok

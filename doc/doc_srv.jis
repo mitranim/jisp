@@ -29,13 +29,13 @@ func
   methodNotAllowed meth path
   new Response
     + `method not allowed: ` meth ` ` path
-    ## : let status 405
+    # : let status 405
 
 func
   notFound meth path
   new Response
     + `not found: ` meth ` ` path
-    ## : let status 404
+    # : let status 404
 
 func.async
   response req
@@ -56,11 +56,11 @@ func.async
   const type : contentType path
   new Response
     await : Deno.readTextFile path
-    and type : ## : let headers : ## : let content-type type
+    and type : # : let headers : # : let content-type type
 
 func
   errRes err
-  new Response err.stack : ## : let status 500
+  new Response err.stack : # : let status 500
 
 func.async
   serveConn conn
@@ -70,7 +70,7 @@ func.async
     eve.respondWith : res.catch errRes
   ' void
 
-const lis : Deno.listen : ## : let port PORT
+const lis : Deno.listen : # : let port PORT
 
 console.log : + `listening on http://localhost:` PORT BASE
 
